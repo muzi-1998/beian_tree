@@ -1,0 +1,12 @@
+# paths.yaml
+data:
+  do_file:  "/home/claude/d1_fsd/artifacts/beian_min_1_DO_25082604.xlsx"
+  orp_file: "/home/claude/d1_fsd/artifacts/beian_min_2_ORP082604.xlsx"
+  flw_file: "/home/claude/d1_fsd/artifacts/beian_min_3_QRQIR082604.xlsx"
+
+output_root: "/mnt/user-data/outputs/d1_fsd_results"
+parquet_root: "/home/claude/d1_fsd/outputs/parquet"
+figure_root:  "/mnt/user-data/outputs/d1_fsd_results/figures"
+plot_data_root: "/mnt/user-data/outputs/d1_fsd_results/plot_data"
+
+run_manifest: "/home/claude/d1_fsd/run_manifest"

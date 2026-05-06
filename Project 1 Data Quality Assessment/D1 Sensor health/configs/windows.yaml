@@ -1,0 +1,23 @@
+# windows.yaml — D1 v1.1 detector windows (D1 main scheme §10 parameters)
+windows:
+  spike:
+    fast_h: 1
+    main_h: 6
+    confirm_h: 12
+  step:
+    fast_h: 12
+    main_h: 24
+    confirm_h: 48
+  drift:
+    early_h: 72       # 3 d
+    main_h: 168       # 7 d
+    confirm_h: 336    # 14 d
+  freeze:
+    flash_h: 0.083    # 5 min
+    hard_h: 0.5       # 30 min
+    main_h: 6
+    sustained_h: 24
+  regime:
+    early_h: 168      # 7 d
+    main_h: 336       # 14 d
+    confirm_h: 672    # 28 d

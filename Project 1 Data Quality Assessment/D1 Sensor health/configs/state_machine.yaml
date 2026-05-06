@@ -1,0 +1,69 @@
+# state_machine.yaml — D1 v1.1 5-state cooldown machine
+# Compliant with: Cooldown_机制修订版正式文本_无泵状态最终版.docx
+
+states:
+  - Normal
+  - Refractory          # Shock isolation period
+  - SustainedAnomaly    # Anomaly persists past Refractory, no new event_id
+  - RecoveryCandidate   # Local baseline stable, recovery_streak accumulating
+  - Recovered           # Connecting back to Normal
+
+# Refractory durations (固定隔离期)
+refractory:
+  step_h: 24            # Step events: 24 h fixed isolation
+  regime_h: 36          # Regime events: 24-48h, midpoint 36h
+  drift_neutral_score: 3.0   # During Refractory, Q_drift = 3.0 (NOT 1.0)
+
+# Event uniqueness rule — only NEW event_id triggers Refractory.
+# Same event_id continuing does NOT refresh cooldown_until.
+event_uniqueness:
+  min_separation_h: 12      # Minimum hours between distinct events
+  magnitude_change_pct: 30  # New event must differ ≥30% in magnitude OR direction
+  require_direction_change: false
+
+# SustainedAnomaly: rebuild local baseline + α(t) controlled drift thaw
+sustained_anomaly:
+  candidate_window_search:
+    step_after_h: [24, 72]    # Search window 24-72h after step event
+    regime_after_h: [48, 96]  # Search window 48-96h after regime event
+    stable_window_h: 24        # Need 24-48h of stable data
+    stable_window_max_h: 48
+  baseline_init:
+    use_robust: true
+    center_estimator: "median"
+    scale_estimator: "1.4826*MAD"
+    drift_check: "theil_sen"     # ensure baseline itself isn't drifting
+    drift_slope_threshold: 0.005 # per hour
+  thaw:
+    duration_h: 36          # α(t) decays from 1 to 0 over 36 h
+    schedule: "linear"      # linear | exponential
+
+# RecoveryCandidate → Recovered (双阈值滞回)
+recovery:
+  enter_thresholds:           # Enter RecoveryCandidate
+    Q_step_min: 3.2
+    Q_regime_min: 3.0
+    Q_freeze_min: 3.5
+  trigger_thresholds:         # Re-trigger Refractory (more strict)
+    Q_step_max: 2.0
+    Q_regime_max: 2.0
+  residual_check:
+    max_z_score: 1.5          # |residual_z| < 1.5
+    max_w1_norm: 1.5          # W1 normalised < 1.5
+  min_streak_h: 24             # Continuous recovery hours required (24-48 recommended)
+  max_streak_h: 48
+
+# Sustained anomaly cap (replaces Veto-3 once SustainedAnomaly active)
+sustained_anomaly_cap: 2.5    # Q_drift_eff still recoverable, but D1 ≤ 2.5
+
+# Audit fields (must persist in state_blackboard)
+audit_fields:
+  - state_name
+  - event_id
+  - refractory_start
+  - refractory_end
+  - sustained_flag
+  - local_baseline_version
+  - recovery_streak
+  - last_recovery_check_time
+  - drift_mask_reason

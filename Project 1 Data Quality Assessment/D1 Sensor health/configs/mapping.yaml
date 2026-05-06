@@ -1,0 +1,57 @@
+# mapping.yaml — detector→quality score mapping (spec v2 §3)
+# Each entry maps an evidence metric to a 1-5 quality score.
+# Direction is unified: higher anomaly → lower score.
+
+spike:
+  function: piecewise
+  metric: spike_rate_6h
+  thresholds: [0.020, 0.050, 0.100, 0.200, 1.000]   # Hampel natural rate ≈ 1-2%
+  scores:     [5.0,   4.0,   3.0,   2.0,   1.0]
+  direction: high_quality_low_metric
+
+step:
+  function: logistic
+  metric: ks_statistic
+  k: 12.0          # slope (steeper around x0)
+  x0: 0.30         # midpoint near KS critical at α=0.05 for n=24
+  direction: high_quality_low_metric
+  rate_floor: 0.005  # baseline FAR to subtract
+
+drift:
+  function: logistic
+  metric: pls_residual_z
+  k: 1.5
+  x0: 2.5          # |residual|/σ_baseline midpoint
+  direction: high_quality_low_metric
+
+freeze:
+  rle:
+    function: stepwise_duration
+    metric: rle_max_duration_min
+    breaks: [15, 30, 60, 360]   # min thresholds: 15/30/60min, 6h
+    scores: [5.0, 4.0, 3.0, 2.0, 1.0]
+  low_var:
+    # rel_var = rolling_std / ref_std.  Smaller value = more frozen = lower score.
+    # Use a "reverse piecewise" with logistic instead, to keep direction unified.
+    function: logistic
+    metric: relvar_to_ref
+    k: -10.0       # negative k inverts direction (larger x → higher score)
+    x0: 0.20       # midpoint at rel_var = 0.20
+    direction: high_quality_high_metric
+  unique:
+    function: logistic
+    metric: unique_ratio
+    k: -15.0       # negative k inverts: larger unique_ratio → higher score
+    x0: 0.20
+    direction: high_quality_high_metric
+  combined_weights:
+    rle: 0.40
+    low_var: 0.35
+    unique: 0.25
+
+regime:
+  function: logistic
+  metric: w1_normalised
+  k: 1.2
+  x0: 3.0          # multiples of bootstrap-baseline
+  direction: high_quality_low_metric

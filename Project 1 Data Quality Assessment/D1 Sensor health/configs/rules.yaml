@@ -1,0 +1,74 @@
+# rules.yaml — D1 v1.1 aggregation rules
+# Compliant with: Veto-3_过程感知修订版正式文本 + QR_QIR 仅作为驱动变量 + Cooldown 修订
+
+# === Scoring scope (CRITICAL) ===
+# Per QR_QIR_仅作为驱动变量纳入D1的修订正式文本: only DO/ORP enter D1 main scoring
+scored_channels:
+  - DO_1_1
+  - DO_1_2
+  - DO_1_3
+  - DO_1_4
+  - DO_2_1
+  - DO_2_2
+  - DO_2_3
+  - DO_2_4
+  - ORP_1_1
+  - ORP_1_2
+  - ORP_1_3
+  - ORP_2_1
+  - ORP_2_2
+  - ORP_2_3
+
+# QR/QIR are SUPPORT data only — read but NOT scored.
+support_channels:
+  - QR_1
+  - QR_2
+  - QIR_1
+  - QIR_2
+
+# === D1 sub-score weights (D1 main scheme §2) ===
+aggregation:
+  weights:
+    spike: 0.15
+    step:  0.20
+    drift: 0.25
+    freeze: 0.20
+    regime: 0.20
+  lambda_blend: 0.70           # D1_pre = λ·D1_base + (1-λ)·min(Q_*)
+
+# === Veto rules ===
+veto:
+  freeze_threshold: 2.0        # if Q_freeze ≤ 2.0 → D1 ≤ 2.0
+  freeze_cap: 2.0
+  regime_threshold: 2.0        # if Q_regime ≤ 2.0 → D1 ≤ 2.5
+  regime_cap: 2.5
+  veto3_step_threshold: 2.0    # Q_step ≤ 2.0
+  veto3_duration_h: 24         # AND duration > 24h
+  veto3_cap: 2.5               # → D1 ≤ 2.5
+  veto3_mode: "signal_only"    # NOT process_aware (no pump status data)
+  # Per Veto-3 修订: signal_only requires (state_name not in {Refractory})
+  veto3_excluded_states:
+    - Refractory
+
+# === Driver / process-aware: explicitly DISABLED in current project ===
+# Per QR_QIR 修订 §四,§五,§六: not enabled in online D1 main link
+process_aware_step_masking: false
+response_loss_online: false
+pls_exogenous_drivers: false   # PLS uses peer-only
+
+# === Drift restart policy (per Cooldown 修订 §九) ===
+drift_restart_policy:
+  mode: "alpha_thaw"           # Q_drift_eff(t) = α(t)·3.0 + (1-α(t))·Q_drift_new(t)
+  thaw_duration_h: 36
+  alpha_schedule: "linear"
+  use_local_baseline: true     # Compute Q_drift_new from local baseline residuals
+
+# === QR/QIR side-output annotation (no online effect) ===
+qr_qir_side_outputs:
+  enabled: true
+  fields:
+    - qr_context_available
+    - qir_context_available
+    - qr_jump_annotation
+    - qir_jump_annotation
+    - driver_note
