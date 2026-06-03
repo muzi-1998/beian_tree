@@ -188,6 +188,89 @@ def combined_group_grid(rows, out_path: Path, title: str = "",
         dump_bundle(bundle_name, df, meta, plot_data_root)
 
 
+def _daily_env(s, didx):
+    """Daily min/max/mean envelope of a series, reindexed onto `didx`."""
+    env = pd.Series(s).resample("1D").agg(["min", "max", "mean"]).reindex(didx)
+    return env["mean"].values, env["min"].values, env["max"].values
+
+
+def decomposition_overview_stack(raw, trend, seasonal, residual, innovation,
+                                 out_path: Path, ylabels=None, title: str = "",
+                                 plot_data_root=None, bundle_name=None):
+    """FULL-SPAN daily-envelope overview of one channel's 4-level decomposition.
+
+    Same 5 stacked panels as decomposition_stack, but over the WHOLE record:
+    each panel shows the daily mean line + daily min–max envelope band, so all
+    ~256 days are visible while the amplitude evolution of the zero-mean
+    seasonal/residual/innovation is still conveyed (a plain daily mean would
+    flatten them to ~0).
+    """
+    defaults = ["Raw X(t)", "Trend m(t)", "Seasonal s(t)",
+                "Residual e(t)", "Innovation η(t)"]
+    ylabels = ylabels or defaults
+    cols = [COLORS["raw"], COLORS["trend"], COLORS["seasonal"],
+            COLORS["residual"], COLORS["innov"]]
+    levels = [(s, lab, c) for (s, lab, c) in
+              zip([raw, trend, seasonal, residual, innovation], ylabels, cols)
+              if s is not None]
+    didx = pd.Series(raw).resample("1D").mean().index
+    data = {"x": didx}
+    panels = []
+    for k, (s, lab, c) in enumerate(levels):
+        m, lo, hi = _daily_env(s, didx)
+        data[f"m{k}"], data[f"lo{k}"], data[f"hi{k}"] = m, lo, hi
+        panels.append(dict(col=f"m{k}", lo=f"lo{k}", hi=f"hi{k}",
+                           ylabel=lab, color=c, lw=0.8))
+    df = pd.DataFrame(data)
+    meta = dict(kind="stack", title=title or "Full-span daily overview",
+                x_is_time=True, xlabel="Time", panels=panels,
+                out_png=str(out_path), width=9.0, panel_h=1.25,
+                left=0.165, hspace=0.16)
+    render_stack(df, meta, out_path)
+    if plot_data_root and bundle_name:
+        dump_bundle(bundle_name, df, meta, plot_data_root)
+
+
+def combined_overview_grid(rows, out_path: Path, title: str = "",
+                           plot_data_root=None, bundle_name=None):
+    """FULL-SPAN daily-envelope combined grid (variables × 5 components).
+
+    Like combined_group_grid but over the whole record, each cell drawn as a
+    daily mean line + daily min–max envelope band.
+    """
+    rows = [r for r in rows if r[1] and r[1][0] is not None
+            and not pd.Series(r[1][0]).dropna().empty]
+    if not rows:
+        return
+    didx = pd.Series(rows[0][1][0]).resample("1D").mean().index
+    data = {"x": didx}
+    cells, cells_lo, cells_hi, row_labels = [], [], [], []
+    for i, (lab, comps) in enumerate(rows):
+        row_labels.append(lab)
+        cr, crl, crh = [], [], []
+        for j in range(len(GRID_COMP_LABELS)):
+            s = comps[j] if j < len(comps) else None
+            cm, cl, ch = f"r{i}_c{j}_m", f"r{i}_c{j}_lo", f"r{i}_c{j}_hi"
+            if s is None:
+                nan = np.full(len(didx), np.nan)
+                data[cm] = data[cl] = data[ch] = nan
+            else:
+                data[cm], data[cl], data[ch] = _daily_env(s, didx)
+            cr.append(cm); crl.append(cl); crh.append(ch)
+        cells.append(cr); cells_lo.append(crl); cells_hi.append(crh)
+    df = pd.DataFrame(data)
+    meta = dict(kind="grid", title=title or "Group full-span overview",
+                x_is_time=True, xlabel="Time",
+                row_labels=row_labels, col_labels=GRID_COMP_LABELS,
+                col_colors=GRID_COMP_COLORS, cells=cells,
+                cells_lo=cells_lo, cells_hi=cells_hi,
+                out_png=str(out_path), width=2.25 * 5 + 1.2, row_h=1.05,
+                hspace=0.28, wspace=0.30, xtick_rotation=30, x_maxticks=6)
+    render_grid(df, meta, out_path)
+    if plot_data_root and bundle_name:
+        dump_bundle(bundle_name, df, meta, plot_data_root)
+
+
 def combined_group_overview(series_list, out_path: Path, title: str = "",
                             plot_data_root=None, bundle_name=None):
     """FULL-FRAME combined overview of all variables in one process group:

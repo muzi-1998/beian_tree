@@ -77,9 +77,13 @@ def render_stack(df: pd.DataFrame, meta: dict, out_png) -> None:
         axes = [axes]
 
     for ax, p in zip(axes, panels):
+        c = p.get("color", "#333333")
+        lo, hi = p.get("lo"), p.get("hi")
+        if lo and hi and lo in df.columns and hi in df.columns:
+            ax.fill_between(x, np.asarray(df[lo], float), np.asarray(df[hi], float),
+                            color=c, alpha=0.22, linewidth=0)
         y = np.asarray(df[p["col"]].values, dtype=float)
-        ax.plot(x, y, color=p.get("color", "#333333"),
-                lw=p.get("lw", 0.6), solid_capstyle="round")
+        ax.plot(x, y, color=c, lw=p.get("lw", 0.6), solid_capstyle="round")
         ax.set_ylabel(p["ylabel"], rotation=0, ha="right", va="center",
                       fontsize=8.5, labelpad=10)
         ax.margins(x=0)
@@ -118,6 +122,8 @@ def render_grid(df: pd.DataFrame, meta: dict, out_png) -> None:
     col_labels = meta["col_labels"]
     colors = meta.get("col_colors", [None] * len(col_labels))
     cells = meta["cells"]
+    cells_lo = meta.get("cells_lo")
+    cells_hi = meta.get("cells_hi")
     x_is_time = meta.get("x_is_time", True)
     x = pd.to_datetime(df["x"]) if x_is_time else df["x"].values
     R, Cn = len(row_labels), len(col_labels)
@@ -130,10 +136,16 @@ def render_grid(df: pd.DataFrame, meta: dict, out_png) -> None:
         for j in range(Cn):
             ax = axes[i][j]
             col = cells[i][j]
+            c = colors[j] or "#333333"
+            if cells_lo is not None and cells_hi is not None:
+                lo, hi = cells_lo[i][j], cells_hi[i][j]
+                if lo and hi and lo in df.columns and hi in df.columns:
+                    ax.fill_between(x, np.asarray(df[lo], float),
+                                    np.asarray(df[hi], float),
+                                    color=c, alpha=0.22, linewidth=0)
             if col is not None and col in df.columns:
                 y = np.asarray(df[col].values, dtype=float)
-                ax.plot(x, y, color=colors[j] or "#333333", lw=0.5,
-                        solid_capstyle="round")
+                ax.plot(x, y, color=c, lw=0.5, solid_capstyle="round")
             ax.margins(x=0)
             ax.grid(True, alpha=0.30, lw=0.4)
             ax.yaxis.set_major_locator(plt.MaxNLocator(3))

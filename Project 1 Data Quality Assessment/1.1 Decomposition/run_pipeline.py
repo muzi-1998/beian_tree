@@ -430,6 +430,17 @@ def _decomp_ylabels(dec, ch, arma_lk):
     return [f"Raw X(t)\n{ch}", "Trend m(t)", seas, "Residual e(t)", inn]
 
 
+def _arma_lookup(out):
+    """channel -> (p, q, fallback) from the ARMA/GARCH order table."""
+    lk = {}
+    arma = out.get("arma_df")
+    if arma is not None and len(arma):
+        for _, r in arma.iterrows():
+            lk[r["channel"]] = (int(r["p"]), int(r["q"]),
+                                bool(r.get("fallback", False)))
+    return lk
+
+
 def make_decomposition_stacks(cfg, out, quick=False, min_window_days=10):
     """For EVERY decomposed channel, emit a FULL-FRAME stacked figure:
     raw X(t) -> trend -> seasonal -> residual -> whitened innovation η(t),
@@ -444,13 +455,7 @@ def make_decomposition_stacks(cfg, out, quick=False, min_window_days=10):
     df_min = out["df_min"]; inf_f = out["inf_f"]; eff_f = out["eff_f"]
     std_min = out.get("std_min", {})
     innov_inf = out.get("innov_inf", {}); innov_eff = out.get("innov_eff", {})
-    # channel -> (p, q, fallback) for the AR/MA annotation
-    arma_lk = {}
-    arma = out.get("arma_df")
-    if arma is not None and len(arma):
-        for _, r in arma.iterrows():
-            arma_lk[r["channel"]] = (int(r["p"]), int(r["q"]),
-                                     bool(r.get("fallback", False)))
+    arma_lk = _arma_lookup(out)
     n_done = 0
     for c, dec in out["decomp"].items():
         track = CHANNEL_META[c]["track"]
@@ -555,6 +560,75 @@ def make_combined_figures(cfg, out, quick=False, min_window_days=10):
 
 
 # ════════════════════════════════════════════════════════════════════════
+# Full-span (whole-record) daily-envelope overviews for the dense min-level
+# channels (1-min, 368k pts) — complements the 10-day zoom stacks/grids.
+# ════════════════════════════════════════════════════════════════════════
+def make_decomposition_overviews(cfg, out, quick=False):
+    """Per min-level channel: a FULL-SPAN daily min–max envelope overview of the
+    4-level decomposition (so all ~256 days are visible alongside the 10-day
+    zoom). Hourly channels are already shown full-span, so are skipped here."""
+    fig_root = Path(cfg["paths"]["figure_root"]) / "decomposition_overview"
+    fig_root.mkdir(parents=True, exist_ok=True)
+    pdr = cfg["paths"].get("plot_data_root")
+    df_min = out["df_min"]; std_min = out.get("std_min", {})
+    arma_lk = _arma_lookup(out)
+    n_done = 0
+    for c, dec in out["decomp"].items():
+        if CHANNEL_META[c]["track"] != "min":
+            continue
+        try:
+            raw = df_min[c]
+            span = f"{raw.index[0]:%Y-%m-%d}~{raw.index[-1]:%Y-%m-%d}"
+            figures.decomposition_overview_stack(
+                raw, dec["trend"], dec["seasonal"], dec["residual"],
+                std_min.get(c), fig_root / f"decomp_overview_{c}.png",
+                ylabels=_decomp_ylabels(dec, c, arma_lk),
+                title=f"Full-span daily overview — {c} "
+                      f"({CHANNEL_META[c]['zone']}, min)  [{span}]",
+                plot_data_root=pdr, bundle_name=f"decomp_overview_{c}")
+            n_done += 1
+        except Exception as e:
+            _log(f"  decomp overview {c} skipped: {e}")
+    _log(f"Decomposition full-span overviews written: {n_done} -> {fig_root}")
+
+
+def make_combined_overviews(cfg, out, quick=False):
+    """Per min-level group (DO / ORP / QR-QIR): a FULL-SPAN daily min–max
+    envelope grid (variables × 5 components) over the whole record."""
+    fig_root = Path(cfg["paths"]["figure_root"]) / "combined"
+    fig_root.mkdir(parents=True, exist_ok=True)
+    pdr = cfg["paths"].get("plot_data_root")
+    df_min = out["df_min"]; std_min = out.get("std_min", {})
+    groups = [
+        ("DO", [f"DO_{p}_{i}" for p in (1, 2) for i in range(1, 5)],
+         "DO channels (both trains)"),
+        ("ORP", [f"ORP_{p}_{i}" for p in (1, 2) for i in range(1, 4)],
+         "ORP channels (both trains)"),
+        ("flow", ["QR_1", "QR_2", "QIR_1", "QIR_2"],
+         "Recycle-flow drivers (QR / QIR)"),
+    ]
+    n_done = 0
+    for gname, chans, gtitle in groups:
+        rows = []
+        for c in chans:
+            dec = out["decomp"].get(c)
+            if dec is None:
+                continue
+            comps = [df_min[c], dec["trend"], dec["seasonal"],
+                     dec["residual"], std_min.get(c)]
+            rows.append((c, comps))
+        if not rows:
+            continue
+        span = f"{df_min.index[0]:%Y-%m-%d}~{df_min.index[-1]:%Y-%m-%d}"
+        figures.combined_overview_grid(
+            rows, fig_root / f"combined_overview_{gname}.png",
+            title=f"{gtitle} — full-span daily overview (min–max envelope)  [{span}]",
+            plot_data_root=pdr, bundle_name=f"combined_overview_{gname}")
+        n_done += 1
+    _log(f"Combined full-span overviews written: {n_done} -> {fig_root}")
+
+
+# ════════════════════════════════════════════════════════════════════════
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--quick", action="store_true", help="fast subset run")
@@ -571,6 +645,8 @@ def main():
     make_figures(cfg, out, quick=args.quick)
     make_decomposition_stacks(cfg, out, quick=args.quick)
     make_combined_figures(cfg, out, quick=args.quick)
+    make_decomposition_overviews(cfg, out, quick=args.quick)
+    make_combined_overviews(cfg, out, quick=args.quick)
 
     # run manifest
     man = dict(timestamp=datetime.now().isoformat(), config_hash=chash,
