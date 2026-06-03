@@ -1,0 +1,11 @@
+﻿__pycache__/
+*.pyc
+_plan_text.txt
+.claude/
+# large/derived artefacts (regenerate via run_pipeline.py / validate.py)
+Raw data/
+outputs/parquet/
+outputs/plot_data/
+outputs/_pipeline_state.pkl
+*.parquet
+*.pkl

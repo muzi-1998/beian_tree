@@ -1,0 +1,71 @@
+# deperiodise.yaml — differentiated de-periodisation parameters (plan §3, §5.2).
+# Candidate periods are expressed in the NATIVE resolution of each track:
+#   - min-level tracks: periods in MINUTES (24h=1440, 12h=720)
+#   - hourly  tracks: periods in HOURS   (24h=24, 168h=168)
+# Decomposition is performed on native resolution, then aligned to the 1-min clock.
+
+# Group -> list of channels (assigned in loader by process semantics).
+# Group -> candidate periods (native units) and harmonic order bounds.
+groups:
+  aerobic_do:        # DO_x_1..3 — aeration day cycle + 12h harmonic (strong)
+    track: min
+    candidate_periods: [1440, 720]
+    harmonic_order_min: 1
+    harmonic_order_max: 6
+    harmonic_order_init: 3
+    loess_trend_bandwidth_h: 24
+  postanoxic_do:     # DO_x_4 — near-zero floor; harmonics weak, censoring path
+    track: min
+    candidate_periods: [1440]
+    harmonic_order_min: 0
+    harmonic_order_max: 1
+    harmonic_order_init: 0
+    loess_trend_bandwidth_h: 24
+    floor_censoring: true        # treat near-floor as left-censored
+  anoxic_orp:        # ORP_x_1..3 — weak day cycle, trend/regime dominated
+    track: min
+    candidate_periods: [1440]
+    harmonic_order_min: 1
+    harmonic_order_max: 3
+    harmonic_order_init: 1
+    loess_trend_bandwidth_h: 24
+  flow:              # QR/QIR — exogenous driver, day + week cycle (Class A)
+    track: min
+    candidate_periods: [1440, 10080]
+    harmonic_order_min: 1
+    harmonic_order_max: 4
+    harmonic_order_init: 2
+    loess_trend_bandwidth_h: 168
+  influent:          # COD/NH4/TN/SS/TP/pH/T — strong day + week (exogenous)
+    track: hour
+    candidate_periods: [24, 168]
+    harmonic_order_min: 1
+    harmonic_order_max: 4
+    harmonic_order_init: 3
+    loess_trend_bandwidth_h: 168
+  influent_flow:     # Q — flow day + week
+    track: hour
+    candidate_periods: [24, 168]
+    harmonic_order_min: 1
+    harmonic_order_max: 4
+    harmonic_order_init: 2
+    loess_trend_bandwidth_h: 168
+  effluent:          # COD/NH4/TN/TP/pH/T — day cycle HRT-damped; trend/season
+    track: hour
+    candidate_periods: [168, 24]
+    harmonic_order_min: 0
+    harmonic_order_max: 2
+    harmonic_order_init: 0
+    loess_trend_bandwidth_h: 168
+    left_censoring: true         # near-detection-limit Tobit/robust handling
+
+order_criterion: aic_bic_f       # AIC + BIC + nested-F (p<0.05); tie -> BIC
+f_test_alpha: 0.05
+causal_fit_first_days: 30        # causal reference period (plan §3.5, §5.2)
+season_cohort_by: process_temp   # Wagner 2022 — split cohorts by water temperature
+season_temp_edges: [12.0, 16.0, 20.0]   # >=20 summer/early-autumn ... <12 winter
+# STL
+stl_period_min: 1440
+stl_period_hour: 24
+stl_seasonal_smoother: 7
+residual_spectrum_peak_ratio_max: 2.0    # peak/baseline < 2 => period removed

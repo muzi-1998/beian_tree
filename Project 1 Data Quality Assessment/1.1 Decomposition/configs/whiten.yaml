@@ -1,0 +1,29 @@
+# whiten.yaml — ARMA/GARCH whitening + diagnostics + fast/slow track (plan §4, §5.3, §6.5).
+arma_grid:
+  min:   {p: [0, 1, 2, 3], q: [0, 1, 2, 3]}   # control-loop short/medium memory
+  hour:  {p: [0, 1, 2, 3, 4, 5, 6], q: [0, 1, 2]}  # effluent HRT long memory
+use_garch: true
+garch_default: {p: 1, q: 1}
+
+# diagnostics thresholds
+ljungbox_alpha: 0.05
+ljungbox_lags:
+  min: 60      # ~ one main period worth of lags
+  hour: 24
+adf_alpha: 0.05
+kpss_alpha: 0.05
+archlm_alpha: 0.05
+
+# fast/slow track scheduling (plan §6.4, §6.5)
+refit_window_days: 7          # slow-track refit window N (7-14 d)
+min_refit_interval_h: 6       # debounce
+warmup_hours: 4               # warm-restart re-run window
+post_swap_mask_min: 5         # transition refractory mask after swap
+long_gap_reset_min: 5         # long gap -> reset whitener buffer
+cold_start_reference_days: 30 # cold-start offline initial fit window
+
+# acceptance gate (plan §6.4 (三))
+acceptance:
+  require_stationary_invertible: true   # AR/MA roots outside unit circle
+  require_ljungbox_pass: true
+  max_sigma2_ratio: 10.0                # innovation variance sanity vs residual var

@@ -1,0 +1,15 @@
+﻿variable,kind,neg_pct,note
+QR_1,flow,3.13,negative flow physically impossible
+QR_2,flow,15.215,negative flow physically impossible
+QIR_1,flow,0.01,negative flow physically impossible
+QIR_2,flow,0.256,negative flow physically impossible
+inf_Q,influent,0.187,negative concentration/flow = acquisition error
+inf_NH4,influent,2.229,negative concentration/flow = acquisition error
+inf_TN,influent,0.208,negative concentration/flow = acquisition error
+inf_COD,influent,0.0,negative concentration/flow = acquisition error
+inf_TP,influent,0.0,negative concentration/flow = acquisition error
+inf_SS,influent,0.0,negative concentration/flow = acquisition error
+eff_COD,effluent,0.0,near detection limit; left-censored
+eff_NH4,effluent,0.0,near detection limit; left-censored
+eff_TN,effluent,0.0,near detection limit; left-censored
+eff_TP,effluent,0.0,near detection limit; left-censored

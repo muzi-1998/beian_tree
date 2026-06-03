@@ -1,0 +1,18 @@
+# paths.yaml — input/output paths for the 1.1 Decomposition pipeline.
+# All paths are resolved relative to the project root (this repo) unless absolute.
+data:
+  # min-level Class C / A process-state sources (1 min native)
+  do_file:    "Raw data/beian_min_1_DO_25-08-26-04.xlsx"
+  orp_file:   "Raw data/beian_min_2_ORP-08-26-04.xlsx"
+  flw_file:   "Raw data/beian_min_3_QR+QIR-08-26-04.xlsx"
+  # hourly water-quality sources (1 h native)
+  influent_file: "Raw data/beian_h_25.10-26.4_influent_all.xls"
+  effluent_file: "Raw data/beian_h_25.6-26.4_effluent.xls"
+
+output_root:    "outputs"
+parquet_root:   "outputs/parquet"
+table_root:     "outputs/tables"
+figure_root:    "outputs/figures"
+report_root:    "outputs/reports"
+plot_data_root: "outputs/plot_data"
+run_manifest:   "run_manifest"
