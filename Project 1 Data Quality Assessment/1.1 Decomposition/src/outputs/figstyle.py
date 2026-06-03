@@ -146,9 +146,16 @@ def render_grid(df: pd.DataFrame, meta: dict, out_png) -> None:
                 ax.set_ylabel(row_labels[i], rotation=0, ha="right",
                               va="center", fontsize=8, labelpad=8)
             if i == R - 1 and x_is_time:
-                ax.xaxis.set_major_locator(mdates.AutoDateLocator())
+                # cap tick count + tilt labels so narrow grid cells don't collide
+                loc = mdates.AutoDateLocator(minticks=3,
+                                             maxticks=meta.get("x_maxticks", 6))
+                ax.xaxis.set_major_locator(loc)
                 ax.xaxis.set_major_formatter(mdates.DateFormatter("%m-%d"))
-                ax.tick_params(axis="x", labelsize=6, rotation=0)
+                ax.tick_params(axis="x", labelsize=6,
+                               labelrotation=meta.get("xtick_rotation", 30))
+                for lbl in ax.get_xticklabels():
+                    lbl.set_ha("right")
+                    lbl.set_rotation_mode("anchor")
 
     fig.suptitle(meta.get("title", ""), fontsize=11)
     fig.supxlabel(meta.get("xlabel", "Time"), fontsize=8)

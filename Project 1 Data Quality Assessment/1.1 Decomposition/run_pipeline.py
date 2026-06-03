@@ -509,8 +509,7 @@ def _channel_components(c, out, win):
 def make_combined_figures(cfg, out, quick=False, min_window_days=10):
     """One COMBINED full-frame DECOMPOSITION GRID per process group:
     rows = variables, columns = [Raw, Trend, Seasonal, Residual, Innovation],
-    shared date x-axis. DO is split into two figures (train 1 / train 2) so its
-    8 channels stay readable. Dumps reproducible grid bundles to plot_data/.
+    shared date x-axis. Dumps reproducible grid bundles to plot_data/.
     """
     fig_root = Path(cfg["paths"]["figure_root"]) / "combined"
     fig_root.mkdir(parents=True, exist_ok=True)
@@ -526,12 +525,9 @@ def make_combined_figures(cfg, out, quick=False, min_window_days=10):
     span_inf = f"{inf_f.index[0]:%Y-%m-%d}~{inf_f.index[-1]:%Y-%m-%d}"
     span_eff = f"{eff_f.index[0]:%Y-%m-%d}~{eff_f.index[-1]:%Y-%m-%d}"
 
-    # DO split into two figures (one per parallel train) for readability
     groups = [
-        ("DO_train1", [f"DO_1_{i}" for i in range(1, 5)], span_min,
-         "DO channels — train 1#"),
-        ("DO_train2", [f"DO_2_{i}" for i in range(1, 5)], span_min,
-         "DO channels — train 2#"),
+        ("DO", [f"DO_{p}_{i}" for p in (1, 2) for i in range(1, 5)], span_min,
+         "DO channels (both trains)"),
         ("ORP", [f"ORP_{p}_{i}" for p in (1, 2) for i in range(1, 4)], span_min,
          "ORP channels (both trains)"),
         ("flow", ["QR_1", "QR_2", "QIR_1", "QIR_2"], span_min,

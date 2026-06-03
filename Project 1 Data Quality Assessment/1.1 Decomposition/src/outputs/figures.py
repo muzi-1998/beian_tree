@@ -181,7 +181,8 @@ def combined_group_grid(rows, out_path: Path, title: str = "",
                 row_labels=row_labels, col_labels=GRID_COMP_LABELS,
                 col_colors=GRID_COMP_COLORS, cells=cells,
                 out_png=str(out_path), width=2.25 * 5 + 1.2,
-                row_h=1.05, hspace=0.28, wspace=0.30)
+                row_h=1.05, hspace=0.28, wspace=0.30,
+                xtick_rotation=30, x_maxticks=6)
     render_grid(df, meta, out_path)
     if plot_data_root and bundle_name:
         dump_bundle(bundle_name, df, meta, plot_data_root)
