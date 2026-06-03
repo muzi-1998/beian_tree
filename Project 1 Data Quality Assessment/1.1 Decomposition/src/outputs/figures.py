@@ -271,6 +271,37 @@ def combined_overview_grid(rows, out_path: Path, title: str = "",
         dump_bundle(bundle_name, df, meta, plot_data_root)
 
 
+def multivar_ribbon_overview(series_list, out_path: Path, title: str = "",
+                             plot_data_root=None, bundle_name=None):
+    """SI bird's-eye: one boxed panel per variable, full-span daily min–max
+    envelope band + daily mean line of the RAW signal. A clean multi-variable
+    data-landscape overview (supplementary, not a decomposition figure).
+    `series_list` = [(label, raw_series, color?)].
+    """
+    series_list = [t for t in series_list if t[1] is not None
+                   and not pd.Series(t[1]).dropna().empty]
+    if not series_list:
+        return
+    didx = pd.Series(series_list[0][1]).resample("1D").mean().index
+    data = {"x": didx}
+    panels = []
+    for k, item in enumerate(series_list):
+        lab, s = item[0], item[1]
+        c = item[2] if len(item) > 2 and item[2] else PALETTE[k % len(PALETTE)]
+        m, lo, hi = _daily_env(s, didx)
+        data[f"m{k}"], data[f"lo{k}"], data[f"hi{k}"] = m, lo, hi
+        panels.append(dict(col=f"m{k}", lo=f"lo{k}", hi=f"hi{k}",
+                           ylabel=lab, color=c, lw=0.8))
+    df = pd.DataFrame(data)
+    meta = dict(kind="stack", title=title or "Full-span ribbon overview",
+                x_is_time=True, xlabel="Time", panels=panels,
+                out_png=str(out_path), width=9.0, panel_h=0.95,
+                left=0.11, hspace=0.18)
+    render_stack(df, meta, out_path)
+    if plot_data_root and bundle_name:
+        dump_bundle(bundle_name, df, meta, plot_data_root)
+
+
 def combined_group_overview(series_list, out_path: Path, title: str = "",
                             plot_data_root=None, bundle_name=None):
     """FULL-FRAME combined overview of all variables in one process group:

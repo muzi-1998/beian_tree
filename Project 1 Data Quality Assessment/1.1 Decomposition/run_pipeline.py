@@ -628,6 +628,28 @@ def make_combined_overviews(cfg, out, quick=False):
     _log(f"Combined full-span overviews written: {n_done} -> {fig_root}")
 
 
+def make_ribbon_overviews(cfg, out, quick=False):
+    """SI bird's-eye ribbon overviews: one boxed panel per variable (raw daily
+    min–max envelope + mean) for ALL influent / effluent variables, full span.
+    A supplementary data-landscape figure (the full-resolution decomposition
+    stacks remain the main-text figures)."""
+    fig_root = Path(cfg["paths"]["figure_root"]) / "combined"
+    fig_root.mkdir(parents=True, exist_ok=True)
+    pdr = cfg["paths"].get("plot_data_root")
+    for gname, src, gtitle in [
+            ("influent", out["inf_f"], "Influent water-quality variables"),
+            ("effluent", out["eff_f"], "Effluent water-quality variables")]:
+        series_list = [(c, src[c]) for c in src.columns]
+        if not series_list:
+            continue
+        span = f"{src.index[0]:%Y-%m-%d}~{src.index[-1]:%Y-%m-%d}"
+        figures.multivar_ribbon_overview(
+            series_list, fig_root / f"ribbon_{gname}.png",
+            title=f"{gtitle} — full-span overview (daily min–max envelope)  [{span}]",
+            plot_data_root=pdr, bundle_name=f"ribbon_{gname}")
+    _log(f"Ribbon overviews written -> {fig_root}")
+
+
 # ════════════════════════════════════════════════════════════════════════
 def main():
     ap = argparse.ArgumentParser()
@@ -647,6 +669,7 @@ def main():
     make_combined_figures(cfg, out, quick=args.quick)
     make_decomposition_overviews(cfg, out, quick=args.quick)
     make_combined_overviews(cfg, out, quick=args.quick)
+    make_ribbon_overviews(cfg, out, quick=args.quick)
 
     # run manifest
     man = dict(timestamp=datetime.now().isoformat(), config_hash=chash,
