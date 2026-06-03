@@ -152,3 +152,15 @@ def acf(x, nlags: int = 40) -> np.ndarray:
 def acf_conf(n: int) -> float:
     """95% white-noise confidence band ~ 1.96/sqrt(n)."""
     return 1.96 / np.sqrt(max(n, 1))
+
+
+def robust_z(x: pd.Series, mad_c: float = 1.4826) -> pd.Series:
+    """接受门失败时的兜底"白化"(plan §6.4 优雅降级).
+
+    用 MAD 标准化残差。它不是真白化(仍含自相关),但有界、稳健,确保不合格模型
+    永不被静默发布——失败通道得到一个降级但可用的分数,而非伪精确的创新。
+    """
+    v = x.astype(float)
+    med = v.median()
+    mad = mad_c * (v - med).abs().median() + 1e-9
+    return (v - med) / mad

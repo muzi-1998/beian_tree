@@ -7,5 +7,6 @@ Raw data/
 outputs/parquet/
 outputs/plot_data/
 outputs/_pipeline_state.pkl
+outputs/*.log
 *.parquet
 *.pkl

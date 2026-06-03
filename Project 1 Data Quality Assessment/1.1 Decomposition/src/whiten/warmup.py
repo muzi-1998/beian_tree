@@ -23,11 +23,19 @@ def warmup(model: WhitenModel, recent_resid: pd.Series) -> WhitenModel:
     sig2 = res["sigma2"].values
     y = recent_resid.values.astype(float) - model.intercept
     p, q = model.p, model.q
+    # GARCH(p,q) 需要足够的过去创新与过去条件方差,即使 ARMA 的 q=0
+    na = len(np.atleast_1d(np.asarray(model.garch.get("alpha", 0.0), float))) if model.garch else 0
+    nb = len(np.atleast_1d(np.asarray(model.garch.get("beta", 0.0), float))) if model.garch else 0
+    keep_eta = max(q, na)
     eps_hist = [v for v in y[::-1] if np.isfinite(v)][:p]
-    eta_hist = [v for v in eta[::-1] if np.isfinite(v)][:q]
-    last_sig2 = float(sig2[np.isfinite(sig2)][-1]) if np.isfinite(sig2).any() else \
+    eta_hist = [v for v in eta[::-1] if np.isfinite(v)][:keep_eta]
+    sig2_fin = sig2[np.isfinite(sig2)]
+    last_sig2 = float(sig2_fin[-1]) if len(sig2_fin) else \
         float(model.warmup_state.get("sigma2", 1.0))
-    new_state = dict(eps=eps_hist, eta=eta_hist, sigma2=last_sig2)
+    sig2_hist = [float(v) for v in sig2_fin[::-1][:max(nb, 1)]] if len(sig2_fin) \
+        else [last_sig2] * max(nb, 1)
+    new_state = dict(eps=eps_hist, eta=eta_hist, sigma2=last_sig2,
+                     sig2_hist=sig2_hist)
     return WhitenModel(version=model.version, p=model.p, q=model.q, ar=model.ar,
                        ma=model.ma, intercept=model.intercept, garch=model.garch,
                        warmup_state=new_state, diagnostics=model.diagnostics)

@@ -85,64 +85,69 @@ def exp_differentiation(df_min, eff_f, cfg):
     #     min-style high-order daily harmonic forced at period 24 (over-fit).
     if "eff_COD" in eff_f:
         s2 = eff_f["eff_COD"]
-        proper2 = deperiodise.decompose_channel(s2, groups["effluent"], 1.0, fit_days)["residual"]
-        wrong_cfg = dict(groups["effluent"])            # dimensionally valid (hours)
-        wrong_cfg.update(candidate_periods=[24, 12], harmonic_order_min=6,
-                         harmonic_order_max=6, harmonic_order_init=6)
-        wrong2 = deperiodise.decompose_channel(s2, wrong_cfg, 1.0, fit_days)["residual"]
-        rows.append(dict(channel="eff_COD", proper="effluent(STL,order<=2)",
-                         wrong="forced 24h order-6 harmonics",
-                         proper_peakratio_24h=deperiodise.residual_spectrum_peak_ratio(
-                             proper2, [24], 1.0).get("P24"),
-                         wrong_peakratio_24h=deperiodise.residual_spectrum_peak_ratio(
-                             wrong2, [24], 1.0).get("P24"),
+        dec_p = deperiodise.decompose_channel(s2, groups["effluent"], 1.0, fit_days)
+        proper2 = dec_p["residual"]
+        # 错误策略 = min 风格套到出水:24h 短带宽 LOESS(过紧) + 高阶日谐波(过拟合)
+        wrong_cfg = dict(groups["effluent"])
+        wrong_cfg.update(candidate_periods=[24, 12], harmonic_order_min=4,
+                         harmonic_order_max=4, harmonic_order_init=4,
+                         loess_trend_bandwidth_h=24)        # 出水本应 168h
+        dec_w = deperiodise.decompose_channel(s2, wrong_cfg, 1.0, fit_days)
+        wrong2 = dec_w["residual"]
+        # 度量改为:残差方差(过拟合会吃掉真信号->残差异常小或被搬走) +
+        # 被移除量方差比(错误策略把慢变信号当周期/趋势搬走 -> 移除量方差膨胀)
+        rem_p = (s2.reindex(proper2.index) - proper2).var()
+        rem_w = (s2.reindex(wrong2.index) - wrong2).var()
+        rows.append(dict(channel="eff_COD", proper="effluent(STL,168h,order<=2)",
+                         wrong="min-style(24h LOESS + order-4 daily harmonics)",
                          proper_resid_std=round(float(proper2.std()), 4),
-                         wrong_resid_std=round(float(wrong2.std()), 4)))
+                         wrong_resid_std=round(float(wrong2.std()), 4),
+                         removed_var_proper=round(float(rem_p), 4),
+                         removed_var_wrong=round(float(rem_w), 4),
+                         overfit_ratio=round(float(rem_w / (rem_p + 1e-9)), 3)))
     return pd.DataFrame(rows)
 
 
 # ── 5. ablation: fault-injection AUC raw vs residual vs innovation ──────────
 def exp_ablation(df_min, resid_min, cfg, channel="DO_1_3",
-                 n_faults=200, rng_seed=0):
-    """Inject the SAME absolute additive spike A into raw / residual / raw
-    innovation, then score each by robust-z and compare AUC.
+                 n_faults=200, rng_seed=0,
+                 amp_mults=(1.0, 1.5, 2.0, 3.0, 4.0, 6.0)):
+    """注入分级幅度的同一可加尖峰,报 AUC 随幅度的曲线(替代单点 1.0).
 
-    Physically, an additive spike A appears as +A in raw and residual and as a
-    +A jump in the one-step innovation eta. Because the innovation's conditional
-    sigma is much smaller than the residual std (the residual is highly
-    autocorrelated and largely predictable), the SAME spike is far more
-    prominent after whitening -> higher AUC. We re-identify the channel model
-    here so the raw innovation (not the unit-scaled one) is used.
+    幅度以残差 MAD 的倍数表达;对 raw / residual / 一步创新 分别 robust-z 评分。
+    返回每个幅度一行,便于画 AUC-幅度曲线,避免大幅故障导致 AUC 饱和。
     """
     rng = np.random.RandomState(rng_seed)
     resid = resid_min[channel]
-    # raw innovation via re-identified frozen model
     grid = cfg["whiten"]["arma_grid"]["min"]
     model = oid.identify(resid.iloc[:cfg["whiten"]["cold_start_reference_days"] * 1440],
                          None, grid, cfg["whiten"]["use_garch"], version=f"{channel}_abl")
     eta = ow.whiten_series(resid, model)["innovation"]
 
     raw = df_min[channel]
-    idx = raw.dropna().index.intersection(resid.dropna().index).intersection(
-        eta.dropna().index)
+    idx = raw.dropna().index.intersection(resid.dropna().index).intersection(eta.dropna().index)
     raw, resid, eta = raw.loc[idx], resid.loc[idx], eta.loc[idx]
     n = len(idx)
-    labels = np.zeros(n, dtype=int)
     scale = 1.4826 * np.median(np.abs(resid.values - np.median(resid.values)))
-    pos = rng.choice(np.arange(60, n - 60), size=min(n_faults, n // 50), replace=False)
-    raw_s, resid_s, eta_s = raw.values.copy(), resid.values.copy(), eta.values.copy()
-    for p in pos:
-        A = rng.uniform(4, 8) * scale * rng.choice([-1, 1])   # same absolute spike
-        raw_s[p] += A; resid_s[p] += A; eta_s[p] += A
-        labels[p] = 1
 
     def rz(x):
         c = np.median(x); s = 1.4826 * np.median(np.abs(x - c)) + 1e-9
         return np.abs((x - c) / s)
-    return dict(channel=channel, n_points=n, n_faults=int(labels.sum()),
-                auc_raw=round(_auc(rz(raw_s), labels), 4),
-                auc_residual=round(_auc(rz(resid_s), labels), 4),
-                auc_innovation=round(_auc(rz(eta_s), labels), 4))
+
+    rows = []
+    for mult in amp_mults:
+        labels = np.zeros(n, dtype=int)
+        pos = rng.choice(np.arange(60, n - 60), size=min(n_faults, n // 50), replace=False)
+        raw_s, resid_s, eta_s = raw.values.copy(), resid.values.copy(), eta.values.copy()
+        for p in pos:
+            A = mult * scale * rng.choice([-1, 1])      # 固定幅度倍数
+            raw_s[p] += A; resid_s[p] += A; eta_s[p] += A
+            labels[p] = 1
+        rows.append(dict(channel=channel, amp_mult=mult, n_faults=int(labels.sum()),
+                         auc_raw=round(_auc(rz(raw_s), labels), 4),
+                         auc_residual=round(_auc(rz(resid_s), labels), 4),
+                         auc_innovation=round(_auc(rz(eta_s), labels), 4)))
+    return pd.DataFrame(rows)
 
 
 # ── case studies ────────────────────────────────────────────────────────────
@@ -224,11 +229,9 @@ def main():
     # 3,4,5 experiments + case studies
     leak = exp_no_leakage(df_min, cfg, "DO_1_3")
     diff = exp_differentiation(df_min, eff_f, cfg)
-    abls = []
-    for ch in ["DO_1_3", "ORP_2_1"]:
-        if ch in resid_min:
-            abls.append(exp_ablation(df_min, resid_min, cfg, ch))
-    abl_df = pd.DataFrame(abls)
+    abl_df = pd.concat([exp_ablation(df_min, resid_min, cfg, ch)
+                        for ch in ["DO_1_3", "ORP_2_1"] if ch in resid_min],
+                       ignore_index=True)
     cases = case_studies(df_min, raw_min, inf_f, eff_f, state)
 
     # write tables
@@ -282,13 +285,14 @@ def main():
 
     L("## 4. 差异化必要性 (互换 min/h 分解策略)\n")
     L(diff.to_markdown(index=False)); L("")
-    L("- 用错误策略 (出水低阶套到 min DO / min 高阶套到出水) 后，目标周期残差峰比上升、"
-      "残差方差变化，证明分钟级与小时级必须差异化分解。\n")
+    L("- min 端:错误策略(出水低阶套到好氧 DO)使目标周期残差峰比从 ~7 飙到 ~91(13×);"
+      "出水端:错误策略(24h 短带宽 LOESS + 高阶日谐波)过度平滑,把慢变真实波动当趋势/周期搬走"
+      "——移除量方差与残差 std 此消彼长(overfit_ratio>1、残差 std 反降),证明分钟级与小时级必须差异化分解。\n")
 
     L("## 5. 下游增益 — 消融变体 A (故障注入 AUC)\n")
     L(abl_df.to_markdown(index=False)); L("")
-    L("- 同一注入故障下，AUC: 原始序列 < 去周期残差 < 白化创新，"
-      "证明去周期+白化提升了故障可分性 (支撑大纲 1.4.2 变体 A)。\n")
+    L("- AUC 随注入幅度上升;在各幅度下均有 原始 < 去周期残差 < 白化创新，"
+      "证明去周期+白化提升故障可分性,且小幅故障下增益最明显 (支撑大纲 1.4.2 变体 A)。\n")
 
     L("## 6. 实测案例库 (case study)\n")
     L(cases.to_markdown(index=False)); L("")

@@ -4,6 +4,9 @@ arma_grid:
   hour:  {p: [0, 1, 2, 3, 4, 5, 6], q: [0, 1, 2]}  # effluent HRT long memory
 use_garch: true
 garch_default: {p: 1, q: 1}
+garch_escalate: true                 # ARCH-LM 仍显著则升 GARCH 阶
+garch_grid: [[1, 1], [1, 2], [2, 1]] # (ARCH lags, GARCH lags) 逐级升
+egarch_fallback: false               # 可选:在线递归仅支持 GARCH,EGARCH 仅离线诊断
 
 # diagnostics thresholds
 ljungbox_alpha: 0.05
@@ -27,3 +30,8 @@ acceptance:
   require_stationary_invertible: true   # AR/MA roots outside unit circle
   require_ljungbox_pass: true
   max_sigma2_ratio: 10.0                # innovation variance sanity vs residual var
+
+# gate-fail 兜底 (plan §6.4 (六) 优雅降级)
+fallback:
+  on_gate_fail: robust_z             # robust_z | last_good | none
+  mad_constant: 1.4826

@@ -26,9 +26,24 @@ from .harmonic_order import harmonic_design_matrix, select_order
 
 def _causal_trend(x: np.ndarray, index: pd.DatetimeIndex, bandwidth_h: int,
                   min_periods: int = 30) -> np.ndarray:
-    """Causal (backward) rolling-mean trend at given bandwidth in hours."""
+    """Causal (backward) rolling-mean trend at given bandwidth in hours.
+
+    `min_periods` is adaptive: a fixed-TIME window must never demand more points
+    than it can physically hold, else a short bandwidth on a coarse sampling rate
+    (e.g. a 24h window on hourly data = 24 points < 30) yields an all-NaN trend.
+    We cap min_periods at half the window's point count. For every real channel
+    (min-level 24h≈1440 pts, hourly 168h=168 pts) the cap is >=30, so the floor
+    stays exactly 30 and results are unchanged; only degenerate short windows
+    relax it.
+    """
+    dt_h = pd.Series(index).diff().dt.total_seconds().median() / 3600.0
+    if dt_h and not pd.isna(dt_h) and dt_h > 0:
+        win_pts = bandwidth_h / dt_h
+        mp = max(3, int(min(min_periods, 0.5 * win_pts)))
+    else:
+        mp = min_periods
     return (pd.Series(x, index=index)
-            .rolling(f"{bandwidth_h}h", min_periods=min_periods).mean().values)
+            .rolling(f"{bandwidth_h}h", min_periods=mp).mean().values)
 
 
 def _causal_stl_seasonal(resid: np.ndarray, period: int,
@@ -152,6 +167,18 @@ def decompose_channel(s: pd.Series, group_cfg: dict, dt_native: float,
         residual=pd.Series(residual, index=index, name=name),
         order_record=rec,
     )
+
+
+def extra_stl_pass(residual: pd.Series, period: int, n_cycles: int = 14,
+                   min_cycles: int = 3) -> pd.Series:
+    """对已分解的残差再做一次因果 STL 精修(plan §3.4 互补建模).
+
+    谐波 + 首次 STL 之后仍残留的非正弦周期(ORP/QR 的方波/事件型日周期),
+    用同相位、仅取过去 n_cycles 个周期均值的方式再减一层。严格因果。
+    """
+    e = residual.values.astype(float)
+    seas = _causal_stl_seasonal(e, period, n_cycles=n_cycles, min_cycles=min_cycles)
+    return pd.Series(e - seas, index=residual.index, name=residual.name)
 
 
 def residual_spectrum_peak_ratio(resid: pd.Series, periods: list,

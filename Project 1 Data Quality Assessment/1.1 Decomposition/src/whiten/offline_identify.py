@@ -59,28 +59,63 @@ def grid_search_arma(y: np.ndarray, grid: dict) -> tuple:
     return best
 
 
-def _fit_garch(innov: np.ndarray):
-    """Fit GARCH(1,1) on innovations; return dict or None."""
-    innov = innov[np.isfinite(innov)]
-    if len(innov) < 200:
+def _fit_garch(innov: np.ndarray, grid=((1, 1), (1, 2), (2, 1)),
+               escalate: bool = True, egarch_fallback: bool = False,
+               arch_lags: int = 12, alpha: float = 0.05):
+    """在创新上拟合 GARCH,逐级升阶直到 ARCH-LM 不再显著(plan §4.4).
+
+    依次尝试 grid 中各 (ARCH, GARCH) 阶;若标准化残差 ARCH-LM 仍显著且 escalate,
+    升到下一更大阶;最后(可选)回退 EGARCH(1,1)。返回含条件方差递归参数的 dict
+    (alpha/beta 为按滞后排列的列表,GARCH(1,1) 即长度 1),或 None。
+    """
+    try:
+        from arch import arch_model
+    except Exception:
         return None
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
+    x = np.asarray(innov, dtype=float)
+    x = x[np.isfinite(x)]
+    if len(x) < 200:
+        return None
+    best = None
+    for (gp, gq) in grid:                       # gp = ARCH lags, gq = GARCH lags
         try:
-            from arch import arch_model
-            scale = np.std(innov)
-            if scale <= 0:
-                return None
-            am = arch_model(innov / scale, mean="Zero", vol="GARCH", p=1, q=1,
-                            rescale=False)
-            r = am.fit(disp="off", show_warning=False)
-            pr = r.params
-            return dict(omega=float(pr["omega"]) * scale ** 2,
-                        alpha=float(pr["alpha[1]"]),
-                        beta=float(pr["beta[1]"]),
-                        scale=float(scale))
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                r = arch_model(x, mean="Zero", vol="GARCH", p=gp, q=gq,
+                               rescale=False).fit(disp="off")
         except Exception:
-            return None
+            continue
+        std = np.asarray(r.std_resid, dtype=float)
+        het_p = arch_lm(std[np.isfinite(std)], lags=arch_lags).get("arch_pvalue", 1.0)
+        if het_p is None or not np.isfinite(het_p):
+            het_p = 1.0
+        pr = r.params
+        cand = dict(kind="garch", p=gp, q=gq,
+                    omega=float(pr.get("omega", 0.0)),
+                    alpha=[float(pr.get(f"alpha[{i}]", 0.0)) for i in range(1, gp + 1)],
+                    beta=[float(pr.get(f"beta[{i}]", 0.0)) for i in range(1, gq + 1)],
+                    arch_p_after=float(het_p))
+        if best is None or het_p > best["arch_p_after"]:
+            best = cand
+        if het_p > alpha:                       # ARCH 已清除 -> 接受此阶
+            return cand
+        if not escalate:
+            break
+    if egarch_fallback:                          # 离线诊断用;在线递归暂不支持
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                r = arch_model(x, mean="Zero", vol="EGARCH", p=1, o=1, q=1,
+                               rescale=False).fit(disp="off")
+            pr = r.params
+            return dict(kind="egarch", p=1, q=1,
+                        omega=float(pr.get("omega", 0.0)),
+                        alpha=[float(pr.get("alpha[1]", 0.0))],
+                        beta=[float(pr.get("beta[1]", 0.0))],
+                        gamma=float(pr.get("gamma[1]", 0.0)))
+        except Exception:
+            pass
+    return best
 
 
 def identify(resid: pd.Series, fault_mask: pd.Series | None, grid: dict,
@@ -114,10 +149,14 @@ def identify(resid: pd.Series, fault_mask: pd.Series | None, grid: dict,
             garch = _fit_garch(innov)
 
     # warm-start internal state from the tail of the identification window
+    na = len(garch.get("alpha", [])) if garch else 0
+    nb = len(garch.get("beta", [])) if garch else 0
+    keep_eta = max(q, na)                                  # GARCH 需过去创新,即使 q=0
     eps_hist = list(yc[-p:][::-1]) if p > 0 else []        # newest first
-    eta_hist = list(innov[-q:][::-1]) if q > 0 else []
+    eta_hist = list(innov[-keep_eta:][::-1]) if keep_eta > 0 else []
     sigma2 = float(np.var(innov)) if len(innov) else 1.0
-    warmup_state = dict(eps=eps_hist, eta=eta_hist, sigma2=sigma2)
+    warmup_state = dict(eps=eps_hist, eta=eta_hist, sigma2=sigma2,
+                        sig2_hist=[sigma2] * max(nb, 1))
 
     diag = full_diagnostics(innov, lb_lags=lb_lags, arch_lags=arch_lags)
     diag.update(dict(p=p, q=q, aic=round(float(aic), 2), bic=round(float(bic), 2),

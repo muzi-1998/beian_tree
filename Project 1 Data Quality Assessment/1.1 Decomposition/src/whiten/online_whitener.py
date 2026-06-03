@@ -32,6 +32,7 @@ class OnlineWhitener:
         self._eps = np.zeros(0)     # de-meaned eps history, newest first
         self._eta = np.zeros(0)     # innovation history, newest first
         self._sig2 = 1.0
+        self._s2 = np.zeros(0)      # past conditional variances, newest first
         self._mu = 0.0
         self._m: WhitenModel | None = None
 
@@ -43,6 +44,7 @@ class OnlineWhitener:
         self._eps = np.array(ws.get("eps", []), dtype=float)
         self._eta = np.array(ws.get("eta", []), dtype=float)
         self._sig2 = float(ws.get("sigma2", 1.0)) or 1.0
+        self._s2 = np.array(ws.get("sig2_hist", []), dtype=float)
 
     def step(self, eps_t: float) -> float:
         m = self.store.latest(self.ch)
@@ -59,16 +61,25 @@ class OnlineWhitener:
         eta = y - ar_term - ma_term
         if m.garch:
             g = m.garch
-            eta_prev = self._eta[0] if len(self._eta) else 0.0
-            sig2 = g["omega"] + g["alpha"] * eta_prev ** 2 + g["beta"] * self._sig2
-            sig2 = max(sig2, 1e-12)
+            a = np.atleast_1d(np.asarray(g.get("alpha", 0.0), float))   # eta 滞后系数
+            b = np.atleast_1d(np.asarray(g.get("beta", 0.0), float))    # sig2 滞后系数
+            e2 = (self._eta[:len(a)] ** 2) if len(self._eta) else np.zeros(0)
+            e2 = np.pad(e2, (0, len(a) - len(e2)))
+            s2 = self._s2[:len(b)] if len(self._s2) else np.zeros(0)
+            s2 = np.pad(s2, (0, len(b) - len(s2)))
+            sig2 = max(float(g["omega"]) + float(a @ e2) + float(b @ s2), 1e-12)
         else:
             sig2 = self._sig2
         # push histories (newest first)
         if p:
             self._eps = np.r_[y, self._eps][:p]
-        if q:
-            self._eta = np.r_[eta, self._eta][:q]
+        na = len(np.atleast_1d(np.asarray(m.garch.get("alpha", 0.0), float))) if m.garch else 0
+        keep_eta = max(q, na)
+        if keep_eta:
+            self._eta = np.r_[eta, self._eta][:keep_eta]
+        if m.garch:
+            nb = len(np.atleast_1d(np.asarray(m.garch.get("beta", 0.0), float)))
+            self._s2 = np.r_[sig2, self._s2][:max(nb, 1)]
         self._sig2 = sig2
         return eta / np.sqrt(sig2)
 
@@ -92,15 +103,24 @@ def whiten_series(eps: pd.Series, model: WhitenModel) -> dict:
 
     if model.garch:
         g = model.garch
+        omega = float(g["omega"])
+        alpha = np.atleast_1d(np.asarray(g.get("alpha", 0.0), dtype=float))  # ARCH lags
+        beta = np.atleast_1d(np.asarray(g.get("beta", 0.0), dtype=float))    # GARCH lags
+        na, nb = len(alpha), len(beta)
         e2 = np.where(np.isfinite(eta), eta, 0.0) ** 2
         sig2 = np.empty_like(eta)
-        prev = float(model.warmup_state.get("sigma2", np.nanvar(eta)) or 1.0)
-        prev_e2 = 0.0
+        s0 = float(model.warmup_state.get("sigma2", np.nanvar(eta)) or 1.0)
+        e2_hist = np.zeros(max(na, 1))          # newest first: e2_hist[k] = e2[i-1-k]
+        s2_hist = np.full(max(nb, 1), s0)       # newest first: s2_hist[k] = sig2[i-1-k]
         for i in range(len(eta)):
-            prev = g["omega"] + g["alpha"] * prev_e2 + g["beta"] * prev
-            prev = max(prev, 1e-12)
-            sig2[i] = prev
-            prev_e2 = e2[i]
+            v = omega + (float(alpha @ e2_hist[:na]) if na else 0.0) \
+                      + (float(beta @ s2_hist[:nb]) if nb else 0.0)
+            v = max(v, 1e-12)
+            sig2[i] = v
+            if na:
+                e2_hist = np.r_[e2[i], e2_hist[:na - 1]]
+            if nb:
+                s2_hist = np.r_[v, s2_hist[:nb - 1]]
         z = eta / np.sqrt(sig2)
     else:
         s2 = float(np.nanvar(eta)) or 1.0

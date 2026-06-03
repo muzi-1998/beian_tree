@@ -39,6 +39,13 @@ from src.outputs import tables, figures
 
 ROOT = Path(__file__).resolve().parent
 
+_PERIOD_LABEL = {1440: "24h", 720: "12h", 10080: "168h",
+                 24: "24h", 168: "168h", 12: "12h"}
+
+
+def _period_str(periods):
+    return "+".join(_PERIOD_LABEL.get(int(p), f"{int(p)}") for p in periods)
+
 
 def _log(msg):
     print(f"[{datetime.now():%H:%M:%S}] {msg}", flush=True)
@@ -169,7 +176,23 @@ def w2_decompose(cfg, out, quick=False):
                                f_pvalues=str(rec.get("f_pvalues", []))[:60]))
         pr = deperiodise.residual_spectrum_peak_ratio(dec["residual"],
                                                       gcfg["candidate_periods"], dt_native)
-        suff_rows.append(dict(channel=c, track=track, **pr))
+        # ── Fix 1: 主周期峰 >= 闸门则迭代 STL 重剥,并落 decomp_pass 标志 ──────
+        gate = gcfg.get("decomp_peak_gate",
+                        cfg["deperiodise"]["residual_spectrum_peak_ratio_max"])
+        max_it = cfg["deperiodise"].get("stl_max_refine_iters", 4)
+        n_it = min(gcfg.get("stl_refine_iters",
+                            cfg["deperiodise"].get("stl_refine_iters_default", 1)), max_it)
+        prim_key = "P1440" if track == "min" else "P24"
+        prim_period = 1440 if track == "min" else 24
+        it = 0
+        while it < n_it and (pr.get(prim_key) or 0) >= gate:
+            dec["residual"] = deperiodise.extra_stl_pass(dec["residual"], prim_period)
+            pr = deperiodise.residual_spectrum_peak_ratio(
+                dec["residual"], gcfg["candidate_periods"], dt_native)
+            it += 1
+        decomp_pass = bool((pr.get(prim_key) or 0) < gate)
+        suff_rows.append(dict(channel=c, track=track,
+                              decomp_pass=decomp_pass, stl_iters=it, **pr))
         decomp_store[c] = dec
         if track == "min":
             resid_min[c] = dec["residual"]; trend_min[c] = dec["trend"]; seas_min[c] = dec["seasonal"]
@@ -229,6 +252,13 @@ def w3_whiten(cfg, out, quick=False):
         passed, reasons = ag.acceptance_gate(model, float(np.nanvar(resid)),
                                               innov.dropna().values, wcfg,
                                               diag=model.diagnostics)
+        # ── Fix 2: 接受门失败 -> 兜底,而不是照样发布失败模型的创新 ──────────
+        fb = wcfg.get("fallback", {}).get("on_gate_fail", "none")
+        used_fallback = False
+        if not passed and fb == "robust_z":
+            z = dg.robust_z(resid)            # MAD 标准化残差兜底
+            innov = z.copy()
+            used_fallback = True
         # warm-restart state refresh on the last warmup_hours
         if track == "min":
             recent = resid.iloc[-wcfg["warmup_hours"] * 60:]
@@ -248,7 +278,8 @@ def w3_whiten(cfg, out, quick=False):
                               garch=model.garch is not None,
                               aic=model.diagnostics.get("aic"),
                               bic=model.diagnostics.get("bic"),
-                              accepted=passed, gate=";".join(reasons)))
+                              accepted=passed, fallback=used_fallback,
+                              gate=";".join(reasons)))
         cmp_rows.append(dict(
             channel=c, track=track,
             lb_passrate_resid=wlb_res["lb_pass_rate"],
@@ -374,6 +405,160 @@ def make_figures(cfg, out, quick=False):
 
 
 # ════════════════════════════════════════════════════════════════════════
+# Per-variable EMD-style stacked decomposition figures (one PNG per channel)
+# ════════════════════════════════════════════════════════════════════════
+def _decomp_ylabels(dec, ch, arma_lk):
+    """English panel labels with method annotations (J harmonic order, AR(p))."""
+    rec = dec.get("order_record", {}) or {}
+    J = rec.get("selected_order", 0) or 0
+    periods = rec.get("periods", []) or []
+    if J > 0 and periods:
+        seas = f"Seasonal s(t)\n({_period_str(periods)}, J={J})"
+    else:
+        seas = "Seasonal s(t)\n(STL)"
+    p, q, fb = arma_lk.get(ch, (0, 0, False))
+    if fb:
+        inn = "Innovation η(t)\n(robust-z)"
+    elif p > 0 and q > 0:
+        inn = f"Innovation η(t)\n(ARMA({p},{q}))"
+    elif p > 0:
+        inn = f"Innovation η(t)\n(AR({p}))"
+    elif q > 0:
+        inn = f"Innovation η(t)\n(MA({q}))"
+    else:
+        inn = "Innovation η(t)"
+    return [f"Raw X(t)\n{ch}", "Trend m(t)", seas, "Residual e(t)", inn]
+
+
+def make_decomposition_stacks(cfg, out, quick=False, min_window_days=10):
+    """For EVERY decomposed channel, emit a FULL-FRAME stacked figure:
+    raw X(t) -> trend -> seasonal -> residual -> whitened innovation η(t),
+    analogous to the IMF_1..n + Residue layout. Min-level channels are shown on
+    a representative `min_window_days` window (360k pts would be unreadable);
+    hourly channels (naturally ~10^3 pts) are shown in full. Each figure also
+    dumps a reproducible CSV+JSON bundle into plot_data/.
+    """
+    fig_root = Path(cfg["paths"]["figure_root"]) / "decomposition"
+    fig_root.mkdir(parents=True, exist_ok=True)
+    pdr = cfg["paths"].get("plot_data_root")
+    df_min = out["df_min"]; inf_f = out["inf_f"]; eff_f = out["eff_f"]
+    std_min = out.get("std_min", {})
+    innov_inf = out.get("innov_inf", {}); innov_eff = out.get("innov_eff", {})
+    # channel -> (p, q, fallback) for the AR/MA annotation
+    arma_lk = {}
+    arma = out.get("arma_df")
+    if arma is not None and len(arma):
+        for _, r in arma.iterrows():
+            arma_lk[r["channel"]] = (int(r["p"]), int(r["q"]),
+                                     bool(r.get("fallback", False)))
+    n_done = 0
+    for c, dec in out["decomp"].items():
+        track = CHANNEL_META[c]["track"]
+        zone = CHANNEL_META[c]["zone"]
+        try:
+            if track == "min":
+                raw_full = df_min[c]
+                win = slice("2025-10-10", "2025-10-20")
+                if raw_full.loc[win].dropna().empty:
+                    end = raw_full.index[0] + pd.Timedelta(days=min_window_days)
+                    win = slice(raw_full.index[0], end)
+                raw = raw_full.loc[win]
+                trend = dec["trend"].loc[win]; seasonal = dec["seasonal"].loc[win]
+                residual = dec["residual"].loc[win]
+                inn = std_min.get(c)
+                innov = inn.loc[win] if inn is not None else None
+            else:
+                raw = (inf_f[c] if c.startswith("inf_") else eff_f[c])
+                trend = dec["trend"]; seasonal = dec["seasonal"]; residual = dec["residual"]
+                innov = (innov_inf if c.startswith("inf_") else innov_eff).get(c)
+            span = f"{raw.index[0]:%Y-%m-%d}~{raw.index[-1]:%Y-%m-%d}"
+            figures.decomposition_stack(
+                raw, trend, seasonal, residual, innov,
+                fig_root / f"decomp_stack_{c}.png",
+                ylabels=_decomp_ylabels(dec, c, arma_lk),
+                title=f"Multi-scale decomposition — {c} ({zone}, {track})  [{span}]",
+                plot_data_root=pdr, bundle_name=f"decomp_stack_{c}")
+            n_done += 1
+        except Exception as e:
+            _log(f"  decomp stack {c} skipped: {e}")
+    _log(f"Decomposition-stack figures written: {n_done} -> {fig_root}")
+
+
+def _channel_components(c, out, win):
+    """Return [raw, trend, seasonal, residual, innovation] for a channel,
+    windowed (min) or full (hourly); components may be None if unavailable."""
+    dec = out["decomp"].get(c)
+    if dec is None:
+        return None
+    track = CHANNEL_META[c]["track"]
+    if track == "min":
+        raw = out["df_min"][c].loc[win]
+        trend = dec["trend"].loc[win]; seasonal = dec["seasonal"].loc[win]
+        residual = dec["residual"].loc[win]
+        inn = out.get("std_min", {}).get(c)
+        innov = inn.loc[win] if inn is not None else None
+    else:
+        src = out["inf_f"] if c.startswith("inf_") else out["eff_f"]
+        raw = src[c]
+        trend = dec["trend"]; seasonal = dec["seasonal"]; residual = dec["residual"]
+        store = out.get("innov_inf", {}) if c.startswith("inf_") else out.get("innov_eff", {})
+        innov = store.get(c)
+    return [raw, trend, seasonal, residual, innov]
+
+
+def make_combined_figures(cfg, out, quick=False, min_window_days=10):
+    """One COMBINED full-frame DECOMPOSITION GRID per process group:
+    rows = variables, columns = [Raw, Trend, Seasonal, Residual, Innovation],
+    shared date x-axis. DO is split into two figures (train 1 / train 2) so its
+    8 channels stay readable. Dumps reproducible grid bundles to plot_data/.
+    """
+    fig_root = Path(cfg["paths"]["figure_root"]) / "combined"
+    fig_root.mkdir(parents=True, exist_ok=True)
+    pdr = cfg["paths"].get("plot_data_root")
+    df_min = out["df_min"]; inf_f = out["inf_f"]; eff_f = out["eff_f"]
+
+    win = slice("2025-10-10", "2025-10-20")
+    if df_min.loc[win].dropna(how="all").empty:
+        end = df_min.index[0] + pd.Timedelta(days=min_window_days)
+        win = slice(df_min.index[0], end)
+    wmin = df_min.loc[win]
+    span_min = f"{wmin.index[0]:%Y-%m-%d}~{wmin.index[-1]:%Y-%m-%d}"
+    span_inf = f"{inf_f.index[0]:%Y-%m-%d}~{inf_f.index[-1]:%Y-%m-%d}"
+    span_eff = f"{eff_f.index[0]:%Y-%m-%d}~{eff_f.index[-1]:%Y-%m-%d}"
+
+    # DO split into two figures (one per parallel train) for readability
+    groups = [
+        ("DO_train1", [f"DO_1_{i}" for i in range(1, 5)], span_min,
+         "DO channels — train 1#"),
+        ("DO_train2", [f"DO_2_{i}" for i in range(1, 5)], span_min,
+         "DO channels — train 2#"),
+        ("ORP", [f"ORP_{p}_{i}" for p in (1, 2) for i in range(1, 4)], span_min,
+         "ORP channels (both trains)"),
+        ("flow", ["QR_1", "QR_2", "QIR_1", "QIR_2"], span_min,
+         "Recycle-flow drivers (QR / QIR)"),
+        ("influent", list(inf_f.columns), span_inf,
+         "Influent water-quality variables"),
+        ("effluent", list(eff_f.columns), span_eff,
+         "Effluent water-quality variables"),
+    ]
+    n_done = 0
+    for gname, chans, span, gtitle in groups:
+        rows = []
+        for c in chans:
+            comps = _channel_components(c, out, win)
+            if comps is not None:
+                rows.append((c, comps))
+        if not rows:
+            continue
+        figures.combined_group_grid(
+            rows, fig_root / f"combined_{gname}.png",
+            title=f"{gtitle} — trend/seasonal/residual/innovation grid  [{span}]",
+            plot_data_root=pdr, bundle_name=f"combined_{gname}")
+        n_done += 1
+    _log(f"Combined group grids written: {n_done} -> {fig_root}")
+
+
+# ════════════════════════════════════════════════════════════════════════
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--quick", action="store_true", help="fast subset run")
@@ -388,6 +573,8 @@ def main():
     out = w2_decompose(cfg, out, quick=args.quick)
     out = w3_whiten(cfg, out, quick=args.quick)
     make_figures(cfg, out, quick=args.quick)
+    make_decomposition_stacks(cfg, out, quick=args.quick)
+    make_combined_figures(cfg, out, quick=args.quick)
 
     # run manifest
     man = dict(timestamp=datetime.now().isoformat(), config_hash=chash,
