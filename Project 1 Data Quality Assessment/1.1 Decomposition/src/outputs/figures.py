@@ -351,6 +351,85 @@ def spectrum_comparison(spectra: dict, out_path: Path, title: str = ""):
     plt.close(fig)
 
 
+def acf_band_grid(rows, out_path: Path, lag: int, band_edges, title: str = "",
+                  band_colors=None, plot_data_root=None, bundle_name=None):
+    """Before/after-whitening ACF grid for a group of variables, with bars
+    coloured by lag band (plan §5.3 + daily-lag emphasis).
+
+    rows        : [(label, acf_resid, acf_innov, conf_resid, conf_innov)] where
+                  each acf_* is the sample ACF array (index 0..lag from
+                  diagnostics.acf); lags 1..lag are plotted.
+    band_edges  : cumulative right edges, e.g. [24, 48] (influent) or
+                  [24, 48, 72] (effluent). Lags in (edge_{k-1}, edge_k] share a
+                  colour; vertical dotted lines mark the interior edges.
+    Layout: rows = variables, 2 columns (Before residual e(t) / After
+    innovation η(t)). Full-frame.
+    """
+    band_colors = band_colors or ["#2166AC", "#E08214", "#1B7837", "#762A83"]
+    R = len(rows)
+    if R == 0:
+        return
+    lags = np.arange(1, lag + 1)
+
+    def _band_of(L):
+        for bi, e in enumerate(band_edges):
+            if L <= e:
+                return bi
+        return len(band_edges) - 1
+    bar_colors = [band_colors[_band_of(L)] for L in lags]
+
+    fig, axes = plt.subplots(R, 2, figsize=(8.8, 1.0 * R + 1.5), squeeze=False,
+                             sharex=True, layout="constrained")
+    col_titles = ["Before — residual e(t) ACF", "After — innovation η(t) ACF"]
+    for i, row in enumerate(rows):
+        lab, a_res, a_inn, conf_res, conf_inn = row
+        for j, (a, conf) in enumerate([(a_res, conf_res), (a_inn, conf_inn)]):
+            ax = axes[i][j]
+            vals = np.asarray(a, dtype=float)[1:lag + 1]
+            if len(vals) < lag:
+                vals = np.r_[vals, np.zeros(lag - len(vals))]
+            ax.bar(lags, vals, color=bar_colors, width=0.9, linewidth=0)
+            ax.axhline(0, color="k", lw=0.6)
+            if conf:
+                ax.axhline(conf, color="#888888", ls="--", lw=0.7)
+                ax.axhline(-conf, color="#888888", ls="--", lw=0.7)
+            for e in band_edges[:-1]:
+                ax.axvline(e + 0.5, color="#bbbbbb", ls=":", lw=0.8)
+            ax.set_xlim(0.3, lag + 0.7)
+            ax.grid(True, axis="y", alpha=0.25, lw=0.4)
+            ax.tick_params(labelsize=6, length=2)
+            for sp in ("top", "right", "left", "bottom"):
+                ax.spines[sp].set_visible(True)
+            if i == 0:
+                ax.set_title(col_titles[j], fontsize=9, pad=4)
+            if j == 0:
+                ax.set_ylabel(lab, rotation=0, ha="right", va="center",
+                              fontsize=7.5, labelpad=8)
+            if i == R - 1:
+                ax.set_xlabel("lag (h)", fontsize=8)
+
+    from matplotlib.patches import Patch
+    handles, prev = [], 0
+    for bi, e in enumerate(band_edges):
+        handles.append(Patch(color=band_colors[bi], label=f"lag {prev + 1}–{e} h"))
+        prev = e
+    fig.legend(handles=handles, loc="outside lower center", ncol=len(band_edges),
+               fontsize=8, frameon=False)
+    fig.suptitle(title or "ACF before / after whitening", fontsize=10.5)
+    Path(out_path).parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(out_path, dpi=300)
+    plt.close(fig)
+
+    if plot_data_root and bundle_name:   # data-only CSV record (no replot JSON)
+        root = Path(plot_data_root); root.mkdir(parents=True, exist_ok=True)
+        rec = {"lag": lags}
+        for lab, a_res, a_inn, *_ in rows:
+            rec[f"{lab}_resid"] = np.asarray(a_res, float)[1:lag + 1]
+            rec[f"{lab}_innov"] = np.asarray(a_inn, float)[1:lag + 1]
+        pd.DataFrame(rec).to_csv(root / f"{bundle_name}.csv", index=False,
+                                 encoding="utf-8-sig")
+
+
 def acf_before_after(acf_resid, acf_innov, out_path: Path, title: str = "",
                      conf: float = None):
     """ACF of residual (before) vs innovation (after whitening)."""

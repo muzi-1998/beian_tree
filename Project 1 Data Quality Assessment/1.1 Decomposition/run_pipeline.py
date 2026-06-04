@@ -367,9 +367,10 @@ def make_figures(cfg, out, quick=False):
         try:
             resid = dec["residual"].dropna().values
             zz = innov.dropna().values
-            figures.acf_before_after(dg.acf(resid, 40), dg.acf(zz, 40),
+            # min-level (DO/ORP) ACF at lag 60 (≈1 h of 1-min lags)
+            figures.acf_before_after(dg.acf(resid, 60), dg.acf(zz, 60),
                                      fig_root / f"fig_W3_acf_{c}.png",
-                                     title=f"ACF before/after whitening — {c}",
+                                     title=f"ACF before/after whitening — {c} (lag 60)",
                                      conf=dg.acf_conf(len(zz)))
         except Exception as e:
             _log(f"  fig acf {c} skipped: {e}")
@@ -650,6 +651,39 @@ def make_ribbon_overviews(cfg, out, quick=False):
     _log(f"Ribbon overviews written -> {fig_root}")
 
 
+def make_acf_band_figures(cfg, out, quick=False):
+    """Banded before/after-whitening ACF grids for the hourly sources:
+    influent at lag 48 (bands 1–24 / 25–48 h) and effluent at lag 72
+    (bands 1–24 / 25–48 / 49–72 h) — bars coloured by daily-lag band so any
+    leftover daily-period autocorrelation (lag 24/48/72) is easy to spot."""
+    fr = Path(cfg["paths"]["figure_root"])
+    pdr = cfg["paths"].get("plot_data_root")
+    specs = [
+        ("influent", out.get("resid_inf", {}), out.get("innov_inf", {}),
+         list(out["inf_f"].columns), 48, [24, 48],
+         "Influent — ACF before/after whitening (lag 48)"),
+        ("effluent", out.get("resid_eff", {}), out.get("innov_eff", {}),
+         list(out["eff_f"].columns), 72, [24, 48, 72],
+         "Effluent — ACF before/after whitening (lag 72)"),
+    ]
+    for gname, R, I, order, lag, edges, title in specs:
+        rows = []
+        for c in order:
+            if c in R and c in I:
+                rv = pd.Series(R[c]).dropna().values
+                iv = pd.Series(I[c]).dropna().values
+                if len(rv) < lag + 5 or len(iv) < lag + 5:
+                    continue
+                rows.append((c, dg.acf(rv, lag), dg.acf(iv, lag),
+                             dg.acf_conf(len(rv)), dg.acf_conf(len(iv))))
+        if rows:
+            figures.acf_band_grid(rows, fr / f"fig_W3_acf_{gname}_banded.png",
+                                  lag, edges, title=title,
+                                  plot_data_root=pdr,
+                                  bundle_name=f"acf_{gname}_banded")
+    _log("Banded ACF figures (influent lag48 / effluent lag72) written")
+
+
 # ════════════════════════════════════════════════════════════════════════
 def main():
     ap = argparse.ArgumentParser()
@@ -670,6 +704,7 @@ def main():
     make_decomposition_overviews(cfg, out, quick=args.quick)
     make_combined_overviews(cfg, out, quick=args.quick)
     make_ribbon_overviews(cfg, out, quick=args.quick)
+    make_acf_band_figures(cfg, out, quick=args.quick)
 
     # run manifest
     man = dict(timestamp=datetime.now().isoformat(), config_hash=chash,
