@@ -1,34 +1,34 @@
-﻿channel,track,p,q,garch,aic,bic,accepted,fallback,gate
-DO_1_1,min,2,2,True,-15559.55,-15520.44,False,True,Ljung-Box fail
-DO_1_2,min,3,3,True,-8094.7,-8042.56,True,False,accepted
-DO_1_3,min,3,3,True,-12987.32,-12935.18,True,False,accepted
-DO_1_4,min,3,3,True,-30545.37,-30493.24,True,False,accepted
-DO_2_1,min,2,3,True,-18223.33,-18177.71,False,True,Ljung-Box fail
-DO_2_2,min,3,2,True,-11933.5,-11887.88,False,True,Ljung-Box fail
-DO_2_3,min,2,2,True,-10619.1,-10580.0,True,False,accepted
-DO_2_4,min,3,3,True,-5708.3,-5656.16,False,True,Ljung-Box fail
-ORP_1_1,min,3,3,True,17208.01,17260.15,False,True,Ljung-Box fail
-ORP_1_2,min,3,2,True,14.0,59.62,False,True,AR not stationary;MA not invertible;Ljung-Box fail
-ORP_1_3,min,1,3,True,33714.9,33754.0,True,False,accepted
-ORP_2_1,min,1,1,False,18434.04,18460.11,True,False,accepted
-ORP_2_2,min,2,2,True,13823.13,13862.23,True,False,accepted
-ORP_2_3,min,2,3,True,48504.16,48549.78,False,True,Ljung-Box fail
-QR_1,min,2,1,True,60644.6,60677.19,False,True,Ljung-Box fail
-QR_2,min,2,3,True,73944.07,73989.69,False,True,Ljung-Box fail
-QIR_1,min,2,2,True,52115.33,52154.43,True,False,accepted
-QIR_2,min,2,1,True,74251.22,74283.81,False,True,Ljung-Box fail
-inf_pH,hour,1,0,False,-6435.48,-6416.37,True,False,accepted
-inf_T,hour,2,0,True,-6257.07,-6231.19,False,True,Ljung-Box fail
-inf_SS,hour,6,2,True,60038.62,60103.33,False,True,Ljung-Box fail
-inf_NH4,hour,6,2,True,28432.39,28496.87,False,True,Ljung-Box fail
-inf_TP,hour,6,2,True,14377.97,14442.68,False,True,Ljung-Box fail
-inf_TN,hour,5,2,True,29160.18,29218.4,False,True,Ljung-Box fail
-inf_COD,hour,6,1,True,49741.94,49800.17,False,True,Ljung-Box fail
-inf_Q,hour,6,2,True,61662.03,61726.72,False,True,Ljung-Box fail
-eff_COD,hour,6,2,True,13764.34,13829.51,True,False,accepted
-eff_TP,hour,3,2,True,-25398.46,-25352.84,True,False,accepted
-eff_NH4,hour,3,2,True,-2293.19,-2251.03,False,True,Ljung-Box fail
-eff_TN,hour,6,1,True,7613.7,7672.35,False,True,Ljung-Box fail
-eff_pH,hour,6,0,True,-28042.04,-27989.9,False,True,Ljung-Box fail
-eff_T,hour,5,2,True,-23030.66,-22972.0,False,True,Ljung-Box fail
-eff_sludge,hour,3,2,True,-2183.96,-2138.34,False,True,Ljung-Box fail
+﻿channel,track,family,d,D,p,q,fd,garch,lrd_flag,lrd_d_gph,aic,bic,accepted,fallback,gate
+DO_1_1,min,arma,0,0,2,2,,True,True,0.168,-15561.47,-15528.89,False,True,windowed-LB 0.01<0.02
+DO_1_2,min,arma,0,0,3,3,,True,True,0.167,-8096.56,-8050.94,True,False,accepted
+DO_1_3,min,arma,0,0,3,3,,True,True,0.212,-12988.97,-12943.34,True,False,accepted
+DO_1_4,min,arma,0,0,3,3,,True,False,0.586,-30536.33,-30490.71,False,True,|acf1| 0.31>0.3
+DO_2_1,min,arma,0,0,3,1,,True,True,0.232,-18220.9,-18188.31,False,True,windowed-LB 0.00<0.02
+DO_2_2,min,arma,0,0,2,2,,True,True,0.323,-11938.16,-11905.57,False,True,windowed-LB 0.01<0.02
+DO_2_3,min,arma,0,0,2,2,,True,True,0.324,-10620.37,-10587.79,True,False,accepted
+DO_2_4,min,arma,0,0,3,3,,True,True,0.477,-5708.49,-5662.87,True,False,accepted
+ORP_1_1,min,arma,0,0,3,2,,True,False,0.834,17207.52,17246.62,True,False,accepted
+ORP_1_2,min,arma,0,0,2,2,,False,False,0.679,16794.52,16827.1,True,False,accepted
+ORP_1_3,min,arma,0,0,1,3,,True,False,0.754,33716.69,33749.28,True,False,accepted
+ORP_2_1,min,arma,0,0,1,1,,True,False,1.05,18433.37,18452.92,True,False,accepted
+ORP_2_2,min,arma,0,0,2,2,,True,False,0.752,13824.74,13857.33,True,False,accepted
+ORP_2_3,min,arma,0,0,2,3,,True,False,0.752,48502.3,48541.4,True,False,accepted
+QR_1,min,arma,0,0,2,3,,True,False,0.707,60642.49,60681.59,True,False,accepted
+QR_2,min,arma,0,0,2,3,,True,True,0.462,73948.1,73987.21,True,False,accepted
+QIR_1,min,arma,0,0,2,2,,True,False,0.624,52115.02,52147.6,True,False,accepted
+QIR_2,min,arma,0,0,2,1,,True,False,0.753,74249.82,74275.89,True,False,accepted
+inf_pH,hour,arma,0,0,1,0,,False,False,0.51,-6437.48,-6424.74,True,False,accepted
+inf_T,hour,arma,0,0,2,0,,True,False,0.551,-6259.07,-6239.66,True,False,accepted
+inf_SS,hour,arma,0,0,6,2,,True,True,0.313,60036.63,60094.87,True,False,accepted
+inf_NH4,hour,arma,0,0,5,2,,True,True,0.323,28429.71,28481.3,True,False,accepted
+inf_TP,hour,arma,0,0,6,2,,True,True,0.271,14375.99,14434.22,True,False,accepted
+inf_TN,hour,arma,0,0,5,2,,True,True,0.398,29158.18,29209.93,True,False,accepted
+inf_COD,hour,arma,0,0,6,1,,True,True,0.206,49739.94,49791.7,True,False,accepted
+inf_Q,hour,arma,0,0,6,2,,True,True,0.253,61660.03,61718.25,True,False,accepted
+eff_COD,hour,arma,0,0,6,2,,True,True,0.314,13762.28,13820.93,True,False,accepted
+eff_TP,hour,arma,0,0,2,1,,True,True,0.451,-25404.98,-25378.91,True,False,accepted
+eff_NH4,hour,arma,0,0,3,2,,True,True,0.214,-2295.19,-2259.05,True,False,accepted
+eff_TN,hour,arma,0,0,6,1,,True,True,0.155,7611.7,7663.84,True,False,accepted
+eff_pH,hour,arma,0,0,6,0,,True,True,0.289,-28043.98,-27998.36,True,False,accepted
+eff_T,hour,arma,0,0,5,2,,True,False,0.762,-23031.88,-22979.74,True,False,accepted
+eff_sludge,hour,arma,0,0,6,1,,True,True,0.342,-2186.87,-2134.73,True,False,accepted

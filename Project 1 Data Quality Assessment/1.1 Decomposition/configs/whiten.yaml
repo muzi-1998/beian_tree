@@ -8,6 +8,26 @@ garch_escalate: true                 # ARCH-LM 仍显著则升 GARCH 阶
 garch_grid: [[1, 1], [1, 2], [2, 1]] # (ARCH lags, GARCH lags) 逐级升
 egarch_fallback: false               # 可选:在线递归仅支持 GARCH,EGARCH 仅离线诊断
 
+# ── 逐通道数据驱动模型选择层 (plan §4.3 升级) ─────────────────────────────
+# 在 {ARMA, ARIMA(d), SARIMA(D,s), ARFIMA(分数 d), 局部水平≡ARIMA(0,1,1)} 中
+# 自动选择: 整数差分阶 d 由 ADF+KPSS 逐通道判定(非一刀切), 季节差分 D 由季节
+# 单位根判定, 分数阶 ARFIMA 由 LRD 检验(GPH/R-S)闸门; 统一折叠为组合 AR 多项式
+# A(B)=φ(B)·∇(B), 现有冻结系数白化器无需改结构即可应用。
+model_selection:
+  enable: true
+  enable_arima:  true        # ADF+KPSS 指示单位根时加入 ARIMA(d=1) 候选
+  enable_sarima: true        # 季节单位根(s=24)时加入季节差分候选
+  enable_arfima: true        # LRD 检验阳性时加入截断分数差分候选
+  unitroot_alpha: 0.05
+  seasonal_acf_thresh: 0.30
+  lrd_d_min: 0.10            # GPH d̂ 下限(判 LRD)
+  lrd_hurst_min: 0.60       # R/S Hurst 下限
+  fracdiff_truncation: 64   # 截断 (1−B)^d FIR 长度(在线可递归)
+  diff_grid: {p: [0, 1, 2], q: [0, 1, 2]}   # 差分序列上的 ARMA 网格
+  diff_improve_margin: 0.05 # 差分模型须把窗口 LB 通过率提升此幅度才被选用
+  min_acf1_innov: -0.30     # 拒绝过建模/过差分(负 MA(1) 征兆)
+  max_var_ratio: 5.0
+
 # diagnostics thresholds
 ljungbox_alpha: 0.05
 ljungbox_lags:
@@ -27,9 +47,12 @@ cold_start_reference_days: 30 # cold-start offline initial fit window
 
 # acceptance gate (plan §6.4 (三))
 acceptance:
-  require_stationary_invertible: true   # AR/MA roots outside unit circle
-  require_ljungbox_pass: true
-  max_sigma2_ratio: 10.0                # innovation variance sanity vs residual var
+  require_stationary_invertible: true     # φ stationary / θ invertible (差分单位根除外)
+  require_windowed_ljungbox: true         # 大 n: 用窗口化 LB 通过率, 取代单次 LB
+  min_windowed_lb_passrate: 0.02          # 仅作"未彻底失败"地板; 主判据用 |acf1|
+  max_abs_acf1: 0.30                      # 主判据: 创新须在 lag1 近白(挡过建模/过差分/未白化)
+  require_ljungbox_pass: false            # 已被 windowed 取代
+  max_sigma2_ratio: 10.0                  # innovation variance sanity vs residual var
 
 # gate-fail 兜底 (plan §6.4 (六) 优雅降级)
 fallback:

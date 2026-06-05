@@ -32,20 +32,46 @@ def _roots_inside_unit_circle(coeffs: np.ndarray, kind: str = "ar") -> bool:
 
 def acceptance_gate(model, residual_var: float, innov, cfg: dict,
                     diag: dict | None = None) -> tuple:
-    """Return (passed: bool, reasons: list[str])."""
+    """Return (passed: bool, reasons: list[str]).
+
+    Whiteness is judged by the WINDOWED Ljung-Box pass-rate when
+    `acceptance.require_windowed_ljungbox` is set — at n~10^3-10^5 a single LB
+    rejects on trivial autocorrelation, so the single-shot variant wrongly
+    discarded perfectly serviceable models (plan §8). Stationarity/invertibility
+    uses the selector's φ/θ flags when present, so the *intentional* unit root of
+    a differenced (ARIMA/SARIMA/ARFIMA) model is not misread as non-stationary.
+    """
     acc = cfg.get("acceptance", {})
+    diag = diag if diag is not None else getattr(model, "diagnostics", {}) or {}
     reasons = []
     ok = True
 
     if acc.get("require_stationary_invertible", True):
-        if not _roots_inside_unit_circle(model.ar, "ar"):
-            ok = False; reasons.append("AR not stationary")
-        if not _roots_inside_unit_circle(model.ma, "ma"):
-            ok = False; reasons.append("MA not invertible")
+        if ("phi_stationary" in diag) or ("ma_invertible" in diag):
+            if diag.get("phi_stationary") is False:
+                ok = False; reasons.append("AR not stationary")
+            if diag.get("ma_invertible") is False:
+                ok = False; reasons.append("MA not invertible")
+        else:
+            if not _roots_inside_unit_circle(model.ar, "ar"):
+                ok = False; reasons.append("AR not stationary")
+            if not _roots_inside_unit_circle(model.ma, "ma"):
+                ok = False; reasons.append("MA not invertible")
 
-    if acc.get("require_ljungbox_pass", True) and diag is not None:
+    if acc.get("require_windowed_ljungbox", False):
+        wlb = diag.get("windowed_lb_passrate")
+        thr = acc.get("min_windowed_lb_passrate", 0.10)
+        if wlb is not None and wlb < thr:
+            ok = False; reasons.append(f"windowed-LB {wlb:.2f}<{thr}")
+    elif acc.get("require_ljungbox_pass", True):
         if diag.get("lb_pass") is False:
             ok = False; reasons.append("Ljung-Box fail")
+
+    max_a1 = acc.get("max_abs_acf1")
+    if max_a1 is not None:
+        a1 = diag.get("acf1_innov")
+        if a1 is not None and abs(float(a1)) > max_a1:
+            ok = False; reasons.append(f"|acf1| {abs(float(a1)):.2f}>{max_a1}")
 
     innov = np.asarray(innov, dtype=float)
     innov = innov[np.isfinite(innov)]

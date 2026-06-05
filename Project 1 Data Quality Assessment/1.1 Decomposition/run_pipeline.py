@@ -33,7 +33,8 @@ from src.semantics import CHANNEL_META, MIN_CHANNELS, channels_in_group
 from src.data import loader, preprocess, consistency
 from src.baseline import deperiodise
 from src.whiten import (offline_identify as oid, online_whitener as ow,
-                        diagnostics as dg, warmup as wu, acceptance_gate as ag)
+                        diagnostics as dg, warmup as wu, acceptance_gate as ag,
+                        model_selection as ms)
 from src.whiten.param_store import ParamStore
 from src.outputs import tables, figures
 
@@ -238,20 +239,34 @@ def w3_whiten(cfg, out, quick=False):
         grid = wcfg["arma_grid"]["min" if track == "min" else "hour"]
         lb = wcfg["ljungbox_lags"]["min" if track == "min" else "hour"]
         # cold-start reference window
-        if track == "min":
-            ref = resid.iloc[:cold_days * 1440]
+        ref = resid.iloc[:cold_days * 1440] if track == "min" else resid
+        # ── data-driven per-channel model selection (ARMA/ARIMA/SARIMA/ARFIMA) ──
+        if wcfg.get("model_selection", {}).get("enable", True):
+            model, sel = ms.select_model(ref, wcfg, version=f"{c}_v1",
+                                         track=track, lb_lags=lb)
         else:
-            ref = resid
-        model = oid.identify(ref, None, grid, wcfg["use_garch"], version=f"{c}_v1",
-                             lb_lags=lb)
+            model = oid.identify(ref, None, grid, wcfg["use_garch"],
+                                 version=f"{c}_v1", lb_lags=lb)
+            sel = dict(family="arma", d=0, D=0, p_arma=getattr(model, "p", 0),
+                       q=getattr(model, "q", 0), fd=None, lrd_flag=False,
+                       lrd_d_gph=None) if model is not None else {}
         if model is None:
             return None
         res = ow.whiten_series(resid, model)
         innov, z = res["innovation"], res["std_innovation"]
-        # acceptance gate (post-hoc record)
+
+        # honest large-n metrics on the FULL innovation
+        win = 1440 if track == "min" else 168
+        wlb_res = dg.windowed_lb_pass_rate(resid, win, lags=lb)
+        wlb_inn = dg.windowed_lb_pass_rate(z, win, lags=lb)
+        acf1_inn = dg.acf1(z.dropna().values)
+        # acceptance gate on the FULL-series windowed-LB + acf1 (consistent)
+        gate_diag = dict(model.diagnostics)
+        gate_diag["windowed_lb_passrate"] = wlb_inn["lb_pass_rate"]
+        gate_diag["acf1_innov"] = acf1_inn
         passed, reasons = ag.acceptance_gate(model, float(np.nanvar(resid)),
-                                              innov.dropna().values, wcfg,
-                                              diag=model.diagnostics)
+                                             innov.dropna().values, wcfg,
+                                             diag=gate_diag)
         # ── Fix 2: 接受门失败 -> 兜底,而不是照样发布失败模型的创新 ──────────
         fb = wcfg.get("fallback", {}).get("on_gate_fail", "none")
         used_fallback = False
@@ -259,6 +274,8 @@ def w3_whiten(cfg, out, quick=False):
             z = dg.robust_z(resid)            # MAD 标准化残差兜底
             innov = z.copy()
             used_fallback = True
+            wlb_inn = dg.windowed_lb_pass_rate(z, win, lags=lb)
+            acf1_inn = dg.acf1(z.dropna().values)
         # warm-restart state refresh on the last warmup_hours
         if track == "min":
             recent = resid.iloc[-wcfg["warmup_hours"] * 60:]
@@ -267,15 +284,14 @@ def w3_whiten(cfg, out, quick=False):
         model = wu.warmup(model, recent)
         store.publish(c, model)
 
-        # windowed LB pass-rate (honest large-n metric) + ACF reduction
-        win = 1440 if track == "min" else 168
-        wlb_res = dg.windowed_lb_pass_rate(resid, win, lags=lb)
-        wlb_inn = dg.windowed_lb_pass_rate(z, win, lags=lb)
         # single-shot ADF/KPSS/ARCH on innovation (fine on full series)
         d_inn = dg.full_diagnostics(z.dropna().values, lb_lags=lb)
         arma_rows.append(dict(channel=c, track=track,
-                              p=model.p, q=model.q,
-                              garch=model.garch is not None,
+                              family=sel.get("family"), d=sel.get("d"),
+                              D=sel.get("D"), p=sel.get("p_arma"), q=sel.get("q"),
+                              fd=sel.get("fd"), garch=model.garch is not None,
+                              lrd_flag=sel.get("lrd_flag"),
+                              lrd_d_gph=sel.get("lrd_d_gph"),
                               aic=model.diagnostics.get("aic"),
                               bic=model.diagnostics.get("bic"),
                               accepted=passed, fallback=used_fallback,
