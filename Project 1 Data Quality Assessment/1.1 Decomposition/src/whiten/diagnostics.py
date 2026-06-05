@@ -154,6 +154,51 @@ def acf_conf(n: int) -> float:
     return 1.96 / np.sqrt(max(n, 1))
 
 
+def censored_robust_z(resid: pd.Series, raw: pd.Series | None = None,
+                      floor_thr: float = 0.05, mad_c: float = 1.4826) -> pd.Series:
+    """Censoring-aware robust standardization (plan §3.4 + §6.4 优雅降级).
+
+    For a detection-floor signal (e.g. post-anoxic DO ~0 most of the time), plain
+    MAD is dominated by the floor mass and collapses. Here the location/scale are
+    estimated from the NON-floor (uncensored) residual points only, so departures
+    from the floor are scored meaningfully; ARMA whitening is NOT attempted.
+    """
+    v = resid.astype(float)
+    base = v
+    if raw is not None:
+        non = v[raw.reindex(v.index) > floor_thr]
+        if non.dropna().shape[0] >= 20:
+            base = non
+    med = base.median()
+    mad = mad_c * (base - med).abs().median() + 1e-9
+    return (v - med) / mad
+
+
+def sign_bias_test(z) -> dict:
+    """Engle-Ng sign-bias test for variance asymmetry (decides if EGARCH is
+    warranted). Regress z_t^2 on const + 1{z_{t-1}<0}; report the indicator's
+    p-value (joint negative/positive size bias omitted for a light proxy)."""
+    z = _clean(z)
+    if len(z) < 100:
+        return dict(signbias_p=np.nan, signbias_coef=np.nan)
+    z2 = z[1:] ** 2
+    neg = (z[:-1] < 0).astype(float)
+    X = np.column_stack([np.ones(len(neg)), neg])
+    try:
+        beta, *_ = np.linalg.lstsq(X, z2, rcond=None)
+        resid = z2 - X @ beta
+        dof = max(len(z2) - 2, 1)
+        s2 = float(resid @ resid) / dof
+        xtx_inv = np.linalg.inv(X.T @ X)
+        se = np.sqrt(s2 * xtx_inv[1, 1])
+        from scipy import stats
+        t = beta[1] / (se + 1e-30)
+        p = float(2 * stats.t.sf(abs(t), dof))
+        return dict(signbias_p=round(p, 4), signbias_coef=round(float(beta[1]), 4))
+    except Exception:
+        return dict(signbias_p=np.nan, signbias_coef=np.nan)
+
+
 def robust_z(x: pd.Series, mad_c: float = 1.4826) -> pd.Series:
     """接受门失败时的兜底"白化"(plan §6.4 优雅降级).
 

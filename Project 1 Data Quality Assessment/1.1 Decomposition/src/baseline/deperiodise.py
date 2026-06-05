@@ -181,6 +181,37 @@ def extra_stl_pass(residual: pd.Series, period: int, n_cycles: int = 14,
     return pd.Series(e - seas, index=residual.index, name=residual.name)
 
 
+def detect_dominant_period(resid: pd.Series, dt_native: float = 1.0,
+                           period_range=(20, 180), min_prominence: float = 5.0):
+    """Detect a GENUINE LOCAL spectral peak (e.g. a sub-hourly aeration/blower
+    limit cycle the 24h/12h harmonics miss) in `period_range` (native units).
+
+    Uses Welch + scipy.find_peaks on log-power, so a monotone red-noise /
+    near-unit-root roll-off — which has NO local peak — correctly returns None
+    (rather than a spurious band-edge "period"). `min_prominence` is the linear
+    peak/continuum ratio, converted to a log-prominence threshold. Returns
+    {period, prominence} or None.
+    """
+    from scipy.signal import welch, find_peaks
+    x = pd.Series(resid).interpolate(limit=6).dropna().values.astype(float)
+    n = len(x)
+    if n < 4096:
+        return None
+    nper = max(int(min(8 * period_range[1] / dt_native, n)), 1024)
+    freq, P = welch(x, fs=1.0 / dt_native, nperseg=nper, detrend="linear")
+    with np.errstate(divide="ignore"):
+        per = np.where(freq > 0, 1.0 / freq, np.inf)
+    logP = np.log(P + 1e-30)
+    pk, props = find_peaks(logP, prominence=np.log(max(min_prominence, 1.01)))
+    cand = [(int(round(per[p])), float(np.exp(props["prominences"][i])))
+            for i, p in enumerate(pk)
+            if period_range[0] <= per[p] <= period_range[1]]
+    if not cand:
+        return None
+    period, prom = max(cand, key=lambda t: t[1])
+    return dict(period=period, prominence=round(prom, 1))
+
+
 def residual_spectrum_peak_ratio(resid: pd.Series, periods: list,
                                  dt_native: float, half_window: int = 60,
                                  peak_bins: int = 3) -> dict:

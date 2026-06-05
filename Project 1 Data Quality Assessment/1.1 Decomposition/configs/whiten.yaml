@@ -58,3 +58,10 @@ acceptance:
 fallback:
   on_gate_fail: robust_z             # robust_z | last_good | none
   mad_constant: 1.4826
+
+# 地板/截尾路由 (plan §2.2/§3.4): 后缺氧 DO 近九成贴检测地板时, 对近常数截尾信号
+# 做 ARMA 白化无意义(造假白化), 改走 floor/freeze + 截尾感知标准化, 并退出白化考核。
+floor_route:
+  enable: true
+  near_floor_value: 0.05             # DO 视为"贴地板"的阈值 (mg/L)
+  route_occupancy: 0.70              # 贴地板占比 >= 此值 -> 路由 (DO_1_4≈0.89 路由; DO_2_4≈0.47 不路由)

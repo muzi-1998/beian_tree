@@ -2,7 +2,7 @@
 DO_1_1,min,arma,0,0,2,2,,True,True,0.168,-15561.47,-15528.89,False,True,windowed-LB 0.01<0.02
 DO_1_2,min,arma,0,0,3,3,,True,True,0.167,-8096.56,-8050.94,True,False,accepted
 DO_1_3,min,arma,0,0,3,3,,True,True,0.212,-12988.97,-12943.34,True,False,accepted
-DO_1_4,min,arma,0,0,3,3,,True,False,0.586,-30536.33,-30490.71,False,True,|acf1| 0.31>0.3
+DO_1_4,min,floor,0,0,0,0,,False,False,,,,False,True,floor route (occ 0.90); censored-z
 DO_2_1,min,arma,0,0,3,1,,True,True,0.232,-18220.9,-18188.31,False,True,windowed-LB 0.00<0.02
 DO_2_2,min,arma,0,0,2,2,,True,True,0.323,-11938.16,-11905.57,False,True,windowed-LB 0.01<0.02
 DO_2_3,min,arma,0,0,2,2,,True,True,0.324,-10620.37,-10587.79,True,False,accepted
@@ -13,7 +13,7 @@ ORP_1_3,min,arma,0,0,1,3,,True,False,0.754,33716.69,33749.28,True,False,accepted
 ORP_2_1,min,arma,0,0,1,1,,True,False,1.05,18433.37,18452.92,True,False,accepted
 ORP_2_2,min,arma,0,0,2,2,,True,False,0.752,13824.74,13857.33,True,False,accepted
 ORP_2_3,min,arma,0,0,2,3,,True,False,0.752,48502.3,48541.4,True,False,accepted
-QR_1,min,arma,0,0,2,3,,True,False,0.707,60642.49,60681.59,True,False,accepted
+QR_1,min,arma,0,0,2,1,,True,False,0.698,62279.33,62305.4,True,False,accepted
 QR_2,min,arma,0,0,2,3,,True,True,0.462,73948.1,73987.21,True,False,accepted
 QIR_1,min,arma,0,0,2,2,,True,False,0.624,52115.02,52147.6,True,False,accepted
 QIR_2,min,arma,0,0,2,1,,True,False,0.753,74249.82,74275.89,True,False,accepted

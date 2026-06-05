@@ -15,6 +15,9 @@ groups:
     harmonic_order_init: 3
     loess_trend_bandwidth_h: 24
     stl_refine_iters: 2          # 谐波后再迭代 STL,吃掉非正弦残留
+    remove_subhourly: true       # 检测并去除亚小时曝气极限环(鼓风机启停),
+    subhourly_period_range: [20, 180]   # 候选周期 20–180 min
+    subhourly_min_prominence: 6.0       # 谱峰显著性阈值; 同时落 aeration_cycle.csv 供 §1.2 评分
   postanoxic_do:     # DO_x_4 — near-zero floor; harmonics weak, censoring path
     track: min
     candidate_periods: [1440]

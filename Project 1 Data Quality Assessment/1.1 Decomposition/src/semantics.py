@@ -32,8 +32,11 @@ EFFLUENT_AUX     = ["sludge"]    # last (GBK-garbled) effluent column
 PHYS_RANGE = {
     **{c: (-0.5, 12.0)  for c in DO_CHANNELS},
     **{c: (-550, 550)   for c in ORP_CHANNELS},
-    **{f"QR_{p}":  (-50, 8000) for p in (1, 2)},
-    **{f"QIR_{p}": (-20, 5000) for p in (1, 2)},
+    # flows cannot be negative (physically impossible); negatives are acquisition
+    # faults -> flagged RANGE & excluded before decomposition/whitening. The raw
+    # negative fraction is still reported by consistency.value_rate_report.
+    **{f"QR_{p}":  (0, 8000) for p in (1, 2)},
+    **{f"QIR_{p}": (0, 5000) for p in (1, 2)},
     # hourly water quality (prefixed inf_/eff_ by loader)
     "inf_pH": (0, 14), "inf_T": (-5, 45), "inf_SS": (0, 5000),
     "inf_NH4": (0, 200), "inf_TP": (0, 50), "inf_TN": (0, 300),

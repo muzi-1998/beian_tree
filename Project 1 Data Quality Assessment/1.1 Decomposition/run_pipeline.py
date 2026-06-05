@@ -157,7 +157,7 @@ def w2_decompose(cfg, out, quick=False):
     alpha = dcfg["f_test_alpha"]
     _log("W2: differentiated decomposition ...")
 
-    order_rows, suff_rows = [], []
+    order_rows, suff_rows, subhourly_rows = [], [], []
     resid_min, trend_min, seas_min = {}, {}, {}
     resid_inf, resid_eff = {}, {}
     decomp_store = {}
@@ -165,6 +165,20 @@ def w2_decompose(cfg, out, quick=False):
     for c, s, gcfg, dt_native, track, cm in _iter_channels(cfg, out, quick):
         dec = deperiodise.decompose_channel(s, gcfg, dt_native, fit_days,
                                             order_alpha=alpha, censored_mask=cm)
+        # ── Item 4: aerobic-DO sub-hourly aeration limit-cycle removal ────────
+        # The 24h/12h harmonics miss the blower start/stop limit cycle; detect &
+        # remove it (decomposition route, not AR — keeps the cycle explicit and
+        # scorable via aeration_cycle.csv, avoids hiding a fault in AR lags).
+        if gcfg.get("remove_subhourly") and track == "min":
+            det = deperiodise.detect_dominant_period(
+                dec["residual"], dt_native,
+                period_range=tuple(gcfg.get("subhourly_period_range", [20, 180])),
+                min_prominence=gcfg.get("subhourly_min_prominence", 6.0))
+            if det:
+                dec["residual"] = deperiodise.extra_stl_pass(dec["residual"], det["period"])
+                subhourly_rows.append(dict(channel=c, zone=CHANNEL_META[c]["zone"],
+                                           period_min=det["period"],
+                                           prominence=det["prominence"]))
         rec = dec["order_record"]
         order_rows.append(dict(channel=c, track=track, group=CHANNEL_META[c]["group"],
                                zone=CHANNEL_META[c]["zone"],
@@ -206,6 +220,11 @@ def w2_decompose(cfg, out, quick=False):
     tables.write_table(order_df, cfg["paths"]["table_root"], "harmonic_order_table")
     tables.write_table(pd.DataFrame(suff_rows), cfg["paths"]["table_root"],
                        "decomposition_sufficiency")
+    if subhourly_rows:
+        tables.write_table(pd.DataFrame(subhourly_rows),
+                           cfg["paths"]["table_root"], "aeration_cycle")
+        _log(f"W2: aeration sub-hourly cycle removed on {len(subhourly_rows)} "
+             f"aerobic-DO channels (recorded in aeration_cycle.csv)")
 
     # save residual datasets
     pq = Path(cfg["paths"]["parquet_root"])
@@ -235,11 +254,40 @@ def w3_whiten(cfg, out, quick=False):
     innov_inf, innov_eff = {}, {}
     cold_days = wcfg["cold_start_reference_days"]
 
-    def process(c, resid, track):
+    def process(c, resid, track, raw=None):
         grid = wcfg["arma_grid"]["min" if track == "min" else "hour"]
         lb = wcfg["ljungbox_lags"]["min" if track == "min" else "hour"]
         # cold-start reference window
         ref = resid.iloc[:cold_days * 1440] if track == "min" else resid
+
+        # ── Item 2: detection-floor route (post-anoxic DO) — censored-z, no ARMA ──
+        fcfg = wcfg.get("floor_route", {})
+        if (fcfg.get("enable", True) and raw is not None
+                and CHANNEL_META[c]["group"] == "postanoxic_do"):
+            fthr = fcfg.get("near_floor_value", 0.05)
+            occ = float((raw.dropna() <= fthr).mean())
+            if occ >= fcfg.get("route_occupancy", 0.70):
+                z = dg.censored_robust_z(resid, raw=raw, floor_thr=fthr)
+                win = 1440
+                wlb_r = dg.windowed_lb_pass_rate(resid, win, lags=lb)
+                wlb_i = dg.windowed_lb_pass_rate(z, win, lags=lb)
+                arma_rows.append(dict(channel=c, track=track, family="floor",
+                                      d=0, D=0, p=0, q=0, fd=None, garch=False,
+                                      lrd_flag=False, lrd_d_gph=None, aic=None,
+                                      bic=None, accepted=False, fallback=True,
+                                      gate=f"floor route (occ {occ:.2f}); censored-z"))
+                cmp_rows.append(dict(channel=c, track=track,
+                    lb_passrate_resid=wlb_r["lb_pass_rate"],
+                    lb_passrate_innov=wlb_i["lb_pass_rate"], n_windows=wlb_i["n_windows"],
+                    acf1_resid=dg.acf1(resid.dropna().values),
+                    acf1_innov=dg.acf1(z.dropna().values),
+                    mabsacf_resid=dg.mean_abs_acf(resid.dropna().values),
+                    mabsacf_innov=dg.mean_abs_acf(z.dropna().values),
+                    adf_p_innov=np.nan, adf_reject_innov=None, kpss_p_innov=np.nan,
+                    kpss_stat_innov=None, arch_p_innov=np.nan, arch_het_innov=None,
+                    arch_effect=np.nan, signbias_p=np.nan))
+                _log(f"  {c}: floor route (occ {occ:.2f}) -> censored-z (excluded from whitening)")
+                return z, z
         # ── data-driven per-channel model selection (ARMA/ARIMA/SARIMA/ARFIMA) ──
         if wcfg.get("model_selection", {}).get("enable", True):
             model, sel = ms.select_model(ref, wcfg, version=f"{c}_v1",
@@ -307,11 +355,13 @@ def w3_whiten(cfg, out, quick=False):
             mabsacf_innov=dg.mean_abs_acf(z.dropna().values),
             adf_p_innov=d_inn["adf_pvalue"], adf_reject_innov=d_inn["adf_reject_unitroot"],
             kpss_p_innov=d_inn["kpss_pvalue"], kpss_stat_innov=d_inn["kpss_stationary"],
-            arch_p_innov=d_inn["arch_pvalue"], arch_het_innov=d_inn["arch_heterosked"]))
+            arch_p_innov=d_inn["arch_pvalue"], arch_het_innov=d_inn["arch_heterosked"],
+            arch_effect=dg.mean_abs_acf((z.dropna().values) ** 2, 1, 10),
+            signbias_p=dg.sign_bias_test(z.dropna().values).get("signbias_p")))
         return innov, z
 
     for c, resid in out["resid_min"].items():
-        r = process(c, resid, "min")
+        r = process(c, resid, "min", raw=out["df_min"].get(c))
         if r: innov_min[c], std_min[c] = r
     for c, resid in out["resid_inf"].items():
         r = process(c, resid, "hour")
