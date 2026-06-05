@@ -352,7 +352,8 @@ def spectrum_comparison(spectra: dict, out_path: Path, title: str = ""):
 
 
 def acf_band_grid(rows, out_path: Path, lag: int, band_edges, title: str = "",
-                  band_colors=None, plot_data_root=None, bundle_name=None):
+                  band_colors=None, lag_unit: str = "h",
+                  plot_data_root=None, bundle_name=None):
     """Before/after-whitening ACF grid for a group of variables, with bars
     coloured by lag band (plan §5.3 + daily-lag emphasis).
 
@@ -406,15 +407,17 @@ def acf_band_grid(rows, out_path: Path, lag: int, band_edges, title: str = "",
                 ax.set_ylabel(lab, rotation=0, ha="right", va="center",
                               fontsize=7.5, labelpad=8)
             if i == R - 1:
-                ax.set_xlabel("lag (h)", fontsize=8)
+                ax.set_xlabel(f"lag ({lag_unit})", fontsize=8)
 
-    from matplotlib.patches import Patch
-    handles, prev = [], 0
-    for bi, e in enumerate(band_edges):
-        handles.append(Patch(color=band_colors[bi], label=f"lag {prev + 1}–{e} h"))
-        prev = e
-    fig.legend(handles=handles, loc="outside lower center", ncol=len(band_edges),
-               fontsize=8, frameon=False)
+    if len(band_edges) > 1:                       # multi-band -> colour legend
+        from matplotlib.patches import Patch
+        handles, prev = [], 0
+        for bi, e in enumerate(band_edges):
+            handles.append(Patch(color=band_colors[bi],
+                                 label=f"lag {prev + 1}–{e} {lag_unit}"))
+            prev = e
+        fig.legend(handles=handles, loc="outside lower center",
+                   ncol=len(band_edges), fontsize=8, frameon=False)
     fig.suptitle(title or "ACF before / after whitening", fontsize=10.5)
     Path(out_path).parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out_path, dpi=300)

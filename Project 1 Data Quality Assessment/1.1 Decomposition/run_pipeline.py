@@ -668,21 +668,32 @@ def make_ribbon_overviews(cfg, out, quick=False):
 
 
 def make_acf_band_figures(cfg, out, quick=False):
-    """Banded before/after-whitening ACF grids for the hourly sources:
-    influent at lag 48 (bands 1–24 / 25–48 h) and effluent at lag 72
-    (bands 1–24 / 25–48 / 49–72 h) — bars coloured by daily-lag band so any
-    leftover daily-period autocorrelation (lag 24/48/72) is easy to spot."""
+    """Combined before/after-whitening ACF grids (rows = variables, cols =
+    before residual / after innovation). Hourly sources are banded by daily lag
+    (influent lag 48: 1–24/25–48 h; effluent lag 72: 1–24/25–48/49–72 h) so any
+    leftover daily-period autocorrelation is easy to spot; the minute-level
+    process groups (all DO / all ORP / all QR+QIR) use lag 60 (≈1 h)."""
     fr = Path(cfg["paths"]["figure_root"])
     pdr = cfg["paths"].get("plot_data_root")
+    rmin = out.get("resid_min", {}); smin = out.get("std_min", {})
+    DO = [f"DO_{p}_{i}" for p in (1, 2) for i in range(1, 5)]
+    ORP = [f"ORP_{p}_{i}" for p in (1, 2) for i in range(1, 4)]
+    FLOW = ["QR_1", "QR_2", "QIR_1", "QIR_2"]
     specs = [
         ("influent", out.get("resid_inf", {}), out.get("innov_inf", {}),
-         list(out["inf_f"].columns), 48, [24, 48],
+         list(out["inf_f"].columns), 48, [24, 48], "h",
          "Influent — ACF before/after whitening (lag 48)"),
         ("effluent", out.get("resid_eff", {}), out.get("innov_eff", {}),
-         list(out["eff_f"].columns), 72, [24, 48, 72],
+         list(out["eff_f"].columns), 72, [24, 48, 72], "h",
          "Effluent — ACF before/after whitening (lag 72)"),
+        ("DO", rmin, smin, DO, 60, [60], "min",
+         "DO channels — ACF before/after whitening (lag 60)"),
+        ("ORP", rmin, smin, ORP, 60, [60], "min",
+         "ORP channels — ACF before/after whitening (lag 60)"),
+        ("flow", rmin, smin, FLOW, 60, [60], "min",
+         "Recycle-flow QR/QIR — ACF before/after whitening (lag 60)"),
     ]
-    for gname, R, I, order, lag, edges, title in specs:
+    for gname, R, I, order, lag, edges, unit, title in specs:
         rows = []
         for c in order:
             if c in R and c in I:
@@ -694,10 +705,10 @@ def make_acf_band_figures(cfg, out, quick=False):
                              dg.acf_conf(len(rv)), dg.acf_conf(len(iv))))
         if rows:
             figures.acf_band_grid(rows, fr / f"fig_W3_acf_{gname}_banded.png",
-                                  lag, edges, title=title,
+                                  lag, edges, title=title, lag_unit=unit,
                                   plot_data_root=pdr,
                                   bundle_name=f"acf_{gname}_banded")
-    _log("Banded ACF figures (influent lag48 / effluent lag72) written")
+    _log("Combined ACF grids (influent/effluent/DO/ORP/flow) written")
 
 
 # ════════════════════════════════════════════════════════════════════════
