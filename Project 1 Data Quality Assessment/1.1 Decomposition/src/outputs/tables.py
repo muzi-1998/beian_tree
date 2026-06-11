@@ -47,6 +47,50 @@ def inventory_table(frames_flags: dict) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def whiteness_manifest(arma_df: pd.DataFrame, cmp_df: pd.DataFrame) -> pd.DataFrame:
+    """§1.1 -> §1.2 input contract: per-channel whitening usability.
+
+    Tells §1.2 whether each channel's "innovation" is a genuine ~i.i.d. white
+    series (so iid control-charts apply) or a degraded fallback that is still
+    autocorrelated (near-unit-root robust_z) / a censored floor — so §1.2 must
+    branch its scoring instead of naively assuming whiteness.
+    """
+    keep = ["channel", "track", "acf1_innov", "mabsacf_innov", "lb_passrate_innov"]
+    cm = cmp_df[[c for c in keep if c in cmp_df.columns]]
+    m = arma_df.merge(cm, on=["channel", "track"], how="left")
+    rows = []
+    for _, r in m.iterrows():
+        ch = r["channel"]; meta = CHANNEL_META.get(ch, {})
+        fam = r.get("family", "arma")
+        acc = bool(r.get("accepted")) if pd.notna(r.get("accepted")) else False
+        a1 = r.get("acf1_innov")
+        if fam == "floor":
+            kind, whitened, mode = "censored_z", False, "floor_freeze"
+            note = "post-anoxic 检测地板;走 floor/freeze + 截尾标准化,排除出白化考核"
+        elif acc:
+            kind, whitened, mode = "innovation", True, "iid"
+            note = "已白化近 i.i.d. 创新;iid 控制图/独立性评分可用"
+        else:
+            kind, whitened, mode = "robust_z", False, "autocorr_aware"
+            note = "近单位根;robust_z 非白噪声 -> 用自相关感知方法 + 倚重 D7 多变量一致性"
+        neff = round((1 - abs(a1)) / (1 + abs(a1)), 4) if pd.notna(a1) else np.nan
+        rows.append(dict(
+            channel=ch, track=r["track"], group=meta.get("group"),
+            zone=meta.get("zone"), cls=meta.get("cls"),
+            family=fam, accepted=acc, whitened=whitened, innov_kind=kind,
+            scoring_mode=mode,
+            acf1_innov=round(float(a1), 4) if pd.notna(a1) else np.nan,
+            mabsacf_innov=r.get("mabsacf_innov"),
+            lb_passrate_innov=r.get("lb_passrate_innov"),
+            n_eff_ratio=neff, note=note))
+    out = pd.DataFrame(rows)
+    order = {"min": 0, "hour": 1}
+    return out.sort_values(["whitened", "track", "channel"],
+                           ascending=[False, True, True],
+                           key=lambda s: s.map(order) if s.name == "track" else s
+                           ).reset_index(drop=True)
+
+
 def write_table(df: pd.DataFrame, table_root: Path, name: str) -> None:
     """Write a DataFrame to CSV (utf-8-sig for Excel-friendly Chinese)."""
     table_root = Path(table_root)

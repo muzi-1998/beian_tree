@@ -761,6 +761,28 @@ def make_acf_band_figures(cfg, out, quick=False):
     _log("Combined ACF grids (influent/effluent/DO/ORP/flow) written")
 
 
+def make_whiteness_manifest(cfg, out):
+    """§1.1 -> §1.2 input contract: per-channel whitening-usability manifest +
+    a column sidecar for innovation_unified_1min.parquet (which columns are a
+    genuine white innovation vs an autocorrelated robust_z / censored fallback),
+    so §1.2 branches its scoring instead of assuming whiteness."""
+    if "arma_df" not in out or "cmp_df" not in out:
+        return
+    man = tables.whiteness_manifest(out["arma_df"], out["cmp_df"])
+    tables.write_table(man, cfg["paths"]["table_root"], "whiteness_manifest")
+    pq = Path(cfg["paths"]["parquet_root"])
+    upath = pq / "innovation_unified_1min.parquet"
+    if upath.exists():
+        import pyarrow.parquet as paq
+        cols = list(paq.ParquetFile(upath).schema.names)
+        side = man[man.channel.isin(cols)][
+            ["channel", "track", "whitened", "innov_kind", "scoring_mode"]]
+        side.to_csv(pq / "innovation_unified_1min.columns.csv",
+                    index=False, encoding="utf-8-sig")
+    _log(f"whiteness_manifest ({int(man.whitened.sum())}/{len(man)} whitened) "
+         f"+ unified sidecar written")
+
+
 # ════════════════════════════════════════════════════════════════════════
 def main():
     ap = argparse.ArgumentParser()
@@ -782,6 +804,7 @@ def main():
     make_combined_overviews(cfg, out, quick=args.quick)
     make_ribbon_overviews(cfg, out, quick=args.quick)
     make_acf_band_figures(cfg, out, quick=args.quick)
+    make_whiteness_manifest(cfg, out)
 
     # run manifest
     man = dict(timestamp=datetime.now().isoformat(), config_hash=chash,
