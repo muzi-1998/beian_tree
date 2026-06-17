@@ -736,8 +736,6 @@ def make_acf_band_figures(cfg, out, quick=False):
         ("effluent", out.get("resid_eff", {}), out.get("innov_eff", {}),
          list(out["eff_f"].columns), 72, [24, 48, 72], "h",
          "Effluent — ACF before/after whitening (lag 72)"),
-        ("DO", rmin, smin, DO, 60, [60], "min",
-         "DO channels — ACF before/after whitening (lag 60)"),
         ("ORP", rmin, smin, ORP, 60, [60], "min",
          "ORP channels — ACF before/after whitening (lag 60)"),
         ("flow", rmin, smin, FLOW, 60, [60], "min",
@@ -759,6 +757,96 @@ def make_acf_band_figures(cfg, out, quick=False):
                                   plot_data_root=pdr,
                                   bundle_name=f"acf_{gname}_banded")
     _log("Combined ACF grids (influent/effluent/DO/ORP/flow) written")
+
+
+def make_do_manifest_figures(cfg, out):
+    """Manifest-driven DO ACF figure set (replaces the single 8-channel DO
+    before/after grid). Groups DO channels by `scoring_mode` from the whiteness
+    manifest and draws the appropriate figure for each:
+      A (iid)            before/after ACF + ±1.96/√n band + effect-size labels
+      B (autocorr_aware) residual ACF slow decay + broadband spectrum (un-whitenable)
+      C (floor_freeze)   floor occupancy / ECDF (censoring, not dynamics)
+      D (all DO)         D7 parallel-train symmetry + along-train gradient
+    """
+    from scipy.signal import welch
+    fr = Path(cfg["paths"]["figure_root"])
+    man = tables.whiteness_manifest(out["arma_df"], out["cmp_df"])
+    do = man[man.channel.str.startswith("DO_")]
+    iid = list(do[do.scoring_mode == "iid"].channel)
+    nur = list(do[do.scoring_mode == "autocorr_aware"].channel)
+    floor = list(do[do.scoring_mode == "floor_freeze"].channel)
+    neff = dict(zip(man.channel, man.n_eff_ratio))
+    rmin = out.get("resid_min", {}); smin = out.get("std_min", {})
+    df_min = out["df_min"]
+    frc = cfg["whiten"].get("floor_route", {})
+
+    # ── A: whitened (iid) before/after ACF ────────────────────────────────
+    if iid:
+        rows, ann = [], []
+        for c in iid:
+            if c in rmin and c in smin:
+                rv = pd.Series(rmin[c]).dropna().values
+                iv = pd.Series(smin[c]).dropna().values
+                rows.append((c, dg.acf(rv, 60), dg.acf(iv, 60),
+                             dg.acf_conf(len(rv)), dg.acf_conf(len(iv))))
+                ann.append(f"mabsacf[1-10]: {dg.mean_abs_acf(rv):.2f}"
+                           f"→{dg.mean_abs_acf(iv):.2f}")
+        if rows:
+            figures.acf_band_grid(
+                rows, fr / "fig_W3_acf_DO_A_iid.png", 60, [60], lag_unit="min",
+                annotate_after=ann,
+                title=f"Fig A — Whitened DO channels (iid): ACF before/after  "
+                      f"(±1.96/√n band ≈ {rows[0][3]:.4f}, near-invisible at this n)")
+
+    # ── B: near-unit-root residual ACF + broadband spectrum ───────────────
+    if nur:
+        rows = []
+        for c in nur:
+            if c in rmin:
+                rv = pd.Series(rmin[c]).interpolate(limit=6).dropna().values.astype(float)
+                f, P = welch(rv, fs=60.0, nperseg=min(10080, len(rv)),
+                             detrend="linear")
+                sel = f > 0
+                rows.append((c, dg.acf(rv, 120), f[sel], P[sel],
+                             float(neff.get(c, np.nan))))
+        if rows:
+            figures.near_ur_panel(
+                rows, fr / "fig_W3_acf_DO_B_nearUR.png",
+                title="Fig B — Near-unit-root DO channels (autocorr_aware): "
+                      "residual ACF slow decay + broadband spectrum "
+                      "(un-whitenable, NOT a whitening failure)")
+
+    # ── C: post-anoxic floor occupancy ────────────────────────────────────
+    if floor:
+        chans = set(floor)
+        for c in floor:                       # add parallel-train partner
+            tr = c.split("_")[1]
+            chans.add(f"DO_{'2' if tr == '1' else '1'}_4")
+        ser = {c: df_min[c].values for c in sorted(chans) if c in df_min}
+        if ser:
+            figures.floor_panel(
+                ser, fr / "fig_W3_acf_DO_C_floor.png",
+                floor_thr=frc.get("near_floor_value", 0.05),
+                route_occ=frc.get("route_occupancy", 0.70),
+                title="Fig C — Post-anoxic DO: floor occupancy "
+                      "(censoring, not dynamics)")
+
+    # ── D: D7 multivariate redundancy ─────────────────────────────────────
+    do_raw = {c: df_min[c].values
+              for c in [f"DO_{p}_{i}" for p in (1, 2) for i in range(1, 5)]
+              if c in df_min}
+    if {"DO_1_1", "DO_2_1"} <= set(do_raw):
+        positions = [(i, f"DO_1_{i}", f"DO_2_{i}") for i in range(1, 5)
+                     if f"DO_1_{i}" in do_raw and f"DO_2_{i}" in do_raw]
+        figures.d7_panel(do_raw, positions, fr / "fig_W3_acf_DO_D_d7.png",
+                         title="Fig D — D7 cross-channel redundancy monitors "
+                               "the un-whitenable DO channels")
+
+    old = fr / "fig_W3_acf_DO_banded.png"     # retire the superseded single grid
+    if old.exists():
+        old.unlink()
+    _log(f"DO manifest-driven ACF set written "
+         f"(A iid={len(iid)}, B nearUR={len(nur)}, C floor={len(floor)}, D d7)")
 
 
 def make_whiteness_manifest(cfg, out):
@@ -804,6 +892,7 @@ def main():
     make_combined_overviews(cfg, out, quick=args.quick)
     make_ribbon_overviews(cfg, out, quick=args.quick)
     make_acf_band_figures(cfg, out, quick=args.quick)
+    make_do_manifest_figures(cfg, out)
     make_whiteness_manifest(cfg, out)
 
     # run manifest
