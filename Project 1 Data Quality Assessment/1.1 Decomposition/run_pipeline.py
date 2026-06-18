@@ -779,74 +779,68 @@ def make_do_manifest_figures(cfg, out):
     rmin = out.get("resid_min", {}); smin = out.get("std_min", {})
     df_min = out["df_min"]
     frc = cfg["whiten"].get("floor_route", {})
+    floor_thr = frc.get("near_floor_value", 0.05)
+    route_occ = frc.get("route_occupancy", 0.70)
 
-    # ── A: whitened (iid) before/after ACF ────────────────────────────────
-    if iid:
-        rows, ann = [], []
-        for c in iid:
-            if c in rmin and c in smin:
-                rv = pd.Series(rmin[c]).dropna().values
-                iv = pd.Series(smin[c]).dropna().values
-                rows.append((c, dg.acf(rv, 60), dg.acf(iv, 60),
-                             dg.acf_conf(len(rv)), dg.acf_conf(len(iv))))
-                ann.append(f"mabsacf[1-10]: {dg.mean_abs_acf(rv):.2f}"
-                           f"→{dg.mean_abs_acf(iv):.2f}")
-        if rows:
-            figures.acf_band_grid(
-                rows, fr / "fig_W3_acf_DO_A_iid.png", 60, [60], lag_unit="min",
-                annotate_after=ann,
-                title=f"Fig A — Whitened DO channels (iid): ACF before/after  "
-                      f"(±1.96/√n band ≈ {rows[0][3]:.4f}, near-invisible at this n)")
+    # ── (a) iid before/after (After-col shared y + mabsacf effect size) ───
+    rows_a = []
+    for c in iid:
+        if c in rmin and c in smin:
+            rv = pd.Series(rmin[c]).dropna().values
+            iv = pd.Series(smin[c]).dropna().values
+            zn = ("post-anoxic, whitened"
+                  if CHANNEL_META[c]["zone"] == "post_anoxic" else "")
+            rows_a.append((c, dg.acf(rv, 60), dg.acf(iv, 60), dg.acf_conf(len(rv)),
+                           dg.mean_abs_acf(rv), dg.mean_abs_acf(iv), zn))
+    if rows_a:
+        figures.do_panel_iid(rows_a, fr / "fig_W3_acf_DO_A_iid.png")
 
-    # ── B: near-unit-root residual ACF + broadband spectrum ───────────────
-    if nur:
-        rows = []
-        for c in nur:
-            if c in rmin:
-                rv = pd.Series(rmin[c]).interpolate(limit=6).dropna().values.astype(float)
-                f, P = welch(rv, fs=60.0, nperseg=min(10080, len(rv)),
-                             detrend="linear")
-                sel = f > 0
-                rows.append((c, dg.acf(rv, 120), f[sel], P[sel],
-                             float(neff.get(c, np.nan))))
-        if rows:
-            figures.near_ur_panel(
-                rows, fr / "fig_W3_acf_DO_B_nearUR.png",
-                title="Fig B — Near-unit-root DO channels (autocorr_aware): "
-                      "residual ACF slow decay + broadband spectrum "
-                      "(un-whitenable, NOT a whitening failure)")
+    # ── (b) near-UR residual ACF (lag 120) + spectrum (f^-2 ref) ──────────
+    rows_b = []
+    for c in nur:
+        if c in rmin:
+            rv = pd.Series(rmin[c]).interpolate(limit=6).dropna().values.astype(float)
+            f, P = welch(rv, fs=60.0, nperseg=min(10080, len(rv)), detrend="linear")
+            sel = f > 0
+            rows_b.append((c, dg.acf(rv, 120), f[sel], P[sel],
+                           float(neff.get(c, np.nan))))
+    if rows_b:
+        figures.do_panel_nearur(rows_b, fr / "fig_W3_acf_DO_B_nearUR.png")
 
-    # ── C: post-anoxic floor occupancy ────────────────────────────────────
-    if floor:
-        chans = set(floor)
-        for c in floor:                       # add parallel-train partner
-            tr = c.split("_")[1]
-            chans.add(f"DO_{'2' if tr == '1' else '1'}_4")
-        ser = {c: df_min[c].values for c in sorted(chans) if c in df_min}
-        if ser:
-            figures.floor_panel(
-                ser, fr / "fig_W3_acf_DO_C_floor.png",
-                floor_thr=frc.get("near_floor_value", 0.05),
-                route_occ=frc.get("route_occupancy", 0.70),
-                title="Fig C — Post-anoxic DO: floor occupancy "
-                      "(censoring, not dynamics)")
+    # ── (c) floor occupancy (floor channel + parallel partner) ────────────
+    series_c = {}
+    for c in floor:
+        series_c[c] = df_min[c].values
+        tr = c.split("_")[1]
+        partner = f"DO_{'2' if tr == '1' else '1'}_4"
+        if partner in df_min:
+            series_c[partner] = df_min[partner].values
+    if series_c:
+        figures.do_panel_floor(series_c, fr / "fig_W3_acf_DO_C_floor.png",
+                               floor_thr=floor_thr, route_occ=route_occ)
 
-    # ── D: D7 multivariate redundancy ─────────────────────────────────────
+    # ── (d) D7 spatial profile + parallel-train difference ────────────────
     do_raw = {c: df_min[c].values
               for c in [f"DO_{p}_{i}" for p in (1, 2) for i in range(1, 5)]
               if c in df_min}
-    if {"DO_1_1", "DO_2_1"} <= set(do_raw):
-        positions = [(i, f"DO_1_{i}", f"DO_2_{i}") for i in range(1, 5)
-                     if f"DO_1_{i}" in do_raw and f"DO_2_{i}" in do_raw]
-        figures.d7_panel(do_raw, positions, fr / "fig_W3_acf_DO_D_d7.png",
-                         title="Fig D — D7 cross-channel redundancy monitors "
-                               "the un-whitenable DO channels")
+    zone_lab = {1: "aerobic\nfront", 2: "aerobic\nmid", 3: "aerobic\nrear",
+                4: "post-\nanoxic"}
+    positions = [(zone_lab[i], f"DO_1_{i}", f"DO_2_{i}") for i in range(1, 5)
+                 if f"DO_1_{i}" in do_raw and f"DO_2_{i}" in do_raw]
+    if positions:
+        figures.do_panel_d7(do_raw, positions, fr / "fig_W3_acf_DO_D_d7.png")
+
+    # ── composite (a)–(d), vector (PDF/SVG) ───────────────────────────────
+    if rows_a and rows_b and series_c and positions:
+        figures.do_composite(rows_a, rows_b, series_c, do_raw, positions,
+                             fr / "fig_W3_DO_composite.png",
+                             floor_thr=floor_thr, route_occ=route_occ, vector=True)
 
     old = fr / "fig_W3_acf_DO_banded.png"     # retire the superseded single grid
     if old.exists():
         old.unlink()
-    _log(f"DO manifest-driven ACF set written "
-         f"(A iid={len(iid)}, B nearUR={len(nur)}, C floor={len(floor)}, D d7)")
+    _log(f"DO manifest figure set (a–d + composite) written "
+         f"(a iid={len(iid)}, b nearUR={len(nur)}, c floor={len(floor)})")
 
 
 def make_whiteness_manifest(cfg, out):

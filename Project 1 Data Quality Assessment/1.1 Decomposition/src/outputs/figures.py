@@ -18,7 +18,7 @@ from matplotlib.colors import ListedColormap, BoundaryNorm
 from pathlib import Path
 
 from .figstyle import (setup_style, render_stack, render_grid, dump_bundle,
-                       COLORS, PALETTE)
+                       COLORS, PALETTE, OKABE_ITO as OI)
 
 # Full-frame (boxed) + gridded style, applied to EVERY figure in this module.
 setup_style()
@@ -437,132 +437,219 @@ def acf_band_grid(rows, out_path: Path, lag: int, band_edges, title: str = "",
                                  encoding="utf-8-sig")
 
 
-def near_ur_panel(rows, out_path: Path, title: str = ""):
-    """Figure B — near-unit-root DO group: residual ACF (slow monotone decay)
-    + residual spectrum (broadband 1/f roll-off, NO local peak). Conveys
-    "not a whitening failure — un-whitenable red noise". `rows` =
-    [(label, acf_resid_array, freq_cph, power, n_eff_ratio)] (freq in cycles/h).
-    """
+def _save_fig(fig, out_path: Path, vector: bool = False):
+    out_path = Path(out_path); out_path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(out_path, dpi=300)
+    if vector:
+        for ext in (".pdf", ".svg"):
+            fig.savefig(out_path.with_suffix(ext))
+    plt.close(fig)
+
+
+# ── DO manifest-driven panels (Okabe-Ito; draw into a Figure or SubFigure) ──
+def _panel_a_iid(host, rows, lag=60, after_ylim=(-0.20, 0.10), heading=""):
+    """(a) iid group before/after ACF. `rows`=[(label, acf_res, acf_inn, conf,
+    mabsacf_res, mabsacf_inn, zone_note)]. After-column shares y so all four
+    visibly collapse to ~0 (DO_1_2's MA over-correction lag-1 dip still shows);
+    precise values via the mabsacf effect-size label."""
+    axes = host.subplots(len(rows), 2, sharex=True, squeeze=False)
+    lags = np.arange(1, lag + 1)
+    for i, (lab, a_res, a_inn, conf, mab_r, mab_i, znote) in enumerate(rows):
+        for j, (a, after) in enumerate([(a_res, False), (a_inn, True)]):
+            ax = axes[i][j]
+            ax.bar(lags, np.asarray(a, float)[1:lag + 1], color=OI["blue"],
+                   width=0.9, linewidth=0)
+            ax.axhline(0, color=OI["gray"], lw=0.6)
+            ax.axhline(conf, color=OI["gray"], ls=":", lw=0.6)
+            ax.axhline(-conf, color=OI["gray"], ls=":", lw=0.6)
+            ax.grid(True, axis="y", alpha=0.25); ax.tick_params(labelsize=7)
+            ax.set_ylim(*after_ylim) if after else ax.set_ylim(-0.1, 1.0)
+            if i == 0:
+                ax.set_title(["Before — residual e(t)",
+                              "After — innovation η(t)"][j], fontsize=8.5)
+            if j == 0:
+                yl = lab + (f"\n({znote})" if znote else "")
+                ax.set_ylabel(yl, rotation=0, ha="right", va="center", fontsize=8)
+            if i == len(rows) - 1:
+                ax.set_xlabel("lag (min)", fontsize=8)
+            if after:
+                ax.text(0.97, 0.95, f"mabsacf[1-10]: {mab_r:.2f}→{mab_i:.2f}",
+                        transform=ax.transAxes, ha="right", va="top",
+                        fontsize=6.5, color="#555555")
+    if heading:
+        host.suptitle(heading, fontsize=10)
+
+
+def _panel_b_nearur(host, rows, heading=""):
+    """(b) near-UR group: residual ACF slow decay (blue, neutral) + residual
+    spectrum (loglog) with an f⁻² reference slope. `rows`=[(label, acf_res,
+    freq_cph, power, n_eff_ratio)]."""
     R = len(rows)
-    fig, axes = plt.subplots(R, 2, figsize=(8.8, 1.35 * R + 1.2), squeeze=False,
-                             layout="constrained")
+    axes = host.subplots(R, 2, squeeze=False)
     for i, (lab, acf_r, freq, P, neff) in enumerate(rows):
         ax = axes[i][0]
         lags = np.arange(1, len(acf_r))
-        ax.bar(lags, np.asarray(acf_r)[1:], color=COLORS["residual"], width=0.9,
+        ax.bar(lags, np.asarray(acf_r, float)[1:], color=OI["blue"], width=0.9,
                linewidth=0)
         ax.set_ylim(-0.1, 1.0); ax.grid(True, axis="y", alpha=0.25)
+        ax.tick_params(labelsize=7)
         ax.set_ylabel(lab, rotation=0, ha="right", va="center", fontsize=8.5)
-        ax.text(0.96, 0.9, f"near-UR red noise · robust_z\nn_eff/n≈{neff:.3f}",
-                transform=ax.transAxes, ha="right", va="top", fontsize=6.5,
+        ax.text(0.96, 0.92, f"near-UR red noise · robust_z\nn_eff/n≈{neff:.3f}",
+                transform=ax.transAxes, ha="right", va="top", fontsize=6.3,
                 color="#555555")
         if i == 0:
-            ax.set_title("Residual e(t) ACF — slow monotone decay", fontsize=9)
+            ax.set_title("Residual e(t) ACF — slow monotone decay", fontsize=8.5)
         if i == R - 1:
             ax.set_xlabel("lag (min)", fontsize=8)
         ax2 = axes[i][1]
-        ax2.loglog(freq, P, color=COLORS["raw"], lw=0.9)
-        ax2.grid(True, which="both", alpha=0.2)
+        f = np.asarray(freq, float); Pp = np.asarray(P, float)
+        g = f > 0
+        ax2.loglog(f[g], Pp[g], color=OI["spectrum"], lw=0.9)
+        f0, P0 = f[g][1], Pp[g][1]
+        ax2.loglog(f[g], P0 * (f[g] / f0) ** -2, color=OI["gray"], ls="--",
+                   lw=0.8, label="f⁻² (red noise)")
+        ax2.legend(fontsize=6, loc="upper right", frameon=False)
+        ax2.grid(True, which="both", alpha=0.2); ax2.tick_params(labelsize=6.5)
+        ax2.set_ylabel("power", fontsize=7)
         if i == 0:
-            ax2.set_title("Residual spectrum — broadband roll-off, no peak",
-                          fontsize=9)
+            ax2.set_title("Residual spectrum — broadband, no dominant peak",
+                          fontsize=8.5)
         if i == R - 1:
             ax2.set_xlabel("frequency (cycles/h)", fontsize=8)
-        ax2.set_ylabel("power", fontsize=7)
-    fig.suptitle(title or "Near-unit-root DO channels (un-whitenable)",
-                 fontsize=10.5)
-    Path(out_path).parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(out_path, dpi=300)
-    plt.close(fig)
+    if heading:
+        host.suptitle(heading, fontsize=10)
 
 
-def floor_panel(series: dict, out_path: Path, floor_thr: float = 0.05,
-                route_occ: float = 0.70, title: str = ""):
-    """Figure C — post-anoxic floor group: value-distribution (ECDF) +
-    near-floor occupancy-vs-threshold, contrasting the floor-routed channel
-    (high occupancy) with its whitened parallel (low). `series` =
-    {label: raw_array}. Shows the problem is CENSORING, not dynamics.
-    """
-    labs = list(series.keys())
-    cols = [COLORS["residual"], COLORS["trend"], COLORS["innov"]]
-    fig, axes = plt.subplots(1, 2, figsize=(9.2, 3.5), layout="constrained")
-    for k, lab in enumerate(labs):
-        v = np.sort(np.asarray(series[lab])[~np.isnan(series[lab])])
-        if len(v) == 0:
+def _panel_c_floor(host, series, floor_thr=0.05, route_occ=0.70, heading=""):
+    """(c) floor group: ECDF + near-floor occupancy-vs-threshold (blue/orange);
+    route threshold as a vermillion alarm line. `series`={label: raw_array}."""
+    axes = host.subplots(1, 2, squeeze=False)[0]
+    cmap = {0: OI["blue"], 1: OI["orange"]}
+    for k, lab in enumerate(series):
+        arr = np.asarray(series[lab], float); arr = arr[~np.isnan(arr)]
+        if len(arr) == 0:
             continue
-        y = np.arange(1, len(v) + 1) / len(v)
-        axes[0].plot(v, y, color=cols[k % len(cols)], lw=1.4, label=lab)
-        thr = np.linspace(0, 0.5, 60)
-        occ = [float((v <= t).mean()) for t in thr]
-        axes[1].plot(thr, occ, color=cols[k % len(cols)], lw=1.4, label=lab)
-        o_at = float((v <= floor_thr).mean())
-        axes[1].annotate(f"{o_at:.2f}", (floor_thr, o_at), fontsize=7,
-                         color=cols[k % len(cols)], xytext=(4, 0),
-                         textcoords="offset points", va="center")
-    axes[0].axvline(floor_thr, color="#888888", ls="--", lw=0.8)
-    axes[0].set_xlim(-0.1, 1.5); axes[0].set_xlabel("DO (mg/L)")
-    axes[0].set_ylabel("ECDF"); axes[0].set_title("Value distribution (ECDF)")
+        col = cmap[k % 2]
+        v = np.sort(arr); y = np.arange(1, len(v) + 1) / len(v)
+        axes[0].plot(v, y, color=col, lw=1.5, label=lab)
+        thr = np.linspace(0, 0.5, 60); occ = [float((arr <= t).mean()) for t in thr]
+        axes[1].plot(thr, occ, color=col, lw=1.5, label=lab)
+        o = float((arr <= floor_thr).mean())
+        axes[1].annotate(f"{o:.2f}", (floor_thr, o), color=col, fontsize=7.5,
+                         xytext=(5, 0), textcoords="offset points", va="center")
+    axes[0].axvline(floor_thr, color=OI["gray"], ls="--", lw=0.8)
+    axes[0].set_xlim(-0.1, 1.5); axes[0].set_xlabel("DO (mg/L)", fontsize=8)
+    axes[0].set_ylabel("ECDF", fontsize=8)
+    axes[0].set_title("Value distribution (ECDF)", fontsize=8.5)
     axes[0].legend(fontsize=8); axes[0].grid(True, alpha=0.25)
-    axes[1].axvline(floor_thr, color="#888888", ls="--", lw=0.8)
-    axes[1].axhline(route_occ, color="#C0392B", ls=":", lw=1.0,
-                    label=f"route threshold {route_occ}")
-    axes[1].set_xlabel("floor threshold (mg/L)")
-    axes[1].set_ylabel("near-floor occupancy")
-    axes[1].set_title("Floor occupancy → floor/freeze routing")
+    axes[0].tick_params(labelsize=7)
+    axes[1].axvline(floor_thr, color=OI["gray"], ls="--", lw=0.8)
+    axes[1].axhline(route_occ, color=OI["vermillion"], ls="--", lw=1.1)
+    axes[1].text(0.34, route_occ + 0.02, f"route threshold {route_occ}",
+                 color=OI["vermillion"], fontsize=7)
+    axes[1].set_xlabel("floor threshold (mg/L)", fontsize=8)
+    axes[1].set_ylabel("near-floor occupancy", fontsize=8)
+    axes[1].set_title("Floor occupancy → floor/freeze routing", fontsize=8.5)
     axes[1].legend(fontsize=8); axes[1].grid(True, alpha=0.25)
-    fig.suptitle(title or "Post-anoxic DO: censoring, not dynamics", fontsize=10.5)
-    Path(out_path).parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(out_path, dpi=300)
-    plt.close(fig)
+    axes[1].tick_params(labelsize=7)
+    if heading:
+        host.suptitle(heading, fontsize=10)
 
 
-def d7_panel(do: dict, positions, out_path: Path, title: str = ""):
-    """Figure D — D7 multivariate evidence that the un-whitenable channels are
-    not blind spots. LEFT: along-train DO gradient (front→rear, both trains) —
-    the strong physical constraint a sensor fault would violate. RIGHT:
-    parallel-train correlation r by sequence position — honestly shows symmetry
-    is WEAK at the tightly-controlled front (independent blower control
-    decorrelates the trains) and strengthens rearward, so the front is monitored
-    by the gradient, not by parallel symmetry.
-
-    do        : {channel: raw_array}
-    positions : list of (seq, chan_t1, chan_t2)
-    """
-    fig, axes = plt.subplots(1, 2, figsize=(9.6, 3.7), layout="constrained")
-    seqs = [p[0] for p in positions]
-    x = np.arange(len(seqs)); w = 0.38
-    t1 = [float(np.nanmean(do[p[1]])) for p in positions]
-    t2 = [float(np.nanmean(do[p[2]])) for p in positions]
-    axes[0].bar(x - w / 2, t1, w, label="train 1#", color=COLORS["trend"])
-    axes[0].bar(x + w / 2, t2, w, label="train 2#", color=COLORS["seasonal"])
-    axes[0].set_xticks(x)
-    axes[0].set_xticklabels([f"seq {s}" for s in seqs], fontsize=8)
-    axes[0].set_ylabel("mean DO (mg/L)")
-    axes[0].set_title("Along-train DO gradient (front→rear) — the monitor")
+def _panel_d_d7(host, do, positions, heading=""):
+    """(d) D7: LEFT expected spatial profile (aerobic rise + post-anoxic drop,
+    mean±IQR, blue/orange); RIGHT parallel-train 1#−2# difference distribution
+    (median±IQR, the symmetry MONITOR — centred & tight = symmetric). `positions`
+    = [(zone_label, chan_t1, chan_t2)]."""
+    axes = host.subplots(1, 2, squeeze=False)[0]
+    n = len(positions); x = np.arange(n); w = 0.38
+    labels = [p[0] for p in positions]
+    for col, off, key in [(OI["blue"], -w / 2, 1), (OI["orange"], +w / 2, 2)]:
+        meds, lo, hi = [], [], []
+        for p in positions:
+            a = np.asarray(do[p[key]], float); a = a[~np.isnan(a)]
+            if len(a):
+                m = float(np.median(a)); q1, q3 = np.percentile(a, [25, 75])
+            else:
+                m = q1 = q3 = np.nan
+            meds.append(m); lo.append(max(0.0, m - q1)); hi.append(max(0.0, q3 - m))
+        axes[0].bar(x + off, meds, w, yerr=[lo, hi], capsize=2, color=col,
+                    label=f"train {key}#", error_kw=dict(lw=0.7, ecolor="#555555"))
+    axes[0].set_xticks(x); axes[0].set_xticklabels(labels, fontsize=7)
+    axes[0].set_ylabel("DO (mg/L), median ± IQR", fontsize=8)
+    axes[0].set_title("Expected spatial profile — aerobic rise + post-anoxic drop",
+                      fontsize=8)
     axes[0].legend(fontsize=8); axes[0].grid(True, axis="y", alpha=0.25)
-    axes[0].text(0.04, 0.93, "a sensor fault violates front<mid<rear",
-                 transform=axes[0].transAxes, fontsize=7, color="#555555")
-
-    rs = []
+    axes[0].tick_params(labelsize=7)
+    axes[0].text(0.03, 0.95, "post-anoxic floor → monitored in (c)",
+                 transform=axes[0].transAxes, fontsize=6.8, color="#555555")
+    meds, lo2, hi2 = [], [], []
     for p in positions:
-        a = np.asarray(do[p[1]], float); b = np.asarray(do[p[2]], float)
-        m = ~(np.isnan(a) | np.isnan(b))
-        rs.append(float(np.corrcoef(a[m], b[m])[0, 1]) if m.sum() > 10 else np.nan)
-    axes[1].bar(x, rs, color=COLORS["innov"], width=0.6)
-    axes[1].set_xticks(x)
-    axes[1].set_xticklabels([f"seq {s}" for s in seqs], fontsize=8)
-    axes[1].set_ylim(0, 1)
-    axes[1].set_ylabel("parallel-train corr r  (1# vs 2#)")
-    axes[1].set_title("Parallel-train symmetry by position")
-    axes[1].grid(True, axis="y", alpha=0.25)
-    axes[1].text(0.04, 0.92, "weak at tightly-controlled front\n→ gradient is "
-                 "the monitor there", transform=axes[1].transAxes, fontsize=7,
-                 color="#555555")
-    fig.suptitle(title or "Cross-channel redundancy (D7) monitors the "
-                 "un-whitenable DO channels", fontsize=10.5)
-    Path(out_path).parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(out_path, dpi=300)
-    plt.close(fig)
+        d = np.asarray(do[p[1]], float) - np.asarray(do[p[2]], float)
+        d = d[~np.isnan(d)]
+        med = float(np.median(d)) if len(d) else np.nan
+        q1, q3 = (np.percentile(d, [25, 75]) if len(d) else (med, med))
+        meds.append(med); lo2.append(max(0.0, med - q1)); hi2.append(max(0.0, q3 - med))
+    axes[1].errorbar(x, meds, yerr=[lo2, hi2], fmt="o", color=OI["blue"],
+                     capsize=3, lw=1.0, ms=4)
+    axes[1].axhline(0, color=OI["gray"], ls="--", lw=0.8)
+    axes[1].set_xticks(x); axes[1].set_xticklabels(labels, fontsize=7)
+    axes[1].set_ylabel("1# − 2#  (mg/L, median ± IQR)", fontsize=8)
+    axes[1].set_title("Parallel-train difference — the symmetry monitor",
+                      fontsize=8)
+    axes[1].grid(True, axis="y", alpha=0.25); axes[1].tick_params(labelsize=7)
+    axes[1].text(0.03, 0.08, "centred & tight = symmetric;\ndrift/jump = "
+                 "differential fault (raw series)", transform=axes[1].transAxes,
+                 fontsize=6.6, color="#555555")
+    if heading:
+        host.suptitle(heading, fontsize=10)
+
+
+def do_panel_iid(rows, out_path, lag=60, vector=False):
+    fig = plt.figure(figsize=(8.8, 1.15 * len(rows) + 1.0), layout="constrained")
+    _panel_a_iid(fig, rows, lag=lag, heading="Whitened DO channels (iid) — "
+                 "ACF before/after whitening (lag 60)")
+    _save_fig(fig, out_path, vector)
+
+
+def do_panel_nearur(rows, out_path, vector=False):
+    fig = plt.figure(figsize=(8.8, 1.35 * len(rows) + 1.0), layout="constrained")
+    _panel_b_nearur(fig, rows, heading="Near-unit-root DO channels — "
+                    "un-whitenable (NOT a whitening failure)")
+    _save_fig(fig, out_path, vector)
+
+
+def do_panel_floor(series, out_path, floor_thr=0.05, route_occ=0.70, vector=False):
+    fig = plt.figure(figsize=(9.2, 3.6), layout="constrained")
+    _panel_c_floor(fig, series, floor_thr, route_occ,
+                   heading="Post-anoxic DO — floor occupancy (censoring, not dynamics)")
+    _save_fig(fig, out_path, vector)
+
+
+def do_panel_d7(do, positions, out_path, vector=False):
+    fig = plt.figure(figsize=(9.6, 3.8), layout="constrained")
+    _panel_d_d7(fig, do, positions, heading="D7 cross-channel redundancy "
+                "monitors the un-whitenable DO channels")
+    _save_fig(fig, out_path, vector)
+
+
+def do_composite(rows_a, rows_b, series_c, do_d, positions_d, out_path,
+                 lag_a=60, floor_thr=0.05, route_occ=0.70, vector=True):
+    """Composite (a)–(d): one figure, four stacked panel-groups, each keeping
+    its own axes. Exported as PNG + vector (PDF/SVG)."""
+    fig = plt.figure(figsize=(9.6, 15.8), layout="constrained")
+    sf = fig.subfigures(4, 1, height_ratios=[4.2, 3.2, 2.6, 2.9])
+    _panel_a_iid(sf[0], rows_a, lag=lag_a,
+                 heading="(a) Whitened DO (iid) — ACF before/after whitening (lag 60)")
+    _panel_b_nearur(sf[1], rows_b, heading="(b) Near-unit-root DO (un-whitenable)"
+                    " — residual ACF (lag 120) + spectrum")
+    _panel_c_floor(sf[2], series_c, floor_thr, route_occ,
+                   heading="(c) Post-anoxic DO — floor occupancy (censoring, not dynamics)")
+    _panel_d_d7(sf[3], do_d, positions_d, heading="(d) D7 cross-channel "
+                "redundancy — differential faults (common-mode drift → D5 anchor)")
+    fig.suptitle("DO channels — manifest-driven handling & monitoring by class",
+                 fontsize=12)
+    _save_fig(fig, out_path, vector)
 
 
 def acf_before_after(acf_resid, acf_innov, out_path: Path, title: str = "",

@@ -31,6 +31,20 @@ COLORS = {
     "innov":     "#762A83",   # innovation η(t) (purple)
 }
 
+# Okabe-Ito colourblind-safe palette + fixed roles for the DO A–D figure set
+OKABE_ITO = {
+    "blue": "#0072B2",        # single-series data / train 1#
+    "orange": "#E69F00",      # second series / train 2#
+    "green": "#009E73",
+    "vermillion": "#D55E00",  # ALARM / threshold lines ONLY (not data)
+    "skyblue": "#56B4E9",
+    "yellow": "#F0E442",
+    "purple": "#CC79A7",
+    "black": "#000000",
+    "gray": "#999999",        # bands / zero / non-alarm reference lines
+    "spectrum": "#1a1a2e",    # spectrum line
+}
+
 # distinct palette for multi-variable combined overviews
 PALETTE = ["#2166AC", "#D6604D", "#1B7837", "#E08214", "#762A83",
            "#35978F", "#B2182B", "#053061", "#878787", "#4DAC26",
