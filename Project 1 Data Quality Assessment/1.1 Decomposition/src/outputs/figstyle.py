@@ -150,7 +150,8 @@ def render_grid(df: pd.DataFrame, meta: dict, out_png) -> None:
         for j in range(Cn):
             ax = axes[i][j]
             col = cells[i][j]
-            c = colors[j] or "#333333"
+            st = meta.get("cell_styles", {}).get(f"{i}_{j}", {})
+            c = st.get("color") or colors[j] or "#333333"
             if cells_lo is not None and cells_hi is not None:
                 lo, hi = cells_lo[i][j], cells_hi[i][j]
                 if lo and hi and lo in df.columns and hi in df.columns:
@@ -160,6 +161,9 @@ def render_grid(df: pd.DataFrame, meta: dict, out_png) -> None:
             if col is not None and col in df.columns:
                 y = np.asarray(df[col].values, dtype=float)
                 ax.plot(x, y, color=c, lw=0.5, solid_capstyle="round")
+            if st.get("tag"):
+                ax.text(0.96, 0.88, st["tag"], transform=ax.transAxes,
+                        ha="right", va="top", fontsize=6, color="#C0392B")
             ax.margins(x=0)
             ax.grid(True, alpha=0.30, lw=0.4)
             ax.yaxis.set_major_locator(plt.MaxNLocator(3))

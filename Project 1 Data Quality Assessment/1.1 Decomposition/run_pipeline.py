@@ -426,7 +426,8 @@ def make_figures(cfg, out, quick=False):
                 raw, dec["trend"].loc[win], dec["seasonal"].loc[win],
                 dec["residual"].loc[win], innov.loc[win],
                 fig_root / f"fig_W2_decomp_{c}.png",
-                title=f"Four-level decomposition — {c} ({CHANNEL_META[c]['zone']})")
+                title=f"Four-level decomposition — {c} ({CHANNEL_META[c]['zone']})",
+                innov_kind=out.get("kind_of", {}).get(c, "innovation"))
         except Exception as e:
             _log(f"  fig decomp {c} skipped: {e}")
         # ACF before/after
@@ -497,6 +498,17 @@ def _decomp_ylabels(dec, ch, arma_lk):
     return [f"Raw X(t)\n{ch}", "Trend m(t)", seas, "Residual e(t)", inn]
 
 
+def _kind_of(out):
+    """channel -> innov_kind (innovation/robust_z/censored_z) from the manifest,
+    so figures label the innovation panel honestly (non-whitened channels carry
+    robust_z / censored_z, not a genuine whitened η)."""
+    try:
+        man = tables.whiteness_manifest(out["arma_df"], out["cmp_df"])
+        return dict(zip(man.channel, man.innov_kind))
+    except Exception:
+        return {}
+
+
 def _arma_lookup(out):
     """channel -> (p, q, fallback) from the ARMA/GARCH order table."""
     lk = {}
@@ -549,6 +561,7 @@ def make_decomposition_stacks(cfg, out, quick=False, min_window_days=10):
                 fig_root / f"decomp_stack_{c}.png",
                 ylabels=_decomp_ylabels(dec, c, arma_lk),
                 title=f"Multi-scale decomposition — {c} ({zone}, {track})  [{span}]",
+                innov_kind=out.get("kind_of", {}).get(c, "innovation"),
                 plot_data_root=pdr, bundle_name=f"decomp_stack_{c}")
             n_done += 1
         except Exception as e:
@@ -618,10 +631,11 @@ def make_combined_figures(cfg, out, quick=False, min_window_days=10):
                 rows.append((c, comps))
         if not rows:
             continue
+        kinds = [out.get("kind_of", {}).get(c, "innovation") for c, _ in rows]
         figures.combined_group_grid(
             rows, fig_root / f"combined_{gname}.png",
             title=f"{gtitle} — trend/seasonal/residual/innovation grid  [{span}]",
-            plot_data_root=pdr, bundle_name=f"combined_{gname}")
+            innov_kinds=kinds, plot_data_root=pdr, bundle_name=f"combined_{gname}")
         n_done += 1
     _log(f"Combined group grids written: {n_done} -> {fig_root}")
 
@@ -652,6 +666,7 @@ def make_decomposition_overviews(cfg, out, quick=False):
                 ylabels=_decomp_ylabels(dec, c, arma_lk),
                 title=f"Full-span daily overview — {c} "
                       f"({CHANNEL_META[c]['zone']}, min)  [{span}]",
+                innov_kind=out.get("kind_of", {}).get(c, "innovation"),
                 plot_data_root=pdr, bundle_name=f"decomp_overview_{c}")
             n_done += 1
         except Exception as e:
@@ -687,10 +702,12 @@ def make_combined_overviews(cfg, out, quick=False):
         if not rows:
             continue
         span = f"{df_min.index[0]:%Y-%m-%d}~{df_min.index[-1]:%Y-%m-%d}"
+        kinds = [out.get("kind_of", {}).get(c, "innovation") for c, _ in rows]
         figures.combined_overview_grid(
             rows, fig_root / f"combined_overview_{gname}.png",
             title=f"{gtitle} — full-span daily overview (min–max envelope)  [{span}]",
-            plot_data_root=pdr, bundle_name=f"combined_overview_{gname}")
+            innov_kinds=kinds, plot_data_root=pdr,
+            bundle_name=f"combined_overview_{gname}")
         n_done += 1
     _log(f"Combined full-span overviews written: {n_done} -> {fig_root}")
 
@@ -879,6 +896,7 @@ def main():
     out = w1_data_base(cfg, out)
     out = w2_decompose(cfg, out, quick=args.quick)
     out = w3_whiten(cfg, out, quick=args.quick)
+    out["kind_of"] = _kind_of(out)
     make_figures(cfg, out, quick=args.quick)
     make_decomposition_stacks(cfg, out, quick=args.quick)
     make_combined_figures(cfg, out, quick=args.quick)

@@ -23,6 +23,19 @@ from .figstyle import (setup_style, render_stack, render_grid, dump_bundle,
 # Full-frame (boxed) + gridded style, applied to EVERY figure in this module.
 setup_style()
 
+_INNOV_GREY = "#999999"
+
+
+def _innov_style(kind):
+    """Honest label/colour for the innovation element per whiteness_manifest
+    innov_kind: a non-whitened channel carries robust_z / censored_z, NOT a
+    genuine whitened innovation, so it is relabelled + de-emphasised (grey)."""
+    if kind == "robust_z":
+        return ("η̃(t) robust-z\n(not whitened)", _INNOV_GREY, "robust-z")
+    if kind == "censored_z":
+        return ("η̃(t) censored-z\n(floor)", _INNOV_GREY, "floor")
+    return ("Innovation η(t)", COLORS["innov"], None)
+
 C = {"blue": "#2166AC", "red": "#D6604D", "green": "#4DAC26",
      "orange": "#F4A582", "purple": "#762A83", "gray": "#878787",
      "teal": "#1B7837", "amber": "#E08214", "navy": "#053061", "cyan": "#35978F"}
@@ -73,9 +86,15 @@ def availability_heatmap(flags: pd.DataFrame, out_path: Path,
 
 
 def four_level_decomposition(raw, trend, seasonal, resid, innov, out_path: Path,
-                             title: str = "", anomaly_span=None):
+                             title: str = "", anomaly_span=None,
+                             innov_kind="innovation"):
     """Four-level decomposition: (raw+trend) -> seasonal s(t) -> residual e(t)
     -> innovation eta(t). Matches plan Fig.3 趋势-周期-残差-创新."""
+    _ilab, _icol = "Innovation η(t) (whitened)", C["red"]
+    if innov_kind == "robust_z":
+        _ilab, _icol = "robust-z η̃(t) (NOT whitened)", "#999999"
+    elif innov_kind == "censored_z":
+        _ilab, _icol = "censored-z η̃(t) (floor)", "#999999"
     fig, axes = plt.subplots(4, 1, figsize=(11, 8.5), sharex=True)
     # panel 0: raw overlaid with trend m(t)
     axes[0].plot(raw.index, raw.values, color=C["gray"], lw=0.5, alpha=0.8, label="raw X(t)")
@@ -87,7 +106,7 @@ def four_level_decomposition(raw, trend, seasonal, resid, innov, out_path: Path,
     for axi, series, col, ylab, name in [
         (axes[1], seasonal, C["teal"], "seasonal", "Seasonal s(t)"),
         (axes[2], resid, C["blue"], "residual", "Residual e(t) = X - m - s"),
-        (axes[3], innov, C["red"], "eta", "Innovation eta(t) (whitened)"),
+        (axes[3], innov, _icol, "eta", _ilab),
     ]:
         axi.plot(series.index, series.values, color=col, lw=0.6)
         axi.set_ylabel(ylab)
@@ -105,6 +124,7 @@ def four_level_decomposition(raw, trend, seasonal, resid, innov, out_path: Path,
 
 def decomposition_stack(raw, trend, seasonal, residual, innovation,
                         out_path: Path, ylabels=None, title: str = "",
+                        innov_kind="innovation",
                         plot_data_root=None, bundle_name=None):
     """EMD/VMD-style FULL-FRAME stacked decomposition figure (plan Fig.3).
 
@@ -117,9 +137,12 @@ def decomposition_stack(raw, trend, seasonal, residual, innovation,
     """
     defaults = ["Raw X(t)", "Trend m(t)", "Seasonal s(t)",
                 "Residual e(t)", "Innovation η(t)"]
-    ylabels = ylabels or defaults
+    ylabels = list(ylabels or defaults)
     cols = [COLORS["raw"], COLORS["trend"], COLORS["seasonal"],
             COLORS["residual"], COLORS["innov"]]
+    # honest innovation panel: non-whitened channels carry robust_z / censored_z
+    if innov_kind != "innovation":
+        ylabels[4], cols[4], _ = _innov_style(innov_kind)
     levels = list(zip([raw, trend, seasonal, residual, innovation], ylabels, cols))
     levels = [(s, lab, c) for (s, lab, c) in levels if s is not None]
 
@@ -147,8 +170,24 @@ GRID_COMP_COLORS = [COLORS["raw"], COLORS["trend"], COLORS["seasonal"],
                     COLORS["residual"], COLORS["innov"]]
 
 
+def _innov_grid_overrides(innov_kinds, n_rows):
+    """For a variables×5-component grid, return (col_labels, cell_styles): the
+    innovation column (idx 4) of any non-whitened row is greyed + tagged so a
+    robust_z / censored_z fallback isn't shown as a genuine whitened η."""
+    col_labels = list(GRID_COMP_LABELS)
+    cell_styles = {}
+    if innov_kinds and any(k and k != "innovation" for k in innov_kinds):
+        col_labels[4] = "Innovation η(t)\n(grey = not whitened)"
+        for i, k in enumerate(innov_kinds[:n_rows]):
+            if k and k != "innovation":
+                _, color, tag = _innov_style(k)
+                cell_styles[f"{i}_4"] = {"color": color, "tag": tag}
+    return col_labels, cell_styles
+
+
 def combined_group_grid(rows, out_path: Path, title: str = "",
-                        plot_data_root=None, bundle_name=None):
+                        innov_kinds=None, plot_data_root=None,
+                        bundle_name=None):
     """Combined FULL-FRAME decomposition grid for one process group:
     rows = variables, columns = [Raw, Trend, Seasonal, Residual, Innovation].
 
@@ -176,10 +215,11 @@ def combined_group_grid(rows, out_path: Path, title: str = "",
             cell_row.append(col)
         cells.append(cell_row)
     df = pd.DataFrame(data)
+    col_labels, cell_styles = _innov_grid_overrides(innov_kinds, len(rows))
     meta = dict(kind="grid", title=title or "Group decomposition grid",
                 x_is_time=True, xlabel="Time",
-                row_labels=row_labels, col_labels=GRID_COMP_LABELS,
-                col_colors=GRID_COMP_COLORS, cells=cells,
+                row_labels=row_labels, col_labels=col_labels,
+                col_colors=GRID_COMP_COLORS, cells=cells, cell_styles=cell_styles,
                 out_png=str(out_path), width=2.25 * 5 + 1.2,
                 row_h=1.05, hspace=0.28, wspace=0.30,
                 xtick_rotation=30, x_maxticks=6)
@@ -196,6 +236,7 @@ def _daily_env(s, didx):
 
 def decomposition_overview_stack(raw, trend, seasonal, residual, innovation,
                                  out_path: Path, ylabels=None, title: str = "",
+                                 innov_kind="innovation",
                                  plot_data_root=None, bundle_name=None):
     """FULL-SPAN daily-envelope overview of one channel's 4-level decomposition.
 
@@ -207,9 +248,11 @@ def decomposition_overview_stack(raw, trend, seasonal, residual, innovation,
     """
     defaults = ["Raw X(t)", "Trend m(t)", "Seasonal s(t)",
                 "Residual e(t)", "Innovation η(t)"]
-    ylabels = ylabels or defaults
+    ylabels = list(ylabels or defaults)
     cols = [COLORS["raw"], COLORS["trend"], COLORS["seasonal"],
             COLORS["residual"], COLORS["innov"]]
+    if innov_kind != "innovation":              # honest non-whitened panel
+        ylabels[4], cols[4], _ = _innov_style(innov_kind)
     levels = [(s, lab, c) for (s, lab, c) in
               zip([raw, trend, seasonal, residual, innovation], ylabels, cols)
               if s is not None]
@@ -232,11 +275,13 @@ def decomposition_overview_stack(raw, trend, seasonal, residual, innovation,
 
 
 def combined_overview_grid(rows, out_path: Path, title: str = "",
-                           plot_data_root=None, bundle_name=None):
+                           innov_kinds=None, plot_data_root=None,
+                           bundle_name=None):
     """FULL-SPAN daily-envelope combined grid (variables × 5 components).
 
     Like combined_group_grid but over the whole record, each cell drawn as a
-    daily mean line + daily min–max envelope band.
+    daily mean line + daily min–max envelope band. `innov_kinds` (per-row) marks
+    non-whitened channels so the innovation cell (col 4) is greyed + tagged.
     """
     rows = [r for r in rows if r[1] and r[1][0] is not None
             and not pd.Series(r[1][0]).dropna().empty]
@@ -259,11 +304,12 @@ def combined_overview_grid(rows, out_path: Path, title: str = "",
             cr.append(cm); crl.append(cl); crh.append(ch)
         cells.append(cr); cells_lo.append(crl); cells_hi.append(crh)
     df = pd.DataFrame(data)
+    col_labels, cell_styles = _innov_grid_overrides(innov_kinds, len(rows))
     meta = dict(kind="grid", title=title or "Group full-span overview",
                 x_is_time=True, xlabel="Time",
-                row_labels=row_labels, col_labels=GRID_COMP_LABELS,
+                row_labels=row_labels, col_labels=col_labels,
                 col_colors=GRID_COMP_COLORS, cells=cells,
-                cells_lo=cells_lo, cells_hi=cells_hi,
+                cells_lo=cells_lo, cells_hi=cells_hi, cell_styles=cell_styles,
                 out_png=str(out_path), width=2.25 * 5 + 1.2, row_h=1.05,
                 hspace=0.28, wspace=0.30, xtick_rotation=30, x_maxticks=6)
     render_grid(df, meta, out_path)
