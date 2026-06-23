@@ -12,8 +12,8 @@ spike:
 step:
   function: logistic
   metric: ks_statistic
-  k: 12.0          # slope (steeper around x0)
-  x0: 0.30         # midpoint near KS critical at α=0.05 for n=24
+  k: 8.0           # slope (P1-2: relaxed from 12 → 8, less sharp drop)
+  x0: 0.40         # midpoint (P1-2: shifted from 0.30 → 0.40, higher KS threshold)
   direction: high_quality_low_metric
   rate_floor: 0.005  # baseline FAR to subtract
 

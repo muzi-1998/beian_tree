@@ -23,39 +23,49 @@ import pandas as pd
 from typing import Tuple, Dict
 
 
-WEIGHTS = {"spike": 0.15, "step": 0.20, "drift": 0.25, "freeze": 0.20, "regime": 0.20}
-LAMBDA_BLEND = 0.70
+_DEFAULT_WEIGHTS = {"spike": 0.15, "step": 0.20, "drift": 0.25, "freeze": 0.20, "regime": 0.20}
+_DEFAULT_LAMBDA  = 0.70
 
 
 def compute_veto3_eligibility(Q_step: pd.Series, state_log: pd.DataFrame,
                                 step_threshold: float = 2.0,
-                                duration_h: int = 24,
+                                duration_h: int = 36,
+                                min_event_count: int = 6,
                                 excluded_states=("Refractory",)) -> pd.Series:
     """Compute signal-only Veto-3 eligibility per hour.
 
-    Rule (Veto-3 修订 §五):
-        Veto3_eligible(t) = (Q_step ≤ 2.0) ∧
-                              (sustained for >24h) ∧
-                              (state_name ∉ {Refractory})
+    Rule (Veto-3 修订 §五 36h版):
+        Veto3_eligible(t) = (Q_step_final ≤ 2.0)
+                          ∧ (sustained for ≥ duration_h consecutive hours)
+                          ∧ (step_event_count in window ≥ min_event_count)
+                          ∧ (state_name ∉ {Refractory})
     """
     step_low = (Q_step <= step_threshold).astype(int)
-    # Rolling: at any time t, has Q_step been ≤ thr for >duration_h consecutive hours?
+    # 连续持续条件: rolling window 内全部小时均 ≤ threshold
     sustained = step_low.rolling(duration_h, min_periods=duration_h).sum() >= duration_h
+    # 事件密度条件: rolling window 内至少 min_event_count 个小时触发（防止孤立低分点）
+    event_density = step_low.rolling(duration_h, min_periods=1).sum() >= min_event_count
     excluded_mask = state_log["state_name"].isin(excluded_states)
-    eligible = sustained & ~excluded_mask & step_low.astype(bool)
+    eligible = sustained & event_density & ~excluded_mask & step_low.astype(bool)
     return eligible.fillna(False)
 
 
 def aggregate_d1_v11(Q_spike: pd.Series, Q_step: pd.Series, Q_drift_eff: pd.Series,
                      Q_freeze: pd.Series, Q_regime: pd.Series,
                      state_log: pd.DataFrame,
+                     weights: Dict = None,
+                     lambda_blend: float = None,
                      freeze_thr: float = 2.0, freeze_cap: float = 2.0,
                      regime_thr: float = 2.0, regime_cap: float = 2.5,
-                     veto3_step_thr: float = 2.0, veto3_duration_h: int = 24,
+                     veto3_step_thr: float = 2.0, veto3_duration_h: int = 36,
+                     veto3_min_event_count: int = 6,
                      veto3_cap: float = 2.5,
                      sustained_cap: float = 2.5,
                      ) -> Tuple[pd.Series, Dict, pd.DataFrame]:
     """v1.1 aggregation — uses Q_drift_eff (after state-machine α-thaw).
+
+    weights and lambda_blend come from rules.yaml aggregation section;
+    fall back to spec defaults when not supplied.
 
     Returns
     -------
@@ -64,24 +74,30 @@ def aggregate_d1_v11(Q_spike: pd.Series, Q_step: pd.Series, Q_drift_eff: pd.Seri
     vlog : DataFrame — veto log: cooldown_active (Refractory),
             veto_freeze, veto_regime, veto3_signal_only, sustained_cap, veto_active
     """
+    if weights is None:
+        weights = _DEFAULT_WEIGHTS
+    if lambda_blend is None:
+        lambda_blend = _DEFAULT_LAMBDA
+
     # D1_base
-    D1_base = (WEIGHTS["spike"]  * Q_spike +
-                WEIGHTS["step"]   * Q_step +
-                WEIGHTS["drift"]  * Q_drift_eff +
-                WEIGHTS["freeze"] * Q_freeze +
-                WEIGHTS["regime"] * Q_regime)
+    D1_base = (weights["spike"]  * Q_spike +
+                weights["step"]   * Q_step +
+                weights["drift"]  * Q_drift_eff +
+                weights["freeze"] * Q_freeze +
+                weights["regime"] * Q_regime)
     # min-penalty (using Q_drift_eff, NOT raw Q_drift)
     M = pd.concat([Q_spike, Q_step, Q_drift_eff, Q_freeze, Q_regime],
                    axis=1).min(axis=1)
-    D1_pre = LAMBDA_BLEND * D1_base + (1 - LAMBDA_BLEND) * M
+    D1_pre = lambda_blend * D1_base + (1 - lambda_blend) * M
 
     # Veto rules
     veto_freeze = (Q_freeze <= freeze_thr)
     veto_regime = (Q_regime <= regime_thr)
-    # Signal-only Veto-3
+    # Signal-only Veto-3（Q_step 此处为 Q_step_final）
     veto3 = compute_veto3_eligibility(Q_step, state_log,
                                         step_threshold=veto3_step_thr,
                                         duration_h=veto3_duration_h,
+                                        min_event_count=veto3_min_event_count,
                                         excluded_states=("Refractory",))
     # Sustained anomaly cap
     sustained_active = state_log["state_name"] == "SustainedAnomaly"

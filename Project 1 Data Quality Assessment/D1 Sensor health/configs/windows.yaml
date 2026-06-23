@@ -7,7 +7,8 @@ windows:
   step:
     fast_h: 12
     main_h: 24
-    confirm_h: 48
+    confirm_h: 36   # 36 h 持续确认窗（由原 48h 修订）
+    batch_h: 48     # PELT batch 校准层（不进入 Q_step 子分）
   drift:
     early_h: 72       # 3 d
     main_h: 168       # 7 d

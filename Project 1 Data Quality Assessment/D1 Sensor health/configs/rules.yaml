@@ -42,10 +42,11 @@ veto:
   freeze_cap: 2.0
   regime_threshold: 2.0        # if Q_regime ≤ 2.0 → D1 ≤ 2.5
   regime_cap: 2.5
-  veto3_step_threshold: 2.0    # Q_step ≤ 2.0
-  veto3_duration_h: 24         # AND duration > 24h
-  veto3_cap: 2.5               # → D1 ≤ 2.5
-  veto3_mode: "signal_only"    # NOT process_aware (no pump status data)
+  veto3_step_threshold: 2.0         # Q_step_final ≤ 2.0
+  veto3_duration_h: 36              # AND 持续 ≥ 36h（由 24h 提高至 36h）
+  veto3_min_event_count_36h: 6      # AND 36h 内至少 6 个小时级 suspicion 点
+  veto3_cap: 2.5                    # → D1 ≤ 2.5
+  veto3_mode: "signal_only"         # NOT process_aware (no pump status data)
   # Per Veto-3 修订: signal_only requires (state_name not in {Refractory})
   veto3_excluded_states:
     - Refractory

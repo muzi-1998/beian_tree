@@ -25,6 +25,8 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import Optional, Dict, List, Tuple
 
+from src.baseline.local_baseline import find_stable_window, robust_ewma_update
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 @dataclass
@@ -108,46 +110,6 @@ def detect_event_id(ts: pd.Timestamp, ks_stat: float, w1_norm: float,
     return None
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-def find_stable_candidate_window(resid: pd.Series, search_start: pd.Timestamp,
-                                  search_end: pd.Timestamp,
-                                  stable_h: int = 24,
-                                  drift_slope_thr: float = 0.005
-                                  ) -> Optional[Tuple[pd.Timestamp, pd.Timestamp,
-                                                       float, float]]:
-    """Search for a stable continuous window for local baseline init.
-
-    Returns (window_start, window_end, center, scale) or None if no window found.
-    """
-    candidates = resid.loc[search_start:search_end].dropna()
-    if len(candidates) < stable_h:
-        return None
-    # Slide stable_h-hour windows; pick first one with stable variance + low slope
-    n = len(candidates)
-    best = None
-    for i in range(0, n - stable_h, max(1, stable_h // 4)):
-        w = candidates.iloc[i:i + stable_h]
-        if len(w) < stable_h: continue
-        # Robust stats
-        center = float(np.median(w.values))
-        scale = float(1.4826 * np.median(np.abs(w.values - center)))
-        if scale <= 0: continue
-        # Theil-Sen slope check
-        x_idx = np.arange(len(w))
-        if len(w) > 5:
-            slopes = []
-            for k in range(0, len(w) - 1, max(1, len(w) // 20)):
-                for kk in range(k + 1, min(k + 30, len(w))):
-                    slopes.append((w.values[kk] - w.values[k]) / (kk - k))
-            ts_slope = float(np.median(slopes)) if slopes else 0
-        else:
-            ts_slope = 0
-        # Stable: low slope AND scale not exploding
-        if abs(ts_slope) < drift_slope_thr * max(scale, 1e-3) and scale < 5:
-            return (w.index[0], w.index[-1], center, scale)
-    return None
-
-
 def alpha_schedule(hours_since_thaw_start: float, thaw_duration_h: int,
                     schedule: str = "linear") -> float:
     """α(t): controls Q_drift mixing during thaw. α=1 → fully neutral 3.0;
@@ -181,6 +143,7 @@ def run_cooldown_state_machine(sensor_id: str,
                                 ks_stat: pd.Series, w1_norm: pd.Series,
                                 resid_h: pd.Series,
                                 pelt_changepoints: List[pd.Timestamp],
+                                step_confirmed: pd.Series = None,
                                 cfg: CooldownConfig = None,
                                 ) -> Tuple[pd.Series, pd.DataFrame, List[Dict]]:
     """Apply 5-state cooldown machine to one sensor's hourly time-series.
@@ -206,6 +169,7 @@ def run_cooldown_state_machine(sensor_id: str,
     recov_streak_arr = np.zeros(n, dtype=int)
     drift_mask_reason_arr = np.empty(n, dtype=object)
     alpha_arr = np.zeros(n, dtype=float)
+    step_suspicion_arr = np.zeros(n, dtype=np.int8)  # Q_step_24 ≤ 2.5 （仅标记）
 
     transitions: List[Dict] = []
     last_event_ts = None
@@ -222,10 +186,20 @@ def run_cooldown_state_machine(sensor_id: str,
         w1 = float(w1_norm.iat[i]) if not pd.isna(w1_norm.iat[i]) else 0.0
         rv = float(resid_h.iat[i]) if not pd.isna(resid_h.iat[i]) else 0.0
 
+        # ── 两级 step 判定 ────────────────────────────────────────────────
+        # 轻度 suspicion: Q_step_24 ≤ 2.5 → 仅记录标签，不触发 Refractory
+        # 高置信 confirmed: step_confirmed[i]=True → 触发 Refractory
+        if step_confirmed is not None:
+            is_step_confirmed = bool(step_confirmed.iat[i]) if not pd.isna(step_confirmed.iat[i]) else False
+        else:
+            is_step_confirmed = (qs <= 2.0)  # 兼容旧行为
+        is_step_suspicion = (qs <= 2.5)
+        step_suspicion_arr[i] = np.int8(is_step_suspicion)
+
         # ── Detect new independent event (event_id) ──────────────────────
         new_event_id = None; new_event_type = None
-        # Step event
-        if qs <= 2.0:
+        # Step event: 只有 confirmed step 才触发 Refractory
+        if is_step_confirmed:
             eid = detect_event_id(ts, ks, w1, ss, last_event_ts,
                                     ss.last_event_magnitude, ss.last_event_sign,
                                     "step", cfg)
@@ -277,15 +251,17 @@ def run_cooldown_state_machine(sensor_id: str,
                                      else cfg.candidate_search_after_regime)
                     search_start = ss.refractory_end
                     search_end = ss.refractory_end + pd.Timedelta(hours=search_after[1])
-                    cand = find_stable_candidate_window(
+                    # Use local_baseline.find_stable_window (no duplicate local copy)
+                    cand = find_stable_window(
                         resid_h, search_start, search_end,
                         stable_h=cfg.stable_window_h,
-                        drift_slope_thr=cfg.drift_slope_threshold)
+                        max_slope=cfg.drift_slope_threshold)
                     if cand is not None:
-                        ws, we, c, sc = cand
+                        ws_t, we_t = cand["start"], cand["end"]
+                        c, sc = cand["center"], cand["scale"]
                         ss.local_baseline_center = c
                         ss.local_baseline_scale = sc
-                        ss.local_baseline_init_at = we
+                        ss.local_baseline_init_at = we_t
                         ss.local_baseline_version += 1
                         ss.drift_mask_reason = "sustained_local_baseline_active"
                         transitions.append({
@@ -293,7 +269,7 @@ def run_cooldown_state_machine(sensor_id: str,
                             "from_state": "Refractory", "to_state": "SustainedAnomaly",
                             "event_id": ss.event_id, "trigger": "anomaly_persists",
                             "baseline_center": c, "baseline_scale": sc,
-                            "baseline_init_window": (ws, we),
+                            "baseline_init_window": (ws_t, we_t),
                         })
                     else:
                         # No stable window yet — stay in extended Refractory
@@ -379,13 +355,20 @@ def run_cooldown_state_machine(sensor_id: str,
             alpha = alpha_schedule(hours_since, cfg.thaw_duration_h, "linear")
             alpha_arr[i] = alpha
             if ss.local_baseline_center is not None:
+                local_z = abs(rv - ss.local_baseline_center) / max(ss.local_baseline_scale, 1e-3)
+                # Dirty-data gate: only update EWMA on clean readings to avoid
+                # spike-induced drift of the new steady-state baseline
+                if local_z <= 2.5 and qf >= 4.0 and qs >= 3.0:
+                    ss.local_baseline_center, ss.local_baseline_scale = robust_ewma_update(
+                        ss.local_baseline_center, ss.local_baseline_scale, rv, rate=0.05
+                    )
                 qd_new = compute_q_drift_new(rv, ss.local_baseline_center,
                                               ss.local_baseline_scale)
             else:
                 qd_new = qd
             Q_drift_eff.iat[i] = alpha * cfg.drift_neutral_score + (1 - alpha) * qd_new
         elif ss.state_name == "RecoveryCandidate":
-            # Continue α-thaw with reduced α (we are recovering)
+            # Continue α-thaw with reduced α; keep EWMA tracking with same gate
             if ss.local_baseline_init_at is not None:
                 hours_since = (ts - ss.local_baseline_init_at).total_seconds() / 3600
             else:
@@ -393,6 +376,11 @@ def run_cooldown_state_machine(sensor_id: str,
             alpha = max(0, alpha_schedule(hours_since, cfg.thaw_duration_h, "linear") - 0.2)
             alpha_arr[i] = alpha
             if ss.local_baseline_center is not None:
+                local_z = abs(rv - ss.local_baseline_center) / max(ss.local_baseline_scale, 1e-3)
+                if local_z <= 2.5 and qf >= 4.0 and qs >= 3.0:
+                    ss.local_baseline_center, ss.local_baseline_scale = robust_ewma_update(
+                        ss.local_baseline_center, ss.local_baseline_scale, rv, rate=0.05
+                    )
                 qd_new = compute_q_drift_new(rv, ss.local_baseline_center,
                                               ss.local_baseline_scale)
             else:
@@ -419,6 +407,7 @@ def run_cooldown_state_machine(sensor_id: str,
         "recovery_streak": recov_streak_arr,
         "drift_mask_reason": drift_mask_reason_arr,
         "alpha": alpha_arr,
+        "step_suspicion_flag": step_suspicion_arr,  # Q_step ≤ 2.5（仅标记，不触发）
     }, index=idx)
 
     return Q_drift_eff.clip(1, 5), state_log, transitions

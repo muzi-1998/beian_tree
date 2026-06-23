@@ -10,7 +10,7 @@ Style: Nature/Cell/Water Research/EST publication grade, 600 dpi PNG.
 from __future__ import annotations
 import sys, pickle
 from pathlib import Path
-ROOT = Path(__file__).parents[2]
+ROOT = Path(__file__).parent
 sys.path.insert(0, str(ROOT))
 
 import numpy as np
@@ -146,7 +146,7 @@ leg_h = [Line2D([], [], marker="o", color=C["gray"], ms=7,
           Line2D([], [], marker="o", color=C["red"], ms=7,
                   linestyle="", markerfacecolor=C["red"], label="v1.1 (Δ < 0; SustainedAnomaly cap)"),
           Line2D([], [], color="0.5", ls=":", lw=0.8, label="grade boundary D1 = 3")]
-ax.legend(handles=leg_h, loc="lower right", fontsize=7.6)
+ax.legend(handles=leg_h, loc="lower left", fontsize=7.6)
 ax.set_xlim(2.0, 3.6)
 ax.grid(axis="x", alpha=0.18, lw=0.4)
 
@@ -163,7 +163,7 @@ ax.axvline(mean_d, color=C["amber"], ls="--", lw=1.0,
             label=f"mean Δ = {mean_d:+.4f}")
 ax.set_xlabel(r"$\Delta D_1$  (v1.1 − STRICT V1)", fontsize=9)
 ax.set_title("(b)  $\\Delta D_1$ distribution", loc="left")
-ax.legend(loc="lower right", fontsize=7.5)
+ax.legend(loc="upper right", fontsize=7.5)
 
 # (c) State distribution stacked (one bar per channel)
 ax = fig.add_subplot(gs[1, :])
@@ -184,7 +184,7 @@ for s_name in ["Normal", "Refractory", "SustainedAnomaly", "RecoveryCandidate", 
     bottom += vals
 ax.set_xticks(xs); ax.set_xticklabels(SCORED, rotation=45, ha="right", fontsize=7.8)
 ax.set_ylabel("State coverage (%)", fontsize=9)
-ax.set_ylim(0, 105)
+ax.set_ylim(0, 118)
 ax.set_title("(c)  Cooldown state-machine coverage per scored channel", loc="left")
 ax.legend(loc="upper right", ncol=5, fontsize=7.5, framealpha=0.92)
 
@@ -206,7 +206,7 @@ ax.set_ylabel(r"Median daily $D_1$  (across DO/ORP)", fontsize=9)
 ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
 ax.xaxis.set_major_locator(mdates.MonthLocator(interval=1))
 ax.set_title("(d)  Daily median $D_1$ trajectory", loc="left")
-ax.legend(loc="lower left", fontsize=7.5, ncol=2)
+ax.legend(loc="upper right", fontsize=7.5, ncol=2)
 
 # (e) Weekly delta heatmap
 ax = fig.add_subplot(gs[2, 2])
@@ -240,7 +240,7 @@ save(fig, "FigV12_v11_vs_strictV1_hero",
 # ============================================================================
 print("[V13] 5-state cooldown machine ...")
 fig = plt.figure(figsize=(13.5, 9))
-gs = gridspec.GridSpec(4, 1, figure=fig, hspace=0.55,
+gs = gridspec.GridSpec(4, 1, figure=fig, hspace=0.80,
                         height_ratios=[1.2, 1.0, 1.0, 1.2])
 
 # Pick the worst sensor for illustration: DO_2_3
@@ -272,7 +272,7 @@ ax.axhline(2.0, color=C["red"], ls=":", lw=0.7, alpha=0.7)
 ax.set_ylim(1, 5.2)
 ax.set_ylabel("Sub-score", fontsize=9)
 ax.set_title(f"(a)  Sub-score timeseries with state-machine shading — {target}", loc="left")
-ax.legend(loc="upper right", ncol=8, fontsize=7.0, framealpha=0.92)
+ax.legend(loc="upper right", ncol=4, fontsize=7.0, framealpha=0.75)
 ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
 
 # (b) Q_drift v1 vs Q_drift_eff (showing α-thaw effect)
@@ -291,7 +291,7 @@ ax.axhline(3.0, color=C["amber"], ls="--", lw=0.7, alpha=0.6,
 ax.set_ylim(1, 5.2)
 ax.set_ylabel("$Q_{drift}$ score", fontsize=9)
 ax.set_title(r"(b)  $Q_{\rm drift}$  vs  $Q_{\rm drift}^{\rm eff}$  (α-thaw effect)", loc="left")
-ax.legend(loc="upper right", fontsize=7.5)
+ax.legend(loc="upper left", fontsize=7.5, framealpha=0.75)
 ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
 
 # (c) α(t) timeline + recovery_streak
@@ -330,7 +330,7 @@ ax.set_ylabel("$D_1$ total", fontsize=9)
 ax.set_title(f"(d)  Final $D_1$ — {target} ({len(state_log[state_log.state_name=='Refractory'])} h Refractory, "
               f"{len(state_log[state_log.state_name=='SustainedAnomaly'])} h Sustained)",
               loc="left")
-ax.legend(loc="upper right", fontsize=7.5)
+ax.legend(loc="lower left", fontsize=7.5, framealpha=0.75)
 ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
 
 fig.suptitle("Figure V13.  v1.1 5-state cooldown machine — DO_2_3 case study",

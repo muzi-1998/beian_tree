@@ -10,14 +10,14 @@ states:
 
 # Refractory durations (固定隔离期)
 refractory:
-  step_h: 24            # Step events: 24 h fixed isolation
+  step_h: 48            # Step events: 48 h fixed isolation (P1-3: 24→48, break cycle trap)
   regime_h: 36          # Regime events: 24-48h, midpoint 36h
   drift_neutral_score: 3.0   # During Refractory, Q_drift = 3.0 (NOT 1.0)
 
 # Event uniqueness rule — only NEW event_id triggers Refractory.
 # Same event_id continuing does NOT refresh cooldown_until.
 event_uniqueness:
-  min_separation_h: 12      # Minimum hours between distinct events
+  min_separation_h: 24      # Minimum hours between distinct events (P1-3: 12→24)
   magnitude_change_pct: 30  # New event must differ ≥30% in magnitude OR direction
   require_direction_change: false
 
@@ -41,16 +41,16 @@ sustained_anomaly:
 # RecoveryCandidate → Recovered (双阈值滞回)
 recovery:
   enter_thresholds:           # Enter RecoveryCandidate
-    Q_step_min: 3.2
+    Q_step_min: 3.0           # P1-4: relaxed from 3.2 → 3.0
     Q_regime_min: 3.0
-    Q_freeze_min: 3.5
+    Q_freeze_min: 3.0         # P1-4: relaxed from 3.5 → 3.0
   trigger_thresholds:         # Re-trigger Refractory (more strict)
     Q_step_max: 2.0
     Q_regime_max: 2.0
   residual_check:
     max_z_score: 1.5          # |residual_z| < 1.5
     max_w1_norm: 1.5          # W1 normalised < 1.5
-  min_streak_h: 24             # Continuous recovery hours required (24-48 recommended)
+  min_streak_h: 12             # Continuous recovery hours required (P1-4: 24→12)
   max_streak_h: 48
 
 # Sustained anomaly cap (replaces Veto-3 once SustainedAnomaly active)

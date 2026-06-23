@@ -18,42 +18,35 @@ Pipeline:
     [7] Persist all artefacts
 """
 from __future__ import annotations
-import sys, time, pickle, json, warnings, yaml
+import sys, time, pickle, warnings
 warnings.filterwarnings("ignore")
 from pathlib import Path
 from datetime import datetime
-ROOT = Path("/home/claude/v11_pipeline")
-sys.path.insert(0, str(ROOT))
+
+# Project root = directory containing this script
+_ROOT = Path(__file__).parent
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
 
 import numpy as np
 import pandas as pd
 
-from src.state_blackboard import StateBlackboard, StateEntry
-from src.cooldown_state_machine import (run_cooldown_state_machine,
-                                          CooldownConfig)
-from src.d1_aggregator import (aggregate_d1_v11, to_daily, to_weekly,
-                                attribute_dominant_fault, extract_events)
-from src.auxiliary_modules import (PELTBatchCalibrator, build_regime_features,
-                                    cluster_regimes, build_regime_templates,
-                                    compute_qr_qir_side_outputs)
-
-
-# ─── Channel definitions per spec ──────────────────────────────────────────
-ALL_CHANNELS = ['DO_1_1','DO_1_2','DO_1_3','DO_1_4',
-                'DO_2_1','DO_2_2','DO_2_3','DO_2_4',
-                'ORP_1_1','ORP_1_2','ORP_1_3',
-                'ORP_2_1','ORP_2_2','ORP_2_3',
-                'QR_1','QR_2','QIR_1','QIR_2']
-SCORED_CHANNELS = [c for c in ALL_CHANNELS if c.startswith("DO_") or c.startswith("ORP_")]
-SUPPORT_CHANNELS = [c for c in ALL_CHANNELS if c.startswith("Q")]  # QR/QIR
-
-
-def load_yaml(path):
-    with open(path) as f: return yaml.safe_load(f)
+from src.config.loader import load_project_config
+from src.pipeline.window_manager import WindowManager
+from src.state.state_blackboard import StateBlackboard, StateEntry
+from src.aggregation.cooldown_state_machine import (run_cooldown_state_machine,
+                                                     CooldownConfig)
+from src.aggregation.d1_aggregator import (aggregate_d1_v11, to_daily, to_weekly,
+                                            attribute_dominant_fault, extract_events)
+from src.state.auxiliary_modules import (PELTBatchCalibrator, build_regime_features,
+                                          cluster_regimes, build_regime_templates,
+                                          compute_qr_qir_side_outputs)
 
 
 def main():
-    OUT = ROOT / "outputs"
+    OUT = _ROOT / "outputs"
+    (OUT / "data").mkdir(parents=True, exist_ok=True)
+    (OUT / "logs").mkdir(parents=True, exist_ok=True)
     LOG = []
 
     def log(msg):
@@ -65,34 +58,44 @@ def main():
     log("=" * 78)
     log("D1 v1.1 — DO/ORP-only main link, signal-only Veto-3, 5-state cooldown")
     log("=" * 78)
-    log(f"  SCORED channels (n={len(SCORED_CHANNELS)}): "
+
+    # ── Load all configs via loader (handles windows: key, relative paths, etc.)
+    cfg = load_project_config()
+    rules  = cfg.rules          # raw rules.yaml dict
+    sm_cfg = cfg.state_machine  # raw state_machine.yaml dict
+    log(f"[cfg] loaded via src.config.loader — windows, mapping, rules, state_machine, paths")
+
+    # ── Channel definitions come from rules.yaml, not hardcoded
+    SCORED_CHANNELS  = rules["scored_channels"]
+    SUPPORT_CHANNELS = rules["support_channels"]
+    log(f"  SCORED channels  (n={len(SCORED_CHANNELS)}): "
         f"{SCORED_CHANNELS[:4]}...{SCORED_CHANNELS[-3:]}")
     log(f"  SUPPORT channels (n={len(SUPPORT_CHANNELS)}, NOT scored): {SUPPORT_CHANNELS}")
 
-    # Load configs
-    rules = load_yaml(ROOT / "configs" / "rules.yaml")
-    sm_cfg = load_yaml(ROOT / "configs" / "state_machine.yaml")
-    log(f"[cfg] loaded rules.yaml + state_machine.yaml")
+    # ── Aggregation params from rules.yaml
+    agg_weights  = rules["aggregation"]["weights"]
+    lambda_blend = rules["aggregation"]["lambda_blend"]
+    log(f"[cfg] aggregation weights={agg_weights}, lambda={lambda_blend}")
 
-    # Build CooldownConfig from YAML
+    # Build CooldownConfig from state_machine.yaml
     cd_cfg = CooldownConfig(
-        step_refractory_h=sm_cfg["refractory"]["step_h"],
-        regime_refractory_h=sm_cfg["refractory"]["regime_h"],
-        drift_neutral_score=sm_cfg["refractory"]["drift_neutral_score"],
-        min_event_separation_h=sm_cfg["event_uniqueness"]["min_separation_h"],
-        magnitude_change_pct=sm_cfg["event_uniqueness"]["magnitude_change_pct"],
-        candidate_search_after_step=tuple(sm_cfg["sustained_anomaly"]["candidate_window_search"]["step_after_h"]),
-        candidate_search_after_regime=tuple(sm_cfg["sustained_anomaly"]["candidate_window_search"]["regime_after_h"]),
-        stable_window_h=sm_cfg["sustained_anomaly"]["candidate_window_search"]["stable_window_h"],
-        drift_slope_threshold=sm_cfg["sustained_anomaly"]["baseline_init"]["drift_slope_threshold"],
-        thaw_duration_h=sm_cfg["sustained_anomaly"]["thaw"]["duration_h"],
-        enter_recov_q_step=sm_cfg["recovery"]["enter_thresholds"]["Q_step_min"],
-        enter_recov_q_regime=sm_cfg["recovery"]["enter_thresholds"]["Q_regime_min"],
-        enter_recov_q_freeze=sm_cfg["recovery"]["enter_thresholds"]["Q_freeze_min"],
-        residual_z_max=sm_cfg["recovery"]["residual_check"]["max_z_score"],
-        w1_norm_max=sm_cfg["recovery"]["residual_check"]["max_w1_norm"],
-        min_recovery_streak_h=sm_cfg["recovery"]["min_streak_h"],
-        sustained_anomaly_cap=sm_cfg["sustained_anomaly_cap"],
+        step_refractory_h           = sm_cfg["refractory"]["step_h"],
+        regime_refractory_h         = sm_cfg["refractory"]["regime_h"],
+        drift_neutral_score         = sm_cfg["refractory"]["drift_neutral_score"],
+        min_event_separation_h      = sm_cfg["event_uniqueness"]["min_separation_h"],
+        magnitude_change_pct        = sm_cfg["event_uniqueness"]["magnitude_change_pct"],
+        candidate_search_after_step = tuple(sm_cfg["sustained_anomaly"]["candidate_window_search"]["step_after_h"]),
+        candidate_search_after_regime = tuple(sm_cfg["sustained_anomaly"]["candidate_window_search"]["regime_after_h"]),
+        stable_window_h             = sm_cfg["sustained_anomaly"]["candidate_window_search"]["stable_window_h"],
+        drift_slope_threshold       = sm_cfg["sustained_anomaly"]["baseline_init"]["drift_slope_threshold"],
+        thaw_duration_h             = sm_cfg["sustained_anomaly"]["thaw"]["duration_h"],
+        enter_recov_q_step          = sm_cfg["recovery"]["enter_thresholds"]["Q_step_min"],
+        enter_recov_q_regime        = sm_cfg["recovery"]["enter_thresholds"]["Q_regime_min"],
+        enter_recov_q_freeze        = sm_cfg["recovery"]["enter_thresholds"]["Q_freeze_min"],
+        residual_z_max              = sm_cfg["recovery"]["residual_check"]["max_z_score"],
+        w1_norm_max                 = sm_cfg["recovery"]["residual_check"]["max_w1_norm"],
+        min_recovery_streak_h       = sm_cfg["recovery"]["min_streak_h"],
+        sustained_anomaly_cap       = sm_cfg["sustained_anomaly_cap"],
     )
     log(f"[cfg] CooldownConfig: step_ref={cd_cfg.step_refractory_h}h, "
         f"regime_ref={cd_cfg.regime_refractory_h}h, "
@@ -100,24 +103,27 @@ def main():
 
     # ── 0. Load STRICT V1 baseline
     log("[0] Loading STRICT V1 baseline ...")
-    with open(ROOT / "strict_v1_inputs.pkl", "rb") as f:
+    with open(_ROOT / "strict_v1_inputs.pkl", "rb") as f:
         v1 = pickle.load(f)
-    subs_v1 = v1["subs_v1"]   # dict of DataFrames keyed by Q_xxx
-    D1_v1_full = v1["D1_v1"]  # full 18-channel D1 from STRICT V1
+    subs_v1      = v1["subs_v1"]
+    D1_v1_full   = v1["D1_v1"]
     detectors_raw = v1["detectors"]
-    log(f"    V1 D1_full shape: {D1_v1_full.shape} (all 18 ch from STRICT V1)")
+    log(f"    V1 D1_full shape: {D1_v1_full.shape}")
 
-    # Build SCORED-only V1 baseline for comparison
     D1_v1_scored = D1_v1_full[SCORED_CHANNELS]
     log(f"    V1 D1_scored shape: {D1_v1_scored.shape}, "
         f"mean = {D1_v1_scored.mean().mean():.3f}")
 
-    with open(ROOT / "raw_hourly.pkl", "rb") as f:
+    with open(_ROOT / "raw_hourly.pkl", "rb") as f:
         raw = pickle.load(f)
-    df_h = raw["df_h"]
+    df_h    = raw["df_h"]
     resid_h = raw["resid_h"]
     log(f"    Raw hourly: {df_h.shape}, "
         f"residual range = {resid_h.min().min():.1f} .. {resid_h.max().max():.1f}")
+
+    # ── Connect WindowManager to hourly data (cfg.windows already stripped/validated)
+    wm = WindowManager(cfg.windows, df_min=pd.DataFrame(), df_h=df_h)
+    log(f"[WindowManager] {len(wm.list_specs())} window specs: {list(wm.list_specs().keys())}")
 
     # ── 1. State blackboard
     log("[1] Initialising StateBlackboard ...")
@@ -148,25 +154,28 @@ def main():
     log("[3] Running 5-state cooldown machine per scored channel ...")
     t = time.time()
     Q_drift_eff_dict = {}
-    state_log_dict = {}
-    transitions_all = []
+    state_log_dict   = {}
+    transitions_all  = []
     for c in SCORED_CHANNELS:
+        # step_confirmed: 两级触发 — confirmed step 才进 Refractory（PDF §六）
+        sc_df = detectors_raw.get("step_confirmed_flag")
+        step_confirmed_c = sc_df[c] if sc_df is not None and c in sc_df.columns else None
         Q_drift_eff_c, state_log_c, transitions_c = run_cooldown_state_machine(
-            sensor_id=c,
-            Q_step=subs_v1["Q_step"][c],
-            Q_regime=subs_v1["Q_regime"][c],
-            Q_drift=subs_v1["Q_drift"][c],
-            Q_freeze=subs_v1["Q_freeze"][c],
-            ks_stat=detectors_raw["ks_statistic_hourly"][c],
-            w1_norm=detectors_raw["w1_normalised_hourly"][c],
-            resid_h=resid_h[c],
-            pelt_changepoints=[ev["timestamp"] for ev in pelt_results[c]],
-            cfg=cd_cfg,
+            sensor_id      = c,
+            Q_step         = subs_v1["Q_step"][c],
+            Q_regime       = subs_v1["Q_regime"][c],
+            Q_drift        = subs_v1["Q_drift"][c],
+            Q_freeze       = subs_v1["Q_freeze"][c],
+            ks_stat        = detectors_raw["ks_statistic_hourly"][c],
+            w1_norm        = detectors_raw["w1_normalised_hourly"][c],
+            resid_h        = resid_h[c],
+            pelt_changepoints = [ev["timestamp"] for ev in pelt_results[c]],
+            step_confirmed = step_confirmed_c,
+            cfg            = cd_cfg,
         )
         Q_drift_eff_dict[c] = Q_drift_eff_c
-        state_log_dict[c] = state_log_c
+        state_log_dict[c]   = state_log_c
         transitions_all.extend(transitions_c)
-        # Write state transitions to blackboard
         for tr in transitions_c:
             bb.write(StateEntry(sensor_id=c, flag_name=f"state_to_{tr['to_state']}",
                                   flag_value=tr.get("trigger", ""),
@@ -177,12 +186,9 @@ def main():
 
     log(f"    [{time.time()-t:.1f}s] {len(transitions_all)} state transitions logged")
 
-    # State distribution summary
     state_dist = {}
     for s_name in ["Normal", "Refractory", "SustainedAnomaly", "RecoveryCandidate", "Recovered"]:
-        cnt = 0
-        for c in SCORED_CHANNELS:
-            cnt += (state_log_dict[c]["state_name"] == s_name).sum()
+        cnt = sum((state_log_dict[c]["state_name"] == s_name).sum() for c in SCORED_CHANNELS)
         state_dist[s_name] = cnt
     total_h = sum(state_dist.values())
     log(f"    State coverage (total {total_h}):")
@@ -193,7 +199,7 @@ def main():
     log("[4] Multi-regime clustering (k=4) — D7 templates, NOT D1 scoring ...")
     t = time.time()
     feat_df = build_regime_features(df_h, window_h=24)
-    regime_info = cluster_regimes(feat_df, k=4, random_state=42)
+    regime_info   = cluster_regimes(feat_df, k=4, random_state=42)
     regime_labels = regime_info["labels"]
     log(f"    [{time.time()-t:.1f}s] regime distribution: "
         f"{regime_labels.value_counts().to_dict()}")
@@ -205,61 +211,61 @@ def main():
     log("[5] QR/QIR side annotations (offline only, NOT D1 scoring) ...")
     t = time.time()
     qr_qir_annotations = compute_qr_qir_side_outputs(df_h)
-    log(f"    [{time.time()-t:.1f}s] driver_note rows: "
-        f"{(qr_qir_annotations['qr_jump_annotation'] != '').sum()} QR jumps, "
-        f"{(qr_qir_annotations['qir_jump_annotation'] != '').sum()} QIR jumps")
+    log(f"    [{time.time()-t:.1f}s] "
+        f"QR jumps: {(qr_qir_annotations['qr_jump_annotation'] != '').sum()}, "
+        f"QIR jumps: {(qr_qir_annotations['qir_jump_annotation'] != '').sum()}")
 
     # ── 6. Re-aggregate D1 v1.1 with signal-only Veto-3
     log("[6] Re-aggregating D1 v1.1 with signal-only Veto-3 + 5-state machine ...")
     t = time.time()
-    Q_step_idx = subs_v1["Q_step"].index
-    D1_v11 = pd.DataFrame(index=Q_step_idx)
+    Q_step_idx    = subs_v1["Q_step"].index
+    D1_v11        = pd.DataFrame(index=Q_step_idx)
     components_v11 = {}
-    veto_logs_v11 = {}
-    subs_v11 = {}
+    veto_logs_v11  = {}
+    subs_v11       = {}
     for c in SCORED_CHANNELS:
-        # v1.1 sub-scores: keep STRICT V1 except replace Q_drift with Q_drift_eff
-        # (no process-aware step masking, no response-loss aux per QR_QIR 修订)
-        Q_spike_c = subs_v1["Q_spike"][c]
-        Q_step_c  = subs_v1["Q_step"][c]
-        Q_drift_c = subs_v1["Q_drift"][c]
+        Q_spike_c  = subs_v1["Q_spike"][c]
+        Q_step_c   = subs_v1["Q_step"][c]
+        Q_drift_c  = subs_v1["Q_drift"][c]
         Q_freeze_c = subs_v1["Q_freeze"][c]
         Q_regime_c = subs_v1["Q_regime"][c]
-        # Q_drift_eff comes from state machine
         Q_drift_eff_c = Q_drift_eff_dict[c]
         subs_v11[c] = {
-            "Q_spike": Q_spike_c,
-            "Q_step": Q_step_c,
-            "Q_drift": Q_drift_eff_c,    # effective drift after α-thaw
-            "Q_drift_raw": Q_drift_c,     # keep for audit
-            "Q_freeze": Q_freeze_c,
-            "Q_regime": Q_regime_c,
+            "Q_spike":    Q_spike_c,
+            "Q_step":     Q_step_c,
+            "Q_drift":    Q_drift_eff_c,   # effective drift after α-thaw
+            "Q_drift_raw": Q_drift_c,       # kept for audit
+            "Q_freeze":   Q_freeze_c,
+            "Q_regime":   Q_regime_c,
         }
         D1_, comp, vlog = aggregate_d1_v11(
             Q_spike_c, Q_step_c, Q_drift_eff_c, Q_freeze_c, Q_regime_c,
-            state_log=state_log_dict[c],
-            freeze_thr=rules["veto"]["freeze_threshold"],
-            freeze_cap=rules["veto"]["freeze_cap"],
-            regime_thr=rules["veto"]["regime_threshold"],
-            regime_cap=rules["veto"]["regime_cap"],
-            veto3_step_thr=rules["veto"]["veto3_step_threshold"],
-            veto3_duration_h=rules["veto"]["veto3_duration_h"],
-            veto3_cap=rules["veto"]["veto3_cap"],
-            sustained_cap=sm_cfg["sustained_anomaly_cap"],
+            state_log    = state_log_dict[c],
+            weights      = agg_weights,
+            lambda_blend = lambda_blend,
+            freeze_thr   = rules["veto"]["freeze_threshold"],
+            freeze_cap   = rules["veto"]["freeze_cap"],
+            regime_thr   = rules["veto"]["regime_threshold"],
+            regime_cap   = rules["veto"]["regime_cap"],
+            veto3_step_thr      = rules["veto"]["veto3_step_threshold"],
+            veto3_duration_h    = rules["veto"]["veto3_duration_h"],
+            veto3_min_event_count = rules["veto"].get("veto3_min_event_count_36h", 6),
+            veto3_cap           = rules["veto"]["veto3_cap"],
+            sustained_cap       = sm_cfg["sustained_anomaly_cap"],
         )
-        D1_v11[c] = D1_
-        components_v11[c] = comp
-        veto_logs_v11[c] = vlog
+        D1_v11[c]           = D1_
+        components_v11[c]   = comp
+        veto_logs_v11[c]    = vlog
 
     bb.flush()
     log(f"    [{time.time()-t:.1f}s] D1 v1.1 mean = {D1_v11.mean().mean():.3f} "
         f"(STRICT V1 scored = {D1_v1_scored.mean().mean():.3f})")
 
     # ── 7. Multi-scale aggregation + events
-    D1_d_v11 = to_daily(D1_v11, q=0.05)
-    D1_w_v11 = to_weekly(D1_d_v11, op="min")
+    D1_d_v11  = to_daily(D1_v11, q=0.05)
+    D1_w_v11  = to_weekly(D1_d_v11, op="min")
     events_v11 = extract_events(D1_v11, threshold=3.0, min_duration_h=6)
-    dom_v11 = attribute_dominant_fault(subs_v11)
+    dom_v11    = attribute_dominant_fault(subs_v11)
     log(f"[7] Multi-scale: daily {D1_d_v11.shape}, weekly {D1_w_v11.shape}")
     log(f"    v1.1 events (D1<3, dur≥6h): {len(events_v11)}")
 
@@ -267,20 +273,20 @@ def main():
     log("\n[Per-channel D1 mean comparison: STRICT V1 vs v1.1]")
     delta_rows = []
     for c in SCORED_CHANNELS:
-        d1_v1 = float(D1_v1_scored[c].mean())
+        d1_v1  = float(D1_v1_scored[c].mean())
         d1_v11 = float(D1_v11[c].mean())
-        delta = d1_v11 - d1_v1
-        cool_v11 = float((state_log_dict[c]["state_name"] == "Refractory").mean())
-        sust_v11 = float((state_log_dict[c]["state_name"] == "SustainedAnomaly").mean())
+        delta  = d1_v11 - d1_v1
+        cool_v11  = float((state_log_dict[c]["state_name"] == "Refractory").mean())
+        sust_v11  = float((state_log_dict[c]["state_name"] == "SustainedAnomaly").mean())
         recov_v11 = float((state_log_dict[c]["state_name"] == "RecoveryCandidate").mean())
-        normal_v11 = float((state_log_dict[c]["state_name"] == "Normal").mean())
-        veto3 = float(veto_logs_v11[c]["veto3_signal_only"].mean())
+        norm_v11  = float((state_log_dict[c]["state_name"] == "Normal").mean())
+        veto3     = float(veto_logs_v11[c]["veto3_signal_only"].mean())
         delta_rows.append({
             "channel": c, "D1_v1": d1_v1, "D1_v11": d1_v11, "delta_D1": delta,
-            "Refractory_pct": cool_v11 * 100,
-            "Sustained_pct": sust_v11 * 100,
-            "RecCand_pct": recov_v11 * 100,
-            "Normal_pct": normal_v11 * 100,
+            "Refractory_pct":  cool_v11 * 100,
+            "Sustained_pct":   sust_v11 * 100,
+            "RecCand_pct":     recov_v11 * 100,
+            "Normal_pct":      norm_v11 * 100,
             "veto3_signal_only_pct": veto3 * 100,
         })
     delta_df = pd.DataFrame(delta_rows).sort_values("delta_D1")
@@ -322,12 +328,12 @@ def main():
         "n_pelt_cps": n_cps,
         "elapsed_sec": time.time() - t0,
     }
-    with open(ROOT / "v11_state.pkl", "wb") as f:
+    pkl_out = _ROOT / "v11_state.pkl"
+    with open(pkl_out, "wb") as f:
         pickle.dump(state, f)
-    log(f"    Saved v11_state.pkl ({(ROOT/'v11_state.pkl').stat().st_size/1e6:.1f} MB)")
+    log(f"    Saved {pkl_out} ({pkl_out.stat().st_size/1e6:.1f} MB)")
 
-    # Save log
-    with open(OUT / "logs" / "run_v11.log", "w") as f:
+    with open(OUT / "logs" / "run_v11.log", "w", encoding="utf-8") as f:
         f.write("\n".join(LOG))
 
     elapsed = time.time() - t0

@@ -23,11 +23,8 @@ Plus v1.1-specific:
 from __future__ import annotations
 import sys, pickle
 from pathlib import Path
-
-# src/outputs/excel_exporter_v11.py → go up 2 levels to project root
-ROOT = Path(__file__).parents[2]
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
+ROOT = Path(__file__).parent
+sys.path.insert(0, str(ROOT))
 
 import numpy as np
 import pandas as pd

@@ -57,17 +57,23 @@ class WindowManager:
                         role, pd.Timedelta(hours=float(v)),
                         freq="1h" if det_kind != "spike" else "1min"
                     )
-        # Freeze is a dict in cfg
-        for role, key in [("main", "main_h"),
-                           ("flash", "flash_min"),
-                           ("hard_min", "hard_min_min"),
-                           ("hard_max", "hard_max_min"),
+            # drift and regime carry early_h in the extra dict
+            early_v = ws.extra.get("early_h") if hasattr(ws, "extra") else None
+            if early_v is not None:
+                self._cache[f"{det_kind}_early"] = WindowSpec(
+                    "early", pd.Timedelta(hours=float(early_v)), freq="1h"
+                )
+
+        # Freeze is a dict in cfg.
+        # windows.yaml keys: flash_h, hard_h, main_h, sustained_h (all in hours)
+        for role, key in [("main",      "main_h"),
+                           ("flash",     "flash_h"),
+                           ("hard",      "hard_h"),
                            ("sustained", "sustained_h")]:
             if key in self.cfg.freeze:
                 v = self.cfg.freeze[key]
-                unit = "h" if "h" in key else "min"
                 self._cache[f"freeze_{role}"] = WindowSpec(
-                    role, pd.Timedelta(**{("hours" if unit == "h" else "minutes"): float(v)}),
+                    role, pd.Timedelta(hours=float(v)),
                     freq="1min"
                 )
 

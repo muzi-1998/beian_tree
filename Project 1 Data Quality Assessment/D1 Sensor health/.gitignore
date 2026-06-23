@@ -1,0 +1,10 @@
+# D1 Sensor health — ignore large/derived artefacts (regenerate via run_v11_pipeline.py)
+/outputs
+cache/
+artifacts/
+__pycache__/
+*.pyc
+*.pkl
+# raw / derived data workbooks (large; live outside VCS)
+*.xlsx
+*.xls

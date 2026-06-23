@@ -4,7 +4,7 @@
 from __future__ import annotations
 import sys, pickle
 from pathlib import Path
-ROOT = Path(__file__).parents[2]
+ROOT = Path(__file__).parent
 sys.path.insert(0, str(ROOT))
 
 import numpy as np
@@ -20,8 +20,6 @@ from matplotlib.patches import Rectangle, Patch
 
 OUT = ROOT / "outputs" / "figures"
 PLOTDATA = ROOT / "outputs" / "plot_data"
-OUT.mkdir(parents=True, exist_ok=True)
-PLOTDATA.mkdir(parents=True, exist_ok=True)
 
 plt.rcParams.update({
     "font.family": "DejaVu Sans", "font.size": 8.5,
@@ -123,7 +121,7 @@ print("[Fig2] Monthly D1 heatmap ...")
 fig, ax = plt.subplots(figsize=(11, 5.5))
 monthly = D1_v11.resample("ME").mean().T
 months = [t.strftime("%Y-%m") for t in monthly.columns]
-im = ax.imshow(monthly.values, cmap=grade_cmap, aspect="auto", vmin=1.5, vmax=4.5)
+im = ax.imshow(monthly.values, cmap="RdBu_r", aspect="auto", vmin=2.0, vmax=4.5)
 ax.set_yticks(np.arange(len(monthly))); ax.set_yticklabels(monthly.index.tolist(),
                                                               fontsize=8.5)
 ax.set_xticks(np.arange(len(months))); ax.set_xticklabels(months, rotation=30,
@@ -132,11 +130,11 @@ for i in range(len(monthly)):
     for j in range(len(months)):
         v = monthly.values[i, j]
         if not np.isnan(v):
-            txt_clr = "white" if (v < 2.4 or v > 3.6) else "black"
+            txt_clr = "white" if (v < 2.75 or v > 3.85) else "black"
             ax.text(j, i, f"{v:.2f}", ha="center", va="center",
                       fontsize=7.5, color=txt_clr, fontweight="bold")
-cbar = plt.colorbar(im, ax=ax, fraction=0.025, pad=0.02)
-cbar.set_label(r"Mean monthly $D_1$  (1 = poor, 5 = excellent)", fontsize=9)
+cbar = plt.colorbar(im, ax=ax, fraction=0.025, pad=0.09)
+cbar.set_label(r"Mean monthly $D_1$  (2.0=poor — 4.5=excellent)", fontsize=9)
 cbar.ax.tick_params(labelsize=7.5)
 ax.set_title("Figure 2.  Per-channel monthly $D_1$ heatmap (v1.1, DO/ORP n=14)",
              loc="left")
@@ -340,7 +338,7 @@ for f in faults:
     bottom += np.array(shares[f])
 ax.set_xticks(xs); ax.set_xticklabels(SCORED, rotation=45, ha="right", fontsize=8.5)
 ax.set_ylabel("Dominant-fault share (%)", fontsize=9)
-ax.set_ylim(0, 105)
+ax.set_ylim(0, 120)
 ax.set_title("Figure 6.  Dominant fault decomposition per channel (v1.1)",
               loc="left")
 ax.legend(loc="upper right", ncol=5, fontsize=8, framealpha=0.92)
@@ -412,6 +410,7 @@ for i, (k_name, clr) in enumerate(clr_map.items()):
             edgecolor="white", linewidth=0.4, alpha=0.88, label=k_name)
 ax.set_xticks(xs); ax.set_xticklabels(SCORED, rotation=45, ha="right", fontsize=8.5)
 ax.set_ylabel("Activation rate (%)", fontsize=9.5)
+ax.set_ylim(0, df_v.values.max() * 1.70)
 ax.set_title("Figure 8.  Veto and state-machine activation rates per channel (v1.1)",
               loc="left")
 ax.legend(loc="upper right", ncol=5, fontsize=8, framealpha=0.92)
@@ -426,8 +425,7 @@ print("[Fig9] Harmonic decomposition ...")
 fig, axes = plt.subplots(3, 1, figsize=(13, 8), sharex=True)
 fig.subplots_adjust(hspace=0.32)
 df_h = S["df_h"]; resid_h = S["resid_h"]
-_demo_chs = [c for c in ["DO_2_3", "ORP_1_1", "DO_1_1"] if c in resid_h.columns][:3]
-for i, ch in enumerate(_demo_chs):
+for i, ch in enumerate(["DO_2_3", "ORP_1_1", "ORP_2_1"]):
     ax = axes[i]
     x = df_h[ch].iloc[:24*7]   # 7 days
     r = resid_h[ch].iloc[:24*7]
@@ -466,7 +464,7 @@ ax.fill_between(w1.index, 0, w1.values, where=w1.values > 3,
 ax.set_ylabel("W1 normalised", fontsize=9.5)
 ax.set_yscale("symlog", linthresh=2)
 ax.set_title(f"(a)  Tier-1 W1 distance — {ch}", loc="left")
-ax.legend(loc="upper right", fontsize=7.5)
+ax.legend(loc="upper left", fontsize=7.5)
 
 ax = axes[1]
 ax.plot(ks.index, ks.values, color=C["blue"], lw=0.5, alpha=0.85,
@@ -475,7 +473,7 @@ ax.fill_between(ks.index, 0, ks.values, where=ks.values > 0.3,
                  color=C["blue"], alpha=0.15, label="Tier-2 active (KS>0.3)")
 ax.set_ylabel("adjacent KS", fontsize=9.5)
 ax.set_title(f"(b)  Tier-2 adjacent KS — {ch}", loc="left")
-ax.legend(loc="upper right", fontsize=7.5)
+ax.legend(loc="upper left", fontsize=7.5)
 ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
 
 fig.suptitle(f"Figure 10.  Two-tier regime detector outputs — {ch} (v1.1)",

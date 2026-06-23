@@ -5,7 +5,7 @@ Continues from make_figures_v11.py.
 from __future__ import annotations
 import sys, pickle
 from pathlib import Path
-ROOT = Path(__file__).parents[2]
+ROOT = Path(__file__).parent
 sys.path.insert(0, str(ROOT))
 
 import numpy as np
@@ -21,8 +21,6 @@ from matplotlib.patches import Rectangle, Patch, FancyArrowPatch
 
 OUT = ROOT / "outputs" / "figures"
 PLOTDATA = ROOT / "outputs" / "plot_data"
-OUT.mkdir(parents=True, exist_ok=True)
-PLOTDATA.mkdir(parents=True, exist_ok=True)
 
 # Same SCI rcParams
 plt.rcParams.update({
@@ -73,8 +71,9 @@ def save(fig, name, plot_data: dict = None):
 # ============================================================================
 print("[V16] Multi-regime templates ...")
 fig = plt.figure(figsize=(13.5, 8))
-gs = gridspec.GridSpec(3, 2, figure=fig, hspace=0.5, wspace=0.30,
+gs = gridspec.GridSpec(3, 2, figure=fig, hspace=0.5, wspace=0.55,
                         height_ratios=[1.0, 1.1, 1.0])
+fig.subplots_adjust(left=0.09, right=0.93)
 
 regime_labels = S["regime_labels"]
 regime_info = S["regime_info"]
@@ -248,7 +247,7 @@ ax.axhline(0, color="0.3", lw=0.5)
 ax.set_ylabel("# jumps per day", fontsize=9)
 ax.set_title("(b)  Driver-variable jump density timeline (offline annotation, "
               "NOT scored)", loc="left")
-ax.legend(loc="upper right", fontsize=8)
+ax.legend(loc="upper left", fontsize=8)
 ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
 
 # (c) QR/QIR raw timelines
@@ -295,6 +294,9 @@ ax.hist(v1_flat, bins=bins, color=C["gray"], alpha=0.6,
 ax.hist(v11_flat, bins=bins, color=C["blue"], alpha=0.55,
          label=f"v1.1 (μ={v11_flat.mean():.3f})", density=True)
 ax.axvline(3, color=C["red"], ls=":", lw=0.7, alpha=0.7, label="grade boundary")
+_dens_max = max(np.histogram(v1_flat, bins=bins, density=True)[0].max(),
+                np.histogram(v11_flat, bins=bins, density=True)[0].max())
+ax.set_ylim(0, _dens_max * 1.50)
 ax.set_xlabel(r"Hourly $D_1$", fontsize=9); ax.set_ylabel("Density", fontsize=9)
 ax.set_title("(a)  Hourly $D_1$ distribution", loc="left")
 ax.legend(loc="upper left", fontsize=7.5)
@@ -342,15 +344,15 @@ ax.set_xticks(xs); ax.set_xticklabels(SCORED, rotation=45, ha="right", fontsize=
 ax.set_ylabel(r"Mean $Q_{\rm drift}$", fontsize=9)
 ax.axhline(3.0, color=C["amber"], ls="--", lw=0.7, alpha=0.6,
             label="neutral 3.0")
+ax.set_ylim(0, 6.0)
 ax.set_title("(c)  $Q_{\\rm drift}$ raw vs effective (α-thaw)", loc="left")
-ax.legend(loc="lower right", fontsize=7.5)
-ax.set_ylim(0, 5)
+ax.legend(loc="upper right", fontsize=7.5)
 
 # (d) Per-channel D1 v1 vs v11 scatter coloured by sensor type
 ax = fig.add_subplot(gs[1, :2])
 for c in SCORED:
     clr = C["blue"] if c.startswith("DO_") else C["green"]
-    n_show = min(800, len(D1_v1))
+    n_show = 800
     sample = np.random.RandomState(42).choice(len(D1_v1), n_show, replace=False)
     ax.scatter(D1_v1[c].values[sample], D1_v11[c].values[sample],
                 color=clr, marker="o", s=4, alpha=0.18, rasterized=True)
@@ -363,35 +365,23 @@ hndl = [Line2D([], [], marker="o", color=C["blue"], linestyle="", label="DO"),
          Line2D([], [], marker="o", color=C["green"], linestyle="", label="ORP")]
 ax.legend(handles=hndl, loc="upper left", fontsize=7.5)
 
-# (e) Event count comparison — computed directly from S["events_v11"]
+# (e) Event count comparison
 ax = fig.add_subplot(gs[1, 2])
-sub_keys = ["Q_spike", "Q_step", "Q_drift", "Q_freeze", "Q_regime"]
-v11_dom = {k: 0 for k in sub_keys}
-events_v11 = S.get("events_v11", pd.DataFrame())
-if isinstance(events_v11, pd.DataFrame) and len(events_v11) > 0:
-    for _, ev in events_v11.iterrows():
-        c = ev.get("sensor_id", ev.get("channel", ""))
-        if c not in SCORED or c not in S["subs_v11"]:
-            continue
-        t_start = ev.get("start", ev.get("start_time", None))
-        t_end   = ev.get("end",   ev.get("end_time",   None))
-        try:
-            seg = pd.DataFrame(
-                {k: S["subs_v11"][c][k].loc[t_start:t_end] for k in sub_keys})
-        except Exception:
-            continue
-        if len(seg) == 0:
-            continue
-        dom = seg.mean(axis=0).idxmin()
-        v11_dom[dom] += 1
-faults = ["spike", "step", "drift", "freeze", "regime"]
+v11_dom = {"Q_spike":0,"Q_step":0,"Q_drift":0,"Q_freeze":0,"Q_regime":0}
+for _, ev in S["events_v11"].iterrows():
+    c = ev["sensor_id"]
+    s = pd.DataFrame({k: S["subs_v11"][c][k].loc[ev["start"]:ev["end"]]
+                       for k in v11_dom})
+    if len(s) == 0: continue
+    dom = s.mean(axis=0).idxmin()
+    v11_dom[dom] += 1
+faults = ["spike","step","drift","freeze","regime"]
 v11_counts = [v11_dom.get(f"Q_{f}", 0) for f in faults]
-xs = np.arange(len(faults))
-ax.bar(xs, v11_counts, 0.55, color=C["blue"], alpha=0.85,
-        label=f"v1.1 (total={sum(v11_counts)})", edgecolor="white")
+xs = np.arange(len(faults)); bw = 0.55
+ax.bar(xs, v11_counts, bw, color=C["blue"], alpha=0.85,
+        label=f"v1.1 (total={sum(v11_counts)})")
 for i, b in enumerate(v11_counts):
-    if b > 0:
-        ax.text(i, b + 0.3, str(b), ha="center", fontsize=7.5, fontweight="bold")
+    if b > 0: ax.text(i, b + 2, str(b), ha="center", fontsize=7.5)
 ax.set_xticks(xs); ax.set_xticklabels(faults, fontsize=8)
 ax.set_ylabel("# events", fontsize=9)
 ax.set_title("(e)  Events by dominant fault (v1.1)", loc="left")
