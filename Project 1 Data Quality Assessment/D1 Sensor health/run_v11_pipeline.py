@@ -118,8 +118,18 @@ def main():
         raw = pickle.load(f)
     df_h    = raw["df_h"]
     resid_h = raw["resid_h"]
+    # §1.1 bridge (audit §3): PELT segments the whitened/routed input (innovation
+    # for iid channels, residual for autocorr_aware) and uses a per-channel
+    # n_eff to inflate its BIC penalty. Fall back to the residual / n_eff=1 for
+    # legacy pkls produced before the bridge.
+    pelt_input = raw.get("whitened_input_h", resid_h)
+    eff_neff   = raw.get("eff_neff", {})
     log(f"    Raw hourly: {df_h.shape}, "
         f"residual range = {resid_h.min().min():.1f} .. {resid_h.max().max():.1f}")
+    if "whitened_input_h" in raw:
+        n_susp = sum(1 for v in eff_neff.values() if v < 1.0)
+        log(f"    §1.1 bridge active: PELT on whitened_input_h, "
+            f"{n_susp} channel(s) with n_eff<1 (penalty inflated)")
 
     # ── Connect WindowManager to hourly data (cfg.windows already stripped/validated)
     wm = WindowManager(cfg.windows, df_min=pd.DataFrame(), df_h=df_h)
@@ -137,8 +147,9 @@ def main():
     pelt_results = {}
     for c in SCORED_CHANNELS:
         cal = PELTBatchCalibrator(lookback_hours=720, min_seg_hours=12,
-                                    penalty_factor=2.5, stride_h=336)
-        events = cal.calibrate_series(resid_h[c].rename(c))
+                                    penalty_factor=2.5, stride_h=336,
+                                    neff_ratio=float(eff_neff.get(c, 1.0)))
+        events = cal.calibrate_series(pelt_input[c].rename(c))
         pelt_results[c] = events
         for ev in events:
             bb.write(StateEntry(sensor_id=c, flag_name="pelt_changepoint",

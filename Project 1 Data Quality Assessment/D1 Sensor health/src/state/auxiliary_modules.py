@@ -53,16 +53,22 @@ class PELTBatchCalibrator:
     """Batch calibrator using L2-cost binary segmentation (BIC-style penalty)."""
     def __init__(self, lookback_hours: int = 720, min_seg_hours: int = 12,
                  penalty_factor: float = 2.5, stride_h: int = 336,
-                 max_cps_per_window: int = 20):
+                 max_cps_per_window: int = 20, neff_ratio: float = 1.0):
         self.lookback = lookback_hours
         self.min_seg = min_seg_hours
         self.penalty_factor = penalty_factor
         self.stride_h = stride_h
         self.max_cps = max_cps_per_window
+        # n_eff awareness (audit §3): BIC penalty log(n)·var assumes n independent
+        # samples; on an autocorrelated residual PELT over-segments. Inflate the
+        # penalty by 1/neff_ratio so the effective sample size is n·neff_ratio.
+        # 1 → unchanged (white input); ≈0.01 → ~100× penalty; 0 → no CPs (floor).
+        self.neff_ratio = float(min(max(neff_ratio, 0.0), 1.0))
 
     def calibrate_series(self, ser: pd.Series) -> List[Dict]:
         ser = ser.dropna()
         if len(ser) < 2 * self.min_seg: return []
+        if self.neff_ratio <= 0.0: return []   # floor channel — excluded
         events = []
         idx = ser.index
         end_positions = list(range(self.lookback, len(idx), self.stride_h))
@@ -73,7 +79,7 @@ class PELTBatchCalibrator:
             seg = ser.iloc[start_pos:end_pos]
             x = seg.values
             if np.var(x) < 1e-10: continue
-            penalty = self.penalty_factor * np.log(len(x)) * np.var(x)
+            penalty = self.penalty_factor * np.log(len(x)) * np.var(x) / self.neff_ratio
             cps = binseg_l2(x, penalty=penalty, min_seg=self.min_seg,
                               max_cps=self.max_cps)
             for cp in cps:

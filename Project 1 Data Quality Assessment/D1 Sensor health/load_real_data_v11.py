@@ -19,7 +19,7 @@
   Q_step / Q_drift / Q_regime : 在小时残差上运行（已正确）
 """
 from __future__ import annotations
-import sys, time, pickle, warnings
+import os, sys, time, pickle, warnings
 warnings.filterwarnings("ignore")
 from pathlib import Path
 
@@ -32,10 +32,20 @@ import pandas as pd
 from src.config.loader import load_project_config
 from src.data.loader import time_align_and_impute, PHYS_RANGE
 from src.baseline.deperiodise import harmonic_decomposition_dataframe
+from src.baseline.bridge_decomposition_11 import (load_decomposition_11,
+                                                  effective_neff, summarise)
 from src.detectors import (HampelSpikeDetector, AdjacentKSStepDetector,
                             PLSVirtualSensorDetector, engineered_peers,
                             CompositeFreezeDetector, TwoTierRegimeDetector)
 from src.mapping.mapper import apply_mapping
+
+# ── §1.1 Decomposition bridge gate ────────────────────────────────────────────
+# When ON (default), D1 consumes §1.1's whitened residual/innovation + the
+# whiteness_manifest contract instead of its own un-whitened harmonic baseline,
+# and routes the i.i.d.-sensitive detectors (step-KS, regime-KS, PELT) per
+# `scoring_mode` (see src/baseline/bridge_decomposition_11.py and
+# D1_detector_audit.md §3). Set D1_USE_DECOMP_11=0 to reproduce the legacy path.
+USE_DECOMP_11 = os.environ.get("D1_USE_DECOMP_11", "1") == "1"
 
 
 # ─── 通道定义 ─────────────────────────────────────────────────────────────────
@@ -156,9 +166,11 @@ def run_spike_detector(df_min: pd.DataFrame, channels: list) -> dict:
     """在 1min 原始数据上运行 Hampel 检测器 (window=21min, k=3.0)。
     严格遵守 d1_pipeline.py 规格: spike 必须在分钟级数据上运行。
     """
-    cache_path = CACHE_DIR / "spike_results_min.pkl"
+    # cache renamed (_causal): the Hampel window is now causal (center=False,
+    # audit §2 ①); the old center=True cache must not be reused.
+    cache_path = CACHE_DIR / "spike_results_min_causal.pkl"
     if cache_path.exists():
-        log(f"[3-spike] 从缓存加载 (分钟级)")
+        log(f"[3-spike] 从缓存加载 (分钟级, 因果窗)")
         with open(cache_path, "rb") as f:
             return pickle.load(f)
 
@@ -187,30 +199,37 @@ def compute_spike_rate(spike_results: dict, channels: list) -> pd.DataFrame:
     return pd.DataFrame(rates)
 
 
-def run_step_detector(resid_h: pd.DataFrame, channels: list) -> tuple[dict, dict]:
+def run_step_detector(resid_h: pd.DataFrame, channels: list,
+                      eff_neff: dict | None = None,
+                      cache_tag: str = "") -> tuple[dict, dict]:
     """双窗口 KS 检测（严格遵守 PDF §四方案）。
 
     KS_24: win_h=12（比较 r[t-24h,t-12h] vs r[t-12h,t]，各12h）
     KS_36: win_h=18（比较 r[t-36h,t-18h] vs r[t-18h,t]，各18h）
     返回 (step_results_24, step_results_36)
+
+    eff_neff: 每通道有效 n_eff 比（来自 §1.1 manifest 的 scoring_mode 路由）。
+        iid→1.0（白创新，统计量不变）；autocorr_aware→manifest 比（统计量×√n_eff）；
+        floor_freeze→0.0（统计量归零，交由 freeze 评分）。None → 全部 1.0（旧路径）。
     """
-    cache_24 = CACHE_DIR / "step_results_24.pkl"
-    cache_36 = CACHE_DIR / "step_results_36.pkl"
+    cache_24 = CACHE_DIR / f"step_results_24{cache_tag}.pkl"
+    cache_36 = CACHE_DIR / f"step_results_36{cache_tag}.pkl"
 
     if cache_24.exists() and cache_36.exists():
-        log(f"[3-step] 从缓存加载 KS_24 + KS_36")
+        log(f"[3-step] 从缓存加载 KS_24 + KS_36{cache_tag}")
         with open(cache_24, "rb") as f:
             res24 = pickle.load(f)
         with open(cache_36, "rb") as f:
             res36 = pickle.load(f)
         return res24, res36
 
-    log("[3-step] 双窗口相邻 KS: KS_24 (win_h=24) + KS_36 (win_h=36)...")
+    log(f"[3-step] 双窗口相邻 KS: KS_24 (win_h=24) + KS_36 (win_h=36){cache_tag}...")
     t = time.time()
-    det24 = AdjacentKSStepDetector(win_h=24, alpha=0.001)  # 主检测: 各24h, 总跨度48h
-    det36 = AdjacentKSStepDetector(win_h=36, alpha=0.001)  # 持续确认: 各36h, 更稳定
     res24, res36 = {}, {}
     for i, c in enumerate(channels, 1):
+        en = float((eff_neff or {}).get(c, 1.0))   # 有效 n_eff，按通道
+        det24 = AdjacentKSStepDetector(win_h=24, alpha=0.001, neff_ratio=en)
+        det36 = AdjacentKSStepDetector(win_h=36, alpha=0.001, neff_ratio=en)
         res24[c] = det24.score(resid_h[c].rename(c))
         res36[c] = det36.score(resid_h[c].rename(c))
         if i % 4 == 0:
@@ -238,10 +257,11 @@ def confirmation_gate_fusion(Q_24: pd.Series, Q_36: pd.Series) -> tuple[pd.Serie
     return Q_final.clip(1, 5), step_confirmed
 
 
-def run_drift_detector(resid_h: pd.DataFrame, channels: list) -> dict:
-    cache_path = CACHE_DIR / "drift_results.pkl"
+def run_drift_detector(resid_h: pd.DataFrame, channels: list,
+                       cache_tag: str = "") -> dict:
+    cache_path = CACHE_DIR / f"drift_results{cache_tag}.pkl"
     if cache_path.exists():
-        log(f"[3-drift] 从缓存加载")
+        log(f"[3-drift] 从缓存加载{cache_tag}")
         with open(cache_path, "rb") as f:
             return pickle.load(f)
 
@@ -294,20 +314,24 @@ def run_freeze_detector(df_min: pd.DataFrame, channels: list) -> dict:
     return results
 
 
-def run_regime_detector(resid_h: pd.DataFrame, channels: list) -> dict:
-    cache_path = CACHE_DIR / "regime_results.pkl"
+def run_regime_detector(resid_h: pd.DataFrame, channels: list,
+                        eff_neff: dict | None = None,
+                        cache_tag: str = "") -> dict:
+    cache_path = CACHE_DIR / f"regime_results{cache_tag}.pkl"
     if cache_path.exists():
-        log(f"[3-regime] 从缓存加载")
+        log(f"[3-regime] 从缓存加载{cache_tag}")
         with open(cache_path, "rb") as f:
             return pickle.load(f)
 
-    log("[3-regime] 两层制度检测器 (W1+KS, ref=90天, win=7天)...")
+    log(f"[3-regime] 两层制度检测器 (W1+KS, ref=90天, win=7天){cache_tag}...")
     t = time.time()
-    detector = TwoTierRegimeDetector(
-        ref_days=90, w1_win_days=7, ks_win_days=7,
-        w1_update_h=6, ks_update_h=24, ks_alpha=0.001, n_bootstrap=100)
     results = {}
     for i, c in enumerate(channels, 1):
+        en = float((eff_neff or {}).get(c, 1.0))   # 有效 n_eff，按通道（W1/KS×√n_eff）
+        detector = TwoTierRegimeDetector(
+            ref_days=90, w1_win_days=7, ks_win_days=7,
+            w1_update_h=6, ks_update_h=24, ks_alpha=0.001, n_bootstrap=100,
+            neff_ratio=en)
         results[c] = detector.score(resid_h[c].rename(c))
         if i % 3 == 0:
             log(f"    [{time.time()-t:.1f}s] {i}/{len(channels)} 通道完成")
@@ -436,20 +460,51 @@ def main():
     df_h, df_min = load_and_align()
     log(f"    df_h: {df_h.shape}, df_min: {df_min.shape}")
 
-    # ── 步骤 2: 谐波分解（小时级别）
-    resid_h_all = compute_residuals(df_h)
+    # ── 步骤 2: 残差 / 创新输入源
+    resid_h_all = compute_residuals(df_h)   # D1 自带谐波基线（旧路径 / fallback）
+
+    # §1.1 桥接：改输入源 + scoring_mode 分支（audit §3 ROI #1）
+    if USE_DECOMP_11:
+        log("[2+] §1.1 桥接：以 §1.1 白化残差/创新 + whiteness_manifest 替换 D1 谐波输入源")
+        bridge = load_decomposition_11(channels=ALL_CHANNELS,
+                                       target_index_h=resid_h_all.index)
+        log(f"    {summarise(bridge)}")
+        resid_h_11   = bridge["resid_h"]          # §1.1 残差（drift / 状态机残差检验）
+        det_in_h     = bridge["detector_input_h"] # iid→创新 / autocorr→残差（step/regime/PELT）
+        scoring_mode = bridge["scoring_mode"]
+        neff_map     = bridge["neff"]
+        eff_neff = {c: effective_neff(c, scoring_mode, neff_map) for c in ALL_CHANNELS}
+        resid_for_drift = resid_h_11   # PLS 多变量稳健 → §1.1 残差（全通道含 peer）
+        step_in   = det_in_h           # i.i.d. 敏感 → 路由输入
+        regime_in = det_in_h
+        cache_tag = "_w11"
+        for c in SCORED_CHANNELS:
+            log(f"      {c:8s} mode={scoring_mode[c]:14s} eff_neff={eff_neff[c]:.4f} "
+                f"deflate={eff_neff[c]**0.5:.3f}")
+    else:
+        log("[2+] 旧路径：D1 自带谐波残差（未白化）— 设 D1_USE_DECOMP_11=0")
+        scoring_mode = {c: "iid" for c in ALL_CHANNELS}
+        neff_map = {c: 1.0 for c in ALL_CHANNELS}
+        eff_neff = {c: 1.0 for c in ALL_CHANNELS}
+        resid_for_drift = resid_h_all
+        step_in = resid_h_all
+        regime_in = resid_h_all
+        cache_tag = ""
 
     # ── 步骤 3: 运行检测器
-    # spike/freeze 在分钟级原始数据上运行（严格遵守规格）
+    # spike/freeze 在分钟级原始数据上运行（不受白化影响；spike 已修因果窗泄漏 audit §2①）
     spike_results  = run_spike_detector(df_min[SCORED_CHANNELS], SCORED_CHANNELS)
     spike_rate_6h  = compute_spike_rate(spike_results, SCORED_CHANNELS)
 
-    # step: 双窗口 KS_24(win_h=12) + KS_36(win_h=18)，在小时残差上运行
+    # step: 双窗口 KS_24 + KS_36，i.i.d. 敏感 → §1.1 路由输入 + 按通道 n_eff 去敏
     step_results_24, step_results_36 = run_step_detector(
-        resid_h_all[SCORED_CHANNELS], SCORED_CHANNELS)
-    drift_results  = run_drift_detector(resid_h_all, SCORED_CHANNELS)
+        step_in[SCORED_CHANNELS], SCORED_CHANNELS, eff_neff=eff_neff, cache_tag=cache_tag)
+    # drift: PLS 多变量稳健 → §1.1 残差（全通道，含 support 作 peer）
+    drift_results  = run_drift_detector(resid_for_drift, SCORED_CHANNELS, cache_tag=cache_tag)
     freeze_results = run_freeze_detector(df_min[SCORED_CHANNELS], SCORED_CHANNELS)
-    regime_results = run_regime_detector(resid_h_all[SCORED_CHANNELS], SCORED_CHANNELS)
+    # regime: 两层 W1+KS，i.i.d. 敏感 → §1.1 路由输入 + 按通道 n_eff 去敏
+    regime_results = run_regime_detector(
+        regime_in[SCORED_CHANNELS], SCORED_CHANNELS, eff_neff=eff_neff, cache_tag=cache_tag)
 
     # ── 步骤 4: 子分数映射（返回 subs 和 step_confirmed_dict）
     subs_per_ch, step_confirmed_dict = compute_subscores(
@@ -530,16 +585,33 @@ def main():
         "subs_v1":   subs_v1,
         "D1_v1":     D1_v1,
         "detectors": detectors_raw,
+        # §1.1 contract (audit §3): downstream PELT / cooldown read these to
+        # route per-channel input + n_eff. Absent ⇒ legacy i.i.d. behaviour.
+        "decomp_11": {
+            "active":       bool(USE_DECOMP_11),
+            "scoring_mode": scoring_mode,
+            "neff":         neff_map,
+            "eff_neff":     eff_neff,
+        },
     }
     out1 = _ROOT / "strict_v1_inputs.pkl"
     with open(out1, "wb") as f:
         pickle.dump(v1_payload, f)
     log(f"    strict_v1_inputs.pkl: {out1.stat().st_size/1e6:.1f} MB")
 
-    resid_h_scored = resid_h_all[SCORED_CHANNELS].reindex(idx).ffill().bfill()
+    # resid_h: §1.1 residual under the bridge (state-machine residual check),
+    #          harmonic residual under the legacy path.
+    resid_h_scored = resid_for_drift[SCORED_CHANNELS].reindex(idx).ffill().bfill()
+    # whitened_input_h: per-channel routed series (innovation for iid, residual
+    # for autocorr_aware) — what downstream PELT should segment instead of the
+    # raw residual. Under the legacy path this equals resid_h_scored.
+    whitened_input_h = step_in[SCORED_CHANNELS].reindex(idx).ffill().bfill()
     raw_payload = {
         "df_h":    df_h.reindex(idx).ffill().bfill(),
         "resid_h": resid_h_scored,
+        "whitened_input_h": whitened_input_h,
+        "eff_neff": eff_neff,
+        "scoring_mode": scoring_mode,
     }
     out2 = _ROOT / "raw_hourly.pkl"
     with open(out2, "wb") as f:

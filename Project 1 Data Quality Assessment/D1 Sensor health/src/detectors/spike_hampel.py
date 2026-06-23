@@ -17,9 +17,15 @@ class HampelSpikeDetector(BaseDetector):
         self.k = k
 
     def score(self, series: pd.Series, **ctx) -> DetectorResult:
-        # Rolling median & MAD; spec §5 — fast/short window
-        med = series.rolling(self.win, center=True, min_periods=max(5, self.win // 4)).median()
-        mad = (series - med).abs().rolling(self.win, center=True,
+        # Rolling median & MAD; spec §5 — fast/short window.
+        # CAUSAL window (center=False): the scored point is the *last* sample in
+        # its window, so no future information leaks into the spike score. A
+        # centred window (center=True) would peek at win//2 future minutes — a
+        # non-causal leak for an online sensor-health detector (see audit §2 ①).
+        # The median of a length-`win` trailing window still resists a single
+        # spike at t (≤1 outlier in `win`), so genuine spikes are preserved.
+        med = series.rolling(self.win, center=False, min_periods=max(5, self.win // 4)).median()
+        mad = (series - med).abs().rolling(self.win, center=False,
                                            min_periods=max(5, self.win // 4)).median()
         # 1.4826 = consistency constant for Gaussian σ ≈ 1.4826·MAD
         sigma_est = 1.4826 * mad.replace(0, np.nan)

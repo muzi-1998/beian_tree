@@ -37,11 +37,13 @@ class TwoTierRegimeDetector(BaseDetector):
                  ks_update_h: int = 24,
                  ks_alpha: float = 0.001,
                  n_bootstrap: int = 200,
-                 amp_factor: float = 0.5):
+                 amp_factor: float = 0.5,
+                 neff_ratio: float = 1.0):
         super().__init__(ref_days=ref_days, w1_win_days=w1_win_days,
                          ks_win_days=ks_win_days, w1_update_h=w1_update_h,
                          ks_update_h=ks_update_h, ks_alpha=ks_alpha,
-                         n_bootstrap=n_bootstrap, amp_factor=amp_factor)
+                         n_bootstrap=n_bootstrap, amp_factor=amp_factor,
+                         neff_ratio=neff_ratio)
         self.ref_h = ref_days * 24
         self.w1_win_h = w1_win_days * 24
         self.ks_win_h = ks_win_days * 24
@@ -51,6 +53,13 @@ class TwoTierRegimeDetector(BaseDetector):
         c_alpha = {0.05: 1.36, 0.01: 1.63, 0.001: 1.95}.get(ks_alpha, 1.95)
         self.ks_crit = c_alpha * np.sqrt(2.0 / self.ks_win_h)
         self.n_bootstrap = n_bootstrap
+        # n_eff awareness (audit §3): on an autocorrelated residual both the
+        # Tier-1 W1_norm and the Tier-2 KS D are inflated by serial dependence.
+        # Deflate both by sqrt(neff_ratio): 1 → unchanged (white input),
+        # ≈0.01 (near-unit-root) → ~10× shrink, 0 (floor) → zeroed so the
+        # freeze sub-score owns the channel instead of a false regime alarm.
+        self.neff_ratio = float(np.clip(neff_ratio, 0.0, 1.0))
+        self._deflate = float(np.sqrt(self.neff_ratio))
 
     def score(self, series_hourly: pd.Series, **ctx) -> DetectorResult:
         x = series_hourly.values
@@ -84,6 +93,7 @@ class TwoTierRegimeDetector(BaseDetector):
             if len(seg) >= 24:
                 w1_arr[i] = wasserstein_distance(seg, ref)
         w1_norm = pd.Series(w1_arr / baseline, index=series_hourly.index).ffill()
+        w1_norm = w1_norm * self._deflate   # n_eff deflation (audit §3)
 
         # ── Tier-2: adjacent KS at 7-day windows ──────────────────────────
         ks_arr = np.full(n, np.nan)
@@ -94,7 +104,7 @@ class TwoTierRegimeDetector(BaseDetector):
             if len(s1) >= 48 and len(s2) >= 48:
                 D, _ = ks_2samp(s1, s2)
                 ks_arr[i] = D
-        ks_series = pd.Series(ks_arr, index=series_hourly.index).ffill()
+        ks_series = pd.Series(ks_arr, index=series_hourly.index).ffill() * self._deflate
         tier2_active = (ks_series > self.ks_crit).astype(float)
 
         # ── Two-tier joint score ──────────────────────────────────────────
@@ -112,6 +122,8 @@ class TwoTierRegimeDetector(BaseDetector):
             metadata={
                 "tier1_w1_baseline": baseline,
                 "tier2_ks_crit": float(self.ks_crit),
+                "neff_ratio": self.neff_ratio,
+                "deflate_factor": self._deflate,
                 "ref_days": self.params["ref_days"],
                 "w1_win_days": self.params["w1_win_days"],
                 "ks_win_days": self.params["ks_win_days"],

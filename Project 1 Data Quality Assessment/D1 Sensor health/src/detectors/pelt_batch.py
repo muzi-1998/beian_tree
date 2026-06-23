@@ -76,10 +76,17 @@ class PELTBatchCalibrator:
     """
 
     def __init__(self, lookback_hours: int = 48, min_seg_hours: int = 6,
-                 penalty_factor: float = 1.5):
+                 penalty_factor: float = 1.5, neff_ratio: float = 1.0):
         self.lookback = lookback_hours
         self.min_seg = min_seg_hours
         self.penalty_factor = penalty_factor
+        # n_eff awareness (audit §3): the BIC-style penalty log(n)·var(x) assumes
+        # n independent samples. On an autocorrelated residual var(x) over-counts
+        # information and PELT over-segments. Inflate the penalty by 1/neff_ratio
+        # so the effective sample size is n·neff_ratio. neff_ratio=1 → unchanged
+        # (white input); ≈0.01 (near-unit-root) → ~100× penalty (≈no spurious CPs);
+        # 0 (floor) → penalty=∞ (no CPs; freeze owns the channel).
+        self.neff_ratio = float(min(max(neff_ratio, 0.0), 1.0))
 
     def calibrate_one(self, resid_h: pd.Series, end_time: pd.Timestamp = None
                        ) -> List[Dict]:
@@ -91,8 +98,10 @@ class PELTBatchCalibrator:
         if len(seg) < self.min_seg * 2:
             return []
         x = seg.values
-        # Penalty: BIC-style
-        penalty = self.penalty_factor * np.log(len(x)) * np.var(x)
+        # Penalty: BIC-style, inflated by 1/neff_ratio for autocorrelation.
+        if self.neff_ratio <= 0.0:
+            return []   # floor channel — excluded from change-point scoring
+        penalty = self.penalty_factor * np.log(len(x)) * np.var(x) / self.neff_ratio
         cps = pelt_l2(x, penalty=penalty, min_seg=self.min_seg)
         events = []
         for cp in cps:
