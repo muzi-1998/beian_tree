@@ -134,8 +134,13 @@ def load_base_data():
 # ─── Step 2: Compute regime scores for each variant ──────────────────────────
 def run_regime_variant(variant_name: str, params: dict,
                         resid_h: pd.DataFrame, channels: list,
-                        mapping_cfg) -> dict:
-    """Run TwoTierRegimeDetector with given params; return Q_regime + raw results."""
+                        mapping_cfg, eff_neff: dict | None = None) -> dict:
+    """Run TwoTierRegimeDetector with given params; return Q_regime + raw results.
+
+    eff_neff: per-channel effective n_eff (from the §1.1 bridge). The detector
+    statistic is deflated by sqrt(n_eff) so the sensitivity study stays
+    consistent with the production pipeline (near-unit-root channels suppressed,
+    floor channel zeroed). None → all 1.0 (legacy i.i.d.)."""
     cache_path = CACHE_DIR / f"regime_{variant_name}.pkl"
     if cache_path.exists():
         log(f"  [{variant_name}] Loading from cache: {cache_path.name}")
@@ -146,17 +151,19 @@ def run_regime_variant(variant_name: str, params: dict,
         f"(ref={params['ref_days']}d, w1_win={params['w1_win_days']}d, "
         f"ks_win={params['ks_win_days']}d) on {len(channels)} channels...")
     t = time.time()
-    detector = TwoTierRegimeDetector(
-        ref_days      = params["ref_days"],
-        w1_win_days   = params["w1_win_days"],
-        ks_win_days   = params["ks_win_days"],
-        w1_update_h   = 6,
-        ks_update_h   = 24,
-        ks_alpha      = 0.001,
-        n_bootstrap   = 100,
-    )
     results = {}
     for i, c in enumerate(channels, 1):
+        en = float((eff_neff or {}).get(c, 1.0))   # per-channel n_eff (bridge)
+        detector = TwoTierRegimeDetector(
+            ref_days      = params["ref_days"],
+            w1_win_days   = params["w1_win_days"],
+            ks_win_days   = params["ks_win_days"],
+            w1_update_h   = 6,
+            ks_update_h   = 24,
+            ks_alpha      = 0.001,
+            n_bootstrap   = 100,
+            neff_ratio    = en,
+        )
         results[c] = detector.score(resid_h[c].rename(c))
         if i % 4 == 0:
             log(f"    [{time.time()-t:.1f}s] {i}/{len(channels)} done")
@@ -739,9 +746,18 @@ def main():
     v1, raw, sp1, cfg = load_base_data()
     channels = sp1["scored_channels"]
     resid_h  = raw["resid_h"]
+    # §1.1 bridge: regime variants run on the whitened/routed input + per-channel
+    # n_eff, consistent with the production pipeline. Fall back to residual / 1.0
+    # for legacy pkls.
+    regime_in = raw.get("whitened_input_h", resid_h)
+    eff_neff  = raw.get("eff_neff", {})
     t_start  = resid_h.index[0]
     log(f"Data: {len(channels)} channels, "
         f"{resid_h.index[0].date()} → {resid_h.index[-1].date()}")
+    if "whitened_input_h" in raw:
+        n_susp = sum(1 for v in eff_neff.values() if v < 1.0)
+        log(f"§1.1 bridge active: regime variants on whitened_input_h, "
+            f"{n_susp} channel(s) n_eff<1")
 
     # Build CooldownConfig from current (P1) state_machine.yaml
     sm_cfg = cfg.state_machine
@@ -773,9 +789,12 @@ def main():
         if vname == "R30":
             r30_cache = CACHE_DIR / "regime_R30.pkl"
             if not r30_cache.exists():
-                src = CACHE_DIR / "regime_results.pkl"
+                # prefer the bridged main-run cache (_w11); fall back to legacy
+                src = CACHE_DIR / "regime_results_w11.pkl"
+                if not src.exists():
+                    src = CACHE_DIR / "regime_results.pkl"
                 if src.exists():
-                    log(f"  [R30] Copying from regime_results.pkl → regime_R30.pkl...")
+                    log(f"  [R30] Copying from {src.name} → regime_R30.pkl...")
                     with open(src, "rb") as f:
                         raw_cache = pickle.load(f)
                     # raw_cache is a dict {c: DetectorResult}
@@ -798,14 +817,16 @@ def main():
                     Q_regime_variants["R30"] = out_r30
                 else:
                     Q_regime_variants["R30"] = run_regime_variant(
-                        "R30", params, resid_h[channels], channels, cfg.mapping)
+                        "R30", params, regime_in[channels], channels,
+                        cfg.mapping, eff_neff=eff_neff)
             else:
                 with open(r30_cache, "rb") as f:
                     Q_regime_variants["R30"] = pickle.load(f)
                 log(f"  [R30] Loaded from cache")
         else:
             Q_regime_variants[vname] = run_regime_variant(
-                vname, params, resid_h[channels], channels, cfg.mapping)
+                vname, params, regime_in[channels], channels,
+                cfg.mapping, eff_neff=eff_neff)
 
     # ── Run pipeline (state machine + aggregation) for each variant
     log("\n[B] Running state machine + D1 aggregation for all variants...")

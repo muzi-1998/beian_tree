@@ -32,20 +32,11 @@ SCRIPTS = [
     ("excel_exporter_v11.py",
      "# [ENTRY] Export 16 Excel deliverables to outputs/data/ "
      "(scores, events, audit, QR/QIR…)"),
-    ("make_v12_P1_figures.py",
-     "# [OPT-P1] v1.2-P1 optimisation: 10 SCI comparison figures "
-     "(step gate / logistic / refractory / recovery)"),
     ("run_v12_P2_sensitivity.py",
      "# [OPT-P2] Regime sensitivity: R30/R60/R90/R60W14 variants → "
      "10 figures + 13 CSVs in outputs/v12_P2/"),
     ("generate_mock_data.py",
      "# [UTIL] Generate synthetic DO/ORP mock dataset for unit testing"),
-    ("run_v11.py",
-     "# [LEGACY] Earlier wrapper script for v1.1 pipeline (superseded)"),
-    ("run_all.py",
-     "# [LEGACY] Run all pipeline steps in sequence (superseded by individual scripts)"),
-    ("run_v11_outputs.py",
-     "# [LEGACY] Output helper for v1.1 (superseded by make_figures_v11.py)"),
 
     # ── src/detectors/ ───────────────────────────────────────────────────────
     ("src/detectors/base.py",
@@ -129,26 +120,6 @@ SCRIPTS = [
      "# Data loader: read Excel raw data → df_h (1h) + df_min (1min) DataFrames"),
     ("src/data/__init__.py",
      "# Package init"),
-
-    # ── src/outputs/ (library versions — mirrored from root entry points) ───
-    ("src/outputs/figure_strict_v1.py",
-     "# Library figure helpers for STRICT V1 (original comparison plots)"),
-    ("src/outputs/figure_maker.py",
-     "# Shared figure utilities: SCI style, Wong palette, save/export helpers"),
-    ("src/outputs/excel_exporter.py",
-     "# Excel export helpers (original V1 version)"),
-    ("src/outputs/excel_exporter_v11.py",
-     "# Excel export helpers v1.1 (library version of root excel_exporter_v11.py)"),
-    ("src/outputs/make_figures_v11.py",
-     "# Library version of FigV12-V15 (root make_figures_v11.py calls this)"),
-    ("src/outputs/make_baseline_figures_v11.py",
-     "# Library version of Fig1-11 (root make_baseline_figures_v11.py calls this)"),
-    ("src/outputs/make_figures_v11_part2.py",
-     "# Library version of FigV16-18 (root make_figures_v11_part2.py calls this)"),
-    ("src/outputs/figure_classC_dim_matrix.py",
-     "# Class-C dimension matrix figure (radar / spider chart helper)"),
-    ("src/outputs/__init__.py",
-     "# Package init"),
 ]
 
 # ─── Directory tree structure ────────────────────────────────────────────────
@@ -160,11 +131,9 @@ TREE_LINES = [
     ("├── make_figures_v11.py              # ENTRY: Fig V12-V15", 1),
     ("├── make_figures_v11_part2.py        # ENTRY: Fig V16-V18", 1),
     ("├── excel_exporter_v11.py            # ENTRY: 16 Excel deliverables", 1),
-    ("├── make_v12_P1_figures.py           # OPT-P1: optimisation comparison", 1),
     ("├── run_v12_P2_sensitivity.py        # OPT-P2: regime sensitivity", 1),
     ("├── generate_mock_data.py            # UTIL: synthetic test data", 1),
     ("├── generate_project_pdf.py          # UTIL: this PDF generator", 1),
-    ("├── [run_v11.py / run_all.py …]      # LEGACY: older wrappers", 1),
     ("│", 0),
     ("├── configs/                         # YAML configuration files", 1),
     ("│   ├── mapping.yaml                 # Score mapping: logistic k=8,x0=0.40", 2),
@@ -202,12 +171,8 @@ TREE_LINES = [
     ("│   ├── config/                      # Configuration loading", 2),
     ("│   │   ├── loader.py                # YAML config reader", 3),
     ("│   │   └── models.py                # Pydantic config models", 3),
-    ("│   ├── data/                        # Data I/O", 2),
-    ("│   │   └── loader.py                # Excel → df_h / df_min", 3),
-    ("│   └── outputs/                     # Figure & Excel library modules", 2),
-    ("│       ├── figure_maker.py          # SCI style, Wong palette, save util", 3),
-    ("│       ├── figure_strict_v1.py      # STRICT V1 figure helpers", 3),
-    ("│       └── [other figure/excel *.py]# Mirrored versions of entry scripts", 3),
+    ("│   └── data/                        # Data I/O", 2),
+    ("│       └── loader.py                # Excel → df_h / df_min", 3),
     ("│", 0),
     ("├── cache/                           # Intermediate pickles (auto-generated)", 1),
     ("│   ├── df_h_aligned.pkl             # Hourly aligned DataFrame", 2),
@@ -220,7 +185,6 @@ TREE_LINES = [
     ("    ├── figures/                      # Fig 1-11, FigV12-V18 (600 DPI PNG)", 2),
     ("    ├── data/                         # 16 Excel deliverables", 2),
     ("    ├── plot_data/                    # Per-figure xlsx data tables", 2),
-    ("    ├── v12_P1/                       # P1 optimisation: 10 figures + CSVs", 2),
     ("    └── v12_P2/                       # P2 regime sensitivity: 10 figures + CSVs", 2),
 ]
 
@@ -358,7 +322,6 @@ def fmt_scripts_page(scripts):
         "src/baseline": "src/baseline/  —  Baseline computation",
         "src/config": "src/config/  —  Configuration",
         "src/data": "src/data/  —  Data I/O",
-        "src/outputs": "src/outputs/  —  Figure & Excel library",
     }
 
     def group_key(p):
