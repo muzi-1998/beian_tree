@@ -1,0 +1,34 @@
+﻿channel,band,scoring_mode,threshold,input,rate_per_1000,ci_lo,ci_hi,n_events,n_valid,n_eff_used
+DO_1_1,aerobic_DO,autocorr_aware,local Hampel k=3 on residual/robust_z,robust_z,40.7059,34.8683,46.5436,14932.0,366826.0,4401.912
+DO_2_1,aerobic_DO,autocorr_aware,local Hampel k=3 on residual/robust_z,robust_z,40.6043,33.6765,47.5321,14895.0,366833.0,3118.0805
+DO_1_2,aerobic_DO,iid,local Hampel k=3 on η (innovation),innovation,6.3136,6.0573,6.5699,2316.0,366826.0,366826.0
+DO_2_2,aerobic_DO,autocorr_aware,local Hampel k=3 on residual/robust_z,robust_z,26.5707,20.6008,32.5406,9747.0,366833.0,2787.9308
+DO_1_3,aerobic_DO,iid,local Hampel k=3 on η (innovation),innovation,5.4767,5.2379,5.7155,2009.0,366826.0,366826.0
+DO_2_3,aerobic_DO,iid,local Hampel k=3 on η (innovation),innovation,7.5484,7.2683,7.8285,2769.0,366833.0,366833.0
+DO_1_4,postanoxic_DO,floor_freeze,"—  (floor/censor → freeze, §1.2)",censored_z,,,,,,
+DO_2_4,postanoxic_DO,iid,local Hampel k=3 on η (innovation),innovation,27.5439,27.0142,28.0735,10104.0,366833.0,366833.0
+ORP_1_1,anoxic_ORP,iid,local Hampel k=3 on η (innovation),innovation,6.5425,6.2816,6.8034,2400.0,366832.0,366832.0
+ORP_2_1,anoxic_ORP,iid,local Hampel k=3 on η (innovation),innovation,5.7438,5.4992,5.9883,2107.0,366832.0,366832.0
+ORP_1_2,anoxic_ORP,iid,local Hampel k=3 on η (innovation),innovation,34.883,34.2892,35.4768,12796.0,366826.0,366826.0
+ORP_2_2,anoxic_ORP,iid,local Hampel k=3 on η (innovation),innovation,4.7842,4.5609,5.0075,1755.0,366832.0,366832.0
+ORP_1_3,anoxic_ORP,iid,local Hampel k=3 on η (innovation),innovation,24.4666,23.9667,24.9666,8975.0,366826.0,366826.0
+ORP_2_3,anoxic_ORP,iid,local Hampel k=3 on η (innovation),innovation,19.5866,19.1381,20.035,7185.0,366833.0,366833.0
+QR_1,recycle_flow,iid,local Hampel k=3 on η (innovation),innovation,13.8048,13.4265,14.1831,5044.0,365380.0,365380.0
+QR_2,recycle_flow,iid,local Hampel k=3 on η (innovation),innovation,17.6507,17.2199,18.0816,6333.0,358795.0,358795.0
+QIR_1,recycle_flow,iid,local Hampel k=3 on η (innovation),innovation,10.0073,9.6852,10.3294,3671.0,366832.0,366832.0
+QIR_2,recycle_flow,iid,local Hampel k=3 on η (innovation),innovation,26.6933,26.1717,27.215,9792.0,366833.0,366833.0
+inf_Q,influent,iid,local Hampel k=3 on η (innovation),innovation,42.3961,36.6605,48.1317,201.0,4741.0,4741.0
+inf_COD,influent,iid,local Hampel k=3 on η (innovation),innovation,50.9474,44.694,57.2008,242.0,4750.0,4750.0
+inf_NH4,influent,iid,local Hampel k=3 on η (innovation),innovation,124.5965,115.1008,134.0922,579.0,4647.0,4647.0
+inf_TN,influent,iid,local Hampel k=3 on η (innovation),innovation,83.0698,75.2153,90.9243,394.0,4743.0,4743.0
+inf_TP,influent,iid,local Hampel k=3 on η (innovation),innovation,153.6842,143.4279,163.9405,730.0,4750.0,4750.0
+inf_SS,influent,iid,local Hampel k=3 on η (innovation),innovation,36.6316,31.2892,41.9739,174.0,4750.0,4750.0
+inf_pH,influent,iid,local Hampel k=3 on η (innovation),innovation,62.1075,54.8927,69.3222,267.0,4299.0,4299.0
+inf_T,influent,iid,local Hampel k=3 on η (innovation),innovation,21.6842,17.5421,25.8263,103.0,4750.0,4750.0
+eff_COD,effluent,iid,local Hampel k=3 on η (innovation),innovation,34.4271,30.283,38.5712,256.0,7436.0,7436.0
+eff_NH4,effluent,iid,local Hampel k=3 on η (innovation),innovation,85.8369,75.8609,95.8129,260.0,3029.0,3029.0
+eff_TN,effluent,iid,local Hampel k=3 on η (innovation),innovation,55.5556,50.3358,60.7753,411.0,7398.0,7398.0
+eff_TP,effluent,iid,local Hampel k=3 on η (innovation),innovation,54.4913,49.1916,59.791,384.0,7047.0,7047.0
+eff_sludge,effluent,iid,local Hampel k=3 on η (innovation),innovation,16.4304,13.5623,19.2985,124.0,7547.0,7547.0
+eff_pH,effluent,iid,local Hampel k=3 on η (innovation),innovation,39.4949,35.0703,43.9195,294.0,7444.0,7444.0
+eff_T,effluent,iid,local Hampel k=3 on η (innovation),innovation,32.3751,28.3543,36.3959,241.0,7444.0,7444.0
