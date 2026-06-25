@@ -54,7 +54,39 @@ D1_v1 = S["D1_v1_scored"]
 D1_v11 = S["D1_v11"]
 
 
+def _finish_axes(fig):
+    """Draw tick marks at both ends of every data axis (the default locator
+    leaves the spine ends bare). Endpoints are added as same-size minor ticks."""
+    for ax in fig.axes:
+        for which in ("x", "y"):
+            get_lim = ax.get_xlim if which == "x" else ax.get_ylim
+            get_maj = ax.get_xticks if which == "x" else ax.get_yticks
+            lo, hi = sorted(get_lim())
+            span = hi - lo
+            if span <= 0:
+                continue
+            majors = [t for t in get_maj() if lo - 1e-9 <= t <= hi + 1e-9]
+            if len(majors) < 2:
+                continue
+            tol = span * 0.015
+            ends = [v for v in (lo, hi)
+                    if not any(abs(m - v) <= tol for m in majors)]
+            if not ends:
+                continue
+            spine = "bottom" if which == "x" else "left"
+            col = ax.spines[spine].get_edgecolor()
+            if which == "x":
+                ax.set_xticks(ends, minor=True)
+                ax.tick_params(axis="x", which="minor", length=3.2, width=0.7,
+                               color=col, bottom=True, top=False)
+            else:
+                ax.set_yticks(ends, minor=True)
+                ax.tick_params(axis="y", which="minor", length=3.2, width=0.7,
+                               color=col, left=True, right=False)
+
+
 def save(fig, name, plot_data: dict = None):
+    _finish_axes(fig)
     fig.savefig(OUT / f"{name}.png")
     plt.close(fig)
     if plot_data is not None:
@@ -327,8 +359,11 @@ for i, (lbl, clr) in enumerate(zip(labels_g, gclrs)):
 ax.set_xticks(xpos); ax.set_xticklabels(["STRICT V1\n(DO/ORP only)", "v1.1"])
 ax.set_ylabel("Grade percentage (%)", fontsize=9)
 ax.set_title("(b)  Grade distribution", loc="left")
-ax.legend(loc="lower right", fontsize=7, framealpha=0.92, bbox_to_anchor=(1.0, 0.0))
+# bars sit at x=0,1 — free space on the right and put the legend there (was
+# overlapping the v1.1 bar at lower-right)
+ax.set_xlim(-0.55, 2.45)
 ax.set_ylim(0, 100)
+ax.legend(loc="center right", fontsize=7, framealpha=0.95)
 
 # (c) State machine vs simple timer — Q_drift_eff effect
 ax = fig.add_subplot(gs[0, 2])

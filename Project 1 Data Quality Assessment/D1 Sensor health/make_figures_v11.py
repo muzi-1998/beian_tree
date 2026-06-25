@@ -100,7 +100,39 @@ DO_CH = [c for c in SCORED if c.startswith("DO_")]
 ORP_CH = [c for c in SCORED if c.startswith("ORP_")]
 
 
+def _finish_axes(fig):
+    """Draw tick marks at both ends of every data axis (the default locator
+    leaves the spine ends bare). Endpoints are added as same-size minor ticks."""
+    for ax in fig.axes:
+        for which in ("x", "y"):
+            get_lim = ax.get_xlim if which == "x" else ax.get_ylim
+            get_maj = ax.get_xticks if which == "x" else ax.get_yticks
+            lo, hi = sorted(get_lim())
+            span = hi - lo
+            if span <= 0:
+                continue
+            majors = [t for t in get_maj() if lo - 1e-9 <= t <= hi + 1e-9]
+            if len(majors) < 2:
+                continue
+            tol = span * 0.015
+            ends = [v for v in (lo, hi)
+                    if not any(abs(m - v) <= tol for m in majors)]
+            if not ends:
+                continue
+            spine = "bottom" if which == "x" else "left"
+            col = ax.spines[spine].get_edgecolor()
+            if which == "x":
+                ax.set_xticks(ends, minor=True)
+                ax.tick_params(axis="x", which="minor", length=3.2, width=0.7,
+                               color=col, bottom=True, top=False)
+            else:
+                ax.set_yticks(ends, minor=True)
+                ax.tick_params(axis="y", which="minor", length=3.2, width=0.7,
+                               color=col, left=True, right=False)
+
+
 def save(fig, name, plot_data: dict = None):
+    _finish_axes(fig)
     fig.savefig(OUT / f"{name}.png")
     plt.close(fig)
     if plot_data is not None:
@@ -146,8 +178,11 @@ leg_h = [Line2D([], [], marker="o", color=C["gray"], ms=7,
           Line2D([], [], marker="o", color=C["red"], ms=7,
                   linestyle="", markerfacecolor=C["red"], label="v1.1 (Δ < 0; SustainedAnomaly cap)"),
           Line2D([], [], color="0.5", ls=":", lw=0.8, label="grade boundary D1 = 3")]
-ax.legend(handles=leg_h, loc="lower left", fontsize=7.6)
-ax.set_xlim(2.0, 3.6)
+ax.legend(handles=leg_h, loc="lower left", fontsize=7.6, framealpha=0.92)
+# data-driven x-limits: means are ~3.7–4.5; keep the grade boundary (3.0) visible
+# but never clip the markers (the old fixed (2.0, 3.6) clipped every channel).
+_va = np.r_[df_sorted["D1_v1"].values, df_sorted["D1_v11"].values]
+ax.set_xlim(min(2.9, float(_va.min()) - 0.15), float(_va.max()) + 0.20)
 ax.grid(axis="x", alpha=0.18, lw=0.4)
 
 # (b) Delta bar
@@ -206,7 +241,10 @@ ax.set_ylabel(r"Median daily $D_1$  (across DO/ORP)", fontsize=9)
 ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
 ax.xaxis.set_major_locator(mdates.MonthLocator(interval=1))
 ax.set_title("(d)  Daily median $D_1$ trajectory", loc="left")
-ax.legend(loc="upper right", fontsize=7.5, ncol=2)
+# add top headroom so the legend sits above the trajectory (was overlapping it)
+_dmin = float(min(d1v1_d.min(), d1v11_d.min()))
+ax.set_ylim(_dmin - 0.15, 5.3)
+ax.legend(loc="upper right", fontsize=7.5, ncol=2, framealpha=0.92)
 
 # (e) Weekly delta heatmap
 ax = fig.add_subplot(gs[2, 2])
@@ -272,7 +310,8 @@ ax.axhline(2.0, color=C["red"], ls=":", lw=0.7, alpha=0.7)
 ax.set_ylim(1, 5.2)
 ax.set_ylabel("Sub-score", fontsize=9)
 ax.set_title(f"(a)  Sub-score timeseries with state-machine shading — {target}", loc="left")
-ax.legend(loc="upper right", ncol=4, fontsize=7.0, framealpha=0.75)
+# legend in the lower band (sub-scores live at 3.5–5; the 1–2.5 band is sparse)
+ax.legend(loc="lower center", ncol=4, fontsize=6.8, framealpha=0.92)
 ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
 
 # (b) Q_drift v1 vs Q_drift_eff (showing α-thaw effect)
@@ -291,7 +330,7 @@ ax.axhline(3.0, color=C["amber"], ls="--", lw=0.7, alpha=0.6,
 ax.set_ylim(1, 5.2)
 ax.set_ylabel("$Q_{drift}$ score", fontsize=9)
 ax.set_title(r"(b)  $Q_{\rm drift}$  vs  $Q_{\rm drift}^{\rm eff}$  (α-thaw effect)", loc="left")
-ax.legend(loc="upper left", fontsize=7.5, framealpha=0.75)
+ax.legend(loc="lower center", ncol=3, fontsize=7.2, framealpha=0.92)
 ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
 
 # (c) α(t) timeline + recovery_streak
@@ -330,7 +369,7 @@ ax.set_ylabel("$D_1$ total", fontsize=9)
 ax.set_title(f"(d)  Final $D_1$ — {target} ({len(state_log[state_log.state_name=='Refractory'])} h Refractory, "
               f"{len(state_log[state_log.state_name=='SustainedAnomaly'])} h Sustained)",
               loc="left")
-ax.legend(loc="lower left", fontsize=7.5, framealpha=0.75)
+ax.legend(loc="lower left", fontsize=7.2, framealpha=0.92)
 ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
 
 fig.suptitle("Figure V13.  v1.1 5-state cooldown machine — DO_2_3 case study",
@@ -358,7 +397,7 @@ for c in SCORED:
     sl = S["state_log_dict"][c]["state_name"]
     for s in state_dist_all.columns:
         state_dist_all.at[c, s] = (sl == s).mean() * 100
-im = ax.imshow(state_dist_all.values, cmap="YlOrRd", aspect="auto", vmin=0, vmax=80)
+im = ax.imshow(state_dist_all.values, cmap="YlOrRd", aspect="auto", vmin=0, vmax=100)
 ax.set_yticks(np.arange(len(SCORED))); ax.set_yticklabels(SCORED, fontsize=7.5)
 ax.set_xticks(np.arange(5))
 ax.set_xticklabels(state_dist_all.columns.tolist(), rotation=20, ha="right", fontsize=7.5)
@@ -366,7 +405,7 @@ for i in range(len(SCORED)):
     for j in range(5):
         v = state_dist_all.values[i, j]
         ax.text(j, i, f"{v:.0f}", ha="center", va="center",
-                  fontsize=7, color="white" if v > 40 else "black")
+                  fontsize=7, color="white" if v > 60 else "black")
 cbar = plt.colorbar(im, ax=ax, fraction=0.045, pad=0.02)
 cbar.set_label("% of timeline", fontsize=8); cbar.ax.tick_params(labelsize=7)
 ax.set_title("(a)  Per-channel state distribution", loc="left")

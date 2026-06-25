@@ -49,7 +49,41 @@ D1_v11 = S["D1_v11"]
 subs_v11 = S["subs_v11"]
 
 
+def _finish_axes(fig):
+    """Draw tick marks at both ends of every data axis. The default locator
+    places ticks at 'nice' interior values and leaves the spine ends bare;
+    here the axis min/max are added as same-size minor ticks (marks only, no
+    extra labels) so every axis reads complete to its end."""
+    for ax in fig.axes:
+        for which in ("x", "y"):
+            get_lim = ax.get_xlim if which == "x" else ax.get_ylim
+            get_maj = ax.get_xticks if which == "x" else ax.get_yticks
+            lo, hi = sorted(get_lim())
+            span = hi - lo
+            if span <= 0:
+                continue
+            majors = [t for t in get_maj() if lo - 1e-9 <= t <= hi + 1e-9]
+            if len(majors) < 2:
+                continue   # colorbar short axis / schematic / label-less axis
+            tol = span * 0.015
+            ends = [v for v in (lo, hi)
+                    if not any(abs(m - v) <= tol for m in majors)]
+            if not ends:
+                continue
+            spine = "bottom" if which == "x" else "left"
+            col = ax.spines[spine].get_edgecolor()
+            if which == "x":
+                ax.set_xticks(ends, minor=True)
+                ax.tick_params(axis="x", which="minor", length=3.2, width=0.7,
+                               color=col, bottom=True, top=False)
+            else:
+                ax.set_yticks(ends, minor=True)
+                ax.tick_params(axis="y", which="minor", length=3.2, width=0.7,
+                               color=col, left=True, right=False)
+
+
 def save(fig, name, plot_data: dict = None):
+    _finish_axes(fig)
     fig.savefig(OUT / f"{name}.png")
     plt.close(fig)
     if plot_data is not None:
@@ -121,7 +155,7 @@ print("[Fig2] Monthly D1 heatmap ...")
 fig, ax = plt.subplots(figsize=(11, 5.5))
 monthly = D1_v11.resample("ME").mean().T
 months = [t.strftime("%Y-%m") for t in monthly.columns]
-im = ax.imshow(monthly.values, cmap="RdBu_r", aspect="auto", vmin=2.0, vmax=4.5)
+im = ax.imshow(monthly.values, cmap="RdBu_r", aspect="auto", vmin=2.0, vmax=5.0)
 ax.set_yticks(np.arange(len(monthly))); ax.set_yticklabels(monthly.index.tolist(),
                                                               fontsize=8.5)
 ax.set_xticks(np.arange(len(months))); ax.set_xticklabels(months, rotation=30,
@@ -130,11 +164,11 @@ for i in range(len(monthly)):
     for j in range(len(months)):
         v = monthly.values[i, j]
         if not np.isnan(v):
-            txt_clr = "white" if (v < 2.75 or v > 3.85) else "black"
+            txt_clr = "white" if (v < 2.75 or v > 4.25) else "black"
             ax.text(j, i, f"{v:.2f}", ha="center", va="center",
                       fontsize=7.5, color=txt_clr, fontweight="bold")
 cbar = plt.colorbar(im, ax=ax, fraction=0.025, pad=0.09)
-cbar.set_label(r"Mean monthly $D_1$  (2.0=poor — 4.5=excellent)", fontsize=9)
+cbar.set_label(r"Mean monthly $D_1$  (2.0=poor — 5.0=excellent)", fontsize=9)
 cbar.ax.tick_params(labelsize=7.5)
 ax.set_title("Figure 2.  Per-channel monthly $D_1$ heatmap (v1.1, DO/ORP n=14)",
              loc="left")
@@ -152,7 +186,7 @@ worst4 = df_means.nsmallest(4).index.tolist()
 best4 = df_means.nlargest(4).index.tolist()
 case_channels = worst4 + best4
 fig, axes = plt.subplots(4, 2, figsize=(13.5, 10), sharex=True)
-fig.subplots_adjust(hspace=0.35, wspace=0.18)
+fig.subplots_adjust(hspace=0.50, wspace=0.18, top=0.90)
 for i, c in enumerate(case_channels):
     ax = axes[i // 2, i % 2]
     s = subs_v11[c]
@@ -173,11 +207,15 @@ for i, c in enumerate(case_channels):
                   loc="left")
     if i % 2 == 0:
         ax.set_ylabel("Sub-score / D1", fontsize=8.5)
-    if i == 0:
-        ax.legend(loc="lower right", ncol=3, fontsize=6.8, framealpha=0.95)
-    if i // 2 == 3:
-        ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
-        ax.xaxis.set_major_locator(mdates.MonthLocator(interval=2))
+    # every panel carries its own date labels (was shared via sharex → bottom row)
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
+    ax.xaxis.set_major_locator(mdates.MonthLocator(interval=2))
+    ax.tick_params(axis="x", labelbottom=True)
+# shared legend at the figure top (outside the dense panels — was overlapping
+# panel (a)'s data at lower-right)
+_h3, _l3 = axes[0, 0].get_legend_handles_labels()
+fig.legend(_h3, _l3, loc="upper center", bbox_to_anchor=(0.5, 0.955),
+           ncol=6, fontsize=8.5, framealpha=0.9)
 fig.suptitle("Figure 3.  Sub-score timeseries — 4 worst + 4 best (v1.1)",
               fontsize=11, fontweight="bold", y=0.99)
 save(fig, "Fig3_case_subscores",
@@ -361,9 +399,9 @@ for c, clr in zip(DO_CH, do_clrs):
     ax.plot(D1_d.index, D1_d[c].values, color=clr, lw=0.85, alpha=0.85, label=c)
 ax.axhline(3, color=C["red"], ls=":", lw=0.7)
 ax.set_ylabel("Daily $D_1$ (median)", fontsize=9.5)
-ax.set_ylim(1.5, 4.5)
+ax.set_ylim(1.5, 5.0)
 ax.set_title("(a)  DO channels (n=8)", loc="left")
-ax.legend(loc="lower right", ncol=4, fontsize=7.5)
+ax.legend(loc="lower right", ncol=4, fontsize=7.5, framealpha=0.92)
 ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
 
 # (b) ORP daily
@@ -373,9 +411,9 @@ for c, clr in zip(ORP_CH, orp_clrs):
     ax.plot(D1_d.index, D1_d[c].values, color=clr, lw=0.85, alpha=0.85, label=c)
 ax.axhline(3, color=C["red"], ls=":", lw=0.7)
 ax.set_ylabel("Daily $D_1$ (median)", fontsize=9.5)
-ax.set_ylim(1.5, 4.5)
+ax.set_ylim(1.5, 5.0)
 ax.set_title("(b)  ORP channels (n=6)", loc="left")
-ax.legend(loc="lower right", ncol=3, fontsize=7.5)
+ax.legend(loc="lower right", ncol=3, fontsize=7.5, framealpha=0.92)
 ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
 
 fig.suptitle("Figure 7.  Daily $D_1$ trajectories by sensor group (v1.1, DO/ORP only)",
@@ -410,7 +448,7 @@ for i, (k_name, clr) in enumerate(clr_map.items()):
             edgecolor="white", linewidth=0.4, alpha=0.88, label=k_name)
 ax.set_xticks(xs); ax.set_xticklabels(SCORED, rotation=45, ha="right", fontsize=8.5)
 ax.set_ylabel("Activation rate (%)", fontsize=9.5)
-ax.set_ylim(0, df_v.values.max() * 1.70)
+ax.set_ylim(0, 40)
 ax.set_title("Figure 8.  Veto and state-machine activation rates per channel (v1.1)",
               loc="left")
 ax.legend(loc="upper right", ncol=5, fontsize=8, framealpha=0.92)
@@ -423,7 +461,7 @@ save(fig, "Fig8_veto_cooldown",
 # ============================================================================
 print("[Fig9] Harmonic decomposition ...")
 fig, axes = plt.subplots(3, 1, figsize=(13, 8), sharex=True)
-fig.subplots_adjust(hspace=0.32)
+fig.subplots_adjust(hspace=0.45)   # room for each panel's own date labels
 df_h = S["df_h"]; resid_h = S["resid_h"]
 for i, ch in enumerate(["DO_2_3", "ORP_1_1", "ORP_2_1"]):
     ax = axes[i]
@@ -437,8 +475,14 @@ for i, ch in enumerate(["DO_2_3", "ORP_1_1", "ORP_2_1"]):
     ax.plot(r.index, r.values, color=C["red"], lw=0.7, alpha=0.85,
             label="residual after harmonic removal")
     ax.set_ylabel(ch, fontsize=9.5)
-    ax.legend(loc="upper right", fontsize=7.5, ncol=3)
     ax.axhline(0, color="0.5", lw=0.4, alpha=0.5)
+    # add top headroom so the (full-width) legend sits above the data, not over it
+    _y0, _y1 = ax.get_ylim()
+    ax.set_ylim(_y0, _y1 + 0.32 * (_y1 - _y0))
+    ax.legend(loc="upper right", fontsize=7.5, ncol=3, framealpha=0.9)
+# each panel carries its own date labels (was shared via sharex → only bottom)
+for ax in axes:
+    ax.tick_params(axis="x", labelbottom=True)
 fig.suptitle("Figure 9.  Harmonic decomposition demonstration (first 7 days)",
               fontsize=11, fontweight="bold", y=0.995)
 save(fig, "Fig9_harmonic_demo")
@@ -449,7 +493,7 @@ save(fig, "Fig9_harmonic_demo")
 # ============================================================================
 print("[Fig10] Two-tier regime ...")
 fig, axes = plt.subplots(2, 1, figsize=(13, 7), sharex=True)
-fig.subplots_adjust(hspace=0.32)
+fig.subplots_adjust(hspace=0.42)   # room for each panel's own date labels
 ch = "DO_2_3"
 det_raw = S["detectors_raw"]
 w1 = det_raw["w1_normalised_hourly"][ch]
@@ -474,7 +518,10 @@ ax.fill_between(ks.index, 0, ks.values, where=ks.values > 0.3,
 ax.set_ylabel("adjacent KS", fontsize=9.5)
 ax.set_title(f"(b)  Tier-2 adjacent KS — {ch}", loc="left")
 ax.legend(loc="upper left", fontsize=7.5)
-ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
+# each panel carries its own date labels (was shared via sharex → only bottom)
+for _ax in axes:
+    _ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
+    _ax.tick_params(axis="x", labelbottom=True)
 
 fig.suptitle(f"Figure 10.  Two-tier regime detector outputs — {ch} (v1.1)",
               fontsize=11, fontweight="bold", y=0.995)
