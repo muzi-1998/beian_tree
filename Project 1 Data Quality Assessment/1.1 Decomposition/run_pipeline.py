@@ -753,9 +753,9 @@ def make_acf_band_figures(cfg, out, quick=False):
         ("effluent", out.get("resid_eff", {}), out.get("innov_eff", {}),
          list(out["eff_f"].columns), 72, [24, 48, 72], "h",
          "Effluent — ACF before/after whitening (lag 72)"),
-        ("ORP", rmin, smin, ORP, 60, [60], "min",
+        ("ORP", rmin, smin, ORP, 60, [20, 40, 60], "min",
          "ORP channels — ACF before/after whitening (lag 60)"),
-        ("flow", rmin, smin, FLOW, 60, [60], "min",
+        ("flow", rmin, smin, FLOW, 60, [20, 40, 60], "min",
          "Recycle-flow QR/QIR — ACF before/after whitening (lag 60)"),
     ]
     for gname, R, I, order, lag, edges, unit, title in specs:
@@ -769,15 +769,12 @@ def make_acf_band_figures(cfg, out, quick=False):
                 rows.append((c, dg.acf(rv, lag), dg.acf(iv, lag),
                              dg.acf_conf(len(rv)), dg.acf_conf(len(iv))))
         if rows:
-            # ORP/QR-QIR are single-band (all-iid, monotone blue) → recolour the
-            # After-innovation column yellow/amber to flag "whitened" (matches the
-            # warm band tone of the effluent grid). Hourly grids keep lag bands.
-            after_c = "#E08214" if gname in ("ORP", "flow") else None
+            # all grids now lag-banded by colour (hourly: 24h bands; minute
+            # ORP/QR-QIR: 20-min bands) with unified per-column y across rows.
             figures.acf_band_grid(rows, fr / f"fig_W3_acf_{gname}_banded.png",
                                   lag, edges, title=title, lag_unit=unit,
                                   plot_data_root=pdr,
-                                  bundle_name=f"acf_{gname}_banded",
-                                  after_color=after_c)
+                                  bundle_name=f"acf_{gname}_banded")
     _log("Combined ACF grids (influent/effluent/DO/ORP/flow) written")
 
 

@@ -425,6 +425,18 @@ def acf_band_grid(rows, out_path: Path, lag: int, band_edges, title: str = "",
         return len(band_edges) - 1
     bar_colors = [band_colors[_band_of(L)] for L in lags]
 
+    # unify y-axis per COLUMN across all rows (same variable type within this
+    # figure) so Before / After bars are directly comparable channel-to-channel
+    def _col_ylim(idx):
+        arrs = [np.asarray(r[idx], float)[1:lag + 1] for r in rows]
+        lo = min(float(np.nanmin(a)) for a in arrs)
+        hi = max(float(np.nanmax(a)) for a in arrs)
+        if not (np.isfinite(lo) and np.isfinite(hi)) or hi <= lo:
+            return None
+        pad = 0.06 * (hi - lo)
+        return lo - pad, hi + pad
+    ylim_before, ylim_after = _col_ylim(1), _col_ylim(2)
+
     fig, axes = plt.subplots(R, 2, figsize=(8.8, 1.0 * R + 1.5), squeeze=False,
                              sharex=True, layout="constrained")
     col_titles = ["Before — residual e(t) ACF", "After — innovation η(t) ACF"]
@@ -445,6 +457,9 @@ def acf_band_grid(rows, out_path: Path, lag: int, band_edges, title: str = "",
                 ax.axhline(-conf, color="#888888", ls="--", lw=0.7)
             for e in band_edges[:-1]:
                 ax.axvline(e + 0.5, color="#bbbbbb", ls=":", lw=0.8)
+            yl = ylim_before if j == 0 else ylim_after
+            if yl:
+                ax.set_ylim(*yl)
             ax.set_xlim(0.3, lag + 0.7)
             ax.grid(True, axis="y", alpha=0.25, lw=0.4)
             ax.tick_params(labelsize=6, length=2)
@@ -497,21 +512,33 @@ def _save_fig(fig, out_path: Path, vector: bool = False):
 
 # ── DO manifest-driven panels (Okabe-Ito; draw into a Figure or SubFigure) ──
 def _panel_a_iid(host, rows, lag=60, after_ylim=(-0.20, 0.10), heading="",
-                 after_color=None):
+                 band_edges=None, band_colors=None):
     """(a) iid group before/after ACF. `rows`=[(label, acf_res, acf_inn, conf,
     mabsacf_res, mabsacf_inn, zone_note)]. After-column shares y so all four
     visibly collapse to ~0 (DO_1_2's MA over-correction lag-1 dip still shows);
-    precise values via the mabsacf effect-size label."""
+    precise values via the mabsacf effect-size label. `band_edges` (e.g.
+    [20,40,60]) colours the bars by lag band (both columns) like the hourly grids;
+    None → single blue."""
     axes = host.subplots(len(rows), 2, sharex=True, squeeze=False)
     lags = np.arange(1, lag + 1)
+    band_colors = band_colors or ["#2166AC", "#E08214", "#1B7837", "#762A83"]
+    if band_edges:
+        def _bof(L):
+            for bi, e in enumerate(band_edges):
+                if L <= e:
+                    return bi
+            return len(band_edges) - 1
+        bar_cols = [band_colors[_bof(L)] for L in lags]
+    else:
+        bar_cols = OI["blue"]
     for i, (lab, a_res, a_inn, conf, mab_r, mab_i, znote) in enumerate(rows):
         for j, (a, after) in enumerate([(a_res, False), (a_inn, True)]):
             ax = axes[i][j]
-            # After-whitening (right) column may use a fixed colour (yellow/amber)
-            # to flag "whitened"; Before stays blue. after_color=None → both blue.
-            ax.bar(lags, np.asarray(a, float)[1:lag + 1],
-                   color=(after_color if (after and after_color) else OI["blue"]),
+            ax.bar(lags, np.asarray(a, float)[1:lag + 1], color=bar_cols,
                    width=0.9, linewidth=0)
+            if band_edges:
+                for e in band_edges[:-1]:
+                    ax.axvline(e + 0.5, color="#bbbbbb", ls=":", lw=0.7)
             ax.axhline(0, color=OI["gray"], lw=0.6)
             ax.axhline(conf, color=OI["gray"], ls=":", lw=0.6)
             ax.axhline(-conf, color=OI["gray"], ls=":", lw=0.6)
@@ -529,6 +556,14 @@ def _panel_a_iid(host, rows, lag=60, after_ylim=(-0.20, 0.10), heading="",
                 ax.text(0.97, 0.95, f"mabsacf[1-10]: {mab_r:.2f}→{mab_i:.2f}",
                         transform=ax.transAxes, ha="right", va="top",
                         fontsize=6.5, color="#555555")
+    if band_edges and len(band_edges) > 1:
+        from matplotlib.patches import Patch
+        prev, handles = 0, []
+        for bi, e in enumerate(band_edges):
+            handles.append(Patch(color=band_colors[bi], label=f"lag {prev + 1}–{e} min"))
+            prev = e
+        host.legend(handles=handles, loc="upper right", ncol=len(band_edges),
+                    fontsize=7, frameon=False)
     if heading:
         host.suptitle(heading, fontsize=10)
 
@@ -692,7 +727,7 @@ def do_composite(rows_a, rows_b, series_c, do_d, positions_d, out_path,
     its own axes. Exported as PNG + vector (PDF/SVG)."""
     fig = plt.figure(figsize=(9.6, 15.8), layout="constrained")
     sf = fig.subfigures(4, 1, height_ratios=[4.2, 3.2, 2.6, 2.9])
-    _panel_a_iid(sf[0], rows_a, lag=lag_a, after_color="#E08214",
+    _panel_a_iid(sf[0], rows_a, lag=lag_a, band_edges=[20, 40, 60],
                  heading="(a) Whitened DO (iid) — ACF before/after whitening (lag 60)")
     _panel_b_nearur(sf[1], rows_b, heading="(b) Near-unit-root DO (un-whitenable)"
                     " — residual ACF (lag 120) + spectrum")

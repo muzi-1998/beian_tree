@@ -62,6 +62,10 @@ POS_BAND = {**{c: "aerobic_DO" for c in ["DO_1_1", "DO_2_1", "DO_1_2", "DO_2_2",
                                        "eff_sludge", "eff_pH", "eff_T"]}}
 BAND_ORDER = ["aerobic_DO", "postanoxic_DO", "anoxic_ORP", "recycle_flow",
               "influent", "effluent"]
+# distinct, colour-blind-safe colour per variable group (for the summary bar)
+BAND_COLOR = {"aerobic_DO": "#0072B2", "postanoxic_DO": "#56B4E9",
+              "anoxic_ORP": "#009E73", "recycle_flow": "#E69F00",
+              "influent": "#CC79A7", "effluent": "#666666"}
 
 
 def load_manifest() -> pd.DataFrame:

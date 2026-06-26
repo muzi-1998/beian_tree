@@ -28,8 +28,9 @@ from scipy.signal import welch
 from statsmodels.tsa.stattools import acf, pacf
 
 from common import (TAB, FIG, PDATA, OKABE_ITO, MODE_COLOR, PROCESS_ORDER,
-                    POS_BAND, BAND_ORDER, load_manifest, get_residual,
-                    get_innovation, setup_style)
+                    POS_BAND, BAND_ORDER, BAND_COLOR, load_manifest,
+                    get_residual, get_innovation, setup_style)
+import matplotlib.patches as mpatches
 
 NLAGS = 60
 REP_IID = ["DO_1_2", "DO_1_3", "ORP_1_2", "ORP_2_1", "inf_COD", "eff_COD"]
@@ -216,6 +217,56 @@ def fig_pacf(man: pd.DataFrame):
     pd.DataFrame(bundle).to_csv(PDATA / "fig_A2_pacf.csv", index_label="lag", encoding="utf-8-sig")
 
 
+# ── Summary bar: before/after mean-abs-ACF reduction % by channel ───────────────
+def fig_mabsacf_reduction(tab: pd.DataFrame):
+    """Whitening improvement per channel = (1 − mabsacf_innov/mabsacf_resid)·100,
+    bars coloured by variable group. Un-whitened (autocorr_aware/floor) channels
+    sit near 0 and are hatched → 'cannot be whitened, not improved'."""
+    df = tab.set_index("channel").loc[PROCESS_ORDER].reset_index()
+    n = len(df); x = np.arange(n)
+    red = df["mabsacf_drop_pct"].clip(lower=0).values
+    colors = [BAND_COLOR[b] for b in df["band"]]
+
+    fig, ax = plt.subplots(figsize=(13.6, 5.2))
+    bars = ax.bar(x, red, color=colors, width=0.82, edgecolor="white", linewidth=0.5)
+    for i, sm in enumerate(df["scoring_mode"]):
+        if sm != "iid":                       # not whitened → hatch + fade
+            bars[i].set_hatch("////"); bars[i].set_alpha(0.45)
+    for i, v in enumerate(red):
+        ax.text(i, v + 1.2, f"{v:.0f}", ha="center", va="bottom", fontsize=6.6,
+                color="0.2")
+
+    band_edges = {}
+    for i, ch in enumerate(df["channel"]):
+        band_edges.setdefault(df["band"].iloc[i], [i, i])[1] = i
+    for b in BAND_ORDER:
+        lo, hi = band_edges[b]
+        if lo > 0:
+            ax.axvline(lo - 0.5, color="0.4", lw=0.7, ls=":")
+    ax.set_xticks(x); ax.set_xticklabels(df["channel"], rotation=60, ha="right", fontsize=7.6)
+    ax.set_ylim(0, 108); ax.set_yticks([0, 20, 40, 60, 80, 100])
+    ax.set_xlim(-0.7, n - 0.3)
+    ax.set_ylabel("mean |ACF| reduction  e(t) → η(t)   (%)", fontsize=10)
+    ax.grid(axis="y", alpha=0.3, lw=0.5); ax.set_axisbelow(True)
+    handles = [mpatches.Patch(color=BAND_COLOR[b], label=b.replace("_", " "))
+               for b in BAND_ORDER]
+    handles.append(mpatches.Patch(facecolor="white", edgecolor="0.4", hatch="////",
+                                  label="not whitened (robust_z / censored_z)"))
+    ax.legend(handles=handles, loc="lower center", bbox_to_anchor=(0.5, 1.005),
+              ncol=4, fontsize=8.3, framealpha=0.95)
+    fig.suptitle("Figure C.  Whitening efficacy — before/after mean-absolute-ACF "
+                 "reduction by channel (grouped/coloured by variable)",
+                 x=0.5, y=1.07, fontsize=10.5)
+    fig.subplots_adjust(left=0.06, right=0.99, top=0.86, bottom=0.20)
+    fig.savefig(FIG / "fig_2c_mabsacf_reduction_by_channel.png", dpi=300, bbox_inches="tight")
+    plt.close(fig)
+    df[["channel", "band", "scoring_mode", "mabsacf_resid", "mabsacf_innov",
+        "mabsacf_drop_pct"]].round(4).to_csv(
+        PDATA / "fig_2c_mabsacf_reduction_by_channel.csv", index=False, encoding="utf-8-sig")
+    print(f"[Work2] mabsacf reduction: iid mean {df[df.scoring_mode=='iid']['mabsacf_drop_pct'].mean():.1f}%, "
+          f"non-iid mean {df[df.scoring_mode!='iid']['mabsacf_drop_pct'].mean():.1f}%")
+
+
 def main():
     setup_style()
     man = load_manifest()
@@ -224,6 +275,7 @@ def main():
     fig_nearur(man, tab)
     fig_gradient(tab)
     fig_pacf(man)
+    fig_mabsacf_reduction(tab)
     # acceptance summary
     iid = tab[tab.scoring_mode == "iid"]
     print(f"[Work2] iid channels: mean mabsacf drop = {iid['mabsacf_drop_pct'].mean():.1f}% "
