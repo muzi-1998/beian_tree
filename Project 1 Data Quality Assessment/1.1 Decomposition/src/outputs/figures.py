@@ -548,22 +548,21 @@ def _panel_a_iid(host, rows, lag=60, after_ylim=(-0.20, 0.10), heading="",
                 ax.set_title(["Before — residual e(t)",
                               "After — innovation η(t)"][j], fontsize=8.5)
             if j == 0:
-                yl = lab + (f"\n({znote})" if znote else "")
-                ax.set_ylabel(yl, rotation=0, ha="right", va="center", fontsize=8)
+                ax.set_ylabel(lab, rotation=0, ha="right", va="center", fontsize=8.5)
             if i == len(rows) - 1:
                 ax.set_xlabel("lag (min)", fontsize=8)
             if after:
-                ax.text(0.97, 0.95, f"mabsacf[1-10]: {mab_r:.2f}→{mab_i:.2f}",
-                        transform=ax.transAxes, ha="right", va="top",
-                        fontsize=6.5, color="#555555")
-    if band_edges and len(band_edges) > 1:
-        from matplotlib.patches import Patch
-        prev, handles = 0, []
-        for bi, e in enumerate(band_edges):
-            handles.append(Patch(color=band_colors[bi], label=f"lag {prev + 1}–{e} min"))
-            prev = e
-        host.legend(handles=handles, loc="upper right", ncol=len(band_edges),
-                    fontsize=7, frameon=False)
+                # reduction % (ref fig_2a) shown as "94% ↓" (no minus) + mabsacf
+                # detail, moved to BOTTOM-RIGHT and highlighted
+                drop = (1.0 - mab_i / max(mab_r, 1e-9)) * 100.0
+                ax.text(0.965, 0.30, f"{drop:.0f}% ↓", transform=ax.transAxes,
+                        ha="right", va="bottom", fontsize=12, fontweight="bold",
+                        color="#1B7837")
+                ax.text(0.965, 0.07, f"mabsacf {mab_r:.2f}→{mab_i:.2f}",
+                        transform=ax.transAxes, ha="right", va="bottom",
+                        fontsize=7, fontweight="bold", color="0.15",
+                        bbox=dict(boxstyle="round,pad=0.22", fc="white",
+                                  ec="#1B7837", lw=0.8, alpha=0.92))
     if heading:
         host.suptitle(heading, fontsize=10)
 
@@ -725,8 +724,8 @@ def do_composite(rows_a, rows_b, series_c, do_d, positions_d, out_path,
                  lag_a=60, floor_thr=0.05, route_occ=0.70, vector=True):
     """Composite (a)–(d): one figure, four stacked panel-groups, each keeping
     its own axes. Exported as PNG + vector (PDF/SVG)."""
-    fig = plt.figure(figsize=(9.6, 15.8), layout="constrained")
-    sf = fig.subfigures(4, 1, height_ratios=[4.2, 3.2, 2.6, 2.9])
+    fig = plt.figure(figsize=(9.6, 16.4), layout="constrained")
+    sf = fig.subfigures(4, 1, height_ratios=[5.0, 3.0, 2.5, 2.8])
     _panel_a_iid(sf[0], rows_a, lag=lag_a, band_edges=[20, 40, 60],
                  heading="(a) Whitened DO (iid) — ACF before/after whitening (lag 60)")
     _panel_b_nearur(sf[1], rows_b, heading="(b) Near-unit-root DO (un-whitenable)"
