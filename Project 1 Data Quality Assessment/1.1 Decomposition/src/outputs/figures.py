@@ -473,17 +473,19 @@ def acf_band_grid(rows, out_path: Path, lag: int, band_edges, title: str = "",
             if i == R - 1:
                 ax.set_xlabel(f"lag ({lag_unit})", fontsize=8)
             if j == 1:
-                # (a)-style whitening-effect label: mean|ACF| reduction e→η
+                # (a)-style whitening-effect label, top-right (clear of data):
+                # green "%↓" + black mabsacf text in a green box
                 mab_r = float(np.mean(np.abs(np.asarray(a_res, float)[1:11])))
                 mab_i = float(np.mean(np.abs(np.asarray(a_inn, float)[1:11])))
                 drop = (1.0 - mab_i / max(mab_r, 1e-9)) * 100.0
-                ax.text(0.975, 0.07,
-                        f"{drop:.0f}% ↓\nmabsacf {mab_r:.2f}→{mab_i:.2f}",
-                        transform=ax.transAxes, ha="right", va="bottom",
-                        fontsize=6.4, fontweight="bold", color="#1B7837",
-                        linespacing=1.25,
-                        bbox=dict(boxstyle="round,pad=0.2", fc="white",
-                                  ec="#1B7837", lw=0.6, alpha=0.9))
+                ax.text(0.975, 0.95, f"{drop:.0f}% ↓", transform=ax.transAxes,
+                        ha="right", va="top", fontsize=8, fontweight="bold",
+                        color="#1B7837")
+                ax.text(0.975, 0.60, f"mabsacf {mab_r:.2f}→{mab_i:.2f}",
+                        transform=ax.transAxes, ha="right", va="top",
+                        fontsize=6, fontweight="bold", color="0.1",
+                        bbox=dict(boxstyle="round,pad=0.18", fc="white",
+                                  ec="#1B7837", lw=0.7, alpha=0.92))
 
     if len(band_edges) > 1:                       # multi-band -> colour legend
         from matplotlib.patches import Patch
