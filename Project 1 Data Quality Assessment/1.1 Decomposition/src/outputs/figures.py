@@ -478,10 +478,10 @@ def acf_band_grid(rows, out_path: Path, lag: int, band_edges, title: str = "",
                 mab_r = float(np.mean(np.abs(np.asarray(a_res, float)[1:11])))
                 mab_i = float(np.mean(np.abs(np.asarray(a_inn, float)[1:11])))
                 drop = (1.0 - mab_i / max(mab_r, 1e-9)) * 100.0
-                ax.text(0.975, 0.95, f"{drop:.0f}% ↓", transform=ax.transAxes,
+                ax.text(0.975, 0.96, f"{drop:.0f}% ↓", transform=ax.transAxes,
                         ha="right", va="top", fontsize=8, fontweight="bold",
                         color="#1B7837")
-                ax.text(0.975, 0.60, f"mabsacf {mab_r:.2f}→{mab_i:.2f}",
+                ax.text(0.975, 0.70, f"mabsacf {mab_r:.2f}→{mab_i:.2f}",
                         transform=ax.transAxes, ha="right", va="top",
                         fontsize=6, fontweight="bold", color="0.1",
                         bbox=dict(boxstyle="round,pad=0.18", fc="white",
