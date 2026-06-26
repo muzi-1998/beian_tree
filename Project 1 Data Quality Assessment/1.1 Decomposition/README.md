@@ -10,6 +10,7 @@
 pip install xlrd statsmodels arch pyarrow openpyxl   # 其余依赖见下
 python run_pipeline.py            # W1→W3 全链路（数小时级数据 + 分钟级 256 天，约数分钟）
 python validate.py                # W4 有效性验证 + 案例库
+cd analysis_11 && python run_all.py  # 结果分析三工作流（方差分区 / 白化效果 / 尖峰 sanity）→ 图表 + 绘图数据
 # 快速冒烟：python run_pipeline.py --quick
 ```
 
@@ -51,6 +52,7 @@ src/
     param_store.py         版本化参数 + 原子热替换
   outputs/
     figures.py / tables.py 交付图件与表格
+analysis_11/               结果分析三工作流：work1 方差分区 / work2 白化效果 / work3 尖峰 sanity（run_all.py 编排）
 run_pipeline.py            W1→W3 主流程
 validate.py                W4 有效性验证 + 案例库
 outputs/{parquet,tables,figures,reports,plot_data}/   交付物
