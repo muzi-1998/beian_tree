@@ -769,10 +769,15 @@ def make_acf_band_figures(cfg, out, quick=False):
                 rows.append((c, dg.acf(rv, lag), dg.acf(iv, lag),
                              dg.acf_conf(len(rv)), dg.acf_conf(len(iv))))
         if rows:
+            # ORP/QR-QIR are single-band (all-iid, monotone blue) → recolour the
+            # After-innovation column yellow/amber to flag "whitened" (matches the
+            # warm band tone of the effluent grid). Hourly grids keep lag bands.
+            after_c = "#E08214" if gname in ("ORP", "flow") else None
             figures.acf_band_grid(rows, fr / f"fig_W3_acf_{gname}_banded.png",
                                   lag, edges, title=title, lag_unit=unit,
                                   plot_data_root=pdr,
-                                  bundle_name=f"acf_{gname}_banded")
+                                  bundle_name=f"acf_{gname}_banded",
+                                  after_color=after_c)
     _log("Combined ACF grids (influent/effluent/DO/ORP/flow) written")
 
 

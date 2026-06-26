@@ -399,7 +399,7 @@ def spectrum_comparison(spectra: dict, out_path: Path, title: str = ""):
 
 def acf_band_grid(rows, out_path: Path, lag: int, band_edges, title: str = "",
                   band_colors=None, lag_unit: str = "h", annotate_after=None,
-                  plot_data_root=None, bundle_name=None):
+                  plot_data_root=None, bundle_name=None, after_color=None):
     """Before/after-whitening ACF grid for a group of variables, with bars
     coloured by lag band (plan §5.3 + daily-lag emphasis).
 
@@ -435,7 +435,10 @@ def acf_band_grid(rows, out_path: Path, lag: int, band_edges, title: str = "",
             vals = np.asarray(a, dtype=float)[1:lag + 1]
             if len(vals) < lag:
                 vals = np.r_[vals, np.zeros(lag - len(vals))]
-            ax.bar(lags, vals, color=bar_colors, width=0.9, linewidth=0)
+            # after-whitening (right) column may use a fixed colour (e.g. yellow)
+            # to flag "whitened" — overrides the lag-band colouring on that column
+            col_j = ([after_color] * len(lags)) if (after_color and j == 1) else bar_colors
+            ax.bar(lags, vals, color=col_j, width=0.9, linewidth=0)
             ax.axhline(0, color="k", lw=0.6)
             if conf:
                 ax.axhline(conf, color="#888888", ls="--", lw=0.7)
@@ -493,7 +496,8 @@ def _save_fig(fig, out_path: Path, vector: bool = False):
 
 
 # ── DO manifest-driven panels (Okabe-Ito; draw into a Figure or SubFigure) ──
-def _panel_a_iid(host, rows, lag=60, after_ylim=(-0.20, 0.10), heading=""):
+def _panel_a_iid(host, rows, lag=60, after_ylim=(-0.20, 0.10), heading="",
+                 after_color=None):
     """(a) iid group before/after ACF. `rows`=[(label, acf_res, acf_inn, conf,
     mabsacf_res, mabsacf_inn, zone_note)]. After-column shares y so all four
     visibly collapse to ~0 (DO_1_2's MA over-correction lag-1 dip still shows);
@@ -503,7 +507,10 @@ def _panel_a_iid(host, rows, lag=60, after_ylim=(-0.20, 0.10), heading=""):
     for i, (lab, a_res, a_inn, conf, mab_r, mab_i, znote) in enumerate(rows):
         for j, (a, after) in enumerate([(a_res, False), (a_inn, True)]):
             ax = axes[i][j]
-            ax.bar(lags, np.asarray(a, float)[1:lag + 1], color=OI["blue"],
+            # After-whitening (right) column may use a fixed colour (yellow/amber)
+            # to flag "whitened"; Before stays blue. after_color=None → both blue.
+            ax.bar(lags, np.asarray(a, float)[1:lag + 1],
+                   color=(after_color if (after and after_color) else OI["blue"]),
                    width=0.9, linewidth=0)
             ax.axhline(0, color=OI["gray"], lw=0.6)
             ax.axhline(conf, color=OI["gray"], ls=":", lw=0.6)
@@ -685,7 +692,7 @@ def do_composite(rows_a, rows_b, series_c, do_d, positions_d, out_path,
     its own axes. Exported as PNG + vector (PDF/SVG)."""
     fig = plt.figure(figsize=(9.6, 15.8), layout="constrained")
     sf = fig.subfigures(4, 1, height_ratios=[4.2, 3.2, 2.6, 2.9])
-    _panel_a_iid(sf[0], rows_a, lag=lag_a,
+    _panel_a_iid(sf[0], rows_a, lag=lag_a, after_color="#E08214",
                  heading="(a) Whitened DO (iid) — ACF before/after whitening (lag 60)")
     _panel_b_nearur(sf[1], rows_b, heading="(b) Near-unit-root DO (un-whitenable)"
                     " — residual ACF (lag 120) + spectrum")
