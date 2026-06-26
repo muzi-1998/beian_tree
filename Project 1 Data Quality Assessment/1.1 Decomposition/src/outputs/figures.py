@@ -472,10 +472,18 @@ def acf_band_grid(rows, out_path: Path, lag: int, band_edges, title: str = "",
                               fontsize=7.5, labelpad=8)
             if i == R - 1:
                 ax.set_xlabel(f"lag ({lag_unit})", fontsize=8)
-            if annotate_after and j == 1 and i < len(annotate_after) \
-                    and annotate_after[i]:
-                ax.text(0.97, 0.90, annotate_after[i], transform=ax.transAxes,
-                        ha="right", va="top", fontsize=6.5, color="#555555")
+            if j == 1:
+                # (a)-style whitening-effect label: mean|ACF| reduction e→η
+                mab_r = float(np.mean(np.abs(np.asarray(a_res, float)[1:11])))
+                mab_i = float(np.mean(np.abs(np.asarray(a_inn, float)[1:11])))
+                drop = (1.0 - mab_i / max(mab_r, 1e-9)) * 100.0
+                ax.text(0.975, 0.07,
+                        f"{drop:.0f}% ↓\nmabsacf {mab_r:.2f}→{mab_i:.2f}",
+                        transform=ax.transAxes, ha="right", va="bottom",
+                        fontsize=6.4, fontweight="bold", color="#1B7837",
+                        linespacing=1.25,
+                        bbox=dict(boxstyle="round,pad=0.2", fc="white",
+                                  ec="#1B7837", lw=0.6, alpha=0.9))
 
     if len(band_edges) > 1:                       # multi-band -> colour legend
         from matplotlib.patches import Patch
@@ -563,6 +571,15 @@ def _panel_a_iid(host, rows, lag=60, after_ylim=(-0.20, 0.10), heading="",
                         fontsize=7, fontweight="bold", color="0.15",
                         bbox=dict(boxstyle="round,pad=0.22", fc="white",
                                   ec="#1B7837", lw=0.8, alpha=0.92))
+    if band_edges and len(band_edges) > 1:
+        from matplotlib.patches import Patch
+        prev, handles = 0, []
+        for bi, e in enumerate(band_edges):
+            handles.append(Patch(color=band_colors[bi], label=f"lag {prev + 1}–{e} min"))
+            prev = e
+        # bottom of the subfigure (clear of heading, column titles, annotations)
+        host.legend(handles=handles, loc="lower center", bbox_to_anchor=(0.5, 0.0),
+                    ncol=len(band_edges), fontsize=7.8, frameon=False)
     if heading:
         host.suptitle(heading, fontsize=10)
 
@@ -622,8 +639,13 @@ def _panel_c_floor(host, series, floor_thr=0.05, route_occ=0.70, heading=""):
         thr = np.linspace(0, 0.5, 60); occ = [float((arr <= t).mean()) for t in thr]
         axes[1].plot(thr, occ, color=col, lw=1.5, label=lab)
         o = float((arr <= floor_thr).mean())
-        axes[1].annotate(f"{o:.2f}", (floor_thr, o), color=col, fontsize=7.5,
-                         xytext=(5, 0), textcoords="offset points", va="center")
+        axes[1].plot(floor_thr, o, "o", color=col, ms=4.5, zorder=6)
+        # label offset below-right (under its own monotone curve → clear of lines)
+        axes[1].annotate(f"{o:.2f}", (floor_thr, o), color=col, fontsize=8.5,
+                         fontweight="bold", xytext=(10, -12 if k == 0 else 11),
+                         textcoords="offset points", va="center", zorder=6,
+                         bbox=dict(boxstyle="round,pad=0.12", fc="white", ec=col,
+                                   lw=0.7, alpha=0.9))
     axes[0].axvline(floor_thr, color=OI["gray"], ls="--", lw=0.8)
     axes[0].set_xlim(-0.1, 1.5); axes[0].set_xlabel("DO (mg/L)", fontsize=8)
     axes[0].set_ylabel("ECDF", fontsize=8)
@@ -728,14 +750,14 @@ def do_composite(rows_a, rows_b, series_c, do_d, positions_d, out_path,
     sf = fig.subfigures(4, 1, height_ratios=[5.0, 3.0, 2.5, 2.8])
     _panel_a_iid(sf[0], rows_a, lag=lag_a, band_edges=[20, 40, 60],
                  heading="(a) Whitened DO (iid) — ACF before/after whitening (lag 60)")
-    _panel_b_nearur(sf[1], rows_b, heading="(b) Near-unit-root DO (un-whitenable)"
-                    " — residual ACF (lag 120) + spectrum")
+    _panel_b_nearur(sf[1], rows_b,
+                    heading="(b) Near-unit-root DO: autocorrelation-aware track")
     _panel_c_floor(sf[2], series_c, floor_thr, route_occ,
                    heading="(c) Post-anoxic DO — floor occupancy (censoring, not dynamics)")
     _panel_d_d7(sf[3], do_d, positions_d, heading="(d) D7 cross-channel "
                 "redundancy — differential faults (common-mode drift → D5 anchor)")
-    fig.suptitle("DO channels — manifest-driven handling & monitoring by class",
-                 fontsize=12)
+    fig.suptitle("Class-specific whitening diagnostics and redundancy monitoring "
+                 "for DO channels", fontsize=12)
     _save_fig(fig, out_path, vector)
 
 
