@@ -119,6 +119,15 @@ def w1_data_base(cfg, out):
     figures.availability_heatmap(flag_all.rename(columns=lambda c: c.replace("flag_", "")),
                                  fig_root / "fig_W1_availability_heatmap.png",
                                  title="North-Bank data availability (1.1 time base)")
+    # split views: minute-level (native 1-min) and hourly-level (native hourly flags,
+    # so the daily/censoring pattern shows without the hold-to-1min artifact)
+    figures.availability_heatmap(
+        fl_min, fig_root / "fig_W1_availability_heatmap_min.png", downsample="1h",
+        title="North-Bank minute-level data availability (DO / ORP / QR·QIR · 1-min → 1-h worst flag)")
+    figures.availability_heatmap(
+        pd.concat([fl_inf, fl_eff], axis=1),
+        fig_root / "fig_W1_availability_heatmap_hourly.png", downsample="1D",
+        title="North-Bank hourly-level data availability (influent / effluent · 1-h → 1-day worst flag)")
 
     out.update(dict(df_min=df_min, fl_min=fl_min, inf_f=inf_f, fl_inf=fl_inf,
                     eff_f=eff_f, fl_eff=fl_eff, inventory=inv, consistency=cons))
