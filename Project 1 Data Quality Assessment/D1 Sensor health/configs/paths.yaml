@@ -1,12 +1,15 @@
 # paths.yaml
+# Relative paths are resolved from the D1 project root.
+# For third-party reproduction, place raw Excel files under:
+# ../1.1 Decomposition/Raw data/
 data:
-  do_file:  "/home/claude/d1_fsd/artifacts/beian_min_1_DO_25082604.xlsx"
-  orp_file: "/home/claude/d1_fsd/artifacts/beian_min_2_ORP082604.xlsx"
-  flw_file: "/home/claude/d1_fsd/artifacts/beian_min_3_QRQIR082604.xlsx"
+  do_file:  "../1.1 Decomposition/Raw data/beian_min_1_DO_25-08-26-04.xlsx"
+  orp_file: "../1.1 Decomposition/Raw data/beian_min_2_ORP-08-26-04.xlsx"
+  flw_file: "../1.1 Decomposition/Raw data/beian_min_3_QR+QIR-08-26-04.xlsx"
 
-output_root: "/mnt/user-data/outputs/d1_fsd_results"
-parquet_root: "/home/claude/d1_fsd/outputs/parquet"
-figure_root:  "/mnt/user-data/outputs/d1_fsd_results/figures"
-plot_data_root: "/mnt/user-data/outputs/d1_fsd_results/plot_data"
+output_root: "outputs"
+parquet_root: "outputs/parquet"
+figure_root:  "outputs/figures"
+plot_data_root: "outputs/plot_data"
 
-run_manifest: "/home/claude/d1_fsd/run_manifest"
+run_manifest: "run_manifest"

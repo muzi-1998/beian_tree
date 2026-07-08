@@ -61,9 +61,46 @@ ALL_CHANNELS = SCORED_CHANNELS + SUPPORT_CHANNELS
 CACHE_DIR = _ROOT / "cache"
 CACHE_DIR.mkdir(exist_ok=True)
 
+DEFAULT_RAW_DATA_DIR = _ROOT.parent / "1.1 Decomposition" / "Raw data"
+RAW_EXCEL_FILES = {
+    "do_file": "beian_min_1_DO_25-08-26-04.xlsx",
+    "orp_file": "beian_min_2_ORP-08-26-04.xlsx",
+    "flw_file": "beian_min_3_QR+QIR-08-26-04.xlsx",
+}
+
 
 def log(msg: str):
     print(f"[{time.strftime('%H:%M:%S')}] {msg}")
+
+
+def _resolve_raw_excel_path(config_value: str | None, fallback_name: str) -> Path:
+    candidates: list[Path] = []
+    if config_value:
+        p = Path(config_value).expanduser()
+        candidates.append(p if p.is_absolute() else (_ROOT / p).resolve())
+    candidates.append(DEFAULT_RAW_DATA_DIR / fallback_name)
+    candidates.append(_ROOT / fallback_name)
+
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+
+    tried = "\n      - ".join(str(p) for p in candidates)
+    raise FileNotFoundError(
+        "Raw Excel file not found. Put the source Excel files under "
+        f"{DEFAULT_RAW_DATA_DIR} or update configs/paths.yaml.\n"
+        f"Missing logical file: {fallback_name}\n"
+        f"Paths tried:\n      - {tried}"
+    )
+
+
+def raw_excel_paths() -> dict[str, Path]:
+    cfg = load_project_config()
+    data_paths = cfg.paths.get("data", {})
+    return {
+        key: _resolve_raw_excel_path(data_paths.get(key), filename)
+        for key, filename in RAW_EXCEL_FILES.items()
+    }
 
 
 # ─── 1. 加载并合并三个 Excel 文件 ─────────────────────────────────────────────
@@ -84,9 +121,13 @@ def load_and_align() -> tuple[pd.DataFrame, pd.DataFrame]:
     log("[1] 加载原始 Excel 数据 (3 个文件)...")
     t = time.time()
 
-    do_path  = _ROOT / "beian_min_1_DO_25-08-26-04.xlsx"
-    orp_path = _ROOT / "beian_min_2_ORP-08-26-04.xlsx"
-    flw_path = _ROOT / "beian_min_3_QR+QIR-08-26-04.xlsx"
+    paths = raw_excel_paths()
+    do_path = paths["do_file"]
+    orp_path = paths["orp_file"]
+    flw_path = paths["flw_file"]
+    log(f"    DO path: {do_path}")
+    log(f"    ORP path: {orp_path}")
+    log(f"    QR/QIR path: {flw_path}")
 
     do  = pd.read_excel(do_path,  index_col=0, parse_dates=True)
     orp = pd.read_excel(orp_path, index_col=0, parse_dates=True)
