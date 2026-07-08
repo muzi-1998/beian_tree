@@ -1,0 +1,119 @@
+{
+  "digest": "73c9f198ee3f9b7d1decfba1d45f108803ad9ae6e8140119b38e29ae4bdd5046",
+  "items": [
+    {
+      "path": "v11_state.pkl",
+      "exists": true,
+      "size": 32230411,
+      "mtime_ns": 1783477046917643200,
+      "sha256": "e5dc690eec4580482d8aecb0074f41aa5e403cc1ef73b4454790d069ec3a5e8d"
+    },
+    {
+      "path": "v12_P2_state.pkl",
+      "exists": true,
+      "size": 43357728,
+      "mtime_ns": 1783477194417486800,
+      "sha256": "cc4343bd7baf58a0960852062789154622684c415030c0d32de198296e96d6db"
+    },
+    {
+      "path": "outputs\\logs\\run_v11.log",
+      "exists": true,
+      "size": 3001,
+      "mtime_ns": 1783477046922644600,
+      "sha256": "515988dc9ca203ca4aa3f3bc73d75b6f250afb99c6172a9634916548d23c69b3"
+    },
+    {
+      "path": "outputs\\data\\D1_v11_vs_strictV1_compare.xlsx",
+      "exists": true,
+      "size": 9321,
+      "mtime_ns": 1783477158374382100,
+      "sha256": "5499303f7b1f90ece7308b823e12c1ee3bc4632a807061b9b337ee4d08a9854d"
+    },
+    {
+      "path": "outputs\\data\\D1_state_machine_audit.xlsx",
+      "exists": true,
+      "size": 11549,
+      "mtime_ns": 1783477158256368400,
+      "sha256": "baa1c850b72615f910cef813881ced54900673fd84ac76e0b316c6ad8a24a765"
+    },
+    {
+      "path": "outputs\\data\\D1_sensor_profile_summary.xlsx",
+      "exists": true,
+      "size": 35007,
+      "mtime_ns": 1783477154421136600,
+      "sha256": "5d5f85317deb6398c350c6054b003f223c6b220036f5ff4007fc0c07f2f3ec44"
+    },
+    {
+      "path": "outputs\\data\\D1_pelt_changepoints.xlsx",
+      "exists": true,
+      "size": 13252,
+      "mtime_ns": 1783477158308643100,
+      "sha256": "29e0ef5d741603baed23b2d8784eb9970998bac73c0d07d6f060880258be5c2d"
+    },
+    {
+      "path": "outputs\\v12_P2\\data\\metrics_all_variants.csv",
+      "exists": true,
+      "size": 14681,
+      "mtime_ns": 1783477194343235500,
+      "sha256": "158e91bc63cae724a0edc3791a0d5672f931c557f1b4af54fd9c39549af6f45c"
+    },
+    {
+      "path": "outputs\\figures\\Fig2_monthly_heatmap.png",
+      "exists": true,
+      "size": 644196,
+      "mtime_ns": 1783477104449555000,
+      "sha256": "7d4a18a106adb62d67473000c60089b91a5e5c3a62c424432b28191fb05257e1"
+    },
+    {
+      "path": "outputs\\figures\\Fig6_dominant_fault.png",
+      "exists": true,
+      "size": 256545,
+      "mtime_ns": 1783477113049129600,
+      "sha256": "a2b9c616bb4dac772dd80d0c3d33cd5a5180f02545f7e56cb02dafe8a1f2620f"
+    },
+    {
+      "path": "outputs\\figures\\Fig8_veto_cooldown.png",
+      "exists": true,
+      "size": 259544,
+      "mtime_ns": 1783477114370961700,
+      "sha256": "61e672b7ab007249eb725b945769a5f9002fbcc87b6f497961ba02ecb118117b"
+    },
+    {
+      "path": "outputs\\figures\\FigV12_v11_vs_strictV1_hero.png",
+      "exists": true,
+      "size": 1152191,
+      "mtime_ns": 1783477071130332700,
+      "sha256": "c19009fb5c0f46487241421e51b33ff9abb314066cee4f6365dda72665570dde"
+    },
+    {
+      "path": "outputs\\figures\\FigV13_state_machine_DO_2_3.png",
+      "exists": true,
+      "size": 2552943,
+      "mtime_ns": 1783477073060528800,
+      "sha256": "d704d0945cc0cc515b9358283a5bde29e92f80222271953829e8c6051e28288a"
+    },
+    {
+      "path": "outputs\\figures\\FigV15_pelt_event_id.png",
+      "exists": true,
+      "size": 1149283,
+      "mtime_ns": 1783477076762956600,
+      "sha256": "f2145ba1c1fdf812a2ea654c18ccd1851eb64fe3f9e07c1f945f60ed477ecb50"
+    },
+    {
+      "path": "outputs\\figures\\FigV18_aggregate_summary.png",
+      "exists": true,
+      "size": 995783,
+      "mtime_ns": 1783477084881798000,
+      "sha256": "57520c26afc9a3b55032f2d29970a03014d253b5cb9f4cc83e13e700215bbac9"
+    },
+    {
+      "path": "outputs\\v12_P2\\figures\\fig10_global_summary.png",
+      "exists": true,
+      "size": 555516,
+      "mtime_ns": 1783477200943654800,
+      "sha256": "e8d0194dde5ac25ae50a37188197298d034baedc5e1f5f678138876ca733fe84"
+    }
+  ],
+  "generated_at": "2026-07-08 11:40:29",
+  "report": "outputs\\D1_Sensor_Health_Expert_Report_Auto.docx"
+}

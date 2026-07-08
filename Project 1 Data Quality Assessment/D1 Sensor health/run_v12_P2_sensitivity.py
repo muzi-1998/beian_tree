@@ -887,7 +887,11 @@ def main():
     log(f"  Figures: {fig_dir}")
     log(f"  Data:    {data_dir}")
     log(f"{'='*70}")
-
+    try:
+        from generate_expert_report_v11 import maybe_update_report
+        maybe_update_report()
+    except Exception as exc:
+        log(f"[auto-report] skipped: {exc}")
 
 if __name__ == "__main__":
     main()

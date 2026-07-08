@@ -721,3 +721,8 @@ import os
 files = sorted(OUT.glob("*.xlsx"))
 total_kb = sum(f.stat().st_size for f in files) // 1024
 print(f"Total: {len(files)} files, {total_kb} KB")
+try:
+    from generate_expert_report_v11 import maybe_update_report
+    maybe_update_report()
+except Exception as exc:
+    print(f"[auto-report] skipped: {exc}")

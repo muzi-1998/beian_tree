@@ -351,6 +351,11 @@ def main():
     log(f"\n{'='*78}")
     log(f"v1.1 pipeline complete in {elapsed:.1f}s")
     log(f"{'='*78}")
+    try:
+        from generate_expert_report_v11 import maybe_update_report
+        maybe_update_report()
+    except Exception as exc:
+        log(f"[auto-report] skipped: {exc}")
     return state
 
 

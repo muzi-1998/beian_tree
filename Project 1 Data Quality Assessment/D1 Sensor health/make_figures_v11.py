@@ -617,3 +617,8 @@ save(fig, "FigV15_pelt_event_id",
                   "pelt_DO_2_3": pd.DataFrame(S["pelt_results"]["DO_2_3"])})
 
 print(f"\n[done] First 4 v1.1 figures complete.\nNext: v16-18 + updated v1-11.\n")
+try:
+    from generate_expert_report_v11 import maybe_update_report
+    maybe_update_report()
+except Exception as exc:
+    print(f"[auto-report] skipped: {exc}")

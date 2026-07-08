@@ -433,3 +433,8 @@ save(fig, "FigV18_aggregate_summary",
 
 
 print("\n[part 2 done] V16-V18 complete.\n")
+try:
+    from generate_expert_report_v11 import maybe_update_report
+    maybe_update_report()
+except Exception as exc:
+    print(f"[auto-report] skipped: {exc}")

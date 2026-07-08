@@ -586,3 +586,8 @@ save(fig, "Fig11_pls_peer_audit",
                   "ORP_peer_matrix": peer_matrix2})
 
 print("\n[done] Updated baseline figures Fig 1-11 complete.\n")
+try:
+    from generate_expert_report_v11 import maybe_update_report
+    maybe_update_report()
+except Exception as exc:
+    print(f"[auto-report] skipped: {exc}")
