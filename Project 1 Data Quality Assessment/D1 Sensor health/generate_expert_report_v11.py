@@ -13,7 +13,6 @@ from pathlib import Path
 
 import pandas as pd
 from docx import Document
-from docx.enum.section import WD_SECTION
 from docx.enum.table import WD_ALIGN_VERTICAL
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml import OxmlElement
@@ -439,7 +438,6 @@ def build_report(force: bool = False) -> Path:
     add_bullet(doc, "短期运维重点建议放在 ORP_1_2、ORP_1_3、DO_2_3、DO_2_4 四类风险通道，优先核对校准记录、清洗维护与工况切换。")
     add_bullet(doc, "报告自动更新机制已经建立：主要输出脚本可调用 maybe_update_report()；源文件未变时不重建，源文件变化时自动刷新 Word 报告。")
 
-    doc.add_section(WD_SECTION.NEW_PAGE)
     doc.add_heading("附录：自动更新依据", level=1)
     add_table(doc, ["源文件", "状态"], [[item["path"], "OK" if item["exists"] else "缺失"] for item in signature["items"]],
               [Inches(4.8), Inches(1.2)])
