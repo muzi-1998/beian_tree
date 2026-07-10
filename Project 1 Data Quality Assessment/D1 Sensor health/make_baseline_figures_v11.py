@@ -286,14 +286,14 @@ ax.set_ylim(0.8, 5.2); ax.set_xlim(0, 0.3)
 for b, s in zip(breaks[:-1], scores[:-1]):
     ax.axvline(b, color="0.6", ls=":", lw=0.5)
 
-# Q_step: logistic k=12, x0=0.3
+# Q_step: logistic k=8.0, x0=0.40
 ax = axes[0, 1]
 x = np.linspace(0, 0.6, 200)
-y = logistic(x, 12, 0.3)
+y = logistic(x, 8.0, 0.40)
 ax.plot(x, y, color=C["blue"], lw=1.8)
 ax.set_xlabel("KS statistic", fontsize=9)
 ax.set_ylabel(r"$Q_{step}$", fontsize=9)
-ax.set_title("(b)  step: logistic k=12, x₀=0.3", loc="left")
+ax.set_title("(b)  step: logistic k=8.0, x₀=0.40", loc="left")
 ax.set_ylim(0.8, 5.2)
 
 # Q_drift: logistic k=1.5, x0=2.5
