@@ -1,0 +1,26 @@
+# d2_windows.yaml
+# 多窗口体系(P2 外置:支撑方案 §2 提出的 1h/6h/24h/7d 多尺度)
+
+windows:
+  fast_window:        { length: 1h,  step: 15min, purpose: gap_quick_detect }
+  freeze_window:      { length: 6h,  step: 1h,   purpose: freeze_availability }
+  main_window:        { length: 24h, step: 1h,   purpose: dynamic_D2_total }
+  summary_window:     { length: 7d,  step: 1d,   purpose: weekly_profile }
+
+# V1 仅启用 main_window;V2 启用全部
+enabled_in_v1:
+  - main_window
+
+enabled_in_v2:
+  - fast_window
+  - freeze_window
+  - main_window
+  - summary_window
+
+# 时间网格
+time_grid:
+  freq:               1min
+  timezone:           Asia/Shanghai
+  expected_start:     "2025-08-01 00:00:00"
+  expected_end:       "2026-04-13 23:59:00"
+  jitter_tolerance_sec: 5

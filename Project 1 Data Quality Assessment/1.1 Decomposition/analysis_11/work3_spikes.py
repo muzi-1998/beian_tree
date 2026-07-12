@@ -30,7 +30,7 @@ import matplotlib.pyplot as plt
 
 from common import (TAB, FIG, PDATA, MODE_COLOR, OKABE_ITO, PROCESS_ORDER,
                     POS_BAND, BAND_ORDER, load_manifest, get_residual,
-                    get_innovation, setup_style)
+                    get_innovation, setup_style, save_publication_figure)
 
 K = 3.0                       # Hampel threshold (k·MAD)
 IID_EXPECTED = 1000 * 2 * (1 - 0.5 * (1 + 1.0)) if False else 2.70  # 2·(1−Φ(3))·1000
@@ -136,7 +136,7 @@ def main():
                  "(per 1000 pts; manifest-keyed input; formal detection → §1.2 D1)",
                  fontsize=9.8, y=1.0)
     fig.subplots_adjust(left=0.07, right=0.99, top=0.9, bottom=0.2)
-    fig.savefig(FIG / "fig_A3_spike_event_rate.png", dpi=300, bbox_inches="tight")
+    save_publication_figure(fig, FIG / "fig_A3_spike_event_rate.png")
     plt.close(fig)
 
     iid = df[df.scoring_mode == "iid"]["rate_per_1000"]

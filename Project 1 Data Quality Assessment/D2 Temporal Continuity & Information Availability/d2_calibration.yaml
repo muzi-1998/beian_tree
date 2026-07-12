@@ -1,0 +1,329 @@
+calibration_id: NorthBank_D2_v1_20260710
+plant_id: NorthBank_LCH
+generated_date: '2026-07-10'
+effective_period:
+- '2025-08-01'
+- '2026-04-13'
+calibration_basis: D2_internal_engineering_v1
+mapping_version: d2_v1_p0p1
+input_hash: 25d5e96846430518fe5f6400275f0b227b8f31bd5ca6ea57d4cddf8526c0c6ac
+benchmark_windows:
+  selection_rule: not_used_for_mapping; D1 reserved for external concordance
+  total_benchmark_hours: 0
+thresholds:
+  Q_temporal_integrity:
+    missing_rate:
+      0.25: 0.001
+      0.5: 0.003
+      0.75: 0.008
+      0.95: 0.02
+      0.99: 0.05
+    duplicate_rate:
+      0.25: 0.0
+      0.5: 0.0
+      0.75: 0.0
+      0.95: 0.0
+      0.99: 0.001
+    out_of_order_rate:
+      0.25: 0.0
+      0.5: 0.0
+      0.75: 0.0
+      0.95: 0.001
+      0.99: 0.005
+    irregular_rate:
+      0.25: 0.0
+      0.5: 0.0
+      0.75: 0.001
+      0.95: 0.002
+      0.99: 0.005
+  Q_gap_severity:
+    L_max_minutes:
+      0.25: 0
+      0.5: 1
+      0.75: 2
+      0.95: 5
+      0.99: 30
+    gap_run_count:
+      0.25: 0
+      0.5: 0
+      0.75: 1
+      0.95: 3
+      0.99: 8
+  Q_freeze_avail:
+    info_empty_cov:
+      0.25: 0.01
+      0.5: 0.03
+      0.75: 0.08
+      0.95: 0.15
+      0.99: 0.3
+    tau_rle_D2_min: 3
+    tau_iqr_DO: 0.02
+    tau_iqr_ORP: 1.0
+veto_thresholds:
+  L_max_minutes:
+    value: 360
+    source: floor_applied
+    bench_p: 0.0
+    engineering_floor: 360
+  missing_rate:
+    value: 0.15
+    source: floor_applied
+    bench_p: 0.0
+    engineering_floor: 0.15
+  irregular_rate:
+    value: 0.1
+    source: floor_applied
+    bench_p: 0.0
+    engineering_floor: 0.1
+bench_var:
+  DO:
+    DO_1_1:
+      P05: 0.0012368965517460166
+      P50: 0.009510919540185047
+    DO_1_2:
+      P05: 0.006034160919541139
+      P50: 0.03239643678158784
+    DO_1_3:
+      P05: 0.005466781609172928
+      P50: 0.041591264367814726
+    DO_1_4:
+      P05: 5.298850574344015e-05
+      P50: 9.712643677846246e-05
+    DO_2_1:
+      P05: 0.0007034482758718714
+      P50: 0.006147586206923089
+    DO_2_2:
+      P05: 0.0014478160918878216
+      P50: 0.011930574712504319
+    DO_2_3:
+      P05: 0.010142988505762642
+      P50: 0.1485362068965317
+    DO_2_4:
+      P05: 0.00012885057468660862
+      P50: 0.0035926436781039883
+  ORP:
+    ORP_1_1:
+      P05: 0.6046209027901219
+      P50: 3.2217841958092155
+    ORP_1_2:
+      P05: 0.5333329885906906
+      P50: 6.256641953511141
+    ORP_1_3:
+      P05: 0.3419126178872635
+      P50: 31.294218968193555
+    ORP_2_1:
+      P05: 0.3969481597480707
+      P50: 2.0477495401709427
+    ORP_2_2:
+      P05: 0.26687540122267633
+      P50: 0.9071840218151068
+    ORP_2_3:
+      P05: 0.16718574498261235
+      P50: 7.157674021635721
+tier_availability:
+  DO_1_1:
+    tier1:
+    - DO_1_2
+    - DO_1_3
+    - DO_1_4
+    tier2:
+    - DO_2_1
+    tier3:
+    - DO_2_1
+    - DO_1_2
+    - DO_1_3
+    - DO_1_4
+    tier4:
+      allowed: false
+      reason: QR_QIR_quality_unverified
+  DO_1_2:
+    tier1:
+    - DO_1_1
+    - DO_1_3
+    - DO_1_4
+    tier2:
+    - DO_2_2
+    tier3:
+    - DO_2_2
+    - DO_1_1
+    - DO_1_3
+    - DO_1_4
+    tier4:
+      allowed: false
+      reason: QR_QIR_quality_unverified
+  DO_1_3:
+    tier1:
+    - DO_1_1
+    - DO_1_2
+    - DO_1_4
+    tier2:
+    - DO_2_3
+    tier3:
+    - DO_2_3
+    - DO_1_1
+    - DO_1_2
+    - DO_1_4
+    tier4:
+      allowed: false
+      reason: QR_QIR_quality_unverified
+  DO_1_4:
+    tier1:
+    - DO_1_1
+    - DO_1_2
+    - DO_1_3
+    tier2:
+    - DO_2_4
+    tier3:
+    - DO_2_4
+    - DO_1_1
+    - DO_1_2
+    - DO_1_3
+    tier4:
+      allowed: false
+      reason: QR_QIR_quality_unverified
+  DO_2_1:
+    tier1:
+    - DO_2_2
+    - DO_2_3
+    - DO_2_4
+    tier2:
+    - DO_1_1
+    tier3:
+    - DO_1_1
+    - DO_2_2
+    - DO_2_3
+    - DO_2_4
+    tier4:
+      allowed: false
+      reason: QR_QIR_quality_unverified
+  DO_2_2:
+    tier1:
+    - DO_2_1
+    - DO_2_3
+    - DO_2_4
+    tier2:
+    - DO_1_2
+    tier3:
+    - DO_1_2
+    - DO_2_1
+    - DO_2_3
+    - DO_2_4
+    tier4:
+      allowed: false
+      reason: QR_QIR_quality_unverified
+  DO_2_3:
+    tier1:
+    - DO_2_1
+    - DO_2_2
+    - DO_2_4
+    tier2:
+    - DO_1_3
+    tier3:
+    - DO_1_3
+    - DO_2_1
+    - DO_2_2
+    - DO_2_4
+    tier4:
+      allowed: false
+      reason: QR_QIR_quality_unverified
+  DO_2_4:
+    tier1:
+    - DO_2_1
+    - DO_2_2
+    - DO_2_3
+    tier2:
+    - DO_1_4
+    tier3:
+    - DO_1_4
+    - DO_2_1
+    - DO_2_2
+    - DO_2_3
+    tier4:
+      allowed: false
+      reason: QR_QIR_quality_unverified
+  ORP_1_1:
+    tier1:
+    - ORP_1_2
+    - ORP_1_3
+    tier2:
+    - ORP_2_1
+    tier3:
+    - ORP_2_1
+    - ORP_1_2
+    - ORP_1_3
+    tier4:
+      allowed: false
+      reason: QR_QIR_quality_unverified
+  ORP_1_2:
+    tier1:
+    - ORP_1_1
+    - ORP_1_3
+    tier2:
+    - ORP_2_2
+    tier3:
+    - ORP_2_2
+    - ORP_1_1
+    - ORP_1_3
+    tier4:
+      allowed: false
+      reason: QR_QIR_quality_unverified
+  ORP_1_3:
+    tier1:
+    - ORP_1_1
+    - ORP_1_2
+    tier2:
+    - ORP_2_3
+    tier3:
+    - ORP_2_3
+    - ORP_1_1
+    - ORP_1_2
+    tier4:
+      allowed: false
+      reason: QR_QIR_quality_unverified
+  ORP_2_1:
+    tier1:
+    - ORP_2_2
+    - ORP_2_3
+    tier2:
+    - ORP_1_1
+    tier3:
+    - ORP_1_1
+    - ORP_2_2
+    - ORP_2_3
+    tier4:
+      allowed: false
+      reason: QR_QIR_quality_unverified
+  ORP_2_2:
+    tier1:
+    - ORP_2_1
+    - ORP_2_3
+    tier2:
+    - ORP_1_2
+    tier3:
+    - ORP_1_2
+    - ORP_2_1
+    - ORP_2_3
+    tier4:
+      allowed: false
+      reason: QR_QIR_quality_unverified
+  ORP_2_3:
+    tier1:
+    - ORP_2_1
+    - ORP_2_2
+    tier2:
+    - ORP_1_3
+    tier3:
+    - ORP_1_3
+    - ORP_2_1
+    - ORP_2_2
+    tier4:
+      allowed: false
+      reason: QR_QIR_quality_unverified
+topology:
+  pools:
+  - 1
+  - 2
+  has_parallel_pools: true
+  sensor_count_per_pool:
+    DO: 4
+    ORP: 3

@@ -64,6 +64,7 @@ plt.rcParams.update({
     "ytick.major.width": 0.6,
     "pdf.fonttype": 42,
     "ps.fonttype": 42,
+    "svg.fonttype": "none",
 })
 
 # Colour palette
@@ -133,7 +134,8 @@ def _finish_axes(fig):
 
 def save(fig, name, plot_data: dict = None):
     _finish_axes(fig)
-    fig.savefig(OUT / f"{name}.png")
+    for suffix in (".png", ".svg", ".pdf"):
+        fig.savefig(OUT / f"{name}{suffix}")
     plt.close(fig)
     if plot_data is not None:
         with pd.ExcelWriter(PLOTDATA / f"{name}_data.xlsx", engine="openpyxl") as w:
@@ -144,7 +146,7 @@ def save(fig, name, plot_data: dict = None):
                     v.to_frame(k).to_excel(w, sheet_name=k[:31], index=True)
                 elif isinstance(v, dict):
                     pd.DataFrame(v).to_excel(w, sheet_name=k[:31], index=True)
-    print(f"  [OK] {name}.png")
+    print(f"  [OK] {name}.png + .svg + .pdf")
 
 
 # ============================================================================

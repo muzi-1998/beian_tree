@@ -12,6 +12,7 @@ Returns native-resolution frames; alignment to the 1-min master clock and
 imputation are handled in `preprocess.py`.
 """
 from __future__ import annotations
+from pathlib import Path
 import numpy as np
 import pandas as pd
 
@@ -19,16 +20,40 @@ from ..semantics import EFFLUENT_QUALITY, EFFLUENT_AUX, INFLUENT_QUALITY, INFLUE
 
 
 # ── min-level (1 min native) ────────────────────────────────────────────────
-def load_min(do_path: str, orp_path: str, flw_path: str) -> pd.DataFrame:
-    """Load & merge the three min-level Excel files on the `data` timestamp."""
-    do  = pd.read_excel(do_path)
-    orp = pd.read_excel(orp_path)
-    flw = pd.read_excel(flw_path)
-    df = do.merge(orp, on="data").merge(flw, on="data")
-    df["data"] = pd.to_datetime(df["data"])
-    df = df.set_index("data").sort_index()
+def load_min(do_path: str, orp_path: str, flw_path: str,
+             return_audit: bool = False):
+    """Load the three native minute sources without discarding source gaps.
+
+    Sources are de-duplicated independently and outer-joined.  The previous
+    inner merge silently removed timestamps absent from any one source, which
+    made channel-level availability indistinguishable downstream.
+    """
+    frames = []
+    audit = {}
+    for source, path in [("DO", do_path), ("ORP", orp_path), ("FLOW", flw_path)]:
+        raw = pd.read_excel(path)
+        ts = pd.to_datetime(raw["data"], errors="coerce")
+        valid = ts.notna()
+        ts_valid = ts[valid]
+        backward = ts_valid.diff().dt.total_seconds().lt(0)
+        duplicate = ts_valid.duplicated(keep=False)
+        audit[source] = {
+            "file": Path(path).name,
+            "rows": int(len(raw)),
+            "invalid_timestamp_rows": int((~valid).sum()),
+            "duplicate_timestamp_rows": int(duplicate.sum()),
+            "out_of_order_transitions": int(backward.sum()),
+            "timestamp_min": ts_valid.min().isoformat() if len(ts_valid) else None,
+            "timestamp_max": ts_valid.max().isoformat() if len(ts_valid) else None,
+        }
+        frame = raw.loc[valid].copy()
+        frame["data"] = ts_valid.values
+        frame = frame.drop_duplicates(subset="data", keep="first").set_index("data")
+        frames.append(frame)
+
+    df = pd.concat(frames, axis=1, join="outer").sort_index()
     df.index.name = "timestamp"
-    return df
+    return (df, audit) if return_audit else df
 
 
 # ── hourly water-quality (1 h native, legacy BIFF .xls) ─────────────────────

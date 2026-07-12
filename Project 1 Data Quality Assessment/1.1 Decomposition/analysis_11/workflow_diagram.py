@@ -12,12 +12,15 @@ Output: outputs/figures/fig_W0_workflow.png (+ .pdf).  Static/conceptual — no 
 """
 from __future__ import annotations
 from pathlib import Path
+import sys
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyBboxPatch, FancyArrowPatch
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from src.outputs.figstyle import save_publication_figure
 FIG = ROOT / "outputs" / "figures"
 FIG.mkdir(parents=True, exist_ok=True)
 
@@ -125,10 +128,9 @@ def main():
                  fontsize=12.5, fontweight="bold", pad=8)
 
     fig.subplots_adjust(left=0.02, right=0.98, top=0.955, bottom=0.02)
-    for ext in ("png", "pdf"):
-        fig.savefig(FIG / f"fig_W0_workflow.{ext}", dpi=300, bbox_inches="tight")
+    save_publication_figure(fig, FIG / "fig_W0_workflow.png")
     plt.close(fig)
-    print("wrote fig_W0_workflow.png / .pdf")
+    print("wrote fig_W0_workflow.png / .svg / .pdf")
 
 
 if __name__ == "__main__":

@@ -1,18 +1,17 @@
 ﻿channel,track,group,zone,cls,family,accepted,whitened,innov_kind,scoring_mode,acf1_innov,mabsacf_innov,lb_passrate_innov,n_eff_ratio,note
-DO_1_2,min,aerobic_do,aerobic,C,arma,True,True,innovation,iid,-0.1892,0.0451,0.024,0.6818,已白化近 i.i.d. 创新;iid 控制图/独立性评分可用
-DO_1_3,min,aerobic_do,aerobic,C,arma,True,True,innovation,iid,0.0434,0.0424,0.091,0.9168,已白化近 i.i.d. 创新;iid 控制图/独立性评分可用
-DO_2_3,min,aerobic_do,aerobic,C,arma,True,True,innovation,iid,0.0316,0.0194,0.087,0.9387,已白化近 i.i.d. 创新;iid 控制图/独立性评分可用
-DO_2_4,min,postanoxic_do,post_anoxic,C,arma,True,True,innovation,iid,0.1051,0.0273,0.126,0.8098,已白化近 i.i.d. 创新;iid 控制图/独立性评分可用
-ORP_1_1,min,anoxic_orp,anaerobic,C,arma,True,True,innovation,iid,0.0381,0.0326,0.315,0.9266,已白化近 i.i.d. 创新;iid 控制图/独立性评分可用
-ORP_1_2,min,anoxic_orp,pre_anoxic_front,C,arma,True,True,innovation,iid,0.0404,0.0347,0.043,0.9223,已白化近 i.i.d. 创新;iid 控制图/独立性评分可用
-ORP_1_3,min,anoxic_orp,pre_anoxic_rear,C,arma,True,True,innovation,iid,0.0132,0.0212,0.283,0.9739,已白化近 i.i.d. 创新;iid 控制图/独立性评分可用
-ORP_2_1,min,anoxic_orp,anaerobic,C,arma,True,True,innovation,iid,-0.0397,0.0607,0.063,0.9236,已白化近 i.i.d. 创新;iid 控制图/独立性评分可用
-ORP_2_2,min,anoxic_orp,pre_anoxic_front,C,arma,True,True,innovation,iid,-0.0313,0.0337,0.15,0.9393,已白化近 i.i.d. 创新;iid 控制图/独立性评分可用
-ORP_2_3,min,anoxic_orp,pre_anoxic_rear,C,arma,True,True,innovation,iid,0.1922,0.1791,0.047,0.6776,已白化近 i.i.d. 创新;iid 控制图/独立性评分可用
-QIR_1,min,flow,recycle,A,arma,True,True,innovation,iid,0.0739,0.0188,0.449,0.8624,已白化近 i.i.d. 创新;iid 控制图/独立性评分可用
-QIR_2,min,flow,recycle,A,arma,True,True,innovation,iid,0.0163,0.0064,0.472,0.9679,已白化近 i.i.d. 创新;iid 控制图/独立性评分可用
-QR_1,min,flow,recycle,A,arma,True,True,innovation,iid,0.2564,0.0783,0.146,0.5918,已白化近 i.i.d. 创新;iid 控制图/独立性评分可用
-QR_2,min,flow,recycle,A,arma,True,True,innovation,iid,0.1861,0.1559,0.036,0.6862,已白化近 i.i.d. 创新;iid 控制图/独立性评分可用
+DO_1_2,min,aerobic_do,aerobic,C,arma,True,True,innovation,iid,-0.1884,0.0451,0.024,0.6829,已白化近 i.i.d. 创新;iid 控制图/独立性评分可用
+DO_1_3,min,aerobic_do,aerobic,C,arma,True,True,innovation,iid,0.0467,0.0426,0.079,0.9108,已白化近 i.i.d. 创新;iid 控制图/独立性评分可用
+DO_2_3,min,aerobic_do,aerobic,C,arma,True,True,innovation,iid,0.0327,0.0197,0.083,0.9367,已白化近 i.i.d. 创新;iid 控制图/独立性评分可用
+DO_2_4,min,postanoxic_do,post_anoxic,C,arma,True,True,innovation,iid,0.1033,0.0273,0.142,0.8127,已白化近 i.i.d. 创新;iid 控制图/独立性评分可用
+ORP_1_1,min,anoxic_orp,anaerobic,C,arma,True,True,innovation,iid,0.0343,0.0314,0.299,0.9337,已白化近 i.i.d. 创新;iid 控制图/独立性评分可用
+ORP_1_2,min,anoxic_orp,pre_anoxic_front,C,arma,True,True,innovation,iid,0.0384,0.0337,0.031,0.926,已白化近 i.i.d. 创新;iid 控制图/独立性评分可用
+ORP_1_3,min,anoxic_orp,pre_anoxic_rear,C,arma,True,True,innovation,iid,0.0128,0.0204,0.291,0.9747,已白化近 i.i.d. 创新;iid 控制图/独立性评分可用
+ORP_2_1,min,anoxic_orp,anaerobic,C,arma,True,True,innovation,iid,-0.0399,0.0605,0.055,0.9233,已白化近 i.i.d. 创新;iid 控制图/独立性评分可用
+ORP_2_2,min,anoxic_orp,pre_anoxic_front,C,arma,True,True,innovation,iid,-0.0312,0.0334,0.161,0.9395,已白化近 i.i.d. 创新;iid 控制图/独立性评分可用
+ORP_2_3,min,anoxic_orp,pre_anoxic_rear,C,arma,True,True,innovation,iid,0.1922,0.1787,0.043,0.6776,已白化近 i.i.d. 创新;iid 控制图/独立性评分可用
+QIR_1,min,flow,recycle,A,arma,True,True,innovation,iid,0.0716,0.0193,0.417,0.8664,已白化近 i.i.d. 创新;iid 控制图/独立性评分可用
+QIR_2,min,flow,recycle,A,arma,True,True,innovation,iid,0.0192,0.0067,0.555,0.9623,已白化近 i.i.d. 创新;iid 控制图/独立性评分可用
+QR_1,min,flow,recycle,A,arma,True,True,innovation,iid,0.1842,0.0717,0.159,0.6889,已白化近 i.i.d. 创新;iid 控制图/独立性评分可用
 eff_COD,hour,effluent,effluent,D,arma,True,True,innovation,iid,-0.0787,0.0182,0.614,0.8541,已白化近 i.i.d. 创新;iid 控制图/独立性评分可用
 eff_NH4,hour,effluent,effluent,D,arma,True,True,innovation,iid,0.0316,0.0208,0.778,0.9387,已白化近 i.i.d. 创新;iid 控制图/独立性评分可用
 eff_T,hour,effluent,effluent,D,arma,True,True,innovation,iid,-0.0272,0.0148,0.25,0.947,已白化近 i.i.d. 创新;iid 控制图/独立性评分可用
@@ -29,6 +28,7 @@ inf_TN,hour,influent,influent,D,arma,True,True,innovation,iid,0.0182,0.0161,0.32
 inf_TP,hour,influent,influent,D,arma,True,True,innovation,iid,-0.0485,0.0208,0.429,0.9075,已白化近 i.i.d. 创新;iid 控制图/独立性评分可用
 inf_pH,hour,influent,influent,D,arma,True,True,innovation,iid,-0.0177,0.0101,0.6,0.9652,已白化近 i.i.d. 创新;iid 控制图/独立性评分可用
 DO_1_1,min,aerobic_do,aerobic,C,arma,False,False,robust_z,autocorr_aware,0.9762,0.8322,0.0,0.012,近单位根;robust_z 非白噪声 -> 用自相关感知方法 + 倚重 D7 多变量一致性
-DO_1_4,min,postanoxic_do,post_anoxic,C,floor,False,False,censored_z,floor_freeze,0.9133,0.7411,0.016,0.0453,"post-anoxic 检测地板;走 floor/freeze + 截尾标准化,排除出白化考核"
-DO_2_1,min,aerobic_do,aerobic,C,arma,False,False,robust_z,autocorr_aware,0.9832,0.8342,0.0,0.0085,近单位根;robust_z 非白噪声 -> 用自相关感知方法 + 倚重 D7 多变量一致性
+DO_1_4,min,postanoxic_do,post_anoxic,C,floor,False,False,censored_z,floor_freeze,0.9133,0.7411,0.012,0.0453,"post-anoxic 检测地板;走 floor/freeze + 截尾标准化,排除出白化考核"
+DO_2_1,min,aerobic_do,aerobic,C,arma,False,False,robust_z,autocorr_aware,0.9832,0.8341,0.0,0.0085,近单位根;robust_z 非白噪声 -> 用自相关感知方法 + 倚重 D7 多变量一致性
 DO_2_2,min,aerobic_do,aerobic,C,arma,False,False,robust_z,autocorr_aware,0.9849,0.8841,0.0,0.0076,近单位根;robust_z 非白噪声 -> 用自相关感知方法 + 倚重 D7 多变量一致性
+QR_2,min,flow,recycle,A,arma,False,False,robust_z,autocorr_aware,0.9297,0.8847,0.0,0.0364,近单位根;robust_z 非白噪声 -> 用自相关感知方法 + 倚重 D7 多变量一致性

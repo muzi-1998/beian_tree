@@ -1,0 +1,77 @@
+# d2_sensors.yaml
+# 阵列拓扑配置(P2 外置:替代原代码中的 POOL_TOPOLOGY 硬编码字典)
+# 跨厂部署只需替换此文件即可,无需改源码。
+
+plant_id: NorthBank_LCH
+topology:
+  pools: [1, 2]
+  has_parallel_pools: true
+  sensor_count_per_pool:
+    DO: 4
+    ORP: 3
+
+scored_channels:
+  - DO_1_1
+  - DO_1_2
+  - DO_1_3
+  - DO_1_4
+  - DO_2_1
+  - DO_2_2
+  - DO_2_3
+  - DO_2_4
+  - ORP_1_1
+  - ORP_1_2
+  - ORP_1_3
+  - ORP_2_1
+  - ORP_2_2
+  - ORP_2_3
+
+support_channels:                                # 不进 D2 主链路
+  - QR_1
+  - QR_2
+  - QIR_1
+  - QIR_2
+
+sensors:
+  DO_1_1:  { pool: 1, type: DO,  position: 1, parallel_to: DO_2_1,
+             in_pool_neighbors: [DO_1_2, DO_1_3, DO_1_4],
+             precision: 0.01, unit: mg/L }
+  DO_1_2:  { pool: 1, type: DO,  position: 2, parallel_to: DO_2_2,
+             in_pool_neighbors: [DO_1_1, DO_1_3, DO_1_4],
+             precision: 0.01, unit: mg/L }
+  DO_1_3:  { pool: 1, type: DO,  position: 3, parallel_to: DO_2_3,
+             in_pool_neighbors: [DO_1_1, DO_1_2, DO_1_4],
+             precision: 0.01, unit: mg/L }
+  DO_1_4:  { pool: 1, type: DO,  position: 4, parallel_to: DO_2_4,
+             in_pool_neighbors: [DO_1_1, DO_1_2, DO_1_3],
+             precision: 0.01, unit: mg/L }
+  DO_2_1:  { pool: 2, type: DO,  position: 1, parallel_to: DO_1_1,
+             in_pool_neighbors: [DO_2_2, DO_2_3, DO_2_4],
+             precision: 0.01, unit: mg/L }
+  DO_2_2:  { pool: 2, type: DO,  position: 2, parallel_to: DO_1_2,
+             in_pool_neighbors: [DO_2_1, DO_2_3, DO_2_4],
+             precision: 0.01, unit: mg/L }
+  DO_2_3:  { pool: 2, type: DO,  position: 3, parallel_to: DO_1_3,
+             in_pool_neighbors: [DO_2_1, DO_2_2, DO_2_4],
+             precision: 0.01, unit: mg/L }
+  DO_2_4:  { pool: 2, type: DO,  position: 4, parallel_to: DO_1_4,
+             in_pool_neighbors: [DO_2_1, DO_2_2, DO_2_3],
+             precision: 0.01, unit: mg/L }
+  ORP_1_1: { pool: 1, type: ORP, position: 1, parallel_to: ORP_2_1,
+             in_pool_neighbors: [ORP_1_2, ORP_1_3],
+             precision: 0.5, unit: mV }
+  ORP_1_2: { pool: 1, type: ORP, position: 2, parallel_to: ORP_2_2,
+             in_pool_neighbors: [ORP_1_1, ORP_1_3],
+             precision: 0.5, unit: mV }
+  ORP_1_3: { pool: 1, type: ORP, position: 3, parallel_to: ORP_2_3,
+             in_pool_neighbors: [ORP_1_1, ORP_1_2],
+             precision: 0.5, unit: mV }
+  ORP_2_1: { pool: 2, type: ORP, position: 1, parallel_to: ORP_1_1,
+             in_pool_neighbors: [ORP_2_2, ORP_2_3],
+             precision: 0.5, unit: mV }
+  ORP_2_2: { pool: 2, type: ORP, position: 2, parallel_to: ORP_1_2,
+             in_pool_neighbors: [ORP_2_1, ORP_2_3],
+             precision: 0.5, unit: mV }
+  ORP_2_3: { pool: 2, type: ORP, position: 3, parallel_to: ORP_1_3,
+             in_pool_neighbors: [ORP_2_1, ORP_2_2],
+             precision: 0.5, unit: mV }

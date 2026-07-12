@@ -1,0 +1,92 @@
+# d2_mapping.yaml
+# 映射函数 + 子分权重 + 短长断点策略(P2 外置:替代 ENG_DEFAULTS 硬编码)
+# 各厂可有自己的初始值;运行时仍由 d2_calibration.yaml 覆盖关键阈值。
+
+mapping_version: d2_v1_p0p1
+
+# ─── 子分到 1-5 分的分段映射(工程初始值) ───
+piecewise_breaks:
+  Q_TI:
+    missing_rate:     [0.005, 0.02,  0.05,  0.15]
+    duplicate_rate:   [0.001, 0.005, 0.01,  0.05]
+    out_of_order:     [0.001, 0.005, 0.01,  0.05]
+    irregular_rate:   [0.005, 0.02,  0.05,  0.10]
+  Q_GS:
+    L_max_min:        [5,     15,    60,    360]
+    P95_gap_min:      [3,     8,     30,    120]    # P1-A 新增
+    gap_run_count:    [2,     5,     15,    40]
+  Q_FA:
+    info_empty_cov:   [0.02,  0.08,  0.20,  0.50]
+
+# ─── Q_TI 内部加权 ───
+Q_TI_components:
+  weights:
+    missing:        0.50
+    duplicate:      0.20
+    out_of_order:   0.15
+    irregular:      0.15
+
+# ─── Q_GS 内部加权(P1-A 修订) ───
+Q_GS_components:
+  weights:
+    L_max:          0.50
+    P95_gap:        0.30   # ← 原代码漏掉,P1-A 补回
+    gap_run_count:  0.20
+
+# ─── Q_FA 主+辅证据规则 ───
+Q_FA_rule:
+  main_metric:        info_empty_cov
+  aggravation:
+    metric:           response_loss_rate
+    trigger_above:    0.30
+    main_threshold:   4.0    # 仅当 Q_main ≤ 4 时才下调
+    downgrade_amount: 1
+
+# ─── D2 主聚合(方案 v2.0 §4.2 锁定值) ───
+aggregation:
+  weights:
+    Q_TI: 0.30
+    Q_GS: 0.30
+    Q_FA: 0.40
+  lambda_blend: 0.70
+
+# ─── Veto 上限 ───
+veto_rules:
+  Lmax_p99:
+    upper_cap: 2.0
+    metric:    L_max_min
+    threshold_key: L_max_minutes
+  missing_p99:
+    upper_cap: 1.8
+    metric:    missing_rate
+    threshold_key: missing_rate
+  irregular_p95:
+    upper_cap: 2.5
+    metric:    irregular_rate
+    threshold_key: irregular_rate
+  freeze_severe:
+    upper_cap: 2.5
+    metric:    Q_FA
+    threshold: 2.0
+    comparator: "<="
+
+# ─── Safety floor(P0 新增:防止 benchmark 退化为 0)───
+safety_floor:
+  L_max_minutes:   360
+  missing_rate:    0.15
+  irregular_rate:  0.10
+
+# ─── 插补策略 ───
+imputation:
+  short_gap_max_min:    5
+  long_gap_min_min:     6
+  short_method:         linear
+  long_action:          no_impute
+  ledger_required:      true
+
+# ─── 冻结检测阈值(D1-D2 分流) ───
+freeze_detection:
+  tau_rle_D2_min:    3
+  tau_rle_D1_min:    15
+  tau_iqr_DO:        0.02
+  tau_iqr_ORP:       1.0

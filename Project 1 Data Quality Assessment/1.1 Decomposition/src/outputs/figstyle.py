@@ -52,23 +52,33 @@ PALETTE = ["#2166AC", "#D6604D", "#1B7837", "#E08214", "#762A83",
 
 
 def setup_style() -> None:
-    """Install the full-frame, gridded, English style globally."""
+    """Install the shared publication style for §1.1 figures."""
     plt.rcParams.update({
         "font.family": "sans-serif",
         "font.sans-serif": ["DejaVu Sans", "Arial", "Liberation Sans"],
         "axes.unicode_minus": False,
         "font.size": 9, "axes.titlesize": 10, "axes.labelsize": 9,
         "xtick.labelsize": 8, "ytick.labelsize": 8, "legend.fontsize": 8,
-        "figure.dpi": 150, "savefig.dpi": 300, "savefig.bbox": "tight",
-        # ── full frame: ALL four spines on every axes ──
+        "figure.dpi": 150, "savefig.dpi": 600, "savefig.bbox": "tight",
+        "pdf.fonttype": 42, "ps.fonttype": 42, "svg.fonttype": "none",
+        # Open axes reduce visual weight in dense multi-panel figures.
         "axes.linewidth": 0.9,
-        "axes.spines.top": True, "axes.spines.right": True,
+        "axes.spines.top": False, "axes.spines.right": False,
         "axes.spines.left": True, "axes.spines.bottom": True,
         # ── light grid ──
         "axes.grid": True, "grid.alpha": 0.30, "grid.linewidth": 0.5,
         "grid.linestyle": "-",
         "lines.linewidth": 1.0,
     })
+
+
+def save_publication_figure(fig, out_path, bbox_inches="tight") -> None:
+    """Save a review PNG and editable SVG/PDF masters from one figure."""
+    out_path = Path(out_path)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    for suffix in (".png", ".svg", ".pdf"):
+        fig.savefig(out_path.with_suffix(suffix), dpi=600,
+                    bbox_inches=bbox_inches)
 
 
 def render_stack(df: pd.DataFrame, meta: dict, out_png) -> None:
@@ -104,9 +114,6 @@ def render_stack(df: pd.DataFrame, meta: dict, out_png) -> None:
         ax.grid(True, alpha=0.30, lw=0.5)
         ax.yaxis.set_major_locator(plt.MaxNLocator(4))
         ax.tick_params(axis="both", labelsize=7.5, length=3)
-        # full frame already on via rcParams; ensure it for this axes too
-        for sp in ("top", "right", "left", "bottom"):
-            ax.spines[sp].set_visible(True)
 
     if x_is_time:
         axes[-1].xaxis.set_major_locator(mdates.AutoDateLocator())
@@ -118,8 +125,7 @@ def render_stack(df: pd.DataFrame, meta: dict, out_png) -> None:
     fig.subplots_adjust(hspace=meta.get("hspace", 0.16),
                         left=meta.get("left", 0.16), right=0.975,
                         top=meta.get("top", 0.95), bottom=meta.get("bottom", 0.07))
-    Path(out_png).parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(out_png, dpi=300, bbox_inches="tight")
+    save_publication_figure(fig, out_png)
     plt.close(fig)
 
 
@@ -168,8 +174,6 @@ def render_grid(df: pd.DataFrame, meta: dict, out_png) -> None:
             ax.grid(True, alpha=0.30, lw=0.4)
             ax.yaxis.set_major_locator(plt.MaxNLocator(3))
             ax.tick_params(axis="both", labelsize=6, length=2)
-            for sp in ("top", "right", "left", "bottom"):
-                ax.spines[sp].set_visible(True)
             if i == 0:
                 ax.set_title(col_labels[j], fontsize=8.5, pad=4)
             if j == 0:
@@ -189,8 +193,7 @@ def render_grid(df: pd.DataFrame, meta: dict, out_png) -> None:
 
     fig.suptitle(meta.get("title", ""), fontsize=11)
     fig.supxlabel(meta.get("xlabel", "Time"), fontsize=8)
-    Path(out_png).parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(out_png, dpi=300)
+    save_publication_figure(fig, out_png)
     plt.close(fig)
 
 

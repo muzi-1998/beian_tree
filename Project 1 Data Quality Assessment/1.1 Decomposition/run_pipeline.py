@@ -17,6 +17,7 @@ Usage:  python run_pipeline.py [--quick]
 """
 from __future__ import annotations
 import argparse
+import hashlib
 import json
 import time
 import warnings
@@ -52,18 +53,32 @@ def _log(msg):
     print(f"[{datetime.now():%H:%M:%S}] {msg}", flush=True)
 
 
+def _sha256(path: Path) -> str:
+    h = hashlib.sha256()
+    with open(path, "rb") as fh:
+        for block in iter(lambda: fh.read(1024 * 1024), b""):
+            h.update(block)
+    return h.hexdigest()
+
+
 # ════════════════════════════════════════════════════════════════════════
 # W1 — DATA BASE
 # ════════════════════════════════════════════════════════════════════════
 def w1_data_base(cfg, out):
     paths = cfg["paths"]["data"]
     _log("W1: loading raw sources ...")
-    raw_min = loader.load_min(paths["do_file"], paths["orp_file"], paths["flw_file"])
+    raw_min, timestamp_audit = loader.load_min(
+        paths["do_file"], paths["orp_file"], paths["flw_file"], return_audit=True)
     inf_native = loader.load_influent(paths["influent_file"])
     eff_native = loader.load_effluent(paths["effluent_file"])
 
     _log("W1: aligning 1-min master clock + flags ...")
-    df_min, fl_min = preprocess.align_min(raw_min)
+    grid_cfg = cfg["paths"].get("time_grid", {})
+    df_min, fl_min = preprocess.align_min(
+        raw_min,
+        expected_start=grid_cfg.get("expected_start"),
+        expected_end=grid_cfg.get("expected_end"),
+    )
     fl_min = preprocess.mark_transition_zones(fl_min, transition_h=24, freq_min=1)
     fl_min = preprocess.mark_outliers_iqr(df_min, fl_min, k=1.5)
 
@@ -82,10 +97,34 @@ def w1_data_base(cfg, out):
     base_out = pd.concat([base, flag_all], axis=1)
     pq = Path(cfg["paths"]["parquet_root"]); pq.mkdir(parents=True, exist_ok=True)
     base_out.to_parquet(pq / "time_base_1min.parquet")
+    raw_min.reindex(df_min.index).to_parquet(pq / "time_base_1min_raw.parquet")
+    fl_min.to_parquet(pq / "time_base_1min_flags.parquet")
     inf_f.to_parquet(pq / "influent_hourly.parquet")
     eff_f.to_parquet(pq / "effluent_hourly.parquet")
     fl_inf.to_parquet(pq / "influent_hourly_flags.parquet")
     fl_eff.to_parquet(pq / "effluent_hourly_flags.parquet")
+    source_files = {
+        k: Path(v) if Path(v).is_absolute() else ROOT / v
+        for k, v in paths.items() if k.endswith("_file")
+    }
+    contract = {
+        "schema_version": "time-base-contract-v1",
+        "generated_at": datetime.now().isoformat(timespec="seconds"),
+        "frequency": grid_cfg.get("freq", "1min"),
+        "expected_start": df_min.index.min().isoformat(),
+        "expected_end": df_min.index.max().isoformat(),
+        "rows": int(len(df_min)),
+        "raw_values_file": "time_base_1min_raw.parquet",
+        "processed_values_file": "time_base_1min.parquet",
+        "flags_file": "time_base_1min_flags.parquet",
+        "minute_channels": list(raw_min.columns),
+        "flag_codes": preprocess.FLAG,
+        "timestamp_audit": timestamp_audit,
+        "source_sha256": {k: _sha256(v) for k, v in source_files.items()},
+        "config_hash": config_hash(cfg),
+    }
+    with open(pq / "time_base_contract.json", "w", encoding="utf-8") as fh:
+        json.dump(contract, fh, indent=2, ensure_ascii=False)
     _log(f"W1: time_base_1min.parquet written {base_out.shape}")
 
     # ── inventory table (native series + flags + track) ───────────────────
@@ -897,15 +936,39 @@ def make_whiteness_manifest(cfg, out):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--quick", action="store_true", help="fast subset run")
+    ap.add_argument("--stop-after-w2", action="store_true",
+                    help="write a W2 checkpoint and stop before whitening")
+    ap.add_argument("--resume-w3", action="store_true",
+                    help="resume whitening and figures from the W2 checkpoint")
     args = ap.parse_args()
 
     t0 = time.time()
     cfg = load_configs(ROOT / "configs")
     chash = config_hash(cfg)
     _log(f"config hash = {chash}  quick={args.quick}")
-    out = {}
-    out = w1_data_base(cfg, out)
-    out = w2_decompose(cfg, out, quick=args.quick)
+    checkpoint = ROOT / "outputs" / "_w2_checkpoint.pkl"
+    if args.resume_w3:
+        if not checkpoint.exists():
+            raise FileNotFoundError(f"W2 checkpoint not found: {checkpoint}")
+        import pickle
+        with open(checkpoint, "rb") as fh:
+            payload = pickle.load(fh)
+        if payload.get("config_hash") != chash:
+            raise ValueError("W2 checkpoint config hash does not match current config")
+        out = payload["out"]
+        _log(f"W2 checkpoint loaded: {checkpoint}")
+    else:
+        out = {}
+        out = w1_data_base(cfg, out)
+        out = w2_decompose(cfg, out, quick=args.quick)
+        import pickle
+        with open(checkpoint, "wb") as fh:
+            pickle.dump({"config_hash": chash, "out": out}, fh,
+                        protocol=pickle.HIGHEST_PROTOCOL)
+        _log(f"W2 checkpoint written: {checkpoint}")
+        if args.stop_after_w2:
+            _log("Stopped after W2 as requested")
+            return out
     out = w3_whiten(cfg, out, quick=args.quick)
     out["kind_of"] = _kind_of(out)
     make_figures(cfg, out, quick=args.quick)

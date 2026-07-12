@@ -21,6 +21,8 @@ from matplotlib.patches import Rectangle, Patch, FancyArrowPatch
 
 OUT = ROOT / "outputs" / "figures"
 PLOTDATA = ROOT / "outputs" / "plot_data"
+OUT.mkdir(parents=True, exist_ok=True)
+PLOTDATA.mkdir(parents=True, exist_ok=True)
 
 # Same SCI rcParams
 plt.rcParams.update({
@@ -35,6 +37,7 @@ plt.rcParams.update({
     "axes.spines.top": False, "axes.spines.right": False,
     "axes.titleweight": "bold", "axes.titlelocation": "left",
     "axes.titlepad": 6,
+    "pdf.fonttype": 42, "ps.fonttype": 42, "svg.fonttype": "none",
 })
 
 C = {"blue":"#2166AC","red":"#B2182B","green":"#1B7837","orange":"#F46D43",
@@ -87,7 +90,8 @@ def _finish_axes(fig):
 
 def save(fig, name, plot_data: dict = None):
     _finish_axes(fig)
-    fig.savefig(OUT / f"{name}.png")
+    for suffix in (".png", ".svg", ".pdf"):
+        fig.savefig(OUT / f"{name}{suffix}")
     plt.close(fig)
     if plot_data is not None:
         with pd.ExcelWriter(PLOTDATA / f"{name}_data.xlsx", engine="openpyxl") as w:
@@ -95,7 +99,7 @@ def save(fig, name, plot_data: dict = None):
                 if isinstance(v, pd.DataFrame): v.to_excel(w, sheet_name=k[:31], index=True)
                 elif isinstance(v, pd.Series): v.to_frame(k).to_excel(w, sheet_name=k[:31], index=True)
                 elif isinstance(v, dict): pd.DataFrame(v).to_excel(w, sheet_name=k[:31], index=True)
-    print(f"  [OK] {name}.png")
+    print(f"  [OK] {name}.png + .svg + .pdf")
 
 
 # ============================================================================

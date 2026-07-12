@@ -1,0 +1,57 @@
+from pathlib import Path
+import sys
+
+import numpy as np
+import pandas as pd
+
+ROOT = Path(__file__).resolve().parent
+for module_name in list(sys.modules):
+    if module_name == "src" or module_name.startswith("src."):
+        del sys.modules[module_name]
+sys.path.insert(0, str(ROOT))
+
+import run_d2_pipeline as d2
+
+
+def test_preprocess_flags_are_channel_specific_and_long_gaps_are_not_part_filled(tmp_path):
+    idx = pd.date_range("2026-01-01", periods=12, freq="1min")
+    frame = pd.DataFrame({ch: np.arange(12, dtype=float) for ch in d2.SCORED_CHANNELS}, index=idx)
+    frame.loc[idx[2:4], "DO_1_1"] = np.nan
+    frame.loc[idx[5:12], "DO_1_2"] = np.nan
+    old_key = d2.CACHE_KEY
+    d2.CACHE_KEY = "unit-test-channel-mask"
+    try:
+        flags = d2.compute_preprocess_flags(frame.copy(), frame)
+    finally:
+        d2.CACHE_KEY = old_key
+
+    assert flags["DO_1_1"]["missing"].sum() == 2
+    assert flags["DO_1_2"]["missing"].sum() == 7
+    assert flags["DO_1_1"].loc[idx[2:4], "aligned_value"].notna().all()
+    assert flags["DO_1_2"].loc[idx[5:12], "aligned_value"].isna().all()
+
+
+def test_production_subscores_equal_modular_scorers():
+    idx = pd.date_range("2026-01-02", periods=4, freq="1h")
+    stats = pd.DataFrame({
+        "missing_rate": [0.0, 0.01, 0.06, 0.2],
+        "duplicate_rate": [0.0, 0.002, 0.02, 0.1],
+        "out_of_order_rate": [0.0, 0.002, 0.02, 0.1],
+        "irregular_rate": [0.0, 0.01, 0.06, 0.2],
+        "info_empty_cov": [0.0, 0.05, 0.25, 0.6],
+        "freeze_cand_cov": 0.0,
+        "L_max_min": [0, 10, 90, 500],
+        "gap_run_count": [0, 3, 20, 50],
+        "P95_gap_min": [0, 5, 40, 150],
+    }, index=idx)
+    stats_all = {ch: stats.copy() for ch in d2.SCORED_CHANNELS}
+    rl_all = {ch: pd.Series([0.0, 0.0, 0.5, 0.5], index=idx) for ch in d2.SCORED_CHANNELS}
+
+    produced = d2.compute_subscores(stats_all, rl_all, {})[d2.SCORED_CHANNELS[0]]
+    ti = d2.TemporalIntegrityScorer(d2._d2_cfg).score(stats)
+    gs = d2.GapSeverityScorer(d2._d2_cfg).score(stats)
+    fa, _ = d2.FreezeAvailabilityScorer(d2._d2_cfg).score(stats, rl_all[d2.SCORED_CHANNELS[0]])
+
+    assert np.allclose(produced["Q_TI"], ti)
+    assert np.allclose(produced["Q_GS"], gs)
+    assert np.allclose(produced["Q_FA"], fa)
