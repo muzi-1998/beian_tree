@@ -1,5 +1,5 @@
 {
-  "digest": "cbb12602bfdcbdafa96b426b066f869d95c33ec1544cd065c8e3023999b9d0fb",
+  "digest": "5b42f7ca29a0f341644399781999d6c2d746679ff6e83e565eba1ef7025a4f14",
   "items": [
     {
       "path": "v11_state.pkl",
@@ -26,29 +26,29 @@
       "path": "outputs\\data\\D1_v11_vs_strictV1_compare.xlsx",
       "exists": true,
       "size": 9321,
-      "mtime_ns": 1783477158374382100,
-      "sha256": "5499303f7b1f90ece7308b823e12c1ee3bc4632a807061b9b337ee4d08a9854d"
+      "mtime_ns": 1783651786686781900,
+      "sha256": "bcdfaeb8d197a2cc6a0a6ab43ca2b5482a000ffce66795778c0730447963832b"
     },
     {
       "path": "outputs\\data\\D1_state_machine_audit.xlsx",
       "exists": true,
       "size": 11549,
-      "mtime_ns": 1783477158256368400,
-      "sha256": "baa1c850b72615f910cef813881ced54900673fd84ac76e0b316c6ad8a24a765"
+      "mtime_ns": 1783651786571784400,
+      "sha256": "9704b887fa741be19124f6ae33ddf6aaafaf434b08f56c243fef695e07b53435"
     },
     {
       "path": "outputs\\data\\D1_sensor_profile_summary.xlsx",
       "exists": true,
       "size": 35007,
-      "mtime_ns": 1783477154421136600,
-      "sha256": "5d5f85317deb6398c350c6054b003f223c6b220036f5ff4007fc0c07f2f3ec44"
+      "mtime_ns": 1783651782506273500,
+      "sha256": "32dc10af195c1c38aea1f453bc384de3d951df7efdd1a31e6a8a51eff20e5867"
     },
     {
       "path": "outputs\\data\\D1_pelt_changepoints.xlsx",
       "exists": true,
       "size": 13252,
-      "mtime_ns": 1783477158308643100,
-      "sha256": "29e0ef5d741603baed23b2d8784eb9970998bac73c0d07d6f060880258be5c2d"
+      "mtime_ns": 1783651786619868900,
+      "sha256": "6bd6c1cc4a11e61a325e77044cb4360fada629ce069665bda12e47e98e02aaaa"
     },
     {
       "path": "outputs\\v12_P2\\data\\metrics_all_variants.csv",
@@ -60,128 +60,128 @@
     {
       "path": "outputs\\figures\\Fig1_D1_dimension_matrix.png",
       "exists": true,
-      "size": 429219,
-      "mtime_ns": 1783477102996357400,
-      "sha256": "b8207ad6e176627429f2df72aae2b7b32a0a6fe87c65bf79b7c87218ef3de810"
+      "size": 439890,
+      "mtime_ns": 1783917562485445100,
+      "sha256": "7fb6cb7db1c49a4d38a1cb475b1afdf60d8aacf384d80adfcf75b5f18f00c0fc"
     },
     {
       "path": "outputs\\figures\\Fig2_monthly_heatmap.png",
       "exists": true,
-      "size": 644196,
-      "mtime_ns": 1783477104449555000,
-      "sha256": "7d4a18a106adb62d67473000c60089b91a5e5c3a62c424432b28191fb05257e1"
+      "size": 657774,
+      "mtime_ns": 1783917564875988100,
+      "sha256": "48987bcca8a67c18ea092a1e1a58fe05e6c1b3eabdbe9e9d2a9a4fadb33f9360"
     },
     {
       "path": "outputs\\figures\\Fig3_case_subscores.png",
       "exists": true,
-      "size": 4428302,
-      "mtime_ns": 1783477107114338200,
-      "sha256": "7a60222a14de429a26e627d436d25b290acb9ccf54e97e12fd0f965017dd086f"
+      "size": 4243340,
+      "mtime_ns": 1783917571141084300,
+      "sha256": "88439433b7c4deaa34dcb3fab43e7d5624490cd3c1f0d4517d28987b76564164"
     },
     {
       "path": "outputs\\figures\\Fig4_subscore_distribution.png",
       "exists": true,
-      "size": 1317948,
-      "mtime_ns": 1783477111626789700,
-      "sha256": "96e71701de4e2db6c5f712338917e7c6630d2f325f71d9ca49a80e07eae42458"
+      "size": 1337200,
+      "mtime_ns": 1783917577670845200,
+      "sha256": "51b13568d16579a8f172fc5c99abad36a42f22af9cd7584a535ce5a19561ac41"
     },
     {
       "path": "outputs\\figures\\Fig5_mapping_curves.png",
       "exists": true,
-      "size": 721357,
-      "mtime_ns": 1783477112582931800,
-      "sha256": "af3dd543cfcfd2f7985d62fd9927a3d1551ff4c15f71cd17b5aed50e896b5c88"
+      "size": 713583,
+      "mtime_ns": 1783917579526116200,
+      "sha256": "ddc8a9faae09dd9adeff2873eaa896856a23d370e7c162ff286c7bbb4480f19e"
     },
     {
       "path": "outputs\\figures\\Fig6_dominant_fault.png",
       "exists": true,
-      "size": 256545,
-      "mtime_ns": 1783477113049129600,
-      "sha256": "a2b9c616bb4dac772dd80d0c3d33cd5a5180f02545f7e56cb02dafe8a1f2620f"
+      "size": 249696,
+      "mtime_ns": 1783917581046614700,
+      "sha256": "ece72fb86d43d1649e0621d9dd8bc80e5014606dedfa75d7c8ff46cdd0f8344b"
     },
     {
       "path": "outputs\\figures\\Fig7_daily_timeseries.png",
       "exists": true,
-      "size": 2769553,
-      "mtime_ns": 1783477113874536900,
-      "sha256": "59594a22d23886317dd128f23895224113ea89724348b1b5afc49f6eb0034403"
+      "size": 2778718,
+      "mtime_ns": 1783917582447703900,
+      "sha256": "68643578f52a4a6a47d57d7bfb943c59195f419965c63a8e7b6237c5041c0b0b"
     },
     {
       "path": "outputs\\figures\\Fig8_veto_cooldown.png",
       "exists": true,
-      "size": 259544,
-      "mtime_ns": 1783477114370961700,
-      "sha256": "61e672b7ab007249eb725b945769a5f9002fbcc87b6f497961ba02ecb118117b"
+      "size": 260208,
+      "mtime_ns": 1783917583689603500,
+      "sha256": "544addc1c252e7bd41dbf7c031e3e9df1df63a9d162e4ce8d8e1e79a8def4f3b"
     },
     {
       "path": "outputs\\figures\\Fig9_harmonic_demo.png",
       "exists": true,
-      "size": 1029761,
-      "mtime_ns": 1783477115060128300,
-      "sha256": "01a7f9ccf8f467e7ef1fb1f22d754e2040d7f0fdd059b786ef10a1c7d1a113be"
+      "size": 1041062,
+      "mtime_ns": 1783917584992595100,
+      "sha256": "b13cf840e81a276080d3e5dc8b3a724da69e1aa41b755fc4805d7c5d2e143d0f"
     },
     {
       "path": "outputs\\figures\\Fig10_two_tier_regime.png",
       "exists": true,
-      "size": 1363933,
-      "mtime_ns": 1783477115935541800,
-      "sha256": "6fe644d0c19ca06b8b546827e4ce445e78ff486c59bc330d113f683ffc0889a5"
+      "size": 1333878,
+      "mtime_ns": 1783917586710496700,
+      "sha256": "c45dd879c2ec03908b17e5cae8608c9cab750430e9313c86e5ee2922168272de"
     },
     {
       "path": "outputs\\figures\\Fig11_pls_peer_audit.png",
       "exists": true,
-      "size": 326718,
-      "mtime_ns": 1783477117154853100,
-      "sha256": "4a5353b1690747e14775e06d6c42d6b2b6b8351e08b2b39116df071809a9ef55"
+      "size": 328424,
+      "mtime_ns": 1783917589214329600,
+      "sha256": "47fa7458fcaa9b8a2191f607287ab324a09ab3c37c57cf165274de4c97c85276"
     },
     {
       "path": "outputs\\figures\\FigV12_v11_vs_strictV1_hero.png",
       "exists": true,
-      "size": 1152191,
-      "mtime_ns": 1783477071130332700,
-      "sha256": "c19009fb5c0f46487241421e51b33ff9abb314066cee4f6365dda72665570dde"
+      "size": 1158449,
+      "mtime_ns": 1783917598499347600,
+      "sha256": "36a5ab1133bc663f745ec01279007ef2372690d8ede45d256f34142bb56a956d"
     },
     {
       "path": "outputs\\figures\\FigV13_state_machine_DO_2_3.png",
       "exists": true,
-      "size": 2552943,
-      "mtime_ns": 1783477073060528800,
-      "sha256": "d704d0945cc0cc515b9358283a5bde29e92f80222271953829e8c6051e28288a"
+      "size": 2491317,
+      "mtime_ns": 1783917603551682500,
+      "sha256": "ec372b7865ee9f4cd59350bbd8443b4aabf5f7963b9d13e31365b60569263065"
     },
     {
       "path": "outputs\\figures\\FigV14_veto3_state_audit.png",
       "exists": true,
-      "size": 1279498,
-      "mtime_ns": 1783477075726885400,
-      "sha256": "e9f82eaee24351f2e696df10cbd175667f6cb2a9bf6fc88755d1c75759b0cb0c"
+      "size": 1262979,
+      "mtime_ns": 1783917607960797900,
+      "sha256": "10a9ce082a260c4a61639ad794f75681e162f315626106e369b413160513a6e6"
     },
     {
       "path": "outputs\\figures\\FigV15_pelt_event_id.png",
       "exists": true,
-      "size": 1149283,
-      "mtime_ns": 1783477076762956600,
-      "sha256": "f2145ba1c1fdf812a2ea654c18ccd1851eb64fe3f9e07c1f945f60ed477ecb50"
+      "size": 1332455,
+      "mtime_ns": 1783917611946718400,
+      "sha256": "e2dc94859d710c63c64a4273eff87c4da686b2ce974b6e00e96766dbf192c4b7"
     },
     {
       "path": "outputs\\figures\\FigV16_regime_templates.png",
       "exists": true,
-      "size": 857909,
-      "mtime_ns": 1783477082396496300,
-      "sha256": "cf54aecc08b68811bba65f8b6a3429648a671d127314c556a369525638ce2f00"
+      "size": 853033,
+      "mtime_ns": 1783917619548570300,
+      "sha256": "5fa0651d2099451fa64bc20ded58eabf9fe045c991d2c868d673e936a59a32fd"
     },
     {
       "path": "outputs\\figures\\FigV17_scope_qr_qir_offline.png",
       "exists": true,
-      "size": 1316882,
-      "mtime_ns": 1783477083607775800,
-      "sha256": "84bbe5053c3d226e6d09f437b731d618de86f59183327b409e26d97c1af7dd14"
+      "size": 1323049,
+      "mtime_ns": 1783917623831892800,
+      "sha256": "a365b5280eb2b69a6956692b536e79f98280abf7cdb951f66a31ac15211bc8e8"
     },
     {
       "path": "outputs\\figures\\FigV18_aggregate_summary.png",
       "exists": true,
-      "size": 995783,
-      "mtime_ns": 1783477084881798000,
-      "sha256": "57520c26afc9a3b55032f2d29970a03014d253b5cb9f4cc83e13e700215bbac9"
+      "size": 996339,
+      "mtime_ns": 1783917626551684400,
+      "sha256": "a6cee71ba43f7fd083ebc9765b97e78d93effcc17938d6579cb9bbba0b1a1477"
     },
     {
       "path": "outputs\\v12_P2\\figures\\fig01_variant_overview.png",
@@ -198,7 +198,7 @@
       "sha256": "e8d0194dde5ac25ae50a37188197298d034baedc5e1f5f678138876ca733fe84"
     }
   ],
-  "generated_at": "2026-07-08 12:08:44",
+  "generated_at": "2026-07-13 12:40:29",
   "report": "outputs\\D1_Sensor_Health_Expert_Report_Auto.docx",
   "style_reference": "outputs/D1_Sensor_Health_Research_Report.docx"
 }
