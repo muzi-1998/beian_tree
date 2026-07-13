@@ -1,0 +1,54 @@
+{
+  "run_id": "RUN_D4_v2.2.0_20260713T081104Z_df7ec614",
+  "d4_version": "v2.2.0",
+  "created_at_utc": "2026-07-13T08:11:04.046139+00:00",
+  "wall_time_s": 281.2394278049469,
+  "study_start": "2025-08-01 00:00:00",
+  "study_end": "2026-04-13 23:59:00",
+  "subset_days": null,
+  "window_min": 120,
+  "stride_min": 120,
+  "n_sensor_windows": 43008,
+  "n_evaluated": 42840,
+  "n_not_evaluated": 168,
+  "n_events": 50,
+  "mean_D4_evaluated": 4.799234867598111,
+  "versions": {
+    "mapping": "v2.2.0",
+    "threshold": "v2.2.0",
+    "rate_utils": "rate_utils@v2.2.0",
+    "benchmark": "benchmark@v2.2.0"
+  },
+  "independence_contract": {
+    "D1_score_consumed": false,
+    "D2_score_consumed": false,
+    "boundary_in_D4_score": false,
+    "canonical_1_1_time_grid": true,
+    "imputed_values_scored": false,
+    "regime_labels_consumed": false
+  },
+  "source_inputs": {
+    "do_xlsx": {
+      "name": "beian_min_1_DO_25-08-26-04.xlsx",
+      "sha256": "1ecc29eab54497013c01446905574bc99e6e6ba5c2df112834688bed5f6abe85",
+      "size_bytes": 16307352
+    },
+    "orp_xlsx": {
+      "name": "beian_min_2_ORP-08-26-04.xlsx",
+      "sha256": "44cd9b8501a6251347f5b741d1f02a57801450aa599f2559d66ec79272b25de5",
+      "size_bytes": 16059938
+    }
+  },
+  "config_sha256": "df7ec614267b9ef26afbed466125dc3eb8d20a68217252efaae59ade68804c5b",
+  "code_sha256": "d149d5131fe1c2e8288bb56309f8cad9a8e3a50c0dcbe2cdd467a17b530faf62",
+  "exported_files": [
+    "D4_window_scores.xlsx",
+    "D4_value_evidence.xlsx",
+    "D4_rate_evidence.xlsx",
+    "D4_boundary_diagnostics.xlsx",
+    "D4_threshold_library.xlsx",
+    "D4_physical_events.xlsx",
+    "D4_mapping_params.xlsx",
+    "D4_sensor_summary.xlsx"
+  ]
+}

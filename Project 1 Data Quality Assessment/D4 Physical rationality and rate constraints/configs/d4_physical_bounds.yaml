@@ -1,0 +1,24 @@
+# d4_physical_bounds.yaml
+# Fixed DO/ORP hard and soft bounds used by the independent D4 contract.
+
+sensors:
+  DO:
+    hard_low: -0.2
+    hard_high: 20.0
+    soft_low: 0.0
+    soft_high: 8.0
+    unit: "mg/L"
+    instrument_range_low: -0.2
+    instrument_range_high: 20.0
+  ORP:
+    hard_low: -500.0
+    hard_high: 500.0
+    soft_low: -400.0
+    soft_high: 200.0
+    unit: "mV"
+    instrument_range_low: -500.0
+    instrument_range_high: 500.0
+
+source: "expert_operational_limits_pending_site_validation"
+version: "v2.2.0"
+effective_date: "2026-05-26"
