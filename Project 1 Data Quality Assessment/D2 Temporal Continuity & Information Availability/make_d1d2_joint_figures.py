@@ -21,7 +21,8 @@ import matplotlib.gridspec as gridspec
 import matplotlib.patches as mpatches
 from matplotlib.colors import LinearSegmentedColormap
 from pathlib import Path
-from publication_style import configure_publication_style, finalize_figure
+from publication_style import (PALETTE as SHARED_PALETTE,
+                               configure_publication_style, finalize_figure)
 
 warnings.filterwarnings("ignore")
 matplotlib.use("Agg")
@@ -56,6 +57,8 @@ PAL = {
 }
 
 # ── 路径 ──────────────────────────────────────────────────────────────────────
+PAL.update(SHARED_PALETTE)
+
 _ROOT  = Path(__file__).parent
 _D1    = _ROOT.parent / "D1 Sensor health"
 D2_PKL = _ROOT / "artifacts" / "d2_state.pkl"
@@ -123,7 +126,7 @@ def apply_publication_style(ax, font_size: int = 9,
     ax.spines["bottom"].set_linewidth(axes_linewidth)
     ax.tick_params(axis="both", which="major",
                    labelsize=font_size, length=4, width=axes_linewidth,
-                   direction="in")
+                   direction="out")
     ax.yaxis.get_label().set_fontsize(font_size)
     ax.xaxis.get_label().set_fontsize(font_size)
     ax.title.set_fontsize(font_size + 1)

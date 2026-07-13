@@ -23,7 +23,9 @@ import matplotlib.gridspec as gridspec
 from matplotlib.colors import LinearSegmentedColormap, BoundaryNorm
 from matplotlib.lines import Line2D
 from matplotlib.patches import Rectangle, Patch, FancyArrowPatch
-from publication_style import configure_publication_style, finalize_figure
+from publication_style import (PALETTE as C, STATE_COLORS as STATE_COL,
+                               annotate_data_label,
+                               configure_publication_style, finalize_figure)
 
 OUT = ROOT / "outputs" / "figures"
 OUT.mkdir(parents=True, exist_ok=True)
@@ -69,23 +71,6 @@ plt.rcParams.update({
     "svg.fonttype": "none",
 })
 configure_publication_style()
-
-# Colour palette
-C = {
-    "blue": "#2166AC", "red": "#B2182B", "green": "#1B7837",
-    "orange": "#F46D43", "purple": "#762A83", "gray": "#707070",
-    "teal": "#1A9988", "amber": "#E08214", "navy": "#053061",
-    "cyan": "#35978F", "rose": "#D6604D",
-}
-# State machine colours
-STATE_COL = {
-    "Normal":            "#1B7837",
-    "Refractory":        "#F46D43",
-    "SustainedAnomaly":  "#762A83",
-    "RecoveryCandidate": "#FDDBC7",
-    "Recovered":         "#2166AC",
-}
-
 
 # ─────────────────────────────────────────────────────────────────────────────
 print("Loading v1.1 state ...")
@@ -557,11 +542,23 @@ for tr in S["transitions_all"]:
         refr_triggers[tr["sensor_id"]] += 1
 df_cmp = pd.DataFrame({"PELT CPs": ch_cp_counts,
                         "Refractory triggers": refr_triggers}).reindex(SCORED)
-ax.scatter(df_cmp["PELT CPs"], df_cmp["Refractory triggers"], s=80,
-            color=C["purple"], edgecolor="white", alpha=0.85, linewidths=1.0)
+point_colors = [C["blue"] if c.startswith("DO_") else C["rose"] for c in SCORED]
+ax.scatter(df_cmp["PELT CPs"], df_cmp["Refractory triggers"], s=72,
+           color=point_colors, edgecolor="white", alpha=0.88, linewidths=0.8)
+crowded = sorted((c for c in SCORED if df_cmp.at[c, "PELT CPs"] < 12),
+                 key=lambda c: (df_cmp.at[c, "Refractory triggers"],
+                                df_cmp.at[c, "PELT CPs"], c))
+crowded_rank = {c: rank for rank, c in enumerate(crowded)}
 for c in SCORED:
-    ax.annotate(c, (df_cmp.at[c, "PELT CPs"], df_cmp.at[c, "Refractory triggers"]),
-                  fontsize=6, alpha=0.7, xytext=(3, 3), textcoords="offset points")
+    xy = (df_cmp.at[c, "PELT CPs"], df_cmp.at[c, "Refractory triggers"])
+    if c in crowded_rank:
+        rank = crowded_rank[c]
+        xytext = (7 + 56 * (rank % 2), 9 + 12 * (rank // 2))
+        annotate_data_label(ax, c, xy, xytext=xytext, fontsize=6.2,
+                            arrow=True, ha="left", va="bottom")
+    else:
+        annotate_data_label(ax, c, xy, xytext=(4, 5), fontsize=6.2,
+                            ha="left", va="bottom")
 mx = max(df_cmp.max()) + 5
 ax.plot([0, mx], [0, mx], "k--", lw=0.6, alpha=0.5, label="1:1")
 ax.set_xlabel("PELT CPs", fontsize=9)

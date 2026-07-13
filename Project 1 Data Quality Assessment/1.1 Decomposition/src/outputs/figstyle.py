@@ -27,10 +27,10 @@ import re
 
 # level / component colours (kept in English, synced with the D1 palette)
 COLORS = {
-    "raw":       "#34495E",   # original signal (dark slate)
-    "trend":     "#2E7D32",   # trend m(t)      (green)
-    "seasonal":  "#E08214",   # seasonal s(t)   (amber)
-    "residual":  "#C0392B",   # residual e(t)   (red)
+    "raw":       "#3F4A54",   # original signal (dark neutral)
+    "trend":     "#2F6F9F",   # trend m(t)      (muted blue)
+    "seasonal":  "#D28B45",   # seasonal s(t)   (muted orange)
+    "residual":  "#B65C5C",   # residual e(t)   (muted red)
     "innov":     "#762A83",   # innovation η(t) (purple)
 }
 
@@ -49,9 +49,13 @@ OKABE_ITO = {
 }
 
 # distinct palette for multi-variable combined overviews
-PALETTE = ["#2166AC", "#D6604D", "#1B7837", "#E08214", "#762A83",
-           "#35978F", "#B2182B", "#053061", "#878787", "#4DAC26",
-           "#9970AB", "#C51B7D"]
+JOURNAL_PALETTE = {
+    "blue": "#2F6F9F", "red": "#B65C5C", "green": "#4C8C5A",
+    "orange": "#D28B45", "purple": "#8064A2", "gray": "#6E7478",
+    "teal": "#4F9C8A", "amber": "#C3A13B", "navy": "#24465F",
+    "cyan": "#73B7C9", "rose": "#C47A8A",
+}
+PALETTE = list(JOURNAL_PALETTE.values())
 
 
 def setup_style() -> None:
@@ -91,6 +95,12 @@ def _is_panel_text(ax, text) -> bool:
     return x <= 0.12 and y >= 0.90
 
 
+def _is_full_frame(ax) -> bool:
+    """Return True only when all four Cartesian spines are visible."""
+    return all(ax.spines[name].get_visible()
+               for name in ("left", "right", "bottom", "top"))
+
+
 def _add_endpoint_ticks(ax, axis_name: str, linewidth: float = 0.8) -> None:
     """Add unlabeled ticks at both visible spine endpoints without moving limits."""
     axis = ax.xaxis if axis_name == "x" else ax.yaxis
@@ -108,16 +118,17 @@ def _add_endpoint_ticks(ax, axis_name: str, linewidth: float = 0.8) -> None:
     if endpoints:
         inside_minor = minor[(minor >= lo - tol) & (minor <= hi + tol) & np.isfinite(minor)]
         axis.set_minor_locator(mticker.FixedLocator(np.unique(np.r_[inside_minor, endpoints])))
+    direction = "in" if _is_full_frame(ax) else "out"
     if axis_name == "x":
         bottom = ax.spines["bottom"].get_visible()
         top = ax.spines["top"].get_visible()
-        ax.tick_params(axis="x", which="both", width=linewidth, direction="out",
+        ax.tick_params(axis="x", which="both", width=linewidth, direction=direction,
                        bottom=bottom, top=top)
         ax.tick_params(axis="x", which="minor", length=3)
     else:
         left = ax.spines["left"].get_visible()
         right = ax.spines["right"].get_visible()
-        ax.tick_params(axis="y", which="both", width=linewidth, direction="out",
+        ax.tick_params(axis="y", which="both", width=linewidth, direction=direction,
                        left=left, right=right)
         ax.tick_params(axis="y", which="minor", length=3)
 

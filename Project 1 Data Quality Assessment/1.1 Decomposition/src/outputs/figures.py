@@ -19,7 +19,7 @@ from pathlib import Path
 
 from .figstyle import (setup_style, render_stack, render_grid, dump_bundle,
                        save_publication_figure, COLORS, PALETTE,
-                       OKABE_ITO as OI)
+                       JOURNAL_PALETTE as C, OKABE_ITO as OI)
 
 # Full-frame (boxed) + gridded style, applied to EVERY figure in this module.
 setup_style()
@@ -37,22 +37,18 @@ def _innov_style(kind):
         return ("η̃(t) censored-z\n(floor)", _INNOV_GREY, "floor")
     return ("Innovation η(t)", COLORS["innov"], None)
 
-C = {"blue": "#2166AC", "red": "#D6604D", "green": "#4DAC26",
-     "orange": "#F4A582", "purple": "#762A83", "gray": "#878787",
-     "teal": "#1B7837", "amber": "#E08214", "navy": "#053061", "cyan": "#35978F"}
-
 # flag code -> (label, colour)
 FLAG_STYLE = {
-    0: ("original", "#1A9850"),
-    1: ("short-interp", "#A6D96A"),
-    2: ("long-gap", "#878787"),
-    3: ("cosine-fill", "#66BD63"),
-    4: ("same-day-drop", "#D9EF8B"),
-    5: ("transition", "#FEE08B"),
-    6: ("hold", "#74ADD1"),
-    7: ("range-violation", "#D73027"),
-    8: ("IQR-outlier", "#F46D43"),
-    9: ("censored", "#762A83"),
+    0: ("original", C["green"]),
+    1: ("short-interp", "#9FC5DA"),
+    2: ("long-gap", C["gray"]),
+    3: ("cosine-fill", C["cyan"]),
+    4: ("same-day-drop", "#D7E8F2"),
+    5: ("transition", C["amber"]),
+    6: ("hold", C["purple"]),
+    7: ("range-violation", C["red"]),
+    8: ("IQR-outlier", C["orange"]),
+    9: ("censored", C["rose"]),
 }
 
 

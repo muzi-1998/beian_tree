@@ -17,7 +17,8 @@ import matplotlib.gridspec as gridspec
 from matplotlib.colors import LinearSegmentedColormap, BoundaryNorm
 from matplotlib.lines import Line2D
 from matplotlib.patches import Rectangle, Patch
-from publication_style import configure_publication_style, finalize_figure
+from publication_style import (PALETTE as C, configure_publication_style,
+                               finalize_figure)
 
 OUT = ROOT / "outputs" / "figures"
 PLOTDATA = ROOT / "outputs" / "plot_data"
@@ -41,10 +42,6 @@ plt.rcParams.update({
     "pdf.fonttype": 42, "ps.fonttype": 42, "svg.fonttype": "none",
 })
 configure_publication_style()
-
-C = {"blue":"#2166AC","red":"#B2182B","green":"#1B7837","orange":"#F46D43",
-     "purple":"#762A83","gray":"#707070","teal":"#1A9988","amber":"#E08214",
-     "navy":"#053061","cyan":"#35978F","rose":"#D6604D"}
 
 with open(ROOT / "v11_state.pkl", "rb") as f:
     S = pickle.load(f)

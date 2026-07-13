@@ -7,6 +7,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
+import pytest
 
 
 ROOT = Path(__file__).parent
@@ -34,6 +35,10 @@ def test_d1_publication_contract():
         ax.plot([0.2, 0.8], [1.2, 2.8])
         ax.set_xlim(0.17, 0.83)
         ax.set_ylim(1.17, 2.83)
+    axes[0].spines["top"].set_visible(False)
+    axes[0].spines["right"].set_visible(False)
+    for spine in axes[1].spines.values():
+        spine.set_visible(True)
     axes[0].set_title("Evidence", loc="left")
     style.finalize_figure(fig)
 
@@ -41,10 +46,11 @@ def test_d1_publication_contract():
     for index, ax in enumerate(axes):
         assert ax.spines["left"].get_linewidth() == 0.8
         assert ax.spines["bottom"].get_linewidth() == 0.8
-        assert all(tick._tickdir == "out" for tick in ax.xaxis.majorTicks)
-        assert all(tick._tickdir == "out" for tick in ax.yaxis.majorTicks)
-        assert all(tick._tickdir == "out" for tick in ax.xaxis.minorTicks)
-        assert all(tick._tickdir == "out" for tick in ax.yaxis.minorTicks)
+        expected_direction = "out" if index == 0 else "in"
+        assert all(tick._tickdir == expected_direction for tick in ax.xaxis.majorTicks)
+        assert all(tick._tickdir == expected_direction for tick in ax.yaxis.majorTicks)
+        assert all(tick._tickdir == expected_direction for tick in ax.xaxis.minorTicks)
+        assert all(tick._tickdir == expected_direction for tick in ax.yaxis.minorTicks)
         xloc = np.r_[ax.xaxis.get_majorticklocs(), ax.xaxis.get_minorticklocs()]
         yloc = np.r_[ax.yaxis.get_majorticklocs(), ax.yaxis.get_minorticklocs()]
         xlim, ylim = ax.get_xlim(), ax.get_ylim()
@@ -54,6 +60,50 @@ def test_d1_publication_contract():
             assert ax.get_title(loc="left") == "(a) Evidence"
         else:
             assert "(b)" in [text.get_text() for text in ax.texts]
+    plt.close(fig)
+
+
+@pytest.mark.parametrize(
+    ("relative_path", "setup_name", "finalize_name"),
+    [
+        ("1.1 Decomposition/src/outputs/figstyle.py",
+         "setup_style", "finalize_publication_figure"),
+        ("D1 Sensor health/publication_style.py",
+         "configure_publication_style", "finalize_figure"),
+        ("D2 Temporal Continuity & Information Availability/publication_style.py",
+         "configure_publication_style", "finalize_figure"),
+    ],
+)
+def test_tick_direction_tracks_frame_type(relative_path, setup_name, finalize_name):
+    style = _load_style(relative_path)
+    getattr(style, setup_name)()
+    fig, (open_ax, boxed_ax) = plt.subplots(1, 2)
+    for ax in (open_ax, boxed_ax):
+        ax.plot([0.2, 0.8], [1.2, 2.8])
+    open_ax.spines["top"].set_visible(False)
+    open_ax.spines["right"].set_visible(False)
+    for spine in boxed_ax.spines.values():
+        spine.set_visible(True)
+
+    getattr(style, finalize_name)(fig, auto_panel_labels=False)
+
+    for axis in (open_ax.xaxis, open_ax.yaxis):
+        assert all(tick._tickdir == "out" for tick in axis.majorTicks)
+        assert all(tick._tickdir == "out" for tick in axis.minorTicks)
+    for axis in (boxed_ax.xaxis, boxed_ax.yaxis):
+        assert all(tick._tickdir == "in" for tick in axis.majorTicks)
+        assert all(tick._tickdir == "in" for tick in axis.minorTicks)
+    plt.close(fig)
+
+
+def test_data_annotation_keeps_evidence_visible():
+    style = _load_style("D1 Sensor health/publication_style.py")
+    fig, ax = plt.subplots()
+    annotation = style.annotate_data_label(ax, "DO_2_3", (0.5, 0.5), arrow=True)
+    patch = annotation.get_bbox_patch()
+    assert patch is not None
+    assert 0 < patch.get_alpha() < 1
+    assert annotation.arrow_patch is not None
     plt.close(fig)
 
 

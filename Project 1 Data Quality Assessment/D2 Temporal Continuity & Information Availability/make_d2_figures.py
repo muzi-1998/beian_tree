@@ -37,7 +37,8 @@ import matplotlib.ticker as mticker
 import matplotlib.dates as mdates
 from matplotlib.gridspec import GridSpec
 from matplotlib.colors import LinearSegmentedColormap
-from publication_style import configure_publication_style, finalize_figure
+from publication_style import (PALETTE as SHARED_PALETTE,
+                               configure_publication_style, finalize_figure)
 
 # ── 强制 rcParams（nature-skills 三行必选）────────────────────────────────────
 plt.rcParams["font.family"]     = "sans-serif"
@@ -78,6 +79,8 @@ PAL = {
 }
 
 # ── 尺寸与字号（密集多面板规范）──────────────────────────────────────────────
+PAL.update(SHARED_PALETTE)
+
 FS   = 8        # 正文字号（密集多面板）
 TS   = 9        # 子图标题字号
 TK   = 7        # 刻度标签字号
@@ -137,7 +140,7 @@ def apply_publication_style(ax, font_size: int = FS,
     ax.tick_params(axis="both", which="major",
                    labelsize=font_size - 1,
                    length=4, width=axes_linewidth,
-                   direction="in")
+                   direction="out")
     ax.yaxis.get_label().set_fontsize(font_size)
     ax.xaxis.get_label().set_fontsize(font_size)
     ax.title.set_fontsize(font_size + 1)
@@ -244,7 +247,7 @@ def fig01_overview_heatmap(state: dict):
 
     ax.set_yticks(range(len(channels)))
     ax.set_yticklabels(channels, fontsize=TK)
-    ax.tick_params(axis="both", length=3, width=1.0, direction="in")
+    ax.tick_params(axis="both", length=3, width=1.0, direction="out")
 
     # Group separator lines
     for y_sep in [3.5, 7.5, 10.5]:
@@ -262,7 +265,7 @@ def fig01_overview_heatmap(state: dict):
     cbar.set_ticks([1.25, 2.0, 3.0, 4.0, 4.75])
     cbar.set_ticklabels(["E", "D", "C", "B", "A"], fontsize=TK)
     cbar.set_label("D2 Grade", fontsize=FS)
-    cbar.ax.tick_params(length=3, width=1.0, direction="in")
+    cbar.ax.tick_params(length=3, width=1.0, direction="out")
     for thr in [1.5, 2.5, 3.5, 4.5]:
         cbar.ax.axhline((thr - 1) / 4, color="white", lw=0.8)
 
@@ -893,7 +896,7 @@ def fig09_veto_analysis(state: dict):
     ax1.set_yticks(range(len(channels)))
     ax1.set_yticklabels(channels, fontsize=TK - 1)
     ax1.set_title("Veto Activation Rate — Daily (%)", fontsize=TS, pad=4)
-    ax1.tick_params(axis="both", length=3, width=1.0, direction="in")
+    ax1.tick_params(axis="both", length=3, width=1.0, direction="out")
     ax1.spines["right"].set_visible(False)
     ax1.spines["top"].set_visible(False)
     ax1.spines["left"].set_linewidth(LW_SP)
