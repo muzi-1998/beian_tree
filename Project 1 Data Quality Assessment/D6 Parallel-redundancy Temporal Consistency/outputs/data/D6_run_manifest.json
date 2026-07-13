@@ -1,0 +1,39 @@
+{
+  "run_id": "D6V13_20260713_103039",
+  "config_version": "d6-v1.3-independent-20260713",
+  "generated_utc": "2026-07-13T10:34:45.483736+00:00",
+  "data_span": [
+    "2025-08-01 00:00:00",
+    "2026-04-13 23:50:00"
+  ],
+  "rows": 42847,
+  "pairs": 7,
+  "d2_run_id": "D2V1_20260710_1733",
+  "dependencies": [
+    {
+      "dependency": "residuals",
+      "path_role": "residual_min.parquet",
+      "sha256": "62857e27b4b81b3829e2891c7b9ac350c9b14984ccea6033dc2e87afc7e795c8",
+      "modified_utc": "2026-07-10T09:14:57.320849+00:00"
+    },
+    {
+      "dependency": "time_base_contract",
+      "path_role": "time_base_contract.json",
+      "sha256": "f6296408c722c479074a49a77dacc25c5cde15ac80d15ef40a9ab0b3cf856269",
+      "modified_utc": "2026-07-10T09:12:59.533264+00:00"
+    },
+    {
+      "dependency": "d1_scores",
+      "path_role": "D1_main_scores_min.xlsx",
+      "sha256": "abb941ac70ae2a0b94e081a6573cee472ea7681a93fb4d5a9b8113dcec8bd7e3",
+      "modified_utc": "2026-07-10T02:49:31.813900+00:00"
+    },
+    {
+      "dependency": "d2_scores",
+      "path_role": "D2_main_scores_hourly.xlsx",
+      "sha256": "3f233f4add980824db243db71fc0c0a9844742239c378bb5ca20d97a48720df0",
+      "modified_utc": "2026-07-10T09:35:03.368662+00:00"
+    }
+  ],
+  "scientific_boundary": "D6 score is independent; D2 gates evaluability; D1/D7 do not modify the score."
+}

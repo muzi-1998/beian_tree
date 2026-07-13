@@ -1,0 +1,37 @@
+version: d6-v1.3-independent-20260713
+window_hours: 24
+step_hours: 1
+analysis_interval_minutes: 10
+min_valid_fraction: 0.80
+
+pairs:
+  - {pair_id: PAIR_DO11, target: DO_1_1, reference: DO_2_1, zone: aerobic}
+  - {pair_id: PAIR_DO12, target: DO_1_2, reference: DO_2_2, zone: aerobic}
+  - {pair_id: PAIR_DO13, target: DO_1_3, reference: DO_2_3, zone: aerobic}
+  - {pair_id: PAIR_DO14, target: DO_1_4, reference: DO_2_4, zone: post_anoxic}
+  - {pair_id: PAIR_ORP11, target: ORP_1_1, reference: ORP_2_1, zone: anaerobic}
+  - {pair_id: PAIR_ORP12, target: ORP_1_2, reference: ORP_2_2, zone: pre_anoxic}
+  - {pair_id: PAIR_ORP13, target: ORP_1_3, reference: ORP_2_3, zone: pre_anoxic}
+
+deadband:
+  DO: 0.20
+  ORP: 15.0
+
+aggregation:
+  weights: {dist: 0.35, trend: 0.25, var: 0.20, cp: 0.20}
+  lambda_blend: 0.75
+
+benchmark:
+  min_windows_per_pair: 500
+  quantiles: [0.50, 0.75, 0.90, 0.975]
+
+classification:
+  consistent_min: 3.5
+  asymmetry_max: 3.0
+  event_min_hours: 2
+
+paths:
+  residuals: 1.1 Decomposition/outputs/parquet/residual_min.parquet
+  time_base_contract: 1.1 Decomposition/outputs/parquet/time_base_contract.json
+  d1_scores: D1 Sensor health/outputs/data/D1_main_scores_min.xlsx
+  d2_scores: D2 Temporal Continuity & Information Availability/artifacts/data/D2_main_scores_hourly.xlsx

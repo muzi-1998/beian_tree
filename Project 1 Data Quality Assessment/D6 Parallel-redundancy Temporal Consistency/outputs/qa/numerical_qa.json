@@ -1,0 +1,16 @@
+{
+  "rows": 42847,
+  "pairs": 7,
+  "score_bounds_ok": true,
+  "base_formula_max_abs_error": 1.3322676295501878e-15,
+  "raw_formula_max_abs_error": 1.7763568394002505e-15,
+  "d2_gate_mismatch_count": 0,
+  "calibration_min_n": 1117,
+  "calibration_sources": [
+    "first70pct_D2_nonveto"
+  ],
+  "required_validation_failures": 0,
+  "figure_stems": 8,
+  "missing_figure_counterparts": [],
+  "passed": true
+}
