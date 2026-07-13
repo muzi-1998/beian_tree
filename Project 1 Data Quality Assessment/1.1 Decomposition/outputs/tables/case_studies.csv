@@ -1,6 +1,6 @@
 ﻿case,subject,finding
-DO_4 floor/freeze,DO_1_4,"mean=0.0237, day/night diff=0.0006, |corr QIR|=0.036 -> process_floor"
-DO_4 floor/freeze,DO_2_4,"mean=0.2346, day/night diff=0.0068, |corr QIR|=0.065 -> process_floor"
+DO_4 floor/freeze,DO_1_4,"mean=0.0238, day/night diff=0.0006, |corr QIR|=0.034 -> process_floor"
+DO_4 floor/freeze,DO_2_4,"mean=0.2345, day/night diff=0.0066, |corr QIR|=0.066 -> process_floor"
 QR_2 negative flow,QR_2,15.21% samples < 0 (physically impossible; acquisition)
 QR_1 negative flow,QR_1,3.13% samples < 0
 ORP_1_3 structural drift,ORP_1_3,Theil-Sen trend ~ 0.304 mV/day over 256 days (suspected long drift)

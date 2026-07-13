@@ -33,12 +33,15 @@ FLAG = dict(ORIGINAL=0, SHORT=1, LONG=2, COSINE=3, SAMEDAY=4, TRANSITION=5,
 
 
 # ── min-level 1-min master clock ────────────────────────────────────────────
-def align_min(df: pd.DataFrame, short_gap_min: int = 3) -> tuple:
+def align_min(df: pd.DataFrame, short_gap_min: int = 3,
+              expected_start=None, expected_end=None) -> tuple:
     """Reindex to absolute 1-min grid; range-clip; short-gap interp; flag.
 
     Returns (df_aligned, flags) with flags in {0,1,2,7}.
     """
-    full = pd.date_range(df.index.min(), df.index.max(), freq="1min")
+    start = pd.Timestamp(expected_start) if expected_start else df.index.min()
+    end = pd.Timestamp(expected_end) if expected_end else df.index.max()
+    full = pd.date_range(start, end, freq="1min")
     df_a = df.reindex(full).copy()
     df_a.index.name = "timestamp"
 
@@ -57,15 +60,19 @@ def align_min(df: pd.DataFrame, short_gap_min: int = 3) -> tuple:
     missing = df_a.isna() & (flags == FLAG["ORIGINAL"])
     flags[missing] = FLAG["LONG"]
 
-    # short-gap (<= short_gap_min) linear interp.
-    # On the regular 1-min grid, linear == time-based but is far faster.
-    df_filled = df_a.interpolate(method="linear", limit=short_gap_min,
-                                 limit_area="inside")
-    short = df_a.isna() & df_filled.notna()
-    flags[short] = FLAG["SHORT"]
-    # remaining NaN stay long
-    still_na = df_filled.isna() & (flags == FLAG["SHORT"])
-    flags[still_na] = FLAG["LONG"]
+    # Fill a gap only when its complete run length is within the threshold.
+    # pandas.interpolate(limit=n) otherwise fills the first n cells of a long
+    # gap, which changes the missingness evidence consumed by D2.
+    df_filled = df_a.copy()
+    for c in df_a.columns:
+        eligible = missing[c]
+        groups = eligible.ne(eligible.shift(fill_value=False)).cumsum()
+        run_size = eligible.groupby(groups).transform("sum")
+        short = eligible & run_size.le(short_gap_min)
+        candidate = df_a[c].interpolate(method="linear", limit_area="inside")
+        fillable = short & candidate.notna()
+        df_filled.loc[fillable, c] = candidate.loc[fillable]
+        flags.loc[fillable, c] = FLAG["SHORT"]
 
     return df_filled, flags
 

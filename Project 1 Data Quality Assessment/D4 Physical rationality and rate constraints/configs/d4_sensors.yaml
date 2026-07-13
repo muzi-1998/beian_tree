@@ -1,0 +1,58 @@
+# d4_sensors.yaml
+sensors:
+  - id: "DO_1_1"
+    type: "DO"
+    pool: 1
+    position: 1
+  - id: "DO_1_2"
+    type: "DO"
+    pool: 1
+    position: 2
+  - id: "DO_1_3"
+    type: "DO"
+    pool: 1
+    position: 3
+  - id: "DO_1_4"
+    type: "DO"
+    pool: 1
+    position: 4
+  - id: "DO_2_1"
+    type: "DO"
+    pool: 2
+    position: 1
+  - id: "DO_2_2"
+    type: "DO"
+    pool: 2
+    position: 2
+  - id: "DO_2_3"
+    type: "DO"
+    pool: 2
+    position: 3
+  - id: "DO_2_4"
+    type: "DO"
+    pool: 2
+    position: 4
+  - id: "ORP_1_1"
+    type: "ORP"
+    pool: 1
+    position: 1
+  - id: "ORP_1_2"
+    type: "ORP"
+    pool: 1
+    position: 2
+  - id: "ORP_1_3"
+    type: "ORP"
+    pool: 1
+    position: 3
+  - id: "ORP_2_1"
+    type: "ORP"
+    pool: 2
+    position: 1
+  - id: "ORP_2_2"
+    type: "ORP"
+    pool: 2
+    position: 2
+  - id: "ORP_2_3"
+    type: "ORP"
+    pool: 2
+    position: 3

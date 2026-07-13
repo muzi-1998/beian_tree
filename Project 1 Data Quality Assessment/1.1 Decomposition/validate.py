@@ -20,6 +20,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 
 warnings.filterwarnings("ignore")
 
@@ -29,6 +30,7 @@ from src.data import loader, preprocess
 from src.baseline import deperiodise
 from src.whiten import offline_identify as oid, online_whitener as ow, diagnostics as dg
 from src.outputs import tables
+from src.outputs.figstyle import setup_style, save_publication_figure
 
 ROOT = Path(__file__).resolve().parent
 
@@ -240,6 +242,29 @@ def main():
     tables.write_table(abl_df, tr, "val_ablation_auc")
     tables.write_table(cases, tr, "case_studies")
     tables.write_table(pd.DataFrame([leak]), tr, "val_no_leakage")
+
+    # Reproducible ablation figure used by the results report.
+    setup_style()
+    channels = list(abl_df["channel"].drop_duplicates())
+    fig, axes = plt.subplots(1, len(channels), figsize=(7.2, 3.2),
+                             sharex=True, sharey=True, squeeze=False)
+    styles = [("auc_raw", "Raw", "#999999", "--"),
+              ("auc_residual", "Residual", "#E69F00", "-"),
+              ("auc_innovation", "Innovation", "#0072B2", "-")]
+    for i, (ax, channel) in enumerate(zip(axes[0], channels)):
+        part = abl_df[abl_df["channel"] == channel].sort_values("amp_mult")
+        for col, label, color, linestyle in styles:
+            ax.plot(part["amp_mult"], part[col], marker="o", ms=3.5,
+                    color=color, ls=linestyle, label=label)
+        ax.axhline(0.5, color="0.55", lw=0.7, ls=":")
+        ax.set_title(f"{chr(97 + i)}  {channel}", loc="left", fontweight="bold")
+        ax.set_xlabel(r"Injected fault amplitude ($\times$ robust scale)")
+        ax.set_ylim(0.45, 1.02)
+    axes[0][0].set_ylabel("ROC AUC")
+    axes[0][-1].legend(frameon=False, loc="lower right")
+    fig.suptitle("Fault-injection ablation: signal representation and detectability")
+    save_publication_figure(fig, Path(cfg["paths"]["figure_root"]) / "fig_ablation_auc.png")
+    plt.close(fig)
 
     # ── markdown report ───────────────────────────────────────────────────
     rep = Path(cfg["paths"]["report_root"]); rep.mkdir(parents=True, exist_ok=True)

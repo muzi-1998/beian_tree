@@ -29,7 +29,8 @@ from statsmodels.tsa.stattools import acf, pacf
 
 from common import (TAB, FIG, PDATA, OKABE_ITO, MODE_COLOR, PROCESS_ORDER,
                     POS_BAND, BAND_ORDER, BAND_COLOR, load_manifest,
-                    get_residual, get_innovation, setup_style)
+                    get_residual, get_innovation, setup_style,
+                    save_publication_figure)
 import matplotlib.patches as mpatches
 
 NLAGS = 60
@@ -109,7 +110,7 @@ def fig_iid_acf(man: pd.DataFrame, tab: pd.DataFrame):
     fig.suptitle("Figure A.  iid track — residual e(t) → innovation η(t) ACF (shared y)",
                  fontsize=11, fontweight="bold", y=1.0)
     fig.tight_layout(rect=(0, 0, 1, 0.93))
-    fig.savefig(FIG / "fig_2a_iid_acf_before_after.png", dpi=300, bbox_inches="tight")
+    save_publication_figure(fig, FIG / "fig_2a_iid_acf_before_after.png")
     plt.close(fig)
     pd.DataFrame(bundle).to_csv(PDATA / "fig_2a_iid_acf_before_after.csv",
                                 index_label="lag", encoding="utf-8-sig")
@@ -154,7 +155,7 @@ def fig_nearur(man: pd.DataFrame, tab: pd.DataFrame):
     fig.suptitle("Figure B.  autocorr_aware track: near-unit-root residuals — NOT a whitening failure "
                  "(mean-reverting ORP whitens fine; cf. Fig A)", fontsize=9.6, y=0.999)
     fig.tight_layout(rect=(0, 0, 1, 0.96))
-    fig.savefig(FIG / "fig_2b_nearUR_acf_spectrum.png", dpi=300, bbox_inches="tight")
+    save_publication_figure(fig, FIG / "fig_2b_nearUR_acf_spectrum.png")
     plt.close(fig)
     pd.DataFrame(bundle_acf).to_csv(PDATA / "fig_2b_nearUR_acf.csv", index_label="lag", encoding="utf-8-sig")
     pd.DataFrame(bundle_spec).to_csv(PDATA / "fig_2b_nearUR_spectrum.csv", index=False, encoding="utf-8-sig")
@@ -189,7 +190,7 @@ def fig_gradient(tab: pd.DataFrame):
                  "un-whitenable near-unit-root DO at the aerobic front (control/integrator fingerprint)",
                  fontsize=9.8, y=1.0)
     fig.subplots_adjust(left=0.07, right=0.99, top=0.9, bottom=0.2)
-    fig.savefig(FIG / "fig_1x_whiteness_control_gradient.png", dpi=300, bbox_inches="tight")
+    save_publication_figure(fig, FIG / "fig_1x_whiteness_control_gradient.png")
     plt.close(fig)
     df[["channel", "band", "scoring_mode", "mabsacf_innov", "n_eff_ratio"]].round(4).to_csv(
         PDATA / "fig_1x_whiteness_control_gradient.csv", index=False, encoding="utf-8-sig")
@@ -212,7 +213,7 @@ def fig_pacf(man: pd.DataFrame):
         ax.set_xlabel("lag", fontsize=8); ax.set_ylabel("PACF", fontsize=8)
     fig.suptitle("Figure A2.  Residual PACF of representative channels (order-selection support)", fontsize=10)
     fig.tight_layout(rect=(0, 0, 1, 0.96))
-    fig.savefig(FIG / "fig_A2_pacf_order.png", dpi=300, bbox_inches="tight")
+    save_publication_figure(fig, FIG / "fig_A2_pacf_order.png")
     plt.close(fig)
     pd.DataFrame(bundle).to_csv(PDATA / "fig_A2_pacf.csv", index_label="lag", encoding="utf-8-sig")
 
@@ -258,7 +259,7 @@ def fig_mabsacf_reduction(tab: pd.DataFrame):
                  "reduction by channel (grouped/coloured by variable)",
                  x=0.5, y=1.07, fontsize=10.5)
     fig.subplots_adjust(left=0.06, right=0.99, top=0.86, bottom=0.20)
-    fig.savefig(FIG / "fig_2c_mabsacf_reduction_by_channel.png", dpi=300, bbox_inches="tight")
+    save_publication_figure(fig, FIG / "fig_2c_mabsacf_reduction_by_channel.png")
     plt.close(fig)
     df[["channel", "band", "scoring_mode", "mabsacf_resid", "mabsacf_innov",
         "mabsacf_drop_pct"]].round(4).to_csv(

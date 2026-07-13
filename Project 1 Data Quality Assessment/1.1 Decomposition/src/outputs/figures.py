@@ -18,7 +18,8 @@ from matplotlib.colors import ListedColormap, BoundaryNorm
 from pathlib import Path
 
 from .figstyle import (setup_style, render_stack, render_grid, dump_bundle,
-                       COLORS, PALETTE, OKABE_ITO as OI)
+                       save_publication_figure, COLORS, PALETTE,
+                       JOURNAL_PALETTE as C, OKABE_ITO as OI)
 
 # Full-frame (boxed) + gridded style, applied to EVERY figure in this module.
 setup_style()
@@ -36,22 +37,18 @@ def _innov_style(kind):
         return ("η̃(t) censored-z\n(floor)", _INNOV_GREY, "floor")
     return ("Innovation η(t)", COLORS["innov"], None)
 
-C = {"blue": "#2166AC", "red": "#D6604D", "green": "#4DAC26",
-     "orange": "#F4A582", "purple": "#762A83", "gray": "#878787",
-     "teal": "#1B7837", "amber": "#E08214", "navy": "#053061", "cyan": "#35978F"}
-
 # flag code -> (label, colour)
 FLAG_STYLE = {
-    0: ("original", "#1A9850"),
-    1: ("short-interp", "#A6D96A"),
-    2: ("long-gap", "#878787"),
-    3: ("cosine-fill", "#66BD63"),
-    4: ("same-day-drop", "#D9EF8B"),
-    5: ("transition", "#FEE08B"),
-    6: ("hold", "#74ADD1"),
-    7: ("range-violation", "#D73027"),
-    8: ("IQR-outlier", "#F46D43"),
-    9: ("censored", "#762A83"),
+    0: ("original", C["green"]),
+    1: ("short-interp", "#9FC5DA"),
+    2: ("long-gap", C["gray"]),
+    3: ("cosine-fill", C["cyan"]),
+    4: ("same-day-drop", "#D7E8F2"),
+    5: ("transition", C["amber"]),
+    6: ("hold", C["purple"]),
+    7: ("range-violation", C["red"]),
+    8: ("IQR-outlier", C["orange"]),
+    9: ("censored", C["rose"]),
 }
 
 
@@ -81,7 +78,7 @@ def availability_heatmap(flags: pd.DataFrame, out_path: Path,
     labels = [FLAG_STYLE[c][0] for c in codes]
     ax.legend(handles, labels, ncol=5, fontsize=6, loc="upper center",
               bbox_to_anchor=(0.5, -0.12), frameon=False)
-    fig.savefig(out_path, dpi=300, bbox_inches="tight")
+    save_publication_figure(fig, out_path)
     plt.close(fig)
 
 
@@ -118,7 +115,7 @@ def four_level_decomposition(raw, trend, seasonal, resid, innov, out_path: Path,
     axes[-1].xaxis.set_major_formatter(mdates.DateFormatter("%m-%d %H:%M"))
     fig.suptitle(title or "Four-level decomposition", y=0.995)
     fig.tight_layout()
-    fig.savefig(out_path, dpi=300, bbox_inches="tight")
+    save_publication_figure(fig, out_path)
     plt.close(fig)
 
 
@@ -393,7 +390,7 @@ def spectrum_comparison(spectra: dict, out_path: Path, title: str = ""):
     axes[0][0].set_ylabel("power (log)")
     fig.suptitle(title or "Periodicity spectrum comparison", y=1.02)
     fig.tight_layout()
-    fig.savefig(out_path, dpi=300, bbox_inches="tight")
+    save_publication_figure(fig, out_path)
     plt.close(fig)
 
 
@@ -463,8 +460,6 @@ def acf_band_grid(rows, out_path: Path, lag: int, band_edges, title: str = "",
             ax.set_xlim(0.3, lag + 0.7)
             ax.grid(True, axis="y", alpha=0.25, lw=0.4)
             ax.tick_params(labelsize=6, length=2)
-            for sp in ("top", "right", "left", "bottom"):
-                ax.spines[sp].set_visible(True)
             if i == 0:
                 ax.set_title(col_titles[j], fontsize=9, pad=4)
             if j == 0:
@@ -497,8 +492,7 @@ def acf_band_grid(rows, out_path: Path, lag: int, band_edges, title: str = "",
         fig.legend(handles=handles, loc="outside lower center",
                    ncol=len(band_edges), fontsize=8, frameon=False)
     fig.suptitle(title or "ACF before / after whitening", fontsize=10.5)
-    Path(out_path).parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(out_path, dpi=300)
+    save_publication_figure(fig, out_path)
     plt.close(fig)
 
     if plot_data_root and bundle_name:   # data-only CSV record (no replot JSON)
@@ -512,11 +506,7 @@ def acf_band_grid(rows, out_path: Path, lag: int, band_edges, title: str = "",
 
 
 def _save_fig(fig, out_path: Path, vector: bool = False):
-    out_path = Path(out_path); out_path.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(out_path, dpi=300)
-    if vector:
-        for ext in (".pdf", ".svg"):
-            fig.savefig(out_path.with_suffix(ext))
+    save_publication_figure(fig, out_path)
     plt.close(fig)
 
 
@@ -779,5 +769,5 @@ def acf_before_after(acf_resid, acf_innov, out_path: Path, title: str = "",
     axes[0].set_ylabel("ACF")
     fig.suptitle(title or "ACF before / after whitening", y=1.02)
     fig.tight_layout()
-    fig.savefig(out_path, dpi=300, bbox_inches="tight")
+    save_publication_figure(fig, out_path)
     plt.close(fig)

@@ -12,12 +12,15 @@ Output: outputs/figures/fig_W0_workflow.png (+ .pdf).  Static/conceptual — no 
 """
 from __future__ import annotations
 from pathlib import Path
+import sys
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyBboxPatch, FancyArrowPatch
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from src.outputs.figstyle import save_publication_figure
 FIG = ROOT / "outputs" / "figures"
 FIG.mkdir(parents=True, exist_ok=True)
 
@@ -45,8 +48,10 @@ def arrow(ax, p1, p2, color=None, lw=1.7, ls="-", rad=0.0):
 
 def main():
     plt.rcParams.update({"font.family": "sans-serif",
-                         "font.sans-serif": ["DejaVu Sans", "Arial"],
-                         "axes.unicode_minus": False})
+                         "font.sans-serif": ["Arial", "Helvetica", "DejaVu Sans"],
+                         "axes.unicode_minus": False,
+                         "svg.fonttype": "none", "pdf.fonttype": 42,
+                         "ps.fonttype": 42})
     fig, ax = plt.subplots(figsize=(11.6, 13.6))
     ax.set_xlim(0, 100); ax.set_ylim(0, 100); ax.axis("off")
     CX = 50   # main spine
@@ -60,15 +65,15 @@ def main():
 
     # 2 differentiated decomposition
     box(ax, CX, 83.8, 92, 6.2,
-        "①  DIFFERENTIATED additive decomposition   $X_k(t)=m_k(t)+s_k(t)+e_k(t)$   ·   strict CAUSAL / rolling\n"
+        "(1)  DIFFERENTIATED additive decomposition   $X_k(t)=m_k(t)+s_k(t)+e_k(t)$   ·   strict CAUSAL / rolling\n"
         "per process group — own candidate periods · adaptive harmonic order · STL iters · censoring:\n"
         "aerobic-DO · post-anoxic-DO · anoxic-ORP · recycle-flow · influent(+flow) · effluent", C["decomp"], fs=8.4)
     arrow(ax, (22, 80.7), (20, 73.6)); arrow(ax, (CX, 80.7), (CX, 73.6)); arrow(ax, (78, 80.7), (80, 73.6))
 
     # three components
-    box(ax, 20, 70.8, 25, 4.6, "trend  $m_k(t)$\n②  causal BACKWARD\nrolling mean (deseason'd)", C["trend"], fs=7.9)
+    box(ax, 20, 70.8, 25, 4.6, "trend  $m_k(t)$\n(2)  causal BACKWARD\nrolling mean (deseason'd)", C["trend"], fs=7.9)
     ax.text(34.5, 70.8, "+", ha="center", va="center", fontsize=16, fontweight="bold")
-    box(ax, CX, 70.8, 27, 4.6, "seasonal  $s_k(t)$\n③  harmonic (block-refit)\n+ iterative STL + sub-hourly", C["seas"], fs=7.7)
+    box(ax, CX, 70.8, 27, 4.6, "seasonal  $s_k(t)$\n(3)  harmonic (block-refit)\n+ iterative STL + sub-hourly", C["seas"], fs=7.7)
     ax.text(65.5, 70.8, "+", ha="center", va="center", fontsize=16, fontweight="bold")
     box(ax, 80, 70.8, 25, 4.6, "residual  $e_k(t)$\n(de-trended,\nde-seasonalised)", C["resid"], fs=7.9)
 
@@ -79,7 +84,7 @@ def main():
 
     # 4 sufficiency loop (residual → peak-ratio check → iterate STL / proceed)
     arrow(ax, (80, 68.5), (60, 63.4), rad=0.08)                    # residual → check
-    box(ax, CX, 61.0, 44, 3.8, "④  sufficiency check:  residual local spectral peak-ratio < 2 ?", "#FFFFFF", fs=8.0, ec="#888")
+    box(ax, CX, 61.0, 44, 3.8, "(4)  sufficiency check:  residual local spectral peak-ratio < 2 ?", "#FFFFFF", fs=8.0, ec="#888")
     arrow(ax, (40, 62.2), (46, 68.5), color=LOOP, ls=(0, (4, 2)), rad=-0.35)   # loop back to STL
     ax.text(33.5, 65.6, "no →\niterate STL", ha="center", va="center", fontsize=7.2, color=LOOP, style="italic")
     arrow(ax, (CX, 59.1), (CX, 56.9))
@@ -87,12 +92,12 @@ def main():
 
     # 5-7 model selection → GARCH → acceptance gate
     box(ax, CX, 54.4, 66, 4.2,
-        "⑤  data-driven model selection:  ADF + KPSS → integer d · seasonal D · LRD (GPH / R-S) → ARFIMA gate", C["select"], fs=7.9)
+        "(5)  data-driven model selection:  ADF + KPSS → integer d · seasonal D · LRD (GPH / R-S) → ARFIMA gate", C["select"], fs=7.9)
     arrow(ax, (CX, 52.3), (CX, 50.6))
-    box(ax, CX, 48.7, 40, 3.4, "⑥  ARMA / GARCH residual whitening", C["whiten"], fs=8.6)
+    box(ax, CX, 48.7, 40, 3.4, "(6)  ARMA / GARCH residual whitening", C["whiten"], fs=8.6)
     arrow(ax, (CX, 47.0), (CX, 45.3))
     box(ax, CX, 43.0, 62, 4.0,
-        "⑦  ACCEPTANCE GATE  —  stationary·invertible roots  +  windowed-LB pass  +  variance ratio", C["gate"], fs=8.0)
+        "(7)  ACCEPTANCE GATE  —  stationary·invertible roots  +  windowed-LB pass  +  variance ratio", C["gate"], fs=8.0)
 
     # 8 three tracks
     arrow(ax, (32, 41.0), (22, 36.4), rad=0.05); arrow(ax, (CX, 41.0), (CX, 36.4)); arrow(ax, (68, 41.0), (78, 36.4), rad=-0.05)
@@ -103,11 +108,11 @@ def main():
 
     # manifest routing
     box(ax, CX, 25.7, 76, 3.8,
-        "⑧  whiteness_manifest  —  per-channel routing  ( scoring_mode · $n_{\\rm eff}$ · innov_kind )", C["manifest"], fs=8.4)
+        "(8)  whiteness_manifest  —  per-channel routing  ( scoring_mode · $n_{\\rm eff}$ · innov_kind )", C["manifest"], fs=8.4)
     arrow(ax, (CX, 23.8), (CX, 22.0))
 
     # 9 WW-DQR + three-caliber
-    box(ax, CX, 20.2, 92, 3.2, "⑨  WW-DQR  /  §1.2  D1 sensor-health scoring  —  manifest-keyed, three-caliber input", C["dqr"], fs=9.0)
+    box(ax, CX, 20.2, 92, 3.2, "(9)  WW-DQR  /  §1.2  D1 sensor-health scoring  —  manifest-keyed, three-caliber input", C["dqr"], fs=9.0)
     arrow(ax, (25, 18.6), (25, 15.4)); arrow(ax, (CX, 18.6), (CX, 15.4)); arrow(ax, (75, 18.6), (75, 15.4))
     box(ax, 25, 12.4, 29, 5.0, "RAW 1-min signal\n→ Spike (Hampel)\n· Freeze (rules)", C["cal_raw"], fs=7.6)
     box(ax, CX, 12.4, 29, 5.0, "§1.1 residual $e(t)$ (1-h)\n→ Drift-PLS · FF-PCA\n(multivariate, robust)", C["cal_res"], fs=7.6)
@@ -118,17 +123,16 @@ def main():
     arrow(ax, (9.5, 20.2), (14, 20.2), color="#4a4a4a", ls=(0, (5, 3)))
 
     ax.text(CX, 4.0,
-            "① differentiated grouping   ② causal trend   ③ block-refit + iterative STL   ④ sufficiency loop   "
-            "⑤–⑦ model-selection + GARCH + 3-track acceptance gate   ⑧ manifest routing   ⑨ three-caliber downstream",
+            "(1) differentiated grouping   (2) causal trend   (3) block-refit + iterative STL   (4) sufficiency loop   "
+            "(5)–(7) model-selection + GARCH + 3-track acceptance gate   (8) manifest routing   (9) three-caliber downstream",
             ha="center", va="center", fontsize=7.4, style="italic", color="#444")
     ax.set_title("Figure 1.  §1.1 differentiated decomposition → whitening → §1.2 DQR workflow (revised)",
                  fontsize=12.5, fontweight="bold", pad=8)
 
     fig.subplots_adjust(left=0.02, right=0.98, top=0.955, bottom=0.02)
-    for ext in ("png", "pdf"):
-        fig.savefig(FIG / f"fig_W0_workflow.{ext}", dpi=300, bbox_inches="tight")
+    save_publication_figure(fig, FIG / "fig_W0_workflow.png")
     plt.close(fig)
-    print("wrote fig_W0_workflow.png / .pdf")
+    print("wrote fig_W0_workflow.png / .svg / .pdf")
 
 
 if __name__ == "__main__":

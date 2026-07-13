@@ -16,7 +16,8 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from src.outputs.figstyle import OKABE_ITO, setup_style  # noqa: E402
+from src.outputs.figstyle import (OKABE_ITO, setup_style,
+                                  save_publication_figure)  # noqa: E402
 
 PQ = ROOT / "outputs" / "parquet"
 TAB = ROOT / "outputs" / "tables"

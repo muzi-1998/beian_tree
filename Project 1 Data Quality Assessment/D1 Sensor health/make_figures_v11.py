@@ -23,6 +23,9 @@ import matplotlib.gridspec as gridspec
 from matplotlib.colors import LinearSegmentedColormap, BoundaryNorm
 from matplotlib.lines import Line2D
 from matplotlib.patches import Rectangle, Patch, FancyArrowPatch
+from publication_style import (PALETTE as C, STATE_COLORS as STATE_COL,
+                               annotate_data_label,
+                               configure_publication_style, finalize_figure)
 
 OUT = ROOT / "outputs" / "figures"
 OUT.mkdir(parents=True, exist_ok=True)
@@ -31,7 +34,8 @@ PLOTDATA.mkdir(parents=True, exist_ok=True)
 
 # ─── SCI publication style ─────────────────────────────────────────────────
 plt.rcParams.update({
-    "font.family": "DejaVu Sans",
+    "font.family": "sans-serif",
+    "font.sans-serif": ["Arial", "Helvetica", "DejaVu Sans", "Liberation Sans"],
     "font.size": 8.5,
     "axes.titlesize": 9.5,
     "axes.labelsize": 9,
@@ -45,7 +49,7 @@ plt.rcParams.update({
     "savefig.dpi": 600,
     "savefig.bbox": "tight",
     "savefig.pad_inches": 0.04,
-    "axes.linewidth": 0.7,
+    "axes.linewidth": 0.8,
     "axes.grid": True,
     "axes.grid.which": "major",
     "grid.alpha": 0.16,
@@ -60,28 +64,13 @@ plt.rcParams.update({
     "xtick.minor.size": 1.5,
     "ytick.major.size": 3,
     "ytick.minor.size": 1.5,
-    "xtick.major.width": 0.6,
-    "ytick.major.width": 0.6,
+    "xtick.major.width": 0.8,
+    "ytick.major.width": 0.8,
     "pdf.fonttype": 42,
     "ps.fonttype": 42,
+    "svg.fonttype": "none",
 })
-
-# Colour palette
-C = {
-    "blue": "#2166AC", "red": "#B2182B", "green": "#1B7837",
-    "orange": "#F46D43", "purple": "#762A83", "gray": "#707070",
-    "teal": "#1A9988", "amber": "#E08214", "navy": "#053061",
-    "cyan": "#35978F", "rose": "#D6604D",
-}
-# State machine colours
-STATE_COL = {
-    "Normal":            "#1B7837",
-    "Refractory":        "#F46D43",
-    "SustainedAnomaly":  "#762A83",
-    "RecoveryCandidate": "#FDDBC7",
-    "Recovered":         "#2166AC",
-}
-
+configure_publication_style()
 
 # ─────────────────────────────────────────────────────────────────────────────
 print("Loading v1.1 state ...")
@@ -101,39 +90,13 @@ ORP_CH = [c for c in SCORED if c.startswith("ORP_")]
 
 
 def _finish_axes(fig):
-    """Draw tick marks at both ends of every data axis (the default locator
-    leaves the spine ends bare). Endpoints are added as same-size minor ticks."""
-    for ax in fig.axes:
-        for which in ("x", "y"):
-            get_lim = ax.get_xlim if which == "x" else ax.get_ylim
-            get_maj = ax.get_xticks if which == "x" else ax.get_yticks
-            lo, hi = sorted(get_lim())
-            span = hi - lo
-            if span <= 0:
-                continue
-            majors = [t for t in get_maj() if lo - 1e-9 <= t <= hi + 1e-9]
-            if len(majors) < 2:
-                continue
-            tol = span * 0.015
-            ends = [v for v in (lo, hi)
-                    if not any(abs(m - v) <= tol for m in majors)]
-            if not ends:
-                continue
-            spine = "bottom" if which == "x" else "left"
-            col = ax.spines[spine].get_edgecolor()
-            if which == "x":
-                ax.set_xticks(ends, minor=True)
-                ax.tick_params(axis="x", which="minor", length=3.2, width=0.7,
-                               color=col, bottom=True, top=False)
-            else:
-                ax.set_yticks(ends, minor=True)
-                ax.tick_params(axis="y", which="minor", length=3.2, width=0.7,
-                               color=col, left=True, right=False)
+    finalize_figure(fig)
 
 
 def save(fig, name, plot_data: dict = None):
     _finish_axes(fig)
-    fig.savefig(OUT / f"{name}.png")
+    for suffix in (".png", ".svg", ".pdf"):
+        fig.savefig(OUT / f"{name}{suffix}")
     plt.close(fig)
     if plot_data is not None:
         with pd.ExcelWriter(PLOTDATA / f"{name}_data.xlsx", engine="openpyxl") as w:
@@ -144,7 +107,7 @@ def save(fig, name, plot_data: dict = None):
                     v.to_frame(k).to_excel(w, sheet_name=k[:31], index=True)
                 elif isinstance(v, dict):
                     pd.DataFrame(v).to_excel(w, sheet_name=k[:31], index=True)
-    print(f"  [OK] {name}.png")
+    print(f"  [OK] {name}.png + .svg + .pdf")
 
 
 # ============================================================================
@@ -579,11 +542,23 @@ for tr in S["transitions_all"]:
         refr_triggers[tr["sensor_id"]] += 1
 df_cmp = pd.DataFrame({"PELT CPs": ch_cp_counts,
                         "Refractory triggers": refr_triggers}).reindex(SCORED)
-ax.scatter(df_cmp["PELT CPs"], df_cmp["Refractory triggers"], s=80,
-            color=C["purple"], edgecolor="white", alpha=0.85, linewidths=1.0)
+point_colors = [C["blue"] if c.startswith("DO_") else C["rose"] for c in SCORED]
+ax.scatter(df_cmp["PELT CPs"], df_cmp["Refractory triggers"], s=72,
+           color=point_colors, edgecolor="white", alpha=0.88, linewidths=0.8)
+crowded = sorted((c for c in SCORED if df_cmp.at[c, "PELT CPs"] < 12),
+                 key=lambda c: (df_cmp.at[c, "Refractory triggers"],
+                                df_cmp.at[c, "PELT CPs"], c))
+crowded_rank = {c: rank for rank, c in enumerate(crowded)}
 for c in SCORED:
-    ax.annotate(c, (df_cmp.at[c, "PELT CPs"], df_cmp.at[c, "Refractory triggers"]),
-                  fontsize=6, alpha=0.7, xytext=(3, 3), textcoords="offset points")
+    xy = (df_cmp.at[c, "PELT CPs"], df_cmp.at[c, "Refractory triggers"])
+    if c in crowded_rank:
+        rank = crowded_rank[c]
+        xytext = (7 + 56 * (rank % 2), 9 + 12 * (rank // 2))
+        annotate_data_label(ax, c, xy, xytext=xytext, fontsize=6.2,
+                            arrow=True, ha="left", va="bottom")
+    else:
+        annotate_data_label(ax, c, xy, xytext=(4, 5), fontsize=6.2,
+                            ha="left", va="bottom")
 mx = max(df_cmp.max()) + 5
 ax.plot([0, mx], [0, mx], "k--", lw=0.6, alpha=0.5, label="1:1")
 ax.set_xlabel("PELT CPs", fontsize=9)

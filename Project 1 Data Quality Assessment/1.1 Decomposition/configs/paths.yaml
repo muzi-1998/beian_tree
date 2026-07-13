@@ -16,3 +16,11 @@ figure_root:    "outputs/figures"
 report_root:    "outputs/reports"
 plot_data_root: "outputs/plot_data"
 run_manifest:   "run_manifest"
+
+# Canonical observation horizon shared by 1.1, D1 and D2.  The raw minute
+# sources stop at 17:17 on the final day; the remaining expected minutes are
+# retained as missing evidence instead of truncating the assessment window.
+time_grid:
+  freq: "1min"
+  expected_start: "2025-08-01 00:00:00"
+  expected_end: "2026-04-13 23:59:00"

@@ -1,0 +1,13 @@
+# D4 v2.2 execution contract. Shared data/operators are allowed; scores are not.
+deployment_mode: "inproc"
+
+required_components:
+  - "canonical_observations"
+  - "fixed_threshold_library"
+  - "d4_local_rate_context"
+
+dimension_independence:
+  forbidden_score_inputs: ["D1", "D2"]
+  downstream_join_only: true
+  shared_time_grid_allowed: true
+  shared_operators_allowed: true

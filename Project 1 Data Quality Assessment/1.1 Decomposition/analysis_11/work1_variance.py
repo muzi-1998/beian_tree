@@ -2,14 +2,11 @@
 
 Supports the claim "why differentiated decomposition is necessary".
 
-Method (plan): stepwise variance *reduction*, not raw Var ratios — additive
-components are not orthogonal, so naive ratios do not close. With the §1.1
-CAUSAL components (trend m, seasonal s, residual e = X−m−s):
-
-    r0 = Var(X);  r1 = Var(X−m);  r2 = Var(e)
-    trend%    = (r0−r1)/r0
-    seasonal% = (r1−r2)/r0
-    residual% = r2/r0           → trend% + seasonal% + residual% ≡ 1
+Method: normalized component variances.  Additive components are correlated, so
+neither naive Var(component)/Var(X) nor ordered variance reduction is a valid
+non-negative attribution.  The headline profile therefore reports
+Var(component) / sum Var(components), and reports the omitted covariance term
+separately in Table A1.
 
 m is rebuilt with §1.1's exact causal trend operator applied to the known
 baseline b = X − e (e taken from residual_*.parquet, so residual% is exact and
@@ -29,7 +26,8 @@ import matplotlib.patches as mpatches
 
 from common import (ROOT, TAB, FIG, PDATA, COMP, PROCESS_ORDER, POS_BAND,
                     BAND_ORDER, load_manifest, load_config, longest_period_hours,
-                    get_raw, get_residual, setup_style)
+                    get_raw, get_residual, setup_style,
+                    save_publication_figure)
 from src.baseline.deperiodise import _causal_trend, _causal_stl_seasonal
 
 
@@ -44,14 +42,16 @@ def _win_pts(index, bw_h: float) -> int:
 
 def partition(X: pd.Series, e_final: pd.Series, longest_h: float,
               period_pts: int) -> dict:
-    """Stepwise variance reduction (plan):  r0,r1,r2 = Var(X), Var(X−m), Var(e).
+    """Non-negative component-variance shares with covariance audit.
 
     The headline partition uses a SELF-CONSISTENT 2-step causal decomposition
     built from §1.1's own operators — a LONG causal trend m = causal_trend(X,
     3×longest_period) (averaging ≥3 full cycles zeroes the seasonal so m carries
     only the slow drift) + a causal trailing per-phase seasonal s on (X−m); then
     e = X−m−s. No future sample enters either step; the partition closes to 100%
-    and the shares stay ≥0 (s is the trailing phase signal, e its complement).
+    The three displayed shares sum to 100% by construction.  Because the
+    components are not orthogonal, the covariance closure against Var(X) is
+    reported separately and is never relabelled as component contribution.
 
     Reported alongside (Table A1, transparency):
       resid_final = Var(residual_*.parquet)/Var(X) — §1.1's actual whitening-input
@@ -70,10 +70,10 @@ def partition(X: pd.Series, e_final: pd.Series, longest_h: float,
     des_c = (xv - m_c)
     s_c = pd.Series(_causal_stl_seasonal(des_c.values, period_pts), index=xv.index)
     e_c = (des_c - s_c)
-    d = _align(xv.rename("X"), m_c.rename("m"), e_c.rename("e"))
+    d = _align(xv.rename("X"), m_c.rename("m"), s_c.rename("s"), e_c.rename("e"))
     r0 = max(float(d["X"].var()), 1e-12)
-    r1 = float((d["X"] - d["m"]).var())
-    r2 = float(d["e"].var())
+    component_var = d[["m", "s", "e"]].var()
+    component_sum = max(float(component_var.sum()), 1e-12)
 
     # ── acausal 2-step (ablation) ────────────────────────────────────────────
     m_a = xv.rolling(win, center=True, min_periods=max(3, win // 2)).mean()
@@ -86,8 +86,13 @@ def partition(X: pd.Series, e_final: pd.Series, longest_h: float,
     # ── §1.1 final whitening residual share (transparency) ───────────────────
     rf_final = float(_align(e_final.rename("ef"))["ef"].var()) / r0
 
-    return {"r0": r0, "trend": (r0 - r1) / r0,
-            "seasonal": (r1 - r2) / r0, "residual": r2 / r0,
+    return {"r0": r0,
+            "trend": float(component_var["m"] / component_sum),
+            "seasonal": float(component_var["s"] / component_sum),
+            "residual": float(component_var["e"] / component_sum),
+            "component_sum_over_signal": component_sum / r0,
+            "covariance_over_signal": (r0 - component_sum) / r0,
+            "resid_causal_signal": float(component_var["e"] / r0),
             "resid_full2": rf_full, "resid_final": rf_final, "n": len(d)}
 
 
@@ -109,36 +114,38 @@ def main():
             "scoring_mode": man.loc[ch, "scoring_mode"],
             "trend_pct": 100 * cp["trend"], "seasonal_pct": 100 * cp["seasonal"],
             "residual_pct": 100 * cp["residual"],
+            "component_variance_sum_pct_of_signal": 100 * cp["component_sum_over_signal"],
+            "covariance_pct_of_signal": 100 * cp["covariance_over_signal"],
+            "resid_causal_pct_of_signal": 100 * cp["resid_causal_signal"],
             "resid_full_pct": 100 * cp["resid_full2"],
-            "resid_diff_causal_minus_full": 100 * (cp["residual"] - cp["resid_full2"]),
+            "resid_diff_causal_minus_full": 100 * (cp["resid_causal_signal"] - cp["resid_full2"]),
             "resid_final_pct": 100 * cp["resid_final"],
             "decomp_overfit": cp["resid_final"] > 1.0,
             "var_X": cp["r0"], "n": cp["n"],
         })
         print(f"  {ch:9s} tr={100*cp['trend']:5.1f} se={100*cp['seasonal']:5.1f} "
-              f"re={100*cp['residual']:5.1f}  Δleak={100*(cp['residual']-cp['resid_full2']):+5.1f}"
+              f"re={100*cp['residual']:5.1f}  Δleak={100*(cp['resid_causal_signal']-cp['resid_full2']):+5.1f}"
               f"  re_final={100*cp['resid_final']:5.1f}")
     df = pd.DataFrame(rows)
 
     # ── Table A1 (appendix) ────────────────────────────────────────────────
     a1 = df[["channel", "band", "scoring_mode", "trend_pct", "seasonal_pct",
-             "residual_pct", "resid_full_pct", "resid_diff_causal_minus_full",
+              "residual_pct", "component_variance_sum_pct_of_signal",
+              "covariance_pct_of_signal", "resid_causal_pct_of_signal",
+              "resid_full_pct", "resid_diff_causal_minus_full",
              "resid_final_pct", "decomp_overfit"]].round(2)
     a1.to_csv(TAB / "A1_variance_partition.csv", index=False, encoding="utf-8-sig")
 
     # ── Fig 1.x: stacked bar, x ordered by process position ────────────────
-    # display shares: clip the (occasionally <0 / >100 on hard channels) raw
-    # stepwise shares to a proper [0,100] stack; honest raw numbers stay in the
-    # bundle CSV + Table A1. A '‡' marks channels where the §1.1 harmonic fit is
-    # residual-dominated / overfit (raw residual ≥ signal) → differentiated need.
+    # Display non-negative normalized component variances.  Covariance closure
+    # and Var(final residual)/Var(signal) remain explicit diagnostics in Table A1.
     n = len(df)
     x = np.arange(n)
-    disp = df[["trend_pct", "seasonal_pct", "residual_pct"]].clip(lower=0.0)
-    disp = disp.div(disp.sum(axis=1).replace(0, np.nan), axis=0) * 100.0
+    disp = df[["trend_pct", "seasonal_pct", "residual_pct"]]
     tr, se, re = (disp["trend_pct"].values, disp["seasonal_pct"].values,
                   disp["residual_pct"].values)
     # flag only the genuinely residual-dominated / §1.1-overfit channels
-    flagged = ((df["residual_pct"] > 100) | df["decomp_overfit"]).values
+    flagged = df["decomp_overfit"].values
 
     fig, ax = plt.subplots(figsize=(13.5, 5.8))
     ax.bar(x, tr, color=COMP["trend"], width=0.82, label="trend  m(t)", edgecolor="white", linewidth=0.4)
@@ -164,18 +171,21 @@ def main():
     ax.set_xticklabels(df["channel"], rotation=60, ha="right", fontsize=7.6)
     ax.set_ylim(0, 110)
     ax.set_yticks([0, 20, 40, 60, 80, 100])
-    ax.set_ylabel("Variance contribution (%)", fontsize=10)
+    ax.set_ylabel("Normalized component variance share (%)", fontsize=10)
     ax.set_xlim(-0.7, n - 0.3)
     ax.legend(loc="lower center", ncol=3, fontsize=8.8, framealpha=0.95,
               bbox_to_anchor=(0.5, 1.012))
     ax.grid(axis="y", alpha=0.3, lw=0.5)
-    fig.suptitle("Figure 1.x  Causal variance-contribution profile along the process "
-                 "(stepwise reduction; ‡ = residual-dominated / decomposition overfit)",
+    fig.suptitle("Causal component-variance profiles across process locations",
                  x=0.5, y=1.075, fontsize=10.5)
+    ax.text(0.995, 1.015,
+            "Covariance is reported separately; ‡ indicates Var(final residual) > Var(raw signal)",
+            transform=ax.transAxes, ha="right", va="bottom", fontsize=7.5,
+            color="0.35")
     ax.set_axisbelow(True)
     fig.subplots_adjust(left=0.06, right=0.99, top=0.86, bottom=0.20)
     out_png = FIG / "fig_1x_variance_partition_profile.png"
-    fig.savefig(out_png, dpi=300, bbox_inches="tight")
+    save_publication_figure(fig, out_png)
     plt.close(fig)
 
     # ── figure data bundle (exactly what the bars encode) ──────────────────

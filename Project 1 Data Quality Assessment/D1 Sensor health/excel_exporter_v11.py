@@ -222,7 +222,7 @@ mapping_master = pd.DataFrame([
     {"mapping_id": "D1_step_adjacent_ks", "subscore_name": "D1_step",
      "detector_name": "adjacent_ks", "input_metric": "ks_statistic",
      "mapping_type": "logistic", "direction": "high_quality_low_metric",
-     "k": 12.0, "x0": 0.3,
+     "k": 8.0, "x0": 0.40,
      "thresholds": np.nan, "scores": np.nan, "breaks": np.nan, "rate_floor": 0.005,
      "version": "v1.1", "source": "expert_calibrated",
      "sensor_scope": "DO/ORP only", "window_scope": "24h"},
@@ -273,10 +273,10 @@ mapping_versions = pd.DataFrame([
      "n_subscores": 7, "calibration_source": "v1.0_strict + DO/ORP-only + signal-only Veto-3 + 5-state cooldown"},
 ])
 mapping_examples = pd.DataFrame([
-    {"subscore": "D1_step", "x": 0.0, "Q": 4.99},
-    {"subscore": "D1_step", "x": 0.2, "Q": 4.21},
-    {"subscore": "D1_step", "x": 0.3, "Q": 3.00},
-    {"subscore": "D1_step", "x": 0.4, "Q": 1.79},
+    {"subscore": "D1_step", "x": 0.0, "Q": 4.84},
+    {"subscore": "D1_step", "x": 0.2, "Q": 4.33},
+    {"subscore": "D1_step", "x": 0.3, "Q": 3.76},
+    {"subscore": "D1_step", "x": 0.4, "Q": 3.00},
     {"subscore": "D1_drift", "x": 1.0, "Q": 4.62},
     {"subscore": "D1_drift", "x": 2.5, "Q": 3.00},
     {"subscore": "D1_drift", "x": 4.0, "Q": 1.38},

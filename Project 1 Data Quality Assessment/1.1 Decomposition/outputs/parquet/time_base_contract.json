@@ -1,0 +1,80 @@
+{
+  "schema_version": "time-base-contract-v1",
+  "generated_at": "2026-07-10T17:12:59",
+  "frequency": "1min",
+  "expected_start": "2025-08-01T00:00:00",
+  "expected_end": "2026-04-13T23:59:00",
+  "rows": 368640,
+  "raw_values_file": "time_base_1min_raw.parquet",
+  "processed_values_file": "time_base_1min.parquet",
+  "flags_file": "time_base_1min_flags.parquet",
+  "minute_channels": [
+    "DO_1_1",
+    "DO_1_2",
+    "DO_1_3",
+    "DO_1_4",
+    "DO_2_1",
+    "DO_2_2",
+    "DO_2_3",
+    "DO_2_4",
+    "ORP_1_1",
+    "ORP_1_2",
+    "ORP_1_3",
+    "ORP_2_1",
+    "ORP_2_2",
+    "ORP_2_3",
+    "QR_1",
+    "QR_2",
+    "QIR_1",
+    "QIR_2"
+  ],
+  "flag_codes": {
+    "ORIGINAL": 0,
+    "SHORT": 1,
+    "LONG": 2,
+    "COSINE": 3,
+    "SAMEDAY": 4,
+    "TRANSITION": 5,
+    "HOLD": 6,
+    "RANGE": 7,
+    "OUTLIER": 8,
+    "CENSORED": 9
+  },
+  "timestamp_audit": {
+    "DO": {
+      "file": "beian_min_1_DO_25-08-26-04.xlsx",
+      "rows": 367156,
+      "invalid_timestamp_rows": 0,
+      "duplicate_timestamp_rows": 0,
+      "out_of_order_transitions": 0,
+      "timestamp_min": "2025-08-01T00:00:00",
+      "timestamp_max": "2026-04-13T17:17:00"
+    },
+    "ORP": {
+      "file": "beian_min_2_ORP-08-26-04.xlsx",
+      "rows": 367156,
+      "invalid_timestamp_rows": 0,
+      "duplicate_timestamp_rows": 0,
+      "out_of_order_transitions": 0,
+      "timestamp_min": "2025-08-01T00:00:00",
+      "timestamp_max": "2026-04-13T17:17:00"
+    },
+    "FLOW": {
+      "file": "beian_min_3_QR+QIR-08-26-04.xlsx",
+      "rows": 367156,
+      "invalid_timestamp_rows": 0,
+      "duplicate_timestamp_rows": 0,
+      "out_of_order_transitions": 0,
+      "timestamp_min": "2025-08-01T00:00:00",
+      "timestamp_max": "2026-04-13T17:17:00"
+    }
+  },
+  "source_sha256": {
+    "do_file": "1ecc29eab54497013c01446905574bc99e6e6ba5c2df112834688bed5f6abe85",
+    "orp_file": "44cd9b8501a6251347f5b741d1f02a57801450aa599f2559d66ec79272b25de5",
+    "flw_file": "d25c73367dc9a362b42cf2729348e4696d053bd6ea9d25b4133befadefd9cccc",
+    "influent_file": "833bf1f61decbebb24c034404f90b7066bad9c0c69ec83ff348f5bbe40dac0f2",
+    "effluent_file": "7cbff3a0dacaf126de0163f928d930c5613d8d28c58cbd6fcd05e7acf41ac06a"
+  },
+  "config_hash": "91f353e4a107"
+}
