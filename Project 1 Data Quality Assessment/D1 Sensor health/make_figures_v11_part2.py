@@ -18,6 +18,7 @@ import matplotlib.gridspec as gridspec
 from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.lines import Line2D
 from matplotlib.patches import Rectangle, Patch, FancyArrowPatch
+from publication_style import configure_publication_style, finalize_figure
 
 OUT = ROOT / "outputs" / "figures"
 PLOTDATA = ROOT / "outputs" / "plot_data"
@@ -26,19 +27,22 @@ PLOTDATA.mkdir(parents=True, exist_ok=True)
 
 # Same SCI rcParams
 plt.rcParams.update({
-    "font.family": "DejaVu Sans", "font.size": 8.5,
+    "font.family": "sans-serif",
+    "font.sans-serif": ["Arial", "Helvetica", "DejaVu Sans", "Liberation Sans"],
+    "font.size": 8.5,
     "axes.titlesize": 9.5, "axes.labelsize": 9,
     "xtick.labelsize": 8, "ytick.labelsize": 8, "legend.fontsize": 7.5,
     "legend.framealpha": 0.92, "legend.edgecolor": "0.4",
     "figure.dpi": 150, "savefig.dpi": 600, "savefig.bbox": "tight",
     "savefig.pad_inches": 0.04,
-    "axes.linewidth": 0.7, "axes.grid": True, "grid.alpha": 0.16,
+    "axes.linewidth": 0.8, "axes.grid": True, "grid.alpha": 0.16,
     "grid.linewidth": 0.4, "lines.linewidth": 1.0,
     "axes.spines.top": False, "axes.spines.right": False,
     "axes.titleweight": "bold", "axes.titlelocation": "left",
     "axes.titlepad": 6,
     "pdf.fonttype": 42, "ps.fonttype": 42, "svg.fonttype": "none",
 })
+configure_publication_style()
 
 C = {"blue":"#2166AC","red":"#B2182B","green":"#1B7837","orange":"#F46D43",
      "purple":"#762A83","gray":"#707070","teal":"#1A9988","amber":"#E08214",
@@ -58,34 +62,7 @@ D1_v11 = S["D1_v11"]
 
 
 def _finish_axes(fig):
-    """Draw tick marks at both ends of every data axis (the default locator
-    leaves the spine ends bare). Endpoints are added as same-size minor ticks."""
-    for ax in fig.axes:
-        for which in ("x", "y"):
-            get_lim = ax.get_xlim if which == "x" else ax.get_ylim
-            get_maj = ax.get_xticks if which == "x" else ax.get_yticks
-            lo, hi = sorted(get_lim())
-            span = hi - lo
-            if span <= 0:
-                continue
-            majors = [t for t in get_maj() if lo - 1e-9 <= t <= hi + 1e-9]
-            if len(majors) < 2:
-                continue
-            tol = span * 0.015
-            ends = [v for v in (lo, hi)
-                    if not any(abs(m - v) <= tol for m in majors)]
-            if not ends:
-                continue
-            spine = "bottom" if which == "x" else "left"
-            col = ax.spines[spine].get_edgecolor()
-            if which == "x":
-                ax.set_xticks(ends, minor=True)
-                ax.tick_params(axis="x", which="minor", length=3.2, width=0.7,
-                               color=col, bottom=True, top=False)
-            else:
-                ax.set_yticks(ends, minor=True)
-                ax.tick_params(axis="y", which="minor", length=3.2, width=0.7,
-                               color=col, left=True, right=False)
+    finalize_figure(fig)
 
 
 def save(fig, name, plot_data: dict = None):

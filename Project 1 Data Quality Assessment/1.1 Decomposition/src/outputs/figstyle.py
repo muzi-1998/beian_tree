@@ -19,8 +19,11 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+import matplotlib.ticker as mticker
+from matplotlib.text import Text
 import numpy as np
 import pandas as pd
+import re
 
 # level / component colours (kept in English, synced with the D1 palette)
 COLORS = {
@@ -55,27 +58,134 @@ def setup_style() -> None:
     """Install the shared publication style for §1.1 figures."""
     plt.rcParams.update({
         "font.family": "sans-serif",
-        "font.sans-serif": ["DejaVu Sans", "Arial", "Liberation Sans"],
+        "font.sans-serif": ["Arial", "Helvetica", "DejaVu Sans", "Liberation Sans"],
         "axes.unicode_minus": False,
         "font.size": 9, "axes.titlesize": 10, "axes.labelsize": 9,
         "xtick.labelsize": 8, "ytick.labelsize": 8, "legend.fontsize": 8,
         "figure.dpi": 150, "savefig.dpi": 600, "savefig.bbox": "tight",
         "pdf.fonttype": 42, "ps.fonttype": 42, "svg.fonttype": "none",
         # Open axes reduce visual weight in dense multi-panel figures.
-        "axes.linewidth": 0.9,
+        "axes.linewidth": 0.8,
         "axes.spines.top": False, "axes.spines.right": False,
         "axes.spines.left": True, "axes.spines.bottom": True,
         # ── light grid ──
         "axes.grid": True, "grid.alpha": 0.30, "grid.linewidth": 0.5,
         "grid.linestyle": "-",
         "lines.linewidth": 1.0,
+        "xtick.major.width": 0.8, "ytick.major.width": 0.8,
+        "xtick.minor.width": 0.8, "ytick.minor.width": 0.8,
     })
+
+
+_PANEL_RE = re.compile(r"^\s*\(?([A-Za-z])\)?(?:\s*[-.:)]?\s*)$")
+_TITLE_PANEL_RE = re.compile(
+    r"^\s*(?:\(([A-Za-z])\)|([A-Za-z])[.):]|([a-z])\s{2,})(.*)$"
+)
+
+
+def _is_panel_text(ax, text) -> bool:
+    if _PANEL_RE.match(text.get_text()) is None or text.get_transform() is not ax.transAxes:
+        return False
+    x, y = text.get_position()
+    return x <= 0.12 and y >= 0.90
+
+
+def _add_endpoint_ticks(ax, axis_name: str, linewidth: float = 0.8) -> None:
+    """Add unlabeled ticks at both visible spine endpoints without moving limits."""
+    axis = ax.xaxis if axis_name == "x" else ax.yaxis
+    limits = ax.get_xlim() if axis_name == "x" else ax.get_ylim()
+    lo, hi = sorted(float(v) for v in limits)
+    span = hi - lo
+    if not np.isfinite([lo, hi]).all() or span <= 0:
+        return
+    major = np.asarray(axis.get_majorticklocs(), dtype=float)
+    minor = np.asarray(axis.get_minorticklocs(), dtype=float)
+    present = np.r_[major[np.isfinite(major)], minor[np.isfinite(minor)]]
+    tol = max(span * 1e-7, 1e-12)
+    endpoints = [v for v in (lo, hi)
+                 if not np.any(np.isclose(present, v, rtol=0, atol=tol))]
+    if endpoints:
+        inside_minor = minor[(minor >= lo - tol) & (minor <= hi + tol) & np.isfinite(minor)]
+        axis.set_minor_locator(mticker.FixedLocator(np.unique(np.r_[inside_minor, endpoints])))
+    if axis_name == "x":
+        bottom = ax.spines["bottom"].get_visible()
+        top = ax.spines["top"].get_visible()
+        ax.tick_params(axis="x", which="both", width=linewidth, direction="in",
+                       bottom=bottom, top=top)
+        ax.tick_params(axis="x", which="minor", length=3)
+    else:
+        left = ax.spines["left"].get_visible()
+        right = ax.spines["right"].get_visible()
+        ax.tick_params(axis="y", which="both", width=linewidth, direction="in",
+                       left=left, right=right)
+        ax.tick_params(axis="y", which="minor", length=3)
+
+
+def finalize_publication_figure(fig, auto_panel_labels: bool = True,
+                                linewidth: float = 0.8) -> None:
+    """Enforce typography, axes, endpoint ticks, and compact panel labels."""
+    fig.canvas.draw()
+    for text in fig.findobj(match=Text):
+        text.set_fontfamily("Arial")
+    primary_axes = []
+    occupied = []
+    for ax in fig.axes:
+        if not ax.axison:
+            continue
+        for text in ax.findobj(match=Text):
+            text.set_fontfamily("Arial")
+        for spine in ax.spines.values():
+            if spine.get_visible():
+                spine.set_linewidth(linewidth)
+        _add_endpoint_ticks(ax, "x", linewidth)
+        _add_endpoint_ticks(ax, "y", linewidth)
+        if ax.get_label() == "<colorbar>":
+            continue
+        bounds = tuple(round(v, 5) for v in ax.get_position().bounds)
+        if bounds in occupied:
+            continue
+        occupied.append(bounds)
+        primary_axes.append(ax)
+
+    for ax in primary_axes:
+        for location in ("left", "center", "right"):
+            title = ax.get_title(loc=location)
+            match = _TITLE_PANEL_RE.match(title)
+            if match:
+                letter = (match.group(1) or match.group(2) or match.group(3)).lower()
+                ax.set_title(f"({letter}) {match.group(4)}", loc=location)
+        for text in ax.texts:
+            match = _PANEL_RE.match(text.get_text()) if _is_panel_text(ax, text) else None
+            if match:
+                text.set_text(f"({match.group(1).lower()})")
+                text.set_fontweight("bold")
+                text.set_clip_on(False)
+
+    if auto_panel_labels and 2 <= len(primary_axes) <= 12:
+        for index, ax in enumerate(primary_axes):
+            has_title_label = any(
+                _TITLE_PANEL_RE.match(ax.get_title(loc=location)) is not None
+                for location in ("left", "center", "right")
+            )
+            has_text_label = any(_is_panel_text(ax, text) for text in ax.texts)
+            if has_title_label or has_text_label:
+                continue
+            left_title = ax.get_title(loc="left")
+            if left_title:
+                ax.set_title(f"({chr(97 + index)}) {left_title}", loc="left")
+                continue
+            ax.text(0.0, 1.02, f"({chr(97 + index)})", transform=ax.transAxes,
+                    ha="left", va="bottom", fontsize=8, fontweight="bold",
+                    fontfamily="Arial", clip_on=False,
+                    bbox={"facecolor": "white", "edgecolor": "none", "pad": 0.15})
+    fig.canvas.draw()
 
 
 def save_publication_figure(fig, out_path, bbox_inches="tight") -> None:
     """Save a review PNG and editable SVG/PDF masters from one figure."""
     out_path = Path(out_path)
     out_path.parent.mkdir(parents=True, exist_ok=True)
+    finalize_publication_figure(fig)
     for suffix in (".png", ".svg", ".pdf"):
         fig.savefig(out_path.with_suffix(suffix), dpi=600,
                     bbox_inches=bbox_inches)

@@ -21,6 +21,7 @@ import matplotlib.gridspec as gridspec
 import matplotlib.patches as mpatches
 from matplotlib.colors import LinearSegmentedColormap
 from pathlib import Path
+from publication_style import configure_publication_style, finalize_figure
 
 warnings.filterwarnings("ignore")
 matplotlib.use("Agg")
@@ -31,6 +32,7 @@ plt.rcParams["font.sans-serif"] = ["Arial", "Helvetica", "DejaVu Sans",
                                     "Liberation Sans"]
 plt.rcParams["svg.fonttype"]    = "none"
 plt.rcParams["pdf.fonttype"]    = 42
+configure_publication_style()
 
 # ── PALETTE（nature-skills api.md）───────────────────────────────────────────
 PAL = {
@@ -113,7 +115,7 @@ GRADE_BANDS = [
 
 
 def apply_publication_style(ax, font_size: int = 9,
-                             axes_linewidth: float = 1.2) -> None:
+                             axes_linewidth: float = 0.8) -> None:
     """Apply nature-skills publication style to an axes."""
     ax.spines["right"].set_visible(False)
     ax.spines["top"].set_visible(False)
@@ -129,9 +131,11 @@ def apply_publication_style(ax, font_size: int = 9,
 
 def add_panel_label(ax, label: str, x=-0.10, y=1.03,
                     fontsize=11, fontweight="bold") -> None:
-    ax.text(x, y, label.lower(), transform=ax.transAxes,
+    normalized = label.strip().strip("()").lower()
+    ax.text(x, y, f"({normalized})", transform=ax.transAxes,
             fontsize=fontsize, fontweight=fontweight,
-            va="bottom", ha="right")
+            va="bottom", ha="right", clip_on=False,
+            bbox={"facecolor": "white", "edgecolor": "none", "pad": 0.15})
 
 
 def luminance(hex_color: str) -> float:
@@ -140,8 +144,9 @@ def luminance(hex_color: str) -> float:
     return 0.299*r + 0.587*g + 0.114*b
 
 
-def finalize(fig, stem: str, dpi: int = 300) -> None:
+def finalize(fig, stem: str, dpi: int = 600) -> None:
     plt.tight_layout(pad=1.5)
+    finalize_figure(fig)
     for fmt in ("png", "svg", "pdf"):
         out = FIG_DIR / f"{stem}.{fmt}"
         fig.savefig(out, dpi=dpi, bbox_inches="tight")

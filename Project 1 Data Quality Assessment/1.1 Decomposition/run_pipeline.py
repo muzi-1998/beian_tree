@@ -940,12 +940,61 @@ def main():
                     help="write a W2 checkpoint and stop before whitening")
     ap.add_argument("--resume-w3", action="store_true",
                     help="resume whitening and figures from the W2 checkpoint")
+    ap.add_argument("--replot-state", action="store_true",
+                    help="regenerate figures from the last validated pipeline state")
     args = ap.parse_args()
 
     t0 = time.time()
     cfg = load_configs(ROOT / "configs")
     chash = config_hash(cfg)
     _log(f"config hash = {chash}  quick={args.quick}")
+    if args.replot_state:
+        import pickle
+        state_path = ROOT / "outputs" / "_pipeline_state.pkl"
+        checkpoint_path = ROOT / "outputs" / "_w2_checkpoint.pkl"
+        manifests = sorted(Path(cfg["paths"]["run_manifest"]).glob("run_*.json"))
+        if not state_path.exists() or not checkpoint_path.exists() or not manifests:
+            raise FileNotFoundError(
+                "Validated pipeline state, W2 checkpoint, or run manifest is missing"
+            )
+        latest_manifest = json.loads(manifests[-1].read_text(encoding="utf-8"))
+        if latest_manifest.get("config_hash") != chash:
+            raise ValueError("Pipeline state config hash does not match current config")
+        with open(checkpoint_path, "rb") as fh:
+            checkpoint_payload = pickle.load(fh)
+        if checkpoint_payload.get("config_hash") != chash:
+            raise ValueError("W2 checkpoint config hash does not match current config")
+        out = checkpoint_payload["out"]
+        with open(state_path, "rb") as fh:
+            out.update(pickle.load(fh))
+        out["kind_of"] = _kind_of(out)
+        _log(f"Replot state loaded: {state_path}")
+        _, held_inf_flags = preprocess.hold_to_min(out["inf_f"], out["df_min"].index)
+        _, held_eff_flags = preprocess.hold_to_min(out["eff_f"], out["df_min"].index)
+        all_flags = pd.concat([out["fl_min"], held_inf_flags, held_eff_flags], axis=1)
+        fig_root = Path(cfg["paths"]["figure_root"])
+        figures.availability_heatmap(
+            all_flags, fig_root / "fig_W1_availability_heatmap.png",
+            title="North-Bank data availability (1.1 time base)")
+        figures.availability_heatmap(
+            out["fl_min"], fig_root / "fig_W1_availability_heatmap_min.png",
+            downsample="1h",
+            title="North-Bank minute-level data availability (1-min to 1-h worst flag)")
+        figures.availability_heatmap(
+            pd.concat([out["fl_inf"], out["fl_eff"]], axis=1),
+            fig_root / "fig_W1_availability_heatmap_hourly.png",
+            downsample="1D",
+            title="North-Bank hourly-level data availability (1-h to 1-day worst flag)")
+        make_figures(cfg, out, quick=False)
+        make_decomposition_stacks(cfg, out, quick=False)
+        make_combined_figures(cfg, out, quick=False)
+        make_decomposition_overviews(cfg, out, quick=False)
+        make_combined_overviews(cfg, out, quick=False)
+        make_ribbon_overviews(cfg, out, quick=False)
+        make_acf_band_figures(cfg, out, quick=False)
+        make_do_manifest_figures(cfg, out)
+        _log("Figure-only regeneration complete; statistical tables unchanged")
+        return out
     checkpoint = ROOT / "outputs" / "_w2_checkpoint.pkl"
     if args.resume_w3:
         if not checkpoint.exists():

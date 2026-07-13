@@ -37,12 +37,15 @@ import matplotlib.ticker as mticker
 import matplotlib.dates as mdates
 from matplotlib.gridspec import GridSpec
 from matplotlib.colors import LinearSegmentedColormap
+from publication_style import configure_publication_style, finalize_figure
 
 # ── 强制 rcParams（nature-skills 三行必选）────────────────────────────────────
 plt.rcParams["font.family"]     = "sans-serif"
 plt.rcParams["font.sans-serif"] = ["Arial", "Helvetica", "DejaVu Sans",
                                     "Liberation Sans"]
 plt.rcParams["svg.fonttype"]    = "none"
+plt.rcParams["pdf.fonttype"]    = 42
+configure_publication_style()
 
 # ── 路径 ─────────────────────────────────────────────────────────────────────
 _ROOT = Path(__file__).parent
@@ -80,8 +83,8 @@ TS   = 9        # 子图标题字号
 TK   = 7        # 刻度标签字号
 LWM  = 1.0      # 主线宽
 LWA  = 0.6      # 辅助线宽
-LW_SP = 1.0     # 轴线宽（精细图）
-DPI  = 300      # 导出 DPI（SVG 为矢量，此值影响 PNG）
+LW_SP = 0.8     # Unified publication axis weight (pt)
+DPI  = 600      # High-resolution review raster; SVG/PDF remain vector
 
 # ── 语义配色 ─────────────────────────────────────────────────────────────────
 C_QTI = PAL["blue_main"]
@@ -146,9 +149,11 @@ def apply_publication_style(ax, font_size: int = FS,
 def add_panel_label(ax, label: str, x: float = -0.10, y: float = 1.03,
                     fontsize: int = 11, fontweight: str = "bold") -> None:
     """Add a bold lowercase panel label to an axes."""
-    ax.text(x, y, label.lower(), transform=ax.transAxes,
+    normalized = label.strip().strip("()").lower()
+    ax.text(x, y, f"({normalized})", transform=ax.transAxes,
             fontsize=fontsize, fontweight=fontweight,
-            va="bottom", ha="right")
+            va="bottom", ha="right", clip_on=False,
+            bbox={"facecolor": "white", "edgecolor": "none", "pad": 0.15})
 
 
 def luminance(hex_color: str) -> float:
@@ -165,6 +170,7 @@ def save_fig(fig, name: str, pad: float = 2.0) -> None:
         fig.tight_layout(pad=pad, rect=(0, 0, 1, 0.97))
     else:
         fig.tight_layout(pad=pad)
+    finalize_figure(fig)
     for fmt in ("png", "svg", "pdf"):
         p = FIGS / f"{name}.{fmt}"
         fig.savefig(p, dpi=DPI, bbox_inches="tight")
