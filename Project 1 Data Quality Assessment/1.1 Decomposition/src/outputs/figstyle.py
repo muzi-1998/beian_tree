@@ -74,6 +74,7 @@ def setup_style() -> None:
         "lines.linewidth": 1.0,
         "xtick.major.width": 0.8, "ytick.major.width": 0.8,
         "xtick.minor.width": 0.8, "ytick.minor.width": 0.8,
+        "xtick.direction": "out", "ytick.direction": "out",
     })
 
 
@@ -110,13 +111,13 @@ def _add_endpoint_ticks(ax, axis_name: str, linewidth: float = 0.8) -> None:
     if axis_name == "x":
         bottom = ax.spines["bottom"].get_visible()
         top = ax.spines["top"].get_visible()
-        ax.tick_params(axis="x", which="both", width=linewidth, direction="in",
+        ax.tick_params(axis="x", which="both", width=linewidth, direction="out",
                        bottom=bottom, top=top)
         ax.tick_params(axis="x", which="minor", length=3)
     else:
         left = ax.spines["left"].get_visible()
         right = ax.spines["right"].get_visible()
-        ax.tick_params(axis="y", which="both", width=linewidth, direction="in",
+        ax.tick_params(axis="y", which="both", width=linewidth, direction="out",
                        left=left, right=right)
         ax.tick_params(axis="y", which="minor", length=3)
 

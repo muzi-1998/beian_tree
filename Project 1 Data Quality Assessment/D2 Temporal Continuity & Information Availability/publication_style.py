@@ -31,6 +31,8 @@ def configure_publication_style() -> None:
         "ytick.major.width": AXIS_LINEWIDTH,
         "xtick.minor.width": AXIS_LINEWIDTH,
         "ytick.minor.width": AXIS_LINEWIDTH,
+        "xtick.direction": "out",
+        "ytick.direction": "out",
         "pdf.fonttype": 42,
         "ps.fonttype": 42,
         "svg.fonttype": "none",
@@ -55,12 +57,12 @@ def _add_endpoint_ticks(ax, axis_name: str) -> None:
                        & np.isfinite(minor)]
         axis.set_minor_locator(mticker.FixedLocator(np.unique(np.r_[inside, endpoints])))
     if axis_name == "x":
-        ax.tick_params(axis="x", which="both", width=AXIS_LINEWIDTH, direction="in",
+        ax.tick_params(axis="x", which="both", width=AXIS_LINEWIDTH, direction="out",
                        bottom=ax.spines["bottom"].get_visible(),
                        top=ax.spines["top"].get_visible())
         ax.tick_params(axis="x", which="minor", length=3)
     else:
-        ax.tick_params(axis="y", which="both", width=AXIS_LINEWIDTH, direction="in",
+        ax.tick_params(axis="y", which="both", width=AXIS_LINEWIDTH, direction="out",
                        left=ax.spines["left"].get_visible(),
                        right=ax.spines["right"].get_visible())
         ax.tick_params(axis="y", which="minor", length=3)

@@ -41,6 +41,10 @@ def test_d1_publication_contract():
     for index, ax in enumerate(axes):
         assert ax.spines["left"].get_linewidth() == 0.8
         assert ax.spines["bottom"].get_linewidth() == 0.8
+        assert all(tick._tickdir == "out" for tick in ax.xaxis.majorTicks)
+        assert all(tick._tickdir == "out" for tick in ax.yaxis.majorTicks)
+        assert all(tick._tickdir == "out" for tick in ax.xaxis.minorTicks)
+        assert all(tick._tickdir == "out" for tick in ax.yaxis.minorTicks)
         xloc = np.r_[ax.xaxis.get_majorticklocs(), ax.xaxis.get_minorticklocs()]
         yloc = np.r_[ax.yaxis.get_majorticklocs(), ax.yaxis.get_minorticklocs()]
         xlim, ylim = ax.get_xlim(), ax.get_ylim()
