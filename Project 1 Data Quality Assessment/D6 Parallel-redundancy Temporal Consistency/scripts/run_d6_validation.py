@@ -19,7 +19,7 @@ if __name__ == "__main__":
     data_dir = D6_ROOT / "outputs" / "data"
     main = pd.read_excel(data_dir / "D6_main_scores.xlsx", sheet_name="main_scores")
     main["timestamp"] = pd.to_datetime(main["timestamp"])
-    params = pd.read_excel(data_dir / "D6_mapping_params.xlsx", sheet_name="pair_quantiles")
+    params = pd.read_excel(data_dir / "D6_mapping_params.xlsx", sheet_name="public_quantiles")
     outputs = run_validation(
         cfg, cfg.paths["residuals"], main, params,
         data_dir / "D6_benchmark_results.xlsx",

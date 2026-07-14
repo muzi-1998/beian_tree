@@ -1,7 +1,7 @@
 {
-  "run_id": "D6V13_20260713_103039",
-  "config_version": "d6-v1.3-independent-20260713",
-  "generated_utc": "2026-07-13T10:34:45.483736+00:00",
+  "run_id": "D6V14_20260714_024929",
+  "config_version": "d6-v1.4-restored-v12-20260714",
+  "generated_utc": "2026-07-14T02:51:51.945917+00:00",
   "data_span": [
     "2025-08-01 00:00:00",
     "2026-04-13 23:50:00"
@@ -9,6 +9,7 @@
   "rows": 42847,
   "pairs": 7,
   "d2_run_id": "D2V1_20260710_1733",
+  "calibration_id": "D6CAL-V14-20f697901061",
   "dependencies": [
     {
       "dependency": "residuals",
@@ -29,11 +30,36 @@
       "modified_utc": "2026-07-10T02:49:31.813900+00:00"
     },
     {
+      "dependency": "regime_templates",
+      "path_role": "D1_regime_templates.xlsx",
+      "sha256": "cf4bd67afd8248d8b8bf0a92a549bb1c28504f1fea4e7cf2b443b7e6b0123153",
+      "modified_utc": "2026-07-10T02:49:40.805057+00:00"
+    },
+    {
       "dependency": "d2_scores",
       "path_role": "D2_main_scores_hourly.xlsx",
       "sha256": "3f233f4add980824db243db71fc0c0a9844742239c378bb5ca20d97a48720df0",
       "modified_utc": "2026-07-10T09:35:03.368662+00:00"
+    },
+    {
+      "dependency": "d6_config",
+      "path_role": "d6.yaml",
+      "sha256": "1f0305e3d5a3eba54d7b3118975e967150b40f2789d22854210c7689533804dc",
+      "modified_utc": "2026-07-14T02:20:41.598806+00:00"
+    },
+    {
+      "dependency": "d6_pipeline_code",
+      "path_role": "pipeline.py",
+      "sha256": "7b292b9f43248597dd9ac5974a343ae511f06bcbab8b5f5151fc1c9e96f7b927",
+      "modified_utc": "2026-07-14T02:48:27.198285+00:00"
+    },
+    {
+      "dependency": "d6_scoring_code",
+      "path_role": "scoring.py",
+      "sha256": "9ff54d52d996449efd7630afdfa99bc9d2969e2e796e976d4932e998e99b0f76",
+      "modified_utc": "2026-07-14T02:37:11.533384+00:00"
     }
   ],
-  "scientific_boundary": "D6 score is independent; D2 gates evaluability; D1/D7 do not modify the score."
+  "scientific_boundary": "D6_raw is independent; D2 gates evaluability; true D1 fuse produces a provisional downstream score; final D6_forDQR is unavailable until real D7 arbitration.",
+  "benchmark_status": "provisional_pending_D7_screen"
 }

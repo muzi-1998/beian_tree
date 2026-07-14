@@ -1,8 +1,15 @@
-version: d6-v1.3-independent-20260713
+version: d6-v1.4-restored-v12-20260714
 window_hours: 24
 step_hours: 1
 analysis_interval_minutes: 10
 min_valid_fraction: 0.80
+
+change_point:
+  auxiliary_window_days: 7
+  adjacent_segment_hours: 12
+  candidate_step_hours: 6
+  ks_stat_min: 0.35
+  pvalue_max: 0.01
 
 pairs:
   - {pair_id: PAIR_DO11, target: DO_1_1, reference: DO_2_1, zone: aerobic}
@@ -22,16 +29,26 @@ aggregation:
   lambda_blend: 0.75
 
 benchmark:
-  min_windows_per_pair: 500
+  d1_min_score: 4.5
+  d2_continuity_hours: 24
+  min_stratum_windows: 100
+  min_variable_windows: 50
   quantiles: [0.50, 0.75, 0.90, 0.975]
+  d7_screen_status: pending_D7_not_available
+
+arbitration:
+  d1_unreliable_below: 2.5
+  d7_available: false
+  provisional_status: pending_D7_arbitration
 
 classification:
   consistent_min: 3.5
   asymmetry_max: 3.0
-  event_min_hours: 2
+  event_min_hours: 3
 
 paths:
   residuals: 1.1 Decomposition/outputs/parquet/residual_min.parquet
   time_base_contract: 1.1 Decomposition/outputs/parquet/time_base_contract.json
   d1_scores: D1 Sensor health/outputs/data/D1_main_scores_min.xlsx
+  regime_templates: D1 Sensor health/outputs/data/D1_regime_templates.xlsx
   d2_scores: D2 Temporal Continuity & Information Availability/artifacts/data/D2_main_scores_hourly.xlsx

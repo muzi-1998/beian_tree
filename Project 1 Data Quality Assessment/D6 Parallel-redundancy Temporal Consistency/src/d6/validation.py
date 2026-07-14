@@ -7,7 +7,13 @@ import pandas as pd
 from sklearn.metrics import auc, precision_recall_curve, roc_auc_score, roc_curve
 
 from .config import D6Config, PairConfig
-from .scoring import aggregate_scores, compute_window_metrics, score_from_quantiles
+from .scoring import (
+    adjacent_ks_change_timeline,
+    aggregate_scores,
+    compare_change_points,
+    compute_window_metrics,
+    score_from_quantiles,
+)
 
 
 INJECTIONS = ("unilateral_drift", "unilateral_step", "unilateral_freeze", "unilateral_spike")
@@ -58,8 +64,16 @@ def _inject(
     return t, r
 
 
-def _thresholds(params: pd.DataFrame, pair_id: str, q_name: str) -> np.ndarray:
-    row = params[(params["pair_id"] == pair_id) & (params["subscore"] == q_name)].iloc[0]
+def _thresholds(
+    params: pd.DataFrame,
+    variable: str,
+    regime_id: float,
+    q_name: str,
+) -> np.ndarray:
+    regime_match = params["regime_id"].eq(regime_id) if pd.notna(regime_id) else params["regime_id"].isna()
+    row = params[
+        params["variable"].eq(variable) & regime_match & params["subscore"].eq(q_name)
+    ].iloc[0]
     return row[["q50", "q75", "q90", "q97_5"]].to_numpy(dtype=float)
 
 
@@ -69,6 +83,8 @@ def _score_window(
     pair: PairConfig,
     cfg: D6Config,
     params: pd.DataFrame,
+    regime_id: float,
+    q_cp: float,
 ) -> dict[str, float]:
     metrics = compute_window_metrics(
         target, reference, deadband=cfg.deadband[pair.variable],
@@ -76,12 +92,15 @@ def _score_window(
     )
     risks = {
         "Q_dist": metrics.risk_dist, "Q_trend": metrics.risk_trend,
-        "Q_var": metrics.risk_var, "Q_cp": metrics.risk_cp,
+        "Q_var": metrics.risk_var,
     }
     q = {
-        name: float(score_from_quantiles(np.array([value]), _thresholds(params, pair.pair_id, name))[0])
+        name: float(score_from_quantiles(
+            np.array([value]), _thresholds(params, pair.variable, regime_id, name)
+        )[0])
         for name, value in risks.items()
     }
+    q["Q_cp"] = float(q_cp)
     q_var_without_deadband = q["Q_var"]
     if metrics.deadband_active:
         q["Q_var"] = 5.0
@@ -134,7 +153,7 @@ def run_validation(
     for pair in cfg.pairs:
         candidates = main[
             (main["pair_id"] == pair.pair_id)
-            & main["usable_for_DQR"]
+            & main["usable_for_D6"]
             & (main["timestamp"] >= main["timestamp"].quantile(0.70))
         ]["timestamp"].drop_duplicates()
         if len(candidates) > windows_per_pair:
@@ -143,10 +162,15 @@ def run_validation(
         for window_no, timestamp in enumerate(candidates, 1):
             end_pos = residuals.index.searchsorted(pd.Timestamp(timestamp) + pd.Timedelta(hours=1))
             start_pos = end_pos - window_points
-            if start_pos < 0:
+            auxiliary_points = int(cfg.change_point["auxiliary_window_days"]) * 24 * 60 // interval
+            auxiliary_start = end_pos - auxiliary_points
+            if start_pos < 0 or auxiliary_start < 0:
                 continue
             target = residuals[pair.target].iloc[start_pos:end_pos].to_numpy(dtype=float)
             reference = residuals[pair.reference].iloc[start_pos:end_pos].to_numpy(dtype=float)
+            target_aux = residuals[pair.target].iloc[auxiliary_start:end_pos].to_numpy(dtype=float)
+            reference_aux = residuals[pair.reference].iloc[auxiliary_start:end_pos].to_numpy(dtype=float)
+            auxiliary_index = residuals.index[auxiliary_start:end_pos]
             if min(np.isfinite(target).mean(), np.isfinite(reference).mean()) < cfg.min_valid_fraction:
                 continue
             scale = max(
@@ -156,10 +180,38 @@ def run_validation(
             )
             for injection in ("baseline", *INJECTIONS, "synchronous_switch", "common_mode_drift"):
                 if injection == "baseline":
-                    t_inj, r_inj = target, reference
+                    t_inj, r_inj = target.copy(), reference.copy()
+                    t_aux_inj, r_aux_inj = target_aux.copy(), reference_aux.copy()
                 else:
                     t_inj, r_inj = _inject(target, reference, injection, scale, rng)
-                score = _score_window(t_inj, r_inj, pair, cfg, params)
+                    t_aux_inj, r_aux_inj = target_aux.copy(), reference_aux.copy()
+                    t_aux_inj[-window_points:] = t_inj
+                    r_aux_inj[-window_points:] = r_inj
+                cp_kwargs = {
+                    "auxiliary_window_days": int(cfg.change_point["auxiliary_window_days"]),
+                    "adjacent_segment_hours": int(cfg.change_point["adjacent_segment_hours"]),
+                    "candidate_step_hours": int(cfg.change_point["candidate_step_hours"]),
+                    "ks_stat_min": float(cfg.change_point["ks_stat_min"]),
+                    "pvalue_max": float(cfg.change_point["pvalue_max"]),
+                    "min_valid_fraction": cfg.min_valid_fraction,
+                }
+                output_index = pd.DatetimeIndex([pd.Timestamp(timestamp)])
+                target_cp = adjacent_ks_change_timeline(
+                    pd.Series(t_aux_inj, index=auxiliary_index).resample("1h").median(),
+                    output_index,
+                    **cp_kwargs,
+                )
+                reference_cp = adjacent_ks_change_timeline(
+                    pd.Series(r_aux_inj, index=auxiliary_index).resample("1h").median(),
+                    output_index,
+                    **cp_kwargs,
+                )
+                q_cp = float(compare_change_points(target_cp, reference_cp)["Q_cp"].iloc[0])
+                regime_id = main.loc[
+                    main["pair_id"].eq(pair.pair_id) & main["timestamp"].eq(timestamp),
+                    "regime_id",
+                ].iloc[0]
+                score = _score_window(t_inj, r_inj, pair, cfg, params, regime_id, q_cp)
                 rows.append({
                     "pair_id": pair.pair_id, "window_id": f"{pair.pair_id}-{window_no:02d}",
                     "timestamp": timestamp, "injection": injection,
@@ -202,19 +254,23 @@ def run_validation(
             curve_rows.append({"injection": injection, "curve": "PR", "x": recall[i], "y": precision[i],
                                "threshold": pr_threshold[i] if i < len(pr_threshold) else np.nan})
     for injection in ("synchronous_switch", "common_mode_drift"):
-        subset = scores[scores["injection"] == injection]
-        far = float((subset["D6_raw"] < cfg.classification["asymmetry_max"]).mean())
+        subset = scores[scores["injection"] == injection][["window_id", "D6_raw"]]
+        paired = subset.merge(
+            baseline[["window_id", "D6_raw"]], on="window_id", suffixes=("_injected", "_baseline")
+        )
+        paired = paired[paired["D6_raw_baseline"] >= cfg.classification["asymmetry_max"]]
+        far = float((paired["D6_raw_injected"] < cfg.classification["asymmetry_max"]).mean())
         ci_low, ci_high = _cluster_bootstrap_interval(
-            subset,
-            lambda draw: (draw["D6_raw"] < cfg.classification["asymmetry_max"]).mean(),
+            paired,
+            lambda draw: (draw["D6_raw_injected"] < cfg.classification["asymmetry_max"]).mean(),
             rng,
         )
         summary_rows.append({
-            "validation": injection, "metric": "false_alarm_rate", "value": far,
+            "validation": injection, "metric": "new_false_alarm_rate", "value": far,
             "CI_low": ci_low, "CI_high": ci_high,
             "target": 0.10, "pass": far <= 0.10,
             "required_for_acceptance": True,
-            "interpretation": "symmetric pair change should not be attributed as pair asymmetry",
+            "interpretation": "paired conditional FAR among windows that were non-alarming before injection",
         })
 
     ablation_rows: list[dict[str, object]] = []
@@ -225,6 +281,7 @@ def run_validation(
     for condition in ("full", "no_dist", "no_trend", "no_var", "no_cp", "no_deadband"):
         score = validation_set["D6_raw"].to_numpy() if condition == "full" else _ablation_score(validation_set, condition, cfg)
         sync_score = sync["D6_raw"].to_numpy() if condition == "full" else _ablation_score(sync, condition, cfg)
+        baseline_score = baseline["D6_raw"].to_numpy() if condition == "full" else _ablation_score(baseline, condition, cfg)
         scored_validation = validation_set[["window_id", "is_unilateral_fault"]].copy()
         scored_validation["score"] = score
         auc_low, auc_high = _cluster_bootstrap_interval(
@@ -234,6 +291,10 @@ def run_validation(
         )
         scored_sync = sync[["window_id"]].copy()
         scored_sync["score"] = sync_score
+        scored_sync["baseline_score"] = baseline_score
+        scored_sync = scored_sync[
+            scored_sync["baseline_score"] >= cfg.classification["asymmetry_max"]
+        ]
         far_low, far_high = _cluster_bootstrap_interval(
             scored_sync,
             lambda draw: (draw["score"] < cfg.classification["asymmetry_max"]).mean(),
@@ -242,7 +303,9 @@ def run_validation(
         ablation_rows.append({
             "condition": condition, "ROC_AUC": float(roc_auc_score(labels, 5.0 - score)),
             "AUC_CI_low": auc_low, "AUC_CI_high": auc_high,
-            "synchronous_FAR": float((sync_score < cfg.classification["asymmetry_max"]).mean()),
+            "synchronous_FAR": float(
+                (scored_sync["score"] < cfg.classification["asymmetry_max"]).mean()
+            ),
             "FAR_CI_low": far_low, "FAR_CI_high": far_high,
             "n_positive": int(labels.sum()), "n_negative": int((1 - labels).sum()),
         })
@@ -252,6 +315,9 @@ def run_validation(
         "roc_pr_curves": pd.DataFrame(curve_rows),
         "ablation": pd.DataFrame(ablation_rows),
     }
+    calibration_id = str(main["calibration_id"].dropna().iloc[0])
+    for frame in outputs.values():
+        frame["calibration_id"] = calibration_id
     with pd.ExcelWriter(output_path, engine="openpyxl") as writer:
         for name, frame in outputs.items():
             frame.to_excel(writer, sheet_name=name, index=False)

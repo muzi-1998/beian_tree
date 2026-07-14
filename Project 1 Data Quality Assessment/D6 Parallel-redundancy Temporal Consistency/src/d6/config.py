@@ -30,7 +30,9 @@ class D6Config:
     deadband: dict[str, float]
     weights: dict[str, float]
     lambda_blend: float
+    change_point: dict[str, Any]
     benchmark: dict[str, Any]
+    arbitration: dict[str, Any]
     classification: dict[str, Any]
     paths: dict[str, Path]
 
@@ -56,7 +58,9 @@ def load_config(path: Path, project_root: Path) -> D6Config:
         deadband={k: float(v) for k, v in raw["deadband"].items()},
         weights=weights,
         lambda_blend=float(raw["aggregation"]["lambda_blend"]),
+        change_point=raw["change_point"],
         benchmark=raw["benchmark"],
+        arbitration=raw["arbitration"],
         classification=raw["classification"],
         paths=paths,
     )

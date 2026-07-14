@@ -38,7 +38,7 @@ def figure_m1(cfg: D6Config, main: pd.DataFrame, output_dir: Path) -> None:
                 label="Pool 1" if index == 0 else None)
         ax.plot(residuals.index, residuals[pair.reference] / scale, color=PALETTE["orange"], lw=0.55,
                 alpha=0.90, label="Pool 2" if index == 0 else None)
-        events = main[(main["pair_id"] == pair.pair_id) & (main["status_label"] == "pair_asymmetry")]
+        events = main[(main["pair_id"] == pair.pair_id) & (main["raw_status_label"] == "pair_asymmetry")]
         for timestamp in events["timestamp"].iloc[::6]:
             ax.axvspan(timestamp, timestamp + pd.Timedelta(hours=6), color=PALETTE["red"], alpha=0.08, lw=0)
         ax.axhline(0, color=PALETTE["light_gray"], lw=0.45, zorder=0)
@@ -75,7 +75,7 @@ def figure_m2(main: pd.DataFrame, profile: pd.DataFrame, output_dir: Path) -> No
     _open(axes[0])
 
     positions = np.arange(len(pairs))
-    data = [main.loc[(main["pair_id"] == pair) & main["usable_for_DQR"], "D6_total"].dropna() for pair in pairs]
+    data = [main.loc[(main["pair_id"] == pair) & main["usable_for_D6"], "D6_total"].dropna() for pair in pairs]
     box = axes[1].boxplot(data, positions=positions, widths=0.58, patch_artist=True, showfliers=False,
                           medianprops={"color": "white", "linewidth": 0.9},
                           whiskerprops={"linewidth": 0.7}, capprops={"linewidth": 0.7})
@@ -121,7 +121,7 @@ def figure_m3(raw: pd.DataFrame, output_dir: Path) -> None:
 
 
 def figure_d1(main: pd.DataFrame, output_dir: Path) -> None:
-    weekly = (main.set_index("timestamp").groupby("pair_id")["D6_total"]
+    weekly = (main.set_index("timestamp").groupby("pair_id")["D6_forDQR_provisional"]
               .resample("W-MON").mean().unstack(0))
     weekly = weekly[[c for c in main["pair_id"].drop_duplicates() if c in weekly.columns]]
     fig, ax = plt.subplots(figsize=(183 / 25.4, 57 / 25.4))
@@ -131,21 +131,22 @@ def figure_d1(main: pd.DataFrame, output_dir: Path) -> None:
     ax.set_xticks(tick, [weekly.index[i].strftime("%Y-%m-%d") for i in tick], rotation=35, ha="right")
     ax.set_xlabel("ISO week ending")
     cbar = fig.colorbar(image, ax=ax, fraction=0.025, pad=0.018, ticks=[1, 2, 3, 4, 5])
-    cbar.set_label("Mean D6 score")
-    fig.text(0.94, 0.97, "White: insufficient evaluable coverage", ha="right", va="top", fontsize=6)
+    cbar.set_label("Mean provisional D6-for-DQR score")
+    fig.text(0.10, 0.965, "Provisional: D1 fuse applied; D7 pending",
+             ha="left", va="bottom", fontsize=6)
     _boxed(ax)
-    fig.subplots_adjust(left=0.10, right=0.94, top=0.96, bottom=0.27)
+    fig.subplots_adjust(left=0.10, right=0.94, top=0.91, bottom=0.27)
     save_figure(fig, output_dir / "Fig_D1_dqr_heatmap")
 
 
 def figure_d2(main: pd.DataFrame, output_dir: Path) -> None:
     order = list(main["pair_id"].drop_duplicates())
-    status_order = ["paired_consistent", "borderline", "pair_asymmetry", "not_evaluable"]
+    status_order = ["paired_consistent", "pending_D7_arbitration", "ambiguous_asymmetry", "not_evaluable"]
     status_map = {name: index for index, name in enumerate(status_order)}
     weekly = main.copy()
     weekly["week"] = weekly["timestamp"].dt.to_period("W-MON").dt.start_time
     mode = weekly.groupby(["pair_id", "week"])["status_label"].agg(lambda x: x.mode().iloc[0]).unstack()
-    coverage = weekly.groupby(["pair_id", "week"])["usable_for_DQR"].mean().unstack()
+    coverage = weekly.groupby(["pair_id", "week"])["usable_for_D6"].mean().unstack()
     mode = mode.reindex(order)
     coverage = coverage.reindex(order)
     coded = mode.apply(lambda column: column.map(status_map)).to_numpy(dtype=float)
@@ -174,29 +175,33 @@ def figure_d2(main: pd.DataFrame, output_dir: Path) -> None:
 
 
 def figure_d3(main: pd.DataFrame, output_dir: Path) -> None:
-    valid = main[main["D6_raw"].notna()].copy()
-    valid["D1_pair_min"] = valid[["D1_target", "D1_ref"]].min(axis=1)
+    valid = main.dropna(subset=["D6_raw", "D6_forDQR_provisional"]).copy()
     fig, axes = plt.subplots(1, 2, figsize=(183 / 25.4, 77 / 25.4), gridspec_kw={"wspace": 0.34})
-    sample = valid.dropna(subset=["D1_pair_min"])
-    hb = axes[0].hexbin(sample["D1_pair_min"], sample["D6_raw"], gridsize=42, mincnt=1, cmap="Blues")
-    rho = sample[["D1_pair_min", "D6_raw"]].corr(method="spearman").iloc[0, 1]
-    axes[0].text(0.04, 0.94, f"Spearman $\\rho$ = {rho:.2f}", transform=axes[0].transAxes,
-                 va="top", bbox={"facecolor": "white", "edgecolor": "none", "alpha": 0.72, "pad": 0.2})
-    axes[0].set_xlabel("Minimum D1 score in pair")
-    axes[0].set_ylabel("D6 raw score")
+    hb = axes[0].hexbin(valid["D6_raw"], valid["D6_forDQR_provisional"],
+                        gridsize=42, mincnt=1, cmap="Blues", extent=(1, 5, 1, 5))
+    axes[0].plot([1, 5], [1, 5], color=PALETTE["gray"], lw=0.75, ls="--")
+    axes[0].set(xlim=(1, 5), ylim=(1, 5), xlabel="D6 raw score",
+                ylabel="Provisional D6-for-DQR score")
     fig.colorbar(hb, ax=axes[0], fraction=0.046, pad=0.03, label="Window count")
     panel_label(axes[0], "a")
     _boxed(axes[0])
 
-    categories = ["both non-veto", "one/both vetoed"]
-    data = [valid.loc[valid["D2_target_veto"].eq(0) & valid["D2_ref_veto"].eq(0), "D6_raw"],
-            valid.loc[valid["D2_target_veto"].ne(0) | valid["D2_ref_veto"].ne(0), "D6_raw"]]
-    violin = axes[1].violinplot(data, showmeans=False, showmedians=True, widths=0.72)
-    for body, color in zip(violin["bodies"], [PALETTE["teal"], PALETTE["gray"]]):
-        body.set_facecolor(color); body.set_edgecolor(color); body.set_alpha(0.82)
-    axes[1].set_xticks([1, 2], categories, rotation=18, ha="right")
-    axes[1].set_ylabel("D6 raw score (before D2 gate)")
-    axes[1].set_ylim(1, 5)
+    states = ["valid_pair", "target_suspect", "reference_unreliable", "bilateral_unreliable"]
+    counts = valid["fuse_state"].value_counts().reindex(states, fill_value=0)
+    axes[1].bar(np.arange(len(states)), counts.to_numpy(),
+                color=[PALETTE["teal"], PALETTE["blue"], PALETTE["orange"], PALETTE["red"]],
+                width=0.72)
+    axes[1].set_yscale("log")
+    axes[1].set_ylim(0.8, max(10.0, float(counts.max()) * 1.8))
+    for position, count in enumerate(counts.to_numpy()):
+        axes[1].text(position, max(float(count), 1.0) * 1.12, f"{int(count):,}",
+                     ha="center", va="bottom", fontsize=6)
+    axes[1].set_xticks(np.arange(len(states)), [item.replace("_", " ") for item in states],
+                       rotation=28, ha="right")
+    axes[1].set_ylabel("Evaluable windows (log scale)")
+    axes[1].text(0.98, 0.96, "Final D7 arbitration pending", transform=axes[1].transAxes,
+                 ha="right", va="top",
+                 bbox={"facecolor": "white", "edgecolor": "none", "alpha": 0.72, "pad": 0.2})
     panel_label(axes[1], "b")
     _open(axes[1])
     fig.subplots_adjust(left=0.09, right=0.98, top=0.94, bottom=0.23)
@@ -255,7 +260,7 @@ def figure_v2(benchmark_path: Path, output_dir: Path) -> None:
                 error_kw={"elinewidth": 0.7, "ecolor": PALETTE["gray"]})
     axes[1].axhline(0.10, color=PALETTE["red"], lw=0.7, ls="--", label="Acceptance limit")
     axes[1].set_ylim(0, max(0.12, float(ablation["synchronous_FAR"].max()) * 1.25))
-    axes[1].set_ylabel("False-alarm rate: synchronous change")
+    axes[1].set_ylabel("Conditional new false-alarm rate")
     axes[1].set_xticks(x, labels, rotation=35, ha="right")
     axes[1].legend(loc="upper right")
     panel_label(axes[1], "b")
