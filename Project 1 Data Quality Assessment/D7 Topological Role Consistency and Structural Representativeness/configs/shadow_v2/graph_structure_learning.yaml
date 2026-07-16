@@ -1,0 +1,8 @@
+version: d7-graph-shadow-v2.1
+enabled: true
+design_prior_penalty: 1.0
+sparsity_penalty: 0.1
+temporal_fusion_penalty: 0.5
+minimum_persistence_days: 7
+production_impact: none
+automatic_topology_update: false

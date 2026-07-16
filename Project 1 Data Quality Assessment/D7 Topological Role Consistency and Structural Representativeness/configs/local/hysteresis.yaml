@@ -1,0 +1,7 @@
+delta_p_switch: 0.15
+p_enter: 0.60
+entropy_max: 0.65
+ood_quantile: 0.99
+confirm_minutes: 30
+refractory_minutes: 60
+states: [Locked, SwitchCandidate, ActiveNew, OODHold]

@@ -1,0 +1,13 @@
+timezone: Asia/Shanghai
+snapshot_main_minutes: 10
+snapshot_fast_minutes: 5
+snapshot_min_observations: 5
+main_window_hours: 24
+main_step_hours: 1
+fast_window_hours: 2
+fast_step_minutes: 15
+summary_window_days: 7
+minimum_window_coverage: 0.80
+report_only_coverage: 0.60
+reference_fraction: 0.70
+embargo_hours: 168

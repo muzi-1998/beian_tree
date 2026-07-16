@@ -1,0 +1,9 @@
+fallback_order: [variable_regime_zone, variable_regime, variable_public, global_normalized]
+reference_fraction: 0.70
+robust_leverage_quantile: 0.975
+minimum_distinct_months_l3: 3
+minimum_distinct_months_l2: 2
+condition_number_max: 1000.0
+minimum_eigen_ratio: 0.001
+lifecycle_state: candidate
+activation_requires_manual_approval: true
