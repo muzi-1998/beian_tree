@@ -1,0 +1,28 @@
+schema_version: d7-topology-schema-v2.1
+topology_version: d7-topology-declared-v1
+source_drawing_id: PENDING_FIELD_VERIFICATION
+reviewer: PENDING_FIELD_VERIFICATION
+approver: PENDING_FIELD_VERIFICATION
+created_at: '2026-07-16T00:00:00+08:00'
+valid_from: '2025-08-01T00:00:00+08:00'
+valid_to: '2026-04-14T00:00:00+08:00'
+verification_status: provisional_pending_field_verification
+edges:
+  - {edge_id: ORP-L1-1-2, source: ORP_1_1, target: ORP_1_2, direction: forward, edge_type: longitudinal, adjacency_order: 1, weight: 1.0}
+  - {edge_id: ORP-L1-2-3, source: ORP_1_2, target: ORP_1_3, direction: forward, edge_type: longitudinal, adjacency_order: 2, weight: 1.0}
+  - {edge_id: ORP-L2-1-2, source: ORP_2_1, target: ORP_2_2, direction: forward, edge_type: longitudinal, adjacency_order: 1, weight: 1.0}
+  - {edge_id: ORP-L2-2-3, source: ORP_2_2, target: ORP_2_3, direction: forward, edge_type: longitudinal, adjacency_order: 2, weight: 1.0}
+  - {edge_id: DO-L1-1-2, source: DO_1_1, target: DO_1_2, direction: forward, edge_type: longitudinal, adjacency_order: 1, weight: 1.0}
+  - {edge_id: DO-L1-2-3, source: DO_1_2, target: DO_1_3, direction: forward, edge_type: longitudinal, adjacency_order: 2, weight: 1.0}
+  - {edge_id: DO-L1-3-4, source: DO_1_3, target: DO_1_4, direction: forward, edge_type: longitudinal, adjacency_order: 3, weight: 1.0}
+  - {edge_id: DO-L2-1-2, source: DO_2_1, target: DO_2_2, direction: forward, edge_type: longitudinal, adjacency_order: 1, weight: 1.0}
+  - {edge_id: DO-L2-2-3, source: DO_2_2, target: DO_2_3, direction: forward, edge_type: longitudinal, adjacency_order: 2, weight: 1.0}
+  - {edge_id: DO-L2-3-4, source: DO_2_3, target: DO_2_4, direction: forward, edge_type: longitudinal, adjacency_order: 3, weight: 1.0}
+twin_pairs:
+  - {pair_id: PAIR_DO11, sensor_a: DO_1_1, sensor_b: DO_2_1, matched_position: DO_P1, offset_prior: 0.0}
+  - {pair_id: PAIR_DO12, sensor_a: DO_1_2, sensor_b: DO_2_2, matched_position: DO_P2, offset_prior: 0.0}
+  - {pair_id: PAIR_DO13, sensor_a: DO_1_3, sensor_b: DO_2_3, matched_position: DO_P3, offset_prior: 0.0}
+  - {pair_id: PAIR_DO14, sensor_a: DO_1_4, sensor_b: DO_2_4, matched_position: DO_P4, offset_prior: 0.0}
+  - {pair_id: PAIR_ORP11, sensor_a: ORP_1_1, sensor_b: ORP_2_1, matched_position: ORP_P1, offset_prior: 0.0}
+  - {pair_id: PAIR_ORP12, sensor_a: ORP_1_2, sensor_b: ORP_2_2, matched_position: ORP_P2, offset_prior: 0.0}
+  - {pair_id: PAIR_ORP13, sensor_a: ORP_1_3, sensor_b: ORP_2_3, matched_position: ORP_P3, offset_prior: 0.0}
