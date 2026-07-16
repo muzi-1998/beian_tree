@@ -1,0 +1,161 @@
+{
+  "figure_dir": "D:\\004_git\\beian_tree\\Project 1 Data Quality Assessment\\D6 Parallel-redundancy Temporal Consistency\\outputs\\figures",
+  "figures": 8,
+  "failed": 0,
+  "records": [
+    {
+      "stem": "Fig_D1_dqr_heatmap",
+      "png": true,
+      "svg": true,
+      "pdf": true,
+      "png_size_px": [
+        4091,
+        1386
+      ],
+      "png_nonblank": true,
+      "svg_text_elements": 24,
+      "svg_arial_declared": true,
+      "panel_labels": [],
+      "nonconforming_bare_panel_labels": [],
+      "fresh_vs_sources": true
+    },
+    {
+      "stem": "Fig_D2_status_barcode",
+      "png": true,
+      "svg": true,
+      "pdf": true,
+      "png_size_px": [
+        4111,
+        1874
+      ],
+      "png_nonblank": true,
+      "svg_text_elements": 34,
+      "svg_arial_declared": true,
+      "panel_labels": [
+        "(a)",
+        "(b)"
+      ],
+      "nonconforming_bare_panel_labels": [],
+      "fresh_vs_sources": true
+    },
+    {
+      "stem": "Fig_D3_context_independence",
+      "png": true,
+      "svg": true,
+      "pdf": true,
+      "png_size_px": [
+        4159,
+        1733
+      ],
+      "png_nonblank": true,
+      "svg_text_elements": 40,
+      "svg_arial_declared": true,
+      "panel_labels": [
+        "(a)",
+        "(b)"
+      ],
+      "nonconforming_bare_panel_labels": [],
+      "fresh_vs_sources": true
+    },
+    {
+      "stem": "Fig_M1_paired_residual_consistency",
+      "png": true,
+      "svg": true,
+      "pdf": true,
+      "png_size_px": [
+        4347,
+        4175
+      ],
+      "png_nonblank": true,
+      "svg_text_elements": 44,
+      "svg_arial_declared": true,
+      "panel_labels": [
+        "(a)",
+        "(b)",
+        "(c)",
+        "(d)",
+        "(e)",
+        "(f)",
+        "(g)"
+      ],
+      "nonconforming_bare_panel_labels": [],
+      "fresh_vs_sources": true
+    },
+    {
+      "stem": "Fig_M2_subscore_contribution",
+      "png": true,
+      "svg": true,
+      "pdf": true,
+      "png_size_px": [
+        4230,
+        1511
+      ],
+      "png_nonblank": true,
+      "svg_text_elements": 38,
+      "svg_arial_declared": true,
+      "panel_labels": [
+        "(a)",
+        "(b)"
+      ],
+      "nonconforming_bare_panel_labels": [],
+      "fresh_vs_sources": true
+    },
+    {
+      "stem": "Fig_M3_trend_slope_scatter",
+      "png": true,
+      "svg": true,
+      "pdf": true,
+      "png_size_px": [
+        4397,
+        1852
+      ],
+      "png_nonblank": true,
+      "svg_text_elements": 40,
+      "svg_arial_declared": true,
+      "panel_labels": [
+        "(a)",
+        "(b)"
+      ],
+      "nonconforming_bare_panel_labels": [],
+      "fresh_vs_sources": true
+    },
+    {
+      "stem": "Fig_V1_roc_pr",
+      "png": true,
+      "svg": true,
+      "pdf": true,
+      "png_size_px": [
+        4239,
+        1730
+      ],
+      "png_nonblank": true,
+      "svg_text_elements": 39,
+      "svg_arial_declared": true,
+      "panel_labels": [
+        "(a)",
+        "(b)"
+      ],
+      "nonconforming_bare_panel_labels": [],
+      "fresh_vs_sources": true
+    },
+    {
+      "stem": "Fig_V2_ablation",
+      "png": true,
+      "svg": true,
+      "pdf": true,
+      "png_size_px": [
+        4261,
+        1615
+      ],
+      "png_nonblank": true,
+      "svg_text_elements": 33,
+      "svg_arial_declared": true,
+      "panel_labels": [
+        "(a)",
+        "(b)"
+      ],
+      "nonconforming_bare_panel_labels": [],
+      "fresh_vs_sources": true
+    }
+  ]
+}

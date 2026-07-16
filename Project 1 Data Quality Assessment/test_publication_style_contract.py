@@ -72,6 +72,8 @@ def test_d1_publication_contract():
          "configure_publication_style", "finalize_figure"),
         ("D2 Temporal Continuity & Information Availability/publication_style.py",
          "configure_publication_style", "finalize_figure"),
+        ("D6 Parallel-redundancy Temporal Consistency/src/d6/figure_style.py",
+         "configure_style", "finalize"),
     ],
 )
 def test_tick_direction_tracks_frame_type(relative_path, setup_name, finalize_name):

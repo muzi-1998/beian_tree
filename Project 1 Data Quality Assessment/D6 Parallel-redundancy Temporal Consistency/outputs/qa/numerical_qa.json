@@ -1,0 +1,23 @@
+{
+  "rows": 42847,
+  "pairs": 7,
+  "score_bounds_ok": true,
+  "base_formula_max_abs_error": 1.3322676295501878e-15,
+  "raw_formula_max_abs_error": 1.7763568394002505e-15,
+  "d2_gate_mismatch_count": 0,
+  "calibration_min_n": 97,
+  "calibration_sources": [
+    "v1.2_high_quality_public_D7pending"
+  ],
+  "pair_specific_mapping_count": 0,
+  "benchmark_D1_violations": 0,
+  "benchmark_D2_continuity_violations": 0,
+  "event_duration_violations": 0,
+  "final_D6_forDQR_nonnull": 0,
+  "D7_proxy_rows": 0,
+  "required_validation_failures": 0,
+  "figure_stems": 8,
+  "missing_figure_counterparts": [],
+  "comparison_bundle_ok": true,
+  "passed": true
+}
