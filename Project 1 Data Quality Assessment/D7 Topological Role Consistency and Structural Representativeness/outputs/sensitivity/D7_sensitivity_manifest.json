@@ -1,0 +1,44 @@
+{
+  "track_id": "sensitivity",
+  "production_write_permission": false,
+  "generated_utc": "2026-07-16T13:16:33.125762+00:00",
+  "consumed_sources": [
+    "D:\\004_git\\beian_tree\\Project 1 Data Quality Assessment\\D1 Sensor health\\outputs\\data\\D1_main_scores_min.xlsx",
+    "D:\\004_git\\beian_tree\\Project 1 Data Quality Assessment\\D2 Temporal Continuity & Information Availability\\artifacts\\data\\D2_main_scores_hourly.xlsx",
+    "D:\\004_git\\beian_tree\\Project 1 Data Quality Assessment\\D4 Physical rationality and rate constraints\\outputs\\data\\D4_window_scores.xlsx",
+    "outputs/local/D7_spatial_evidence.parquet (read-only frozen evidence)"
+  ],
+  "forbidden_outputs": [
+    "D7_forDQR",
+    "D7_zone_consensus",
+    "D6_arbitration"
+  ],
+  "local_imported": false,
+  "rows": 86016,
+  "invariance": [
+    {
+      "metric": "IE_track",
+      "estimate": 0.0408311328842481,
+      "criterion": "<=0.20",
+      "passed": true
+    },
+    {
+      "metric": "event_jaccard",
+      "estimate": 0.8444773079906904,
+      "criterion": ">=0.80",
+      "passed": true
+    },
+    {
+      "metric": "culprit_spearman",
+      "estimate": 0.9782489353461186,
+      "criterion": ">=0.80",
+      "passed": true
+    },
+    {
+      "metric": "FAR_delta",
+      "estimate": 0.00795609457998403,
+      "criterion": "report",
+      "passed": true
+    }
+  ]
+}

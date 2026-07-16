@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["schema_version", "topology_version", "source_drawing_id", "reviewer", "approver", "valid_from", "valid_to", "verification_status", "edges", "twin_pairs"],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "topology_version": {"type": "string"},
+    "source_drawing_id": {"type": "string"},
+    "reviewer": {"type": "string"},
+    "approver": {"type": "string"},
+    "valid_from": {"type": "string"},
+    "valid_to": {"type": "string"},
+    "verification_status": {"type": "string"},
+    "edges": {"type": "array", "minItems": 1},
+    "twin_pairs": {"type": "array", "minItems": 7, "maxItems": 7}
+  }
+}

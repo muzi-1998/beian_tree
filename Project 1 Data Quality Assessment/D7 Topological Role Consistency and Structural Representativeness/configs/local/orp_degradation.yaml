@@ -1,0 +1,26 @@
+policy_version: d7-orp-policy-v2.1
+support_thresholds: {L3: 100, L2: 50, L1: 20}
+force_initial_limited_support: true
+L3_mode: full_shrinkage
+L2_mode: pooled_shrinkage
+L1_mode: diagonal_robust_z
+L0_mode: disabled
+alpha_floor_l2: 0.50
+alpha_floor_low_neff: 0.75
+alpha_l1: 1.00
+condition_number_max: 1000.0
+minimum_eigen_ratio: 0.001
+exit_criteria:
+  n_qualified: 500
+  n_effective: 100
+  distinct_months: 6
+  process_seasons: 2
+  bootstrap_stability: 0.85
+  holdout_count: 3
+  far_max: 0.05
+  swap_auroc_min: 0.90
+  top1_min: 0.75
+  ie_track_max: 0.20
+  event_jaccard_min: 0.80
+  culprit_spearman_min: 0.80
+  manual_approval_required: true
