@@ -18,7 +18,7 @@ from matplotlib.colors import LinearSegmentedColormap, BoundaryNorm
 from matplotlib.lines import Line2D
 from matplotlib.patches import Rectangle, Patch
 from publication_style import (PALETTE as C, configure_publication_style,
-                               finalize_figure)
+                               finalize_figure, save_publication_bundle)
 
 OUT = ROOT / "outputs" / "figures"
 PLOTDATA = ROOT / "outputs" / "plot_data"
@@ -45,6 +45,7 @@ configure_publication_style()
 
 with open(ROOT / "v11_state.pkl", "rb") as f:
     S = pickle.load(f)
+FIGURE_VERSION = S.get("algorithm_version", "unknown")
 
 SCORED = S["scored_channels"]
 DO_CH = [c for c in SCORED if c.startswith("DO_")]
@@ -58,17 +59,18 @@ def _finish_axes(fig):
 
 
 def save(fig, name, plot_data: dict = None):
-    _finish_axes(fig)
-    for suffix in (".png", ".svg", ".pdf"):
-        fig.savefig(OUT / f"{name}{suffix}")
+    save_publication_bundle(fig, OUT / name, version_label=FIGURE_VERSION)
     plt.close(fig)
     if plot_data is not None:
         with pd.ExcelWriter(PLOTDATA / f"{name}_data.xlsx", engine="openpyxl") as w:
+            pd.DataFrame([{"run_id": S.get("run_id"), "algorithm_version": FIGURE_VERSION}]).to_excel(
+                w, sheet_name="figure_metadata", index=False
+            )
             for k, v in plot_data.items():
                 if isinstance(v, pd.DataFrame): v.to_excel(w, sheet_name=k[:31], index=True)
                 elif isinstance(v, pd.Series): v.to_frame(k).to_excel(w, sheet_name=k[:31], index=True)
                 elif isinstance(v, dict): pd.DataFrame(v).to_excel(w, sheet_name=k[:31], index=True)
-    print(f"  [OK] {name}.png + .svg + .pdf")
+    print(f"  [OK] {name}.png + .svg + .pdf + .tiff")
 
 
 # Grade colormap
@@ -80,7 +82,7 @@ grade_cmap = LinearSegmentedColormap.from_list("grade", grade_clrs[::-1], N=256)
 # Fig 1: D1 dimension matrix (5 sub-scores × 5 grade levels)
 # ============================================================================
 print("[Fig1] D1 dimension reference matrix ...")
-fig, ax = plt.subplots(figsize=(10, 5.6))
+fig, ax = plt.subplots(figsize=(7.2, 4.2))
 sub_names = ["Q_spike\n(spike)", "Q_step\n(step)", "Q_drift\n(drift)",
               "Q_freeze\n(freeze)", "Q_regime\n(regime)"]
 grades = ["A (≥4.5)", "B (3.5–4.5)", "C (2.5–3.5)", "D (1.5–2.5)", "F (<1.5)"]
@@ -128,7 +130,7 @@ save(fig, "Fig1_D1_dimension_matrix",
 # Fig 2: Monthly D1 heatmap (DO/ORP only, v1.1)
 # ============================================================================
 print("[Fig2] Monthly D1 heatmap ...")
-fig, ax = plt.subplots(figsize=(11, 5.5))
+fig, ax = plt.subplots(figsize=(7.2, 4.0))
 monthly = D1_v11.resample("ME").mean().T
 months = [t.strftime("%Y-%m") for t in monthly.columns]
 im = ax.imshow(monthly.values, cmap="RdBu_r", aspect="auto", vmin=2.0, vmax=5.0)
@@ -161,7 +163,7 @@ df_means = D1_v11.mean()
 worst4 = df_means.nsmallest(4).index.tolist()
 best4 = df_means.nlargest(4).index.tolist()
 case_channels = worst4 + best4
-fig, axes = plt.subplots(4, 2, figsize=(13.5, 10), sharex=True)
+fig, axes = plt.subplots(4, 2, figsize=(7.2, 6.7), sharex=True)
 fig.subplots_adjust(hspace=0.50, wspace=0.18, top=0.90)
 for i, c in enumerate(case_channels):
     ax = axes[i // 2, i % 2]
@@ -202,7 +204,7 @@ save(fig, "Fig3_case_subscores",
 # Fig 4: Sub-score distribution (violin per channel)
 # ============================================================================
 print("[Fig4] Sub-score violin distribution ...")
-fig, axes = plt.subplots(5, 1, figsize=(13, 11), sharex=True)
+fig, axes = plt.subplots(5, 1, figsize=(7.2, 6.7), sharex=True)
 fig.subplots_adjust(hspace=0.55)
 sub_names = ["Q_spike", "Q_step", "Q_drift", "Q_freeze", "Q_regime"]
 sub_clrs = [C["amber"], C["blue"], C["purple"], C["red"], C["green"]]
@@ -234,7 +236,7 @@ save(fig, "Fig4_subscore_distribution")
 # Fig 5: Mapping function curves
 # ============================================================================
 print("[Fig5] Mapping curves ...")
-fig, axes = plt.subplots(2, 3, figsize=(13, 7.5))
+fig, axes = plt.subplots(2, 3, figsize=(7.2, 4.8))
 fig.subplots_adjust(hspace=0.4, wspace=0.32)
 def logistic(x, k, x0, direction="hi_lo"):
     if direction == "hi_lo":
@@ -257,7 +259,7 @@ y[x > breaks[-1]] = 1
 ax.plot(x, y, color=C["amber"], lw=1.8)
 ax.set_xlabel("spike_rate_6h", fontsize=9)
 ax.set_ylabel(r"$Q_{spike}$", fontsize=9)
-ax.set_title("(a)  spike: piecewise", loc="left")
+ax.set_title("(a) Spike: piecewise", loc="left")
 ax.set_ylim(0.8, 5.2); ax.set_xlim(0, 0.3)
 for b, s in zip(breaks[:-1], scores[:-1]):
     ax.axvline(b, color="0.6", ls=":", lw=0.5)
@@ -269,7 +271,7 @@ y = logistic(x, 8.0, 0.40)
 ax.plot(x, y, color=C["blue"], lw=1.8)
 ax.set_xlabel("KS statistic", fontsize=9)
 ax.set_ylabel(r"$Q_{step}$", fontsize=9)
-ax.set_title("(b)  step: logistic k=8.0, x0=0.40", loc="left")
+ax.set_title("(b) Step: $k=8.0$, $x_0=0.40$", loc="left")
 ax.set_ylim(0.8, 5.2)
 
 # Q_drift: logistic k=1.5, x0=2.5
@@ -279,7 +281,7 @@ y = logistic(x, 1.5, 2.5)
 ax.plot(x, y, color=C["purple"], lw=1.8)
 ax.set_xlabel("PLS residual z (|·|)", fontsize=9)
 ax.set_ylabel(r"$Q_{drift}$", fontsize=9)
-ax.set_title("(c)  drift: logistic k=1.5, x0=2.5", loc="left")
+ax.set_title("(c) Drift: $k=1.5$, $x_0=2.5$", loc="left")
 ax.set_ylim(0.8, 5.2)
 
 # Q_freeze: stepwise duration
@@ -297,7 +299,7 @@ y_f[x_f >= durations[-1]] = 1
 ax.plot(x_f, y_f, color=C["red"], lw=1.8)
 ax.set_xlabel("freeze RLE duration (min)", fontsize=9)
 ax.set_ylabel(r"$Q_{freeze,RLE}$", fontsize=9)
-ax.set_title("(d)  freeze (RLE): stepwise", loc="left")
+ax.set_title("(d) Freeze duration", loc="left")
 ax.set_ylim(0.8, 5.2)
 for d in durations[:-1]:
     ax.axvline(d, color="0.6", ls=":", lw=0.5)
@@ -311,7 +313,7 @@ y2 = logistic(x, -15, 0.2, "lo_hi")
 ax.plot(x, y2, color=C["orange"], lw=1.8, label="unique_ratio", ls="--")
 ax.set_xlabel("rel-var / unique-ratio", fontsize=9)
 ax.set_ylabel(r"$Q$", fontsize=9)
-ax.set_title("(e)  freeze: low_var / unique_ratio", loc="left")
+ax.set_title("(e) Freeze metrics", loc="left")
 ax.set_ylim(0.8, 5.2)
 ax.legend(fontsize=7.5)
 
@@ -322,7 +324,9 @@ y = logistic(x, 1.2, 3.0)
 ax.plot(x, y, color=C["green"], lw=1.8)
 ax.set_xlabel("W1 normalised (×IQR)", fontsize=9)
 ax.set_ylabel(r"$Q_{regime}$", fontsize=9)
-ax.set_title("(f)  regime: logistic k=1.2, x0=3", loc="left")
+ax.set_title("(f) Regime mapping", loc="left")
+ax.text(0.98, 0.95, "$k=1.2$, $x_0=3.0$", transform=ax.transAxes,
+        ha="right", va="top", fontsize=7)
 ax.set_ylim(0.8, 5.2)
 
 fig.suptitle("Figure 5.  D1 mapping function curves (v1.1)",
@@ -334,7 +338,7 @@ save(fig, "Fig5_mapping_curves")
 # Fig 6: Dominant fault per channel (stacked bar)
 # ============================================================================
 print("[Fig6] Dominant fault per channel ...")
-fig, ax = plt.subplots(figsize=(13, 5.5))
+fig, ax = plt.subplots(figsize=(7.2, 4.0))
 dom = S["dominant_v11"]
 faults = ["Q_spike", "Q_step", "Q_drift", "Q_freeze", "Q_regime"]
 fclr = {"Q_spike": C["amber"], "Q_step": C["blue"], "Q_drift": C["purple"],
@@ -364,7 +368,7 @@ save(fig, "Fig6_dominant_fault",
 # Fig 7: Daily timeseries by sensor group
 # ============================================================================
 print("[Fig7] Daily timeseries ...")
-fig = plt.figure(figsize=(13, 8))
+fig = plt.figure(figsize=(7.2, 5.6))
 gs = gridspec.GridSpec(2, 1, figure=fig, hspace=0.32, height_ratios=[1, 1])
 
 # (a) DO daily
@@ -401,33 +405,40 @@ save(fig, "Fig7_daily_timeseries", plot_data={"D1_daily": D1_d})
 # Fig 8: Veto / cooldown activation rate (NEW: state-machine breakdown)
 # ============================================================================
 print("[Fig8] Veto + state-machine activation rates ...")
-fig, ax = plt.subplots(figsize=(13.5, 5.5))
+fig, ax = plt.subplots(figsize=(7.2, 4.0))
 delta_df = S["delta_df"]
 xs = np.arange(len(SCORED))
-bw = 0.22
+bw = 0.12
 # Compute counts per channel
 data = []
 for c in SCORED:
     vlog = S["veto_logs_v11"][c]
+    states = S["state_log_dict"][c]["state_name"]
     data.append({
-        "Refractory": vlog["cooldown_active"].mean() * 100,
-        "Sustained":  vlog["sustained_active"].mean() * 100,
-        "Veto3":      vlog["veto3_signal_only"].mean() * 100,
+        "Refractory": states.eq("Refractory").mean() * 100,
+        "BaselinePending": states.eq("BaselinePending").mean() * 100,
+        "Sustained": states.eq("SustainedAnomaly").mean() * 100,
+        "RecoveryCandidate": states.eq("RecoveryCandidate").mean() * 100,
+        "Recovered observation": states.eq("Recovered").mean() * 100,
         "VetoFreeze": vlog["veto_freeze"].mean() * 100,
         "VetoRegime": vlog["veto_regime"].mean() * 100,
     })
 df_v = pd.DataFrame(data, index=SCORED)
-clr_map = {"Refractory": C["orange"], "Sustained": C["purple"],
-            "Veto3": C["blue"], "VetoFreeze": C["red"], "VetoRegime": C["green"]}
+clr_map = {
+    "Refractory": C["orange"], "BaselinePending": C["amber"],
+    "Sustained": C["purple"], "RecoveryCandidate": C["rose"],
+    "Recovered observation": C["blue"],
+    "VetoFreeze": C["red"], "VetoRegime": C["green"],
+}
 for i, (k_name, clr) in enumerate(clr_map.items()):
-    ax.bar(xs + (i - 2) * bw, df_v[k_name].values, bw, color=clr,
+    ax.bar(xs + (i - (len(clr_map) - 1) / 2) * bw, df_v[k_name].values, bw, color=clr,
             edgecolor="white", linewidth=0.4, alpha=0.88, label=k_name)
 ax.set_xticks(xs); ax.set_xticklabels(SCORED, rotation=45, ha="right", fontsize=8.5)
 ax.set_ylabel("Activation rate (%)", fontsize=9.5)
 ax.set_ylim(0, 40)
 ax.set_title("Figure 8.  Veto and state-machine activation rates per channel (v1.1)",
               loc="left")
-ax.legend(loc="upper right", ncol=5, fontsize=8, framealpha=0.92)
+ax.legend(loc="upper right", ncol=4, fontsize=7.4, framealpha=0.92)
 save(fig, "Fig8_veto_cooldown",
       plot_data={"activation_rates": df_v})
 
@@ -436,7 +447,7 @@ save(fig, "Fig8_veto_cooldown",
 # Fig 9: Harmonic decomposition demonstration  (carry over from STRICT V1)
 # ============================================================================
 print("[Fig9] Harmonic decomposition ...")
-fig, axes = plt.subplots(3, 1, figsize=(13, 8), sharex=True)
+fig, axes = plt.subplots(3, 1, figsize=(7.2, 5.4), sharex=True)
 fig.subplots_adjust(hspace=0.45)   # room for each panel's own date labels
 df_h = S["df_h"]; resid_h = S["resid_h"]
 for i, ch in enumerate(["DO_2_3", "ORP_1_1", "ORP_2_1"]):
@@ -468,7 +479,7 @@ save(fig, "Fig9_harmonic_demo")
 # Fig 10: Two-tier regime visualization
 # ============================================================================
 print("[Fig10] Two-tier regime ...")
-fig, axes = plt.subplots(2, 1, figsize=(13, 7), sharex=True)
+fig, axes = plt.subplots(2, 1, figsize=(7.2, 4.8), sharex=True)
 fig.subplots_adjust(hspace=0.42)   # room for each panel's own date labels
 ch = "DO_2_3"
 det_raw = S["detectors_raw"]
@@ -508,7 +519,7 @@ save(fig, "Fig10_two_tier_regime")
 # Fig 11: PLS peer audit (engineered peers)
 # ============================================================================
 print("[Fig11] PLS peer audit ...")
-fig, axes = plt.subplots(1, 2, figsize=(13, 5.5))
+fig, axes = plt.subplots(1, 2, figsize=(7.2, 3.8))
 # (a) Peer matrix for DO targets
 peer_matrix = pd.DataFrame(0, index=DO_CH, columns=SCORED, dtype=int)
 for t in DO_CH:
@@ -532,7 +543,7 @@ ax = axes[0]
 im = ax.imshow(peer_matrix.values, cmap="Blues", aspect="auto", vmin=0, vmax=1)
 ax.set_yticks(np.arange(len(DO_CH))); ax.set_yticklabels(DO_CH, fontsize=8)
 ax.set_xticks(np.arange(len(SCORED))); ax.set_xticklabels(SCORED, rotation=70, fontsize=7.5)
-ax.set_title("(a)  PLS peer matrix for DO targets (peer-only mode in v1.1)", loc="left")
+ax.set_title("(a) DO targets", loc="left")
 ax.grid(False)
 
 # (b) ORP peer matrix
@@ -552,10 +563,10 @@ ax = axes[1]
 im = ax.imshow(peer_matrix2.values, cmap="Greens", aspect="auto", vmin=0, vmax=1)
 ax.set_yticks(np.arange(len(ORP_CH))); ax.set_yticklabels(ORP_CH, fontsize=8)
 ax.set_xticks(np.arange(len(SCORED))); ax.set_xticklabels(SCORED, rotation=70, fontsize=7.5)
-ax.set_title("(b)  PLS peer matrix for ORP targets (peer-only mode in v1.1)", loc="left")
+ax.set_title("(b) ORP targets", loc="left")
 ax.grid(False)
 
-fig.suptitle("Figure 11.  Engineered PLS peer matrix (v1.1: peer-only, no QR/QIR exogenous)",
+fig.suptitle("Figure 11. PLS peer-selection matrix (peer-only)",
               fontsize=11, fontweight="bold", y=1.02)
 save(fig, "Fig11_pls_peer_audit",
       plot_data={"DO_peer_matrix": peer_matrix,

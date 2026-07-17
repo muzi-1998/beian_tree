@@ -1,0 +1,17 @@
+variant,scenario,n_channels,pass_rate,median_recovery_h,mean_candidate_attempts
+A_legacy_gate_corrected_engine,persistent_fault,14,1.0,,0.0
+A_legacy_gate_corrected_engine,recurrent_independent_step,14,1.0,48.0,0.0
+A_legacy_gate_corrected_engine,stable_new_regime,14,0.0,,0.0
+A_legacy_gate_corrected_engine,transient_step,14,1.0,48.0,0.0
+B_remove_duplicate_W1,persistent_fault,14,1.0,,0.0
+B_remove_duplicate_W1,recurrent_independent_step,14,1.0,48.0,0.0
+B_remove_duplicate_W1,stable_new_regime,14,0.0,,0.0
+B_remove_duplicate_W1,transient_step,14,1.0,48.0,0.0
+C_tolerant_3h_retry12h,persistent_fault,14,1.0,,0.0
+C_tolerant_3h_retry12h,recurrent_independent_step,14,1.0,53.0,0.0
+C_tolerant_3h_retry12h,stable_new_regime,14,1.0,111.0,1.0
+C_tolerant_3h_retry12h,transient_step,14,1.0,53.0,0.0
+D_hysteresis_6h_retry24h,persistent_fault,14,1.0,,0.0
+D_hysteresis_6h_retry24h,recurrent_independent_step,14,1.0,53.0,0.0
+D_hysteresis_6h_retry24h,stable_new_regime,14,1.0,111.0,1.0
+D_hysteresis_6h_retry24h,transient_step,14,1.0,53.0,0.0

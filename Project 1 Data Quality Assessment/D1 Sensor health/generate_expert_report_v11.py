@@ -404,7 +404,7 @@ def chapter_background(doc: Document):
 def chapter_architecture(doc: Document):
     doc.add_heading("第二章  系统架构与工程目录组织", level=1)
     doc.add_heading("2.1  顶层数据流", level=2)
-    add_code_block(doc, "Raw Excel / §1.1 parquet\n   ↓ load_real_data_v11.py\nDetectors + §1.1 bridge → Q_spike / Q_step / Q_drift / Q_freeze / Q_regime\n   ↓ run_v11_pipeline.py\n5-state cooldown + D1 aggregation → v11_state.pkl\n   ↓ make_*_figures / excel_exporter / run_v12_P2_sensitivity\nFigures + Excel + P2 sensitivity + Auto expert report")
+    add_code_block(doc, "Raw Excel / §1.1 parquet\n   ↓ load_real_data_v11.py\nDetectors + §1.1 bridge → Q_spike / Q_step / Q_drift / Q_freeze / Q_regime\n   ↓ run_v11_pipeline.py\nSix-state recovery + D1 aggregation → v11_state.pkl\n   ↓ make_*_figures / excel_exporter / run_recovery_validation\nFigures + Excel + recovery validation + Auto expert report")
     doc.add_heading("2.2  入口脚本职责矩阵", level=2)
     add_table(doc, ["入口脚本", "职责", "关键产物"], [
         ("load_real_data_v11.py", "读取原始数据并接入 §1.1 残差/创新/manifest", "strict_v1_inputs.pkl, raw_hourly.pkl"),
@@ -647,12 +647,10 @@ def build_report(force: bool = False) -> Path:
 
 
 def maybe_update_report() -> Path | None:
-    try:
-        return build_report(force=False)
-    except Exception as exc:
-        print(f"[auto-report] skipped: {exc}")
-        return None
+    from generate_final_expert_report import maybe_update_report as update_final_report
+    return update_final_report()
 
 
 if __name__ == "__main__":
-    build_report(force=True)
+    from generate_final_expert_report import build_report as build_final_report
+    build_final_report(force=True)

@@ -1,69 +1,104 @@
-# state_machine.yaml — D1 v1.1 5-state cooldown machine
-# Compliant with: Cooldown_机制修订版正式文本_无泵状态最终版.docx
+# D1 final-candidate causal event-level recovery state machine.
+
+version: "1.3.0-final-candidate"
 
 states:
   - Normal
-  - Refractory          # Shock isolation period
-  - SustainedAnomaly    # Anomaly persists past Refractory, no new event_id
-  - RecoveryCandidate   # Local baseline stable, recovery_streak accumulating
-  - Recovered           # Connecting back to Normal
+  - Refractory
+  - BaselinePending
+  - SustainedAnomaly
+  - RecoveryCandidate
+  - Recovered
 
-# Refractory durations (固定隔离期)
 refractory:
-  step_h: 48            # Step events: 48 h fixed isolation (P1-3: 24→48, break cycle trap)
-  regime_h: 36          # Regime events: 24-48h, midpoint 36h
-  drift_neutral_score: 3.0   # During Refractory, Q_drift = 3.0 (NOT 1.0)
+  step_h: 48
+  regime_h: 36
+  drift_neutral_score: 3.0
 
-# Event uniqueness rule — only NEW event_id triggers Refractory.
-# Same event_id continuing does NOT refresh cooldown_until.
 event_uniqueness:
-  min_separation_h: 24      # Minimum hours between distinct events (P1-3: 12→24)
-  magnitude_change_pct: 30  # New event must differ ≥30% in magnitude OR direction
+  min_separation_h: 24
+  magnitude_change_pct: 30
   require_direction_change: false
+  pelt_match_tolerance_h: 3
+  require_pelt_for_retrigger: true
 
-# SustainedAnomaly: rebuild local baseline + α(t) controlled drift thaw
 sustained_anomaly:
   candidate_window_search:
-    step_after_h: [24, 72]    # Search window 24-72h after step event
-    regime_after_h: [48, 96]  # Search window 48-96h after regime event
-    stable_window_h: 24        # Need 24-48h of stable data
+    step_after_h: [24, 72]
+    regime_after_h: [48, 96]
+    stable_window_h: 24
     stable_window_max_h: 48
+    max_baseline_pending_h: 96
   baseline_init:
     use_robust: true
     center_estimator: "median"
-    scale_estimator: "1.4826*MAD"
-    drift_check: "theil_sen"     # ensure baseline itself isn't drifting
-    drift_slope_threshold: 0.005 # per hour
+    scale_estimator: "max(1.4826*MAD, empirical_noise, resolution)"
+    drift_check: "theil_sen"
+    drift_slope_threshold: 0.005
+    scale_floor:
+      method: "causal_empirical_calibration"
+      calibration_h: 720
+      rolling_h: 24
+      noise_quantile: 0.25
+      resolution_multiplier: 1.0
+      epsilon: 0.000001
   thaw:
-    duration_h: 36          # α(t) decays from 1 to 0 over 36 h
-    schedule: "linear"      # linear | exponential
+    duration_h: 36
+    schedule: "linear"
 
-# RecoveryCandidate → Recovered (双阈值滞回)
 recovery:
-  enter_thresholds:           # Enter RecoveryCandidate
-    Q_step_min: 3.0           # P1-4: relaxed from 3.2 → 3.0
+  enter_thresholds:
+    Q_step_min: 3.0
     Q_regime_min: 3.0
-    Q_freeze_min: 3.0         # P1-4: relaxed from 3.5 → 3.0
-  trigger_thresholds:         # Re-trigger Refractory (more strict)
+    Q_freeze_min: 3.0
+  trigger_thresholds:
     Q_step_max: 2.0
     Q_regime_max: 2.0
+    Q_freeze_max: 2.0
   residual_check:
-    max_z_score: 1.5          # |residual_z| < 1.5
-    max_w1_norm: 1.5          # W1 normalised < 1.5
-  min_streak_h: 12             # Continuous recovery hours required (P1-4: 24→12)
-  max_streak_h: 48
+    max_z_score: 2.0
+    peer_z_max: 2.5
+    allow_contextual_regime: true
+    use_w1_hard_gate: false
+    max_w1_norm_diagnostic: 1.5
+  evidence_window:
+    entry_consecutive_h: 3
+    retry_cooldown_h: 12
+    required_pass_h: 12
+    max_window_h: 18
+    max_soft_fail_h: 2
+    max_missing_h: 4
+    max_consecutive_soft_fail_h: 1
+  recovered_observation:
+    duration_h: 24
+    max_soft_fail_h: 4
+    max_missing_h: 4
+    max_total_nonpass_h: 4
+    max_consecutive_soft_fail_h: 2
+  direct_recovery:
+    confirmation_h: 6
 
-# Sustained anomaly cap (replaces Veto-3 once SustainedAnomaly active)
-sustained_anomaly_cap: 2.5    # Q_drift_eff still recoverable, but D1 ≤ 2.5
+sustained_anomaly_cap: 2.5
 
-# Audit fields (must persist in state_blackboard)
 audit_fields:
   - state_name
   - event_id
+  - event_type
+  - pelt_segment_id
   - refractory_start
   - refractory_end
-  - sustained_flag
+  - baseline_pending_start
   - local_baseline_version
+  - local_baseline_scale
   - recovery_streak
-  - last_recovery_check_time
-  - drift_mask_reason
+  - recovery_entry_streak
+  - recovery_window_elapsed
+  - recovery_soft_failures
+  - recovery_missing
+  - observation_elapsed
+  - observation_passes
+  - direct_recovery_streak
+  - recovery_gate_status
+  - regime_acceptance
+  - accepted_contextual_regime
+  - episode_outcome

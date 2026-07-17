@@ -19,7 +19,8 @@ from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.lines import Line2D
 from matplotlib.patches import Rectangle, Patch, FancyArrowPatch
 from publication_style import (PALETTE as C, STATE_COLORS as STATE_COL,
-                               configure_publication_style, finalize_figure)
+                               configure_publication_style, finalize_figure,
+                               save_publication_bundle)
 
 OUT = ROOT / "outputs" / "figures"
 PLOTDATA = ROOT / "outputs" / "plot_data"
@@ -47,6 +48,7 @@ configure_publication_style()
 
 with open(ROOT / "v11_state.pkl", "rb") as f:
     S = pickle.load(f)
+FIGURE_VERSION = S.get("algorithm_version", "unknown")
 
 SCORED = S["scored_channels"]
 SUPPORT = S["support_channels"]
@@ -61,24 +63,25 @@ def _finish_axes(fig):
 
 
 def save(fig, name, plot_data: dict = None):
-    _finish_axes(fig)
-    for suffix in (".png", ".svg", ".pdf"):
-        fig.savefig(OUT / f"{name}{suffix}")
+    save_publication_bundle(fig, OUT / name, version_label=FIGURE_VERSION)
     plt.close(fig)
     if plot_data is not None:
         with pd.ExcelWriter(PLOTDATA / f"{name}_data.xlsx", engine="openpyxl") as w:
+            pd.DataFrame([{"run_id": S.get("run_id"), "algorithm_version": FIGURE_VERSION}]).to_excel(
+                w, sheet_name="figure_metadata", index=False
+            )
             for k, v in plot_data.items():
                 if isinstance(v, pd.DataFrame): v.to_excel(w, sheet_name=k[:31], index=True)
                 elif isinstance(v, pd.Series): v.to_frame(k).to_excel(w, sheet_name=k[:31], index=True)
                 elif isinstance(v, dict): pd.DataFrame(v).to_excel(w, sheet_name=k[:31], index=True)
-    print(f"  [OK] {name}.png + .svg + .pdf")
+    print(f"  [OK] {name}.png + .svg + .pdf + .tiff")
 
 
 # ============================================================================
 # Figure V16 — D7 multi-regime templates (NOT for D1 scoring)
 # ============================================================================
 print("[V16] Multi-regime templates ...")
-fig = plt.figure(figsize=(13.5, 8))
+fig = plt.figure(figsize=(7.2, 6.3))
 gs = gridspec.GridSpec(3, 2, figure=fig, hspace=0.5, wspace=0.55,
                         height_ratios=[1.0, 1.1, 1.0])
 fig.subplots_adjust(left=0.09, right=0.93)
@@ -183,7 +186,7 @@ save(fig, "FigV16_regime_templates",
 # Figure V17 — QR/QIR side annotations + scope diagram
 # ============================================================================
 print("[V17] QR/QIR scope (DO/ORP only main link) ...")
-fig = plt.figure(figsize=(13.5, 8))
+fig = plt.figure(figsize=(7.2, 6.3))
 gs = gridspec.GridSpec(3, 2, figure=fig, hspace=0.55, wspace=0.30,
                         height_ratios=[1.2, 1.0, 1.0])
 
@@ -196,23 +199,18 @@ b1 = Rectangle((0.3, 1.3), 3.4, 3.0, facecolor="#D1E5F0", edgecolor=C["blue"], l
 ax.add_patch(b1)
 ax.text(2.0, 3.95, "SCORED MAIN LINK", ha="center", va="center",
         fontsize=10.5, fontweight="bold", color=C["navy"])
-ax.text(2.0, 3.55, "(D1 v1.1)", ha="center", va="center",
-        fontsize=8.5, style="italic", color=C["navy"])
-ax.text(2.0, 2.4,
-        "DO_1_1, DO_1_2, DO_1_3, DO_1_4\nDO_2_1, DO_2_2, DO_2_3, DO_2_4\n"
-        "ORP_1_1, ORP_1_2, ORP_1_3\nORP_2_1, ORP_2_2, ORP_2_3\n"
-        "(n = 14 channels)",
+ax.text(2.0, 2.55,
+        "DO pools 1-2: 8 channels\nORP pools 1-2: 6 channels\n\n"
+        "Only these channels enter $D_1$\n(n = 14)",
         ha="center", va="center", fontsize=8.0)
 
 b2 = Rectangle((4.3, 1.3), 3.4, 3.0, facecolor="#FDDBC7", edgecolor=C["amber"], lw=1.4)
 ax.add_patch(b2)
 ax.text(6.0, 3.95, "SUPPORT DATA", ha="center", va="center",
         fontsize=10.5, fontweight="bold", color=C["amber"])
-ax.text(6.0, 3.55, "(NOT scored)", ha="center", va="center",
-        fontsize=8.5, style="italic", color=C["amber"])
-ax.text(6.0, 2.4,
-        "QR_1, QR_2\nQIR_1, QIR_2\n(n = 4 channels)\n\n"
-        "Used for D5/D7 modelling\n+ offline annotation only",
+ax.text(6.0, 2.55,
+        "QR: 2 channels\nQIR: 2 channels\n\n"
+        "Offline D5/D7 context\n(n = 4)",
         ha="center", va="center", fontsize=8.0)
 
 b3 = Rectangle((8.3, 1.3), 3.4, 3.0, facecolor="#EDEDED", edgecolor=C["gray"],
@@ -220,25 +218,18 @@ b3 = Rectangle((8.3, 1.3), 3.4, 3.0, facecolor="#EDEDED", edgecolor=C["gray"],
 ax.add_patch(b3)
 ax.text(10.0, 3.95, "FUTURE EXTENSION", ha="center", va="center",
         fontsize=10.5, fontweight="bold", color=C["gray"])
-ax.text(10.0, 3.55, "(disabled in v1.1)", ha="center", va="center",
-        fontsize=8.5, style="italic", color=C["gray"])
-ax.text(10.0, 2.4,
-        "Pump status\nValve status\nRunning logs\n   ↓\nenable process-aware\nVeto-3 / RL aux",
+ax.text(10.0, 2.55,
+        "Pump state\nValve state\nOperating logs\n\nProcess-aware extension",
         ha="center", va="center", fontsize=8.0, color=C["gray"])
 
 ax.annotate("", xy=(4.3, 2.85), xytext=(3.7, 2.85),
               arrowprops=dict(arrowstyle="->", lw=1.8, color="0.4"))
 ax.annotate("", xy=(8.3, 2.85), xytext=(7.7, 2.85),
               arrowprops=dict(arrowstyle="->", lw=1.5, color="0.5", linestyle="--"))
-ax.text(4.0, 3.10, "feeds", ha="center", fontsize=7.5, color="0.4", fontweight="bold")
-ax.text(8.0, 3.10, "future", ha="center", fontsize=7.5, color="0.5", fontweight="bold")
-
-ax.text(6.0, 0.65, "Per QR/QIR scoping spec (Apr 2026 revision):",
-         ha="center", fontsize=8.5, style="italic", color="0.3")
-ax.text(6.0, 0.20, "QR/QIR are NOT scored in D1 main link. They feed D5 (mechanistic consistency), "
-         "D7 (regime templates), and offline case-study annotations only.",
-         ha="center", fontsize=7.5, color="0.5")
-ax.set_title("(a)  D1 v1.1 scoring scope — DO/ORP only main link (n=14)", loc="left")
+ax.text(6.0, 0.45,
+        "QR/QIR provide offline context only; they never enter the D1 score.",
+        ha="center", fontsize=7.8, style="italic", color="0.35")
+ax.set_title("(a) Data roles in final D1 scoring", loc="left")
 
 # (b) QR/QIR jump annotation timeline
 ax = fig.add_subplot(gs[1, :])
@@ -274,7 +265,7 @@ ax.set_title("(c)  QR/QIR raw timelines (z-scored, 24h rolling) — for offline 
 ax.legend(loc="upper right", fontsize=8, ncol=4)
 ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
 
-fig.suptitle("Figure V17.  D1 v1.1 scope — DO/ORP scored, QR/QIR offline-support",
+fig.suptitle("Figure V17. D1 scoring scope and offline support data",
               fontsize=11.5, fontweight="bold", y=1.0)
 save(fig, "FigV17_scope_qr_qir_offline",
       plot_data={"jumps_per_day": pd.DataFrame({"QR": qr_per_day, "QIR": qir_per_day}),
@@ -287,7 +278,7 @@ save(fig, "FigV17_scope_qr_qir_offline",
 # Figure V18 — Aggregate v1.0 vs v1.1 final summary
 # ============================================================================
 print("[V18] Aggregate summary ...")
-fig = plt.figure(figsize=(13.5, 7.5))
+fig = plt.figure(figsize=(7.2, 5.8))
 gs = gridspec.GridSpec(2, 3, figure=fig, hspace=0.45, wspace=0.32,
                         height_ratios=[1.0, 1.0])
 
