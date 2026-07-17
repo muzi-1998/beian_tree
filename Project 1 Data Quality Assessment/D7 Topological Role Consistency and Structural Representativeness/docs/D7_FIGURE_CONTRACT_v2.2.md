@@ -17,8 +17,9 @@ metrics, alter topology, infer labels, or release `D7_forDQR`.
 - Typography: Arial first, 7 pt base text, bold reserved for panel labels and
   short panel conclusions.
 - Panel labels: `(a)`, `(b)`, `(c)`, `(d)` as applicable.
-- Axes: 0.75 pt; open axes use outward ticks, full-frame heatmaps use inward
-  ticks on all four sides.
+- Axes: 0.75 pt; open axes use outward ticks. `FigD7_2(a)` retains all four
+  spines as a heatmap boundary, but only the bottom and left axes carry inward
+  ticks and labels; the top and right frame edges carry neither.
 - Palette: muted blue for primary spatial evidence, teal for passed/available,
   orange for pending or limited support, red for failed/blocked, and neutral grey
   for references and scaffolding. Color is reinforced by marker shape, line

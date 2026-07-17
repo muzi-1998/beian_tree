@@ -2,9 +2,24 @@ from __future__ import annotations
 
 import json
 
+import matplotlib.pyplot as plt
 import pandas as pd
 
 from d7_common.config import resolve_paths
+from d7_local.figures.make_figures import D7FigureBuilder
+
+
+def test_framed_heatmap_uses_primary_axis_ticks_only() -> None:
+    fig, ax = plt.subplots()
+    D7FigureBuilder._framed_primary_axes(ax)
+    fig.canvas.draw()
+
+    assert all(spine.get_visible() for spine in ax.spines.values())
+    assert all(tick.tick1line.get_visible() for tick in ax.xaxis.get_major_ticks())
+    assert all(not tick.tick2line.get_visible() for tick in ax.xaxis.get_major_ticks())
+    assert all(tick.tick1line.get_visible() for tick in ax.yaxis.get_major_ticks())
+    assert all(not tick.tick2line.get_visible() for tick in ax.yaxis.get_major_ticks())
+    plt.close(fig)
 
 
 def test_plot_data_contract_and_figure_qa() -> None:

@@ -149,11 +149,30 @@ class D7FigureBuilder:
         ax.tick_params(which="both", direction="out", top=False, right=False, width=0.75)
 
     @staticmethod
-    def _boxed(ax: plt.Axes) -> None:
+    def _framed_primary_axes(ax: plt.Axes) -> None:
         for spine in ax.spines.values():
             spine.set_visible(True)
             spine.set_linewidth(0.75)
-        ax.tick_params(which="both", direction="in", top=True, right=True, width=0.75)
+        ax.tick_params(
+            axis="x",
+            which="both",
+            direction="in",
+            bottom=True,
+            top=False,
+            labelbottom=True,
+            labeltop=False,
+            width=0.75,
+        )
+        ax.tick_params(
+            axis="y",
+            which="both",
+            direction="in",
+            left=True,
+            right=False,
+            labelleft=True,
+            labelright=False,
+            width=0.75,
+        )
 
     @staticmethod
     def _numeric_ticks(ax: plt.Axes, low: float, high: float, count: int = 5) -> None:
@@ -314,7 +333,7 @@ class D7FigureBuilder:
         colorbar = fig.colorbar(image, ax=ax, fraction=0.022, pad=0.014, ticks=[1, 2, 3, 4, 5])
         colorbar.set_label("Daily lower-quartile D7 raw score")
         colorbar.ax.tick_params(direction="in", width=0.7, length=2.6)
-        self._boxed(ax)
+        self._framed_primary_axes(ax)
         self._title(ax, "Low-score periods are heterogeneous across sensors and time")
         self._panel_label(ax, "a", x=-0.055)
 

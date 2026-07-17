@@ -2,7 +2,7 @@
 
 **Project:** Topological Role Consistency and Structural Representativeness  
 **Run:** `D7-LOCAL-20260716T125319Z`  
-**Generated:** 2026-07-17 10:06 CST
+**Generated:** 2026-07-17 10:23 CST
 **Decision:** Research package complete; production DQR release blocked.
 
 ## 1. Executive verdict
