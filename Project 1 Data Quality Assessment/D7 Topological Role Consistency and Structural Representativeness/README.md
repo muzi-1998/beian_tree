@@ -34,3 +34,7 @@ python -m pytest ".\D7 Topological Role Consistency and Structural Representativ
 
 The report and directory guide are generated from the current manifest and
 artifact inventory. Every project rerun updates both documents.
+
+The manuscript figures follow `docs/D7_FIGURE_CONTRACT_v2.2.md` and are exported
+at 183 mm width as editable SVG/PDF plus 600 dpi PNG/TIFF. Figure source data are
+complete frozen plot-data records; no rendering-convenience sample is used.

@@ -132,7 +132,7 @@ class D7ReportBuilder:
 
 **Project:** Topological Role Consistency and Structural Representativeness  
 **Run:** `{f['run_id']}`  
-**Generated:** {self.generated}  
+**Generated:** {self.generated}
 **Decision:** Research package complete; production DQR release blocked.
 
 ## 1. Executive verdict
@@ -191,7 +191,7 @@ Validation uses observed test-period spatial windows with frozen templates. Same
 
 ## 7. Figure review
 
-Five multi-panel figure groups are available as SVG, PDF and 600 dpi PNG, backed by `D7_plot_data.parquet/.csv`. All use Arial, 0.8 pt boxed axes, inward ticks, `(a)/(b)/(c)` panel labels, endpoint-aware scales and transparent label backgrounds where annotations cover data. Automated counterpart/font/pixel QA passed: {f['figure_qa']}.
+Five multi-panel figure groups are available as editable SVG/PDF and 600 dpi PNG/TIFF, backed by the complete `D7_plot_data.parquet/.csv` source table. All use a 183 mm final width, Arial, 0.75 pt axes, `(a)/(b)/(c)/(d)` labels as applicable, outward ticks for open axes and inward ticks for full-frame heatmaps. The asymmetric layouts follow the claim-evidence hierarchy defined in `docs/D7_FIGURE_CONTRACT_v2.2.md`; no rendering-convenience sampling is used. Automated counterpart/font/dimension/pixel QA passed: {f['figure_qa']}.
 
 ## 8. Critical limitations
 
@@ -220,13 +220,13 @@ The branch may be reviewed and merged as a **research implementation with explic
             ("outputs/sensitivity", "D1/D2/D4-filtered shadow reference sensitivity; no production writes"),
             ("outputs/shadow_v2", "Graph/topology research candidates with production impact fixed to none"),
             ("outputs/plot_data", "Frozen long-table data used by every manuscript figure"),
-            ("outputs/figures", "SVG/PDF/600 dpi PNG figures and figure QA"),
+            ("outputs/figures", "Editable SVG/PDF and 600 dpi PNG/TIFF figures with figure QA"),
             ("outputs/reports", "Expert report, directory guide and figure captions"),
         ]
         output_table = "\n".join(f"| `{path}` | {role} |" for path, role in output_rows)
         return f"""# D7 Project Directory Guide v2.1
 
-**Generated:** {self.generated}  
+**Generated:** {self.generated}
 **Update rule:** every computational or figure change must rerun reports and release QA.
 
 ## 1. Project layout
@@ -327,19 +327,19 @@ Current release classification: **research review complete, production blocked**
 
 ## Figure D7-2. Spatiotemporal score structure and effective template support
 
-(a) Daily lower-quartile `D7_raw` for 14 DO/ORP positions. (b) Score distributions by analyte. (c) Counts of regime templates by effective support tier. The predominance of L1 support limits production use despite calculable raw evidence.
+(a) Daily lower-quartile `D7_raw` for 14 DO/ORP positions, using a threshold-centred muted red-to-blue map. (b) Full finite score distributions by analyte; no display sample is used. (c) Counts of regime templates by effective support tier. The predominance of L1 support limits production use despite calculable raw evidence.
 
 ## Figure D7-3. Evidence decomposition and node attribution
 
-(a) Four spatial quality components and `D7_raw` around an unlabeled persistent low-score window. The case is evidence for review, not a confirmed fault. (b) LOSO/graph-energy node influence at the case center. (c) Distribution of report-only zone-consensus labels supplied to the D6 interface; non-evaluable status prevents final arbitration.
+(a) Direct-labelled spatial quality components and `D7_raw` around an unlabeled persistent low-score window; shading denotes the candidate interval. The case is evidence for review, not a confirmed fault. (b) Target-excluded LOSO/graph-energy node influence at the case center. (c) Distribution of report-only zone-consensus labels supplied to the D6 interface; non-evaluable status prevents final arbitration.
 
 ## Figure D7-4. Frozen-template validation and track invariance
 
-(a) Release criteria for same-line position swaps, negative controls and regime chatter; dashed segments denote targets. (b) Top-1 localization by injected D7-relevant scenario. (c) False alarm rates and empirical ranges for orthogonality controls. (d) Local-Sensitivity invariance metrics. Swap AUROC/AUPRC and negative controls pass, whereas Top-1 remains below 0.80.
+(a) Release criteria for same-line position swaps, negative controls and regime chatter; filled circles are estimates and open diamonds are prespecified targets. (b) Top-1 localization by injected D7-relevant scenario. (c) False alarm rates with empirical 95% intervals for orthogonality controls. (d) Local-Sensitivity invariance estimates and targets. Swap AUROC/AUPRC and negative controls pass, whereas Top-1 remains below 0.80.
 
 ## Figure D7-5. Support, regime, topology and release governance
 
-(a) Support-tier distribution. (b) MAP-Hysteresis state occupancy. (c) Highest finite candidate-vs-declared topology likelihood ratios; candidates are report-only and cannot alter production topology. (d) Release decision matrix showing passed research gates and blocked production gates.
+(a) Support-tier distribution. (b) MAP-Hysteresis state occupancy. (c) Highest finite candidate-vs-declared topology likelihood ratios shown as a report-only review screen; candidates cannot alter production topology. (d) Sequential release-gate chain showing passed research gates and blocked production gates.
 """
 
     def _new_document(self, title: str, subtitle: str, status: str) -> Document:
@@ -496,6 +496,7 @@ Current release classification: **research review complete, production blocked**
             cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
             cap.paragraph_format.space_after = Pt(10)
             self._format_runs(cap, size=8.5, color=MUTED, italic=True)
+        doc.add_page_break()
         self._heading(doc, "8. Critical limitations", 1)
         for item in [
             "Field topology and asset identity are not verified or dual-approved.",
@@ -558,7 +559,7 @@ Current release classification: **research review complete, production blocked**
                 ["outputs/sensitivity", "Shadow reference/mapping sensitivity only"],
                 ["outputs/shadow_v2", "No-production-impact graph/topology research"],
                 ["outputs/plot_data", "Frozen long-table source for all figures"],
-                ["outputs/figures", "SVG/PDF/600 dpi PNG plus QA"],
+                ["outputs/figures", "Editable SVG/PDF and 600 dpi PNG/TIFF plus QA"],
                 ["outputs/reports", "Generated expert report, guide and captions"],
             ],
             [1.75, 4.75],

@@ -1,6 +1,6 @@
 {
-  "generated_utc": "2026-07-16T13:18:41.356928+00:00",
-  "rows": 16323,
+  "generated_utc": "2026-07-17T01:43:18.923081+00:00",
+  "rows": 89261,
   "figure_ids": [
     "FigD7_1_framework",
     "FigD7_2_spatiotemporal",
@@ -8,8 +8,17 @@
     "FigD7_4_validation",
     "FigD7_5_governance"
   ],
+  "rows_by_figure": {
+    "FigD7_1_framework": 40,
+    "FigD7_2_spatiotemporal": 88679,
+    "FigD7_3_evidence": 498,
+    "FigD7_4_validation": 18,
+    "FigD7_5_governance": 26
+  },
   "source_run_id": "D7-LOCAL-20260716T125319Z",
-  "source_hash": "89d86f65e5a7ace5587e43d26ee12c18ee01bfde9756eeaec91fcf289a534189",
-  "plot_data_hash": "c3d05a57dee75beb47272ad59996b7de4b6a18d5ca8c03fdb8a652529041ca65",
-  "business_metrics_recomputed_by_figure_script": false
+  "source_hash": "69dcaf72a6361486aa1f28c4b6fa366c1f9a9e524428638f37231310ce369af6",
+  "plot_data_hash": "70f995c7f77a0283825225057468c2fd13cc68aa6fe6752cf8a9196912277aa0",
+  "business_metrics_recomputed_by_figure_script": false,
+  "rendering_samples_removed": 0,
+  "data_exclusion_policy": "Retain every finite source record required by each panel; no convenience sampling."
 }

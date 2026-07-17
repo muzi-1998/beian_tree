@@ -18,8 +18,25 @@ def test_plot_data_contract_and_figure_qa() -> None:
         "FigD7_5_governance",
     }
     assert plot_data["source_run_id"].nunique() == 1
+    main = pd.read_parquet(paths.local_output_root / "D7_main_scores_hourly.parquet")
+    distribution = plot_data[
+        (plot_data["figure_id"] == "FigD7_2_spatiotemporal")
+        & (plot_data["panel"] == "b")
+        & (plot_data["record_type"] == "score_distribution")
+    ]
+    assert len(distribution) == int(main["D7_raw"].notna().sum())
+    manifest = json.loads(
+        (paths.plot_data_root / "D7_plot_data_manifest.json").read_text(encoding="utf-8")
+    )
+    assert manifest["rendering_samples_removed"] == 0
     qa = json.loads((paths.figure_root / "D7_figure_qa.json").read_text(encoding="utf-8"))
     assert qa["passed"]
+    assert all(180.0 <= record["final_width_mm_at_600dpi"] <= 186.0 for record in qa["figures"])
+    for record in qa["figures"]:
+        stem = record["stem"]
+        assert (paths.figure_root / f"{stem}.tiff").exists()
+        svg = (paths.figure_root / f"{stem}.svg").read_text(encoding="utf-8")
+        assert "<text" in svg
 
 
 def test_sensitivity_has_no_production_columns() -> None:

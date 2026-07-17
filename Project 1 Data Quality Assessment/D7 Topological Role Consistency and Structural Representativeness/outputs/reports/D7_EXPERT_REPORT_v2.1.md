@@ -2,7 +2,7 @@
 
 **Project:** Topological Role Consistency and Structural Representativeness  
 **Run:** `D7-LOCAL-20260716T125319Z`  
-**Generated:** 2026-07-16 21:19 CST  
+**Generated:** 2026-07-17 10:06 CST
 **Decision:** Research package complete; production DQR release blocked.
 
 ## 1. Executive verdict
@@ -64,7 +64,7 @@ Validation uses observed test-period spatial windows with frozen templates. Same
 
 ## 7. Figure review
 
-Five multi-panel figure groups are available as SVG, PDF and 600 dpi PNG, backed by `D7_plot_data.parquet/.csv`. All use Arial, 0.8 pt boxed axes, inward ticks, `(a)/(b)/(c)` panel labels, endpoint-aware scales and transparent label backgrounds where annotations cover data. Automated counterpart/font/pixel QA passed: True.
+Five multi-panel figure groups are available as editable SVG/PDF and 600 dpi PNG/TIFF, backed by the complete `D7_plot_data.parquet/.csv` source table. All use a 183 mm final width, Arial, 0.75 pt axes, `(a)/(b)/(c)/(d)` labels as applicable, outward ticks for open axes and inward ticks for full-frame heatmaps. The asymmetric layouts follow the claim-evidence hierarchy defined in `docs/D7_FIGURE_CONTRACT_v2.2.md`; no rendering-convenience sampling is used. Automated counterpart/font/dimension/pixel QA passed: True.
 
 ## 8. Critical limitations
 

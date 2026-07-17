@@ -78,10 +78,13 @@ class D7PlotDataBuilder:
             "generated_utc": pd.Timestamp.utcnow().isoformat(),
             "rows": len(output),
             "figure_ids": sorted(output["figure_id"].unique()),
+            "rows_by_figure": output.groupby("figure_id").size().astype(int).to_dict(),
             "source_run_id": self.meta["source_run_id"],
             "source_hash": self.meta["source_hash"],
             "plot_data_hash": hash_object(output.fillna("NA").to_dict("records")),
             "business_metrics_recomputed_by_figure_script": False,
+            "rendering_samples_removed": 0,
+            "data_exclusion_policy": "Retain every finite source record required by each panel; no convenience sampling.",
         }
         (self.paths.plot_data_root / "D7_plot_data_manifest.json").write_text(
             json.dumps(metadata, indent=2, ensure_ascii=True), encoding="utf-8"
@@ -184,8 +187,7 @@ class D7PlotDataBuilder:
                 order=sensor_order.index(record.sensor_id),
             )
         distribution = self.main.dropna(subset=["D7_raw"])
-        step = max(len(distribution) // 12000, 1)
-        for record in distribution.iloc[::step].itertuples(index=False):
+        for record in distribution.itertuples(index=False):
             self._add(
                 rows,
                 figure_id="FigD7_2_spatiotemporal",
@@ -229,6 +231,7 @@ class D7PlotDataBuilder:
             (self.main["sensor_id"] == event["sensor_id"])
             & self.main["timestamp"].between(start, end)
         ]
+        event_analyte = case["analyte"].iloc[0] if not case.empty else np.nan
         for record in case.itertuples(index=False):
             for metric in ["D7_raw", "Q_profile", "Q_gradient", "Q_rank", "Q_rep"]:
                 self._add(
@@ -249,6 +252,25 @@ class D7PlotDataBuilder:
         center = pd.Timestamp(event["start_ts"]) + (
             pd.Timestamp(event["end_ts"]) - pd.Timestamp(event["start_ts"])
         ) / 2
+        for order, (label, timestamp) in enumerate(
+            [("event_start", pd.Timestamp(event["start_ts"])), ("event_end", pd.Timestamp(event["end_ts"]))]
+        ):
+            self._add(
+                rows,
+                figure_id="FigD7_3_evidence",
+                panel="a",
+                record_type="event_interval",
+                x=timestamp.isoformat(),
+                x_numeric=float(timestamp.value / 1e9),
+                y=label,
+                value=np.nan,
+                group="candidate_event",
+                sensor_id=event["sensor_id"],
+                analyte=event_analyte,
+                event_id=event["event_id"],
+                annotation="unlabeled candidate interval",
+                order=order,
+            )
         timestamp = self.influence.iloc[
             (self.influence["timestamp"] - center).abs().argsort()[:1]
         ]["timestamp"].iloc[0]

@@ -1,6 +1,6 @@
 # D7 Project Directory Guide v2.1
 
-**Generated:** 2026-07-16 21:19 CST  
+**Generated:** 2026-07-17 10:06 CST
 **Update rule:** every computational or figure change must rerun reports and release QA.
 
 ## 1. Project layout
@@ -39,7 +39,7 @@ D7 Topological Role Consistency and Structural Representativeness/
 | `outputs/sensitivity` | D1/D2/D4-filtered shadow reference sensitivity; no production writes |
 | `outputs/shadow_v2` | Graph/topology research candidates with production impact fixed to none |
 | `outputs/plot_data` | Frozen long-table data used by every manuscript figure |
-| `outputs/figures` | SVG/PDF/600 dpi PNG figures and figure QA |
+| `outputs/figures` | Editable SVG/PDF and 600 dpi PNG/TIFF figures with figure QA |
 | `outputs/reports` | Expert report, directory guide and figure captions |
 
 ## 4. Core entry points
