@@ -1,0 +1,48 @@
+# D1 final figure contract
+
+## Scientific claim and evidence
+
+Every figure must state one principal conclusion and expose the data needed to audit it. Figures V19 and V20 are the primary recovery evidence. `Recovered` occupancy must never be labeled as a recovery rate.
+
+## Geometry and typography
+
+- Python/matplotlib backend only for this release.
+- Final double-column width: 183 mm (`7.2 in`); maximum practical height: 170 mm.
+- Arial for all visible text; editable text in SVG/PDF.
+- Axis and tick linewidth: `0.8 pt`.
+- Open axes: ticks point outward.
+- Full four-spine frames: ticks point inward; top/right tick labels remain off unless scientifically needed.
+- Every visible axis spine includes endpoint ticks.
+- Multi-panel identifiers use bold lowercase `(a)`, `(b)`, `(c)` and appear outside the data region.
+
+## Labels and legends
+
+- Labels may not obscure data. Reposition them first.
+- If overlap cannot be avoided, use a white annotation background with approximately `0.72` opacity and no border.
+- Label only high-information points in crowded scatter plots; export all points in source data.
+- Legends must not cover the evidence they describe. Reduce repeated wording before reducing font size.
+
+## Color roles
+
+- Blue: measured/final quantitative evidence.
+- Green: Normal/direct recovery/positive outcome.
+- Orange: Refractory.
+- Amber: BaselinePending.
+- Purple: SustainedAnomaly or contextual evidence.
+- Pale purple: RecoveryCandidate.
+- Red: adverse delta or failed challenge.
+- Gray: reference/baseline/censoring.
+
+Colors are restrained and role-based, with no decorative gradients. Information must remain interpretable without relying on color alone.
+
+## Export and QA
+
+Each formal figure requires:
+
+- `.svg` with editable Arial text;
+- `.pdf` vector output;
+- `.png` at 600 dpi;
+- `.tiff` at 600 dpi;
+- a source-data workbook or table carrying `run_id` and algorithm version.
+
+Run both `audit_d1_figures.py` and the nature skill `audit_figure_bundle.py`. QA contact sheets belong in `outputs/qa/figures/`, never in the formal figure directory.

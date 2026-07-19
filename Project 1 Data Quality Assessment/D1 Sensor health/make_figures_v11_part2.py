@@ -19,7 +19,8 @@ from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.lines import Line2D
 from matplotlib.patches import Rectangle, Patch, FancyArrowPatch
 from publication_style import (PALETTE as C, STATE_COLORS as STATE_COL,
-                               configure_publication_style, finalize_figure)
+                               configure_publication_style, finalize_figure,
+                               positive_data_ylim, save_publication_bundle)
 
 OUT = ROOT / "outputs" / "figures"
 PLOTDATA = ROOT / "outputs" / "plot_data"
@@ -47,6 +48,7 @@ configure_publication_style()
 
 with open(ROOT / "v11_state.pkl", "rb") as f:
     S = pickle.load(f)
+FIGURE_VERSION = S.get("algorithm_version", "unknown")
 
 SCORED = S["scored_channels"]
 SUPPORT = S["support_channels"]
@@ -61,27 +63,28 @@ def _finish_axes(fig):
 
 
 def save(fig, name, plot_data: dict = None):
-    _finish_axes(fig)
-    for suffix in (".png", ".svg", ".pdf"):
-        fig.savefig(OUT / f"{name}{suffix}")
+    save_publication_bundle(fig, OUT / name, version_label=FIGURE_VERSION)
     plt.close(fig)
     if plot_data is not None:
         with pd.ExcelWriter(PLOTDATA / f"{name}_data.xlsx", engine="openpyxl") as w:
+            pd.DataFrame([{"run_id": S.get("run_id"), "algorithm_version": FIGURE_VERSION}]).to_excel(
+                w, sheet_name="figure_metadata", index=False
+            )
             for k, v in plot_data.items():
                 if isinstance(v, pd.DataFrame): v.to_excel(w, sheet_name=k[:31], index=True)
                 elif isinstance(v, pd.Series): v.to_frame(k).to_excel(w, sheet_name=k[:31], index=True)
                 elif isinstance(v, dict): pd.DataFrame(v).to_excel(w, sheet_name=k[:31], index=True)
-    print(f"  [OK] {name}.png + .svg + .pdf")
+    print(f"  [OK] {name}.png + .svg + .pdf + .tiff")
 
 
 # ============================================================================
 # Figure V16 — D7 multi-regime templates (NOT for D1 scoring)
 # ============================================================================
 print("[V16] Multi-regime templates ...")
-fig = plt.figure(figsize=(13.5, 8))
+fig = plt.figure(figsize=(7.2, 6.3))
 gs = gridspec.GridSpec(3, 2, figure=fig, hspace=0.5, wspace=0.55,
                         height_ratios=[1.0, 1.1, 1.0])
-fig.subplots_adjust(left=0.09, right=0.93)
+fig.subplots_adjust(left=0.09, right=0.93, top=0.80, bottom=0.08)
 
 regime_labels = S["regime_labels"]
 regime_info = S["regime_info"]
@@ -102,7 +105,7 @@ for r in range(k):
 ax.set_ylim(0, 1.05); ax.set_yticks([])
 ax.set_title("(a)  Regime label timeline (k-means k=4) — used for D7 templates only",
               loc="left")
-ax.legend(loc="upper right", fontsize=7.5, ncol=k, framealpha=0.95)
+_h16, _l16 = ax.get_legend_handles_labels()
 ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
 
 # (b) Centers heatmap (DO/ORP only)
@@ -168,7 +171,9 @@ ax.set_title("(d)  v1.1 $D_1$ distribution per regime (template seeding mass)",
               loc="left")
 
 fig.suptitle("Figure V16.  Multi-regime templates for D7 (offline; NOT D1 scoring)",
-              fontsize=11.5, fontweight="bold", y=1.0)
+              fontsize=9.8, fontweight="bold", y=0.995)
+fig.legend(_h16, _l16, loc="upper center", bbox_to_anchor=(0.5, 0.90),
+           fontsize=6.8, ncol=k, frameon=False)
 save(fig, "FigV16_regime_templates",
       plot_data={"regime_centers_z": centers_z, "twin_symmetry": sym_df,
                   "regime_summary": pd.DataFrame({
@@ -183,9 +188,10 @@ save(fig, "FigV16_regime_templates",
 # Figure V17 — QR/QIR side annotations + scope diagram
 # ============================================================================
 print("[V17] QR/QIR scope (DO/ORP only main link) ...")
-fig = plt.figure(figsize=(13.5, 8))
+fig = plt.figure(figsize=(7.2, 6.3))
 gs = gridspec.GridSpec(3, 2, figure=fig, hspace=0.55, wspace=0.30,
                         height_ratios=[1.2, 1.0, 1.0])
+fig.subplots_adjust(right=0.80, top=0.91, bottom=0.08)
 
 # (a) Scope diagram (illustrative)
 ax = fig.add_subplot(gs[0, :])
@@ -196,23 +202,18 @@ b1 = Rectangle((0.3, 1.3), 3.4, 3.0, facecolor="#D1E5F0", edgecolor=C["blue"], l
 ax.add_patch(b1)
 ax.text(2.0, 3.95, "SCORED MAIN LINK", ha="center", va="center",
         fontsize=10.5, fontweight="bold", color=C["navy"])
-ax.text(2.0, 3.55, "(D1 v1.1)", ha="center", va="center",
-        fontsize=8.5, style="italic", color=C["navy"])
-ax.text(2.0, 2.4,
-        "DO_1_1, DO_1_2, DO_1_3, DO_1_4\nDO_2_1, DO_2_2, DO_2_3, DO_2_4\n"
-        "ORP_1_1, ORP_1_2, ORP_1_3\nORP_2_1, ORP_2_2, ORP_2_3\n"
-        "(n = 14 channels)",
+ax.text(2.0, 2.55,
+        "DO pools 1-2: 8 channels\nORP pools 1-2: 6 channels\n\n"
+        "Only these channels enter $D_1$\n(n = 14)",
         ha="center", va="center", fontsize=8.0)
 
 b2 = Rectangle((4.3, 1.3), 3.4, 3.0, facecolor="#FDDBC7", edgecolor=C["amber"], lw=1.4)
 ax.add_patch(b2)
 ax.text(6.0, 3.95, "SUPPORT DATA", ha="center", va="center",
         fontsize=10.5, fontweight="bold", color=C["amber"])
-ax.text(6.0, 3.55, "(NOT scored)", ha="center", va="center",
-        fontsize=8.5, style="italic", color=C["amber"])
-ax.text(6.0, 2.4,
-        "QR_1, QR_2\nQIR_1, QIR_2\n(n = 4 channels)\n\n"
-        "Used for D5/D7 modelling\n+ offline annotation only",
+ax.text(6.0, 2.55,
+        "QR: 2 channels\nQIR: 2 channels\n\n"
+        "Offline D5/D7 context\n(n = 4)",
         ha="center", va="center", fontsize=8.0)
 
 b3 = Rectangle((8.3, 1.3), 3.4, 3.0, facecolor="#EDEDED", edgecolor=C["gray"],
@@ -220,25 +221,18 @@ b3 = Rectangle((8.3, 1.3), 3.4, 3.0, facecolor="#EDEDED", edgecolor=C["gray"],
 ax.add_patch(b3)
 ax.text(10.0, 3.95, "FUTURE EXTENSION", ha="center", va="center",
         fontsize=10.5, fontweight="bold", color=C["gray"])
-ax.text(10.0, 3.55, "(disabled in v1.1)", ha="center", va="center",
-        fontsize=8.5, style="italic", color=C["gray"])
-ax.text(10.0, 2.4,
-        "Pump status\nValve status\nRunning logs\n   ↓\nenable process-aware\nVeto-3 / RL aux",
+ax.text(10.0, 2.55,
+        "Pump state\nValve state\nOperating logs\n\nProcess-aware extension",
         ha="center", va="center", fontsize=8.0, color=C["gray"])
 
 ax.annotate("", xy=(4.3, 2.85), xytext=(3.7, 2.85),
               arrowprops=dict(arrowstyle="->", lw=1.8, color="0.4"))
 ax.annotate("", xy=(8.3, 2.85), xytext=(7.7, 2.85),
               arrowprops=dict(arrowstyle="->", lw=1.5, color="0.5", linestyle="--"))
-ax.text(4.0, 3.10, "feeds", ha="center", fontsize=7.5, color="0.4", fontweight="bold")
-ax.text(8.0, 3.10, "future", ha="center", fontsize=7.5, color="0.5", fontweight="bold")
-
-ax.text(6.0, 0.65, "Per QR/QIR scoping spec (Apr 2026 revision):",
-         ha="center", fontsize=8.5, style="italic", color="0.3")
-ax.text(6.0, 0.20, "QR/QIR are NOT scored in D1 main link. They feed D5 (mechanistic consistency), "
-         "D7 (regime templates), and offline case-study annotations only.",
-         ha="center", fontsize=7.5, color="0.5")
-ax.set_title("(a)  D1 v1.1 scoring scope — DO/ORP only main link (n=14)", loc="left")
+ax.text(6.0, 0.45,
+        "QR/QIR provide offline context only; they never enter the D1 score.",
+        ha="center", fontsize=7.8, style="italic", color="0.35")
+ax.set_title("(a) Data roles in final D1 scoring", loc="left")
 
 # (b) QR/QIR jump annotation timeline
 ax = fig.add_subplot(gs[1, :])
@@ -253,9 +247,12 @@ ax.bar(qir_per_day.index, -qir_per_day.values, width=0.7, color=C["red"],
         alpha=0.65, label=f"QIR_* jumps (n={int(qir_jumps.sum())})", edgecolor="white")
 ax.axhline(0, color="0.3", lw=0.5)
 ax.set_ylabel("# jumps per day", fontsize=9)
+_jump_max = max(float(qr_per_day.max()), float(qir_per_day.max()), 1.0)
+ax.set_ylim(-1.08 * _jump_max, 1.08 * _jump_max)
 ax.set_title("(b)  Driver-variable jump density timeline (offline annotation, "
               "NOT scored)", loc="left")
-ax.legend(loc="upper left", fontsize=8)
+ax.legend(loc="center left", bbox_to_anchor=(1.01, 0.5), fontsize=6.8,
+          frameon=False, borderaxespad=0)
 ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
 
 # (c) QR/QIR raw timelines
@@ -271,11 +268,12 @@ ax.set_ylabel("normalised flow (z-score)", fontsize=9)
 ax.set_ylim(-3, 3)
 ax.set_title("(c)  QR/QIR raw timelines (z-scored, 24h rolling) — for offline reference",
               loc="left")
-ax.legend(loc="upper right", fontsize=8, ncol=4)
+ax.legend(loc="center left", bbox_to_anchor=(1.01, 0.5), fontsize=6.8,
+          ncol=1, frameon=False, borderaxespad=0)
 ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
 
-fig.suptitle("Figure V17.  D1 v1.1 scope — DO/ORP scored, QR/QIR offline-support",
-              fontsize=11.5, fontweight="bold", y=1.0)
+fig.suptitle("Figure V17. D1 scoring scope and offline support data",
+              fontsize=9.8, fontweight="bold", y=0.995)
 save(fig, "FigV17_scope_qr_qir_offline",
       plot_data={"jumps_per_day": pd.DataFrame({"QR": qr_per_day, "QIR": qir_per_day}),
                   "annotations_summary": pd.Series({
@@ -287,9 +285,10 @@ save(fig, "FigV17_scope_qr_qir_offline",
 # Figure V18 — Aggregate v1.0 vs v1.1 final summary
 # ============================================================================
 print("[V18] Aggregate summary ...")
-fig = plt.figure(figsize=(13.5, 7.5))
-gs = gridspec.GridSpec(2, 3, figure=fig, hspace=0.45, wspace=0.32,
+fig = plt.figure(figsize=(7.2, 6.2))
+gs = gridspec.GridSpec(2, 3, figure=fig, hspace=0.58, wspace=0.32,
                         height_ratios=[1.0, 1.0])
+fig.subplots_adjust(top=0.91, bottom=0.09)
 
 # (a) Hourly D1 distribution
 ax = fig.add_subplot(gs[0, 0])
@@ -304,10 +303,10 @@ ax.hist(v11_flat, bins=bins, color=C["blue"], alpha=0.55,
 ax.axvline(3, color=C["red"], ls=":", lw=0.7, alpha=0.7, label="grade boundary")
 _dens_max = max(np.histogram(v1_flat, bins=bins, density=True)[0].max(),
                 np.histogram(v11_flat, bins=bins, density=True)[0].max())
-ax.set_ylim(0, _dens_max * 1.50)
+ax.set_ylim(0, _dens_max * 1.12)
 ax.set_xlabel(r"Hourly $D_1$", fontsize=9); ax.set_ylabel("Density", fontsize=9)
 ax.set_title("(a)  Hourly $D_1$ distribution", loc="left")
-ax.legend(loc="upper left", fontsize=7.5)
+ax.legend(loc="upper left", fontsize=6.6, framealpha=0.72)
 
 # (b) Grade percentage stacked
 ax = fig.add_subplot(gs[0, 1])
@@ -321,7 +320,7 @@ def grade_dist(arr):
 gd_v1 = grade_dist(v1_flat); gd_v11 = grade_dist(v11_flat)
 labels_g = ["A (≥4.5)", "B (3.5-4.5)", "C (2.5-3.5)", "D (1.5-2.5)", "F (<1.5)"]
 gclrs = ["#1A9850", "#A6D96A", "#FEE08B", "#F46D43", "#9E1F1F"]
-xpos = [0, 1]
+xpos = [0, 1.60]
 bottom = np.zeros(2)
 for i, (lbl, clr) in enumerate(zip(labels_g, gclrs)):
     vals = [gd_v1[i] * 100, gd_v11[i] * 100]
@@ -332,14 +331,14 @@ for i, (lbl, clr) in enumerate(zip(labels_g, gclrs)):
             ax.text(x, b + v/2, f"{v:.1f}%", ha="center", va="center",
                      fontsize=8, fontweight="bold", color="black")
     bottom += np.array(vals)
-ax.set_xticks(xpos); ax.set_xticklabels(["STRICT V1\n(DO/ORP only)", "v1.1"])
+ax.set_xticks(xpos); ax.set_xticklabels(["STRICT V1\n(DO/ORP)", "final"])
 ax.set_ylabel("Grade percentage (%)", fontsize=9)
 ax.set_title("(b)  Grade distribution", loc="left")
 # bars sit at x=0,1 — free space on the right and put the legend there (was
 # overlapping the v1.1 bar at lower-right)
-ax.set_xlim(-0.55, 2.45)
+ax.set_xlim(-0.60, 4.80)
 ax.set_ylim(0, 100)
-ax.legend(loc="center right", fontsize=7, framealpha=0.95)
+ax.legend(loc="center right", fontsize=6.2, frameon=False)
 
 # (c) State machine vs simple timer — Q_drift_eff effect
 ax = fig.add_subplot(gs[0, 2])
@@ -348,16 +347,20 @@ qd_v1_mean = {c: float(S["subs_v1"]["Q_drift"][c].mean()) for c in SCORED}
 qd_v11_mean = {c: float(S["Q_drift_eff_dict"][c].mean()) for c in SCORED}
 xs = np.arange(len(SCORED))
 ax.bar(xs - 0.2, [qd_v1_mean[c] for c in SCORED], 0.4, color=C["gray"],
-        alpha=0.85, label="$Q_{drift}$ raw (V1)", edgecolor="white")
+        alpha=0.85, label="$Q_{drift}$ raw", edgecolor="white")
 ax.bar(xs + 0.2, [qd_v11_mean[c] for c in SCORED], 0.4, color=C["purple"],
-        alpha=0.85, label="$Q_{drift}^{eff}$ (v1.1, α-thaw)", edgecolor="white")
-ax.set_xticks(xs); ax.set_xticklabels(SCORED, rotation=45, ha="right", fontsize=7.2)
+        alpha=0.85, label="$Q_{drift}^{eff}$", edgecolor="white")
+ax.set_xticks(xs); ax.set_xticklabels(SCORED, rotation=90, ha="center", fontsize=6.2)
 ax.set_ylabel(r"Mean $Q_{\rm drift}$", fontsize=9)
 ax.axhline(3.0, color=C["amber"], ls="--", lw=0.7, alpha=0.6,
-            label="neutral 3.0")
-ax.set_ylim(0, 6.0)
+            label="neutral = 3.0")
+_qdrift_values = np.r_[[qd_v1_mean[c] for c in SCORED],
+                       [qd_v11_mean[c] for c in SCORED]]
+ax.set_ylim(*positive_data_ylim(_qdrift_values, headroom=0.08))
 ax.set_title("(c)  $Q_{\\rm drift}$ raw vs effective (α-thaw)", loc="left")
-ax.legend(loc="upper right", fontsize=7.5)
+ax.set_xlim(-0.7, len(SCORED) + 10.0)
+ax.legend(loc="center left", bbox_to_anchor=(0.60, 0.50), fontsize=5.8,
+          frameon=False, handlelength=1.4, borderaxespad=0)
 
 # (d) Per-channel D1 v1 vs v11 scatter coloured by sensor type
 ax = fig.add_subplot(gs[1, :2])
@@ -392,14 +395,16 @@ xs = np.arange(len(faults)); bw = 0.55
 ax.bar(xs, v11_counts, bw, color=C["blue"], alpha=0.85,
         label=f"v1.1 (total={sum(v11_counts)})")
 for i, b in enumerate(v11_counts):
-    if b > 0: ax.text(i, b + 2, str(b), ha="center", fontsize=7.5)
-ax.set_xticks(xs); ax.set_xticklabels(faults, fontsize=8)
+    if b > 0:
+        ax.text(i, b + max(v11_counts) * 0.025, str(b), ha="center",
+                fontsize=7.5)
+ax.set_xticks(xs); ax.set_xticklabels(faults, rotation=25, ha="right", fontsize=7.5)
 ax.set_ylabel("# events", fontsize=9)
+ax.set_ylim(*positive_data_ylim(v11_counts, headroom=0.12))
 ax.set_title("(e)  Events by dominant fault (v1.1)", loc="left")
-ax.legend(fontsize=7.5)
 
 fig.suptitle("Figure V18.  D1 v1.1 vs STRICT V1 — final aggregate summary",
-              fontsize=11.5, fontweight="bold", y=1.0)
+              fontsize=9.8, fontweight="bold", y=0.995)
 save(fig, "FigV18_aggregate_summary",
       plot_data={"hourly_D1": pd.DataFrame({"v1_describe": pd.Series(v1_flat).describe(),
                                               "v11_describe": pd.Series(v11_flat).describe()}),

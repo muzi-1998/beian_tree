@@ -31,7 +31,7 @@ def compute_veto3_eligibility(Q_step: pd.Series, state_log: pd.DataFrame,
                                 step_threshold: float = 2.0,
                                 duration_h: int = 36,
                                 min_event_count: int = 6,
-                                excluded_states=("Refractory",)) -> pd.Series:
+    excluded_states=("Refractory", "BaselinePending")) -> pd.Series:
     """Compute signal-only Veto-3 eligibility per hour.
 
     Rule (Veto-3 修订 §五 36h版):
@@ -98,9 +98,11 @@ def aggregate_d1_v11(Q_spike: pd.Series, Q_step: pd.Series, Q_drift_eff: pd.Seri
                                         step_threshold=veto3_step_thr,
                                         duration_h=veto3_duration_h,
                                         min_event_count=veto3_min_event_count,
-                                        excluded_states=("Refractory",))
-    # Sustained anomaly cap
-    sustained_active = state_log["state_name"] == "SustainedAnomaly"
+                                        excluded_states=("Refractory", "BaselinePending"))
+    # Keep the score conservative until adapted recovery has been confirmed.
+    sustained_active = state_log["state_name"].isin(
+        ["BaselinePending", "SustainedAnomaly", "RecoveryCandidate"]
+    )
 
     D1 = D1_pre.copy()
     D1[veto_freeze] = D1[veto_freeze].clip(upper=freeze_cap)
@@ -109,7 +111,7 @@ def aggregate_d1_v11(Q_spike: pd.Series, Q_step: pd.Series, Q_drift_eff: pd.Seri
     D1[sustained_active] = D1[sustained_active].clip(upper=sustained_cap)
     D1 = D1.clip(1, 5)
 
-    cooldown_active = state_log["state_name"] == "Refractory"
+    cooldown_active = state_log["state_name"].isin(["Refractory", "BaselinePending"])
     veto_active = (veto_freeze | veto_regime | veto3 | sustained_active | cooldown_active)
     vlog = pd.DataFrame({
         "state_name": state_log["state_name"],

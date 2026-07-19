@@ -1,4 +1,4 @@
-"""excel_exporter_v11.py — Generates all 12 D1 module deliverables.
+"""Generate the 17 final D1 module deliverables.
 
 Per D1模块输出物设计说明_最终版.docx — 8 layers, 12 files:
   1.  D1_main_scores_min.xlsx           (主评分层)
@@ -14,11 +14,12 @@ Per D1模块输出物设计说明_最终版.docx — 8 layers, 12 files:
   11. D1_case_study_exports.xlsx         (专题层)
   12. D1_audit_log.xlsx                  (审计层)
 
-Plus v1.1-specific:
-  13. D1_state_machine_audit.xlsx        (state_exporter — NEW v1.1)
-  14. D1_pelt_changepoints.xlsx           (NEW v1.1)
-  15. D1_v11_vs_strictV1_compare.xlsx    (NEW v1.1)
-  16. D1_qr_qir_side_outputs.xlsx        (NEW v1.1, per QR/QIR 修订)
+Final-candidate audit outputs:
+  13. D1_state_machine_audit.xlsx
+  14. D1_pelt_changepoints.xlsx
+  15. D1_v11_vs_strictV1_compare.xlsx
+  16. D1_qr_qir_side_outputs.xlsx
+  17. D1_recovery_event_audit.xlsx
 """
 from __future__ import annotations
 import sys, pickle
@@ -44,6 +45,10 @@ subs_v11 = S["subs_v11"]
 events_v11 = S["events_v11"]
 state_logs = S["state_log_dict"]
 veto_logs = S["veto_logs_v11"]
+recovery_episodes = S["recovery_episodes"]
+recovery_summary = S["recovery_summary"]
+recovery_km = S["recovery_km"]
+transition_qa = S["transition_qa"]
 
 
 def _save(path, sheets, **kwargs):
@@ -270,7 +275,10 @@ mapping_versions = pd.DataFrame([
     {"version": "v1.0_strict", "effective_date": "2026-05-01",
      "n_subscores": 7, "calibration_source": "expert + 4 strict-V1 fixes"},
     {"version": "v1.1", "effective_date": "2026-05-06",
-     "n_subscores": 7, "calibration_source": "v1.0_strict + DO/ORP-only + signal-only Veto-3 + 5-state cooldown"},
+     "n_subscores": 7, "calibration_source": "v1.0_strict + DO/ORP-only + signal-only Veto-3"},
+    {"version": S["algorithm_version"], "effective_date": "2026-07-17",
+     "n_subscores": 7,
+     "calibration_source": "causal six-state recovery + event-level validation; mapping coefficients unchanged"},
 ])
 mapping_examples = pd.DataFrame([
     {"subscore": "D1_step", "x": 0.0, "Q": 4.84},
@@ -353,17 +361,21 @@ for c in SCORED:
     qs = S["subs_v1"]["Q_step"][c]; qr = S["subs_v1"]["Q_regime"][c]
     cd_v1 = v1_cooldown_estimate(qs, qr).mean()
     cd_v11_refr = (state_logs[c]["state_name"] == "Refractory").mean()
+    pending_v11 = (state_logs[c]["state_name"] == "BaselinePending").mean()
     sus_v11 = (state_logs[c]["state_name"] == "SustainedAnomaly").mean()
     rec_v11 = (state_logs[c]["state_name"] == "RecoveryCandidate").mean()
     norm_v11 = (state_logs[c]["state_name"] == "Normal").mean()
+    recovered_occupancy = (state_logs[c]["state_name"] == "Recovered").mean()
     ablation_rows.append({
         "sensor_id": c,
         "v1_cooldown_pct (48h timer)": cd_v1 * 100,
-        "v1.1_Refractory_pct": cd_v11_refr * 100,
-        "v1.1_SustainedAnomaly_pct": sus_v11 * 100,
-        "v1.1_RecoveryCandidate_pct": rec_v11 * 100,
-        "v1.1_Normal_pct": norm_v11 * 100,
-        "cooldown_savings (V1 - v1.1.Refr)": (cd_v1 - cd_v11_refr) * 100,
+        "final_Refractory_pct": cd_v11_refr * 100,
+        "final_BaselinePending_pct": pending_v11 * 100,
+        "final_SustainedAnomaly_pct": sus_v11 * 100,
+        "final_RecoveryCandidate_pct": rec_v11 * 100,
+        "Recovered_state_occupancy_pct_not_recovery_rate": recovered_occupancy * 100,
+        "final_Normal_pct": norm_v11 * 100,
+        "refractory_savings (V1 timer - final Refractory)": (cd_v1 - cd_v11_refr) * 100,
         "delta_D1": float(D1_v11[c].mean() - S["D1_v1_scored"][c].mean()),
     })
 ablation_df = pd.DataFrame(ablation_rows)
@@ -384,10 +396,12 @@ for det_name, m_id in [("hampel", "Q_spike"), ("adjacent_ks", "Q_step"),
 _save(OUT / "D1_benchmark_results.xlsx", {
     "cooldown_ablation_v1_vs_v11": ablation_df,
     "detector_performance_summary": pd.DataFrame(perf_rows),
+    "event_recovery_summary": recovery_summary,
     "note": pd.DataFrame([{
-        "note": "v1.1 introduces 5-state machine which separates Refractory "
-                "(short shock) from SustainedAnomaly (recoverable). V1's "
-                "level-triggered 48h timer caused indefinite re-triggering.",
+        "note": "The final-candidate causal state machine separates Refractory, "
+                "BaselinePending, SustainedAnomaly, RecoveryCandidate, and the "
+                "monitored Recovered state. Recovery performance is event-level; "
+                "Recovered-state occupancy is descriptive only.",
         "spec_doc": "Cooldown_机制修订版正式文本_无泵状态最终版.docx",
     }]),
 }, index=False)
@@ -467,9 +481,11 @@ for c in SCORED:
         "benchmark_total_hours": bench_total_h,
         "benchmark_definition": "D1 >= 4.0 sustained >= 24h",
         "benchmark_ids": ",".join(bench_ids[:5]) + ("..." if len(bench_ids) > 5 else ""),
-        "profile_version": "v1.1",
-        "remarks": ("V1.1 main scoring uses 5-state cooldown — refractory + "
-                     "sustained anomaly recognition"),
+        "profile_version": S["algorithm_version"],
+        "remarks": (
+            "Final scoring uses causal six-state event recovery with event-level "
+            "outcomes and a monitored Recovered observation state"
+        ),
     })
     # Benchmark windows table
     for i, (start, end, dur) in enumerate(runs):
@@ -547,7 +563,14 @@ for c in case_channels:
         "D1_total": D1_v11[c],
         "state_name": state_logs[c]["state_name"],
         "event_id": state_logs[c]["event_id"],
+        "event_type": state_logs[c]["event_type"],
         "alpha": state_logs[c]["alpha"],
+        "local_baseline_scale": state_logs[c]["local_baseline_scale"],
+        "local_z": state_logs[c]["local_z"],
+        "recovery_gate_status": state_logs[c]["recovery_gate_status"],
+        "regime_acceptance": state_logs[c]["regime_acceptance"],
+        "recovery_window_elapsed": state_logs[c]["recovery_window_elapsed"],
+        "observation_elapsed": state_logs[c]["observation_elapsed"],
         "drift_mask_reason": state_logs[c]["drift_mask_reason"],
     })
     case_sheets[c] = case_data
@@ -560,13 +583,13 @@ _save(OUT / "D1_case_study_exports.xlsx", case_sheets)
 print("\n[12] D1_audit_log.xlsx")
 from datetime import datetime
 audit = pd.DataFrame([
-    {"run_id": "v11", "script_version": "1.1.0",
-     "param_version": "v1.1",
+    {"run_id": S["run_id"], "script_version": S["algorithm_version"],
+     "param_version": S["algorithm_version"],
      "data_version": "STRICT_V1_baseline",
      "regime_template_version": "v1.1",
      "mapping_param_version": "v1.1",
-     "rules_yaml_version": "v1.1 (DO/ORP only, signal-only Veto-3, 5-state cooldown)",
-     "state_machine_yaml_version": "v1.1",
+     "rules_yaml_version": "DO/ORP only, signal-only Veto-3, causal recovery",
+     "state_machine_yaml_version": S["algorithm_version"],
      "generated_at": datetime.now().isoformat(),
      "n_scored_channels": len(SCORED),
      "n_support_channels": len(SUPPORT),
@@ -581,9 +604,9 @@ audit = pd.DataFrame([
 ])
 # Module versions
 modules = pd.DataFrame([
-    {"module": "src/cooldown_state_machine.py", "version": "v1.1.0",
+    {"module": "src/aggregation/cooldown_state_machine.py", "version": S["algorithm_version"],
      "spec_ref": "Cooldown 修订 §四–§十二"},
-    {"module": "src/local_baseline.py", "version": "v1.1.0",
+    {"module": "src/baseline/local_baseline.py", "version": S["algorithm_version"],
      "spec_ref": "Cooldown 修订 §八"},
     {"module": "src/d1_aggregator.py", "version": "v1.1.0",
      "spec_ref": "Veto-3 修订 §三, §五"},
@@ -593,19 +616,24 @@ modules = pd.DataFrame([
      "spec_ref": "QR/QIR 修订 §七 (D5/D7 templates only)"},
     {"module": "configs/rules.yaml", "version": "v1.1.0",
      "spec_ref": "veto3_signal_only=true, scored_channels=DO/ORP only"},
-    {"module": "configs/state_machine.yaml", "version": "v1.1.0",
-     "spec_ref": "5-state machine + α-thaw"},
+    {"module": "configs/state_machine.yaml", "version": S["algorithm_version"],
+     "spec_ref": "causal six-state recovery + local-baseline adaptation"},
 ])
 _save(OUT / "D1_audit_log.xlsx", {
     "run_manifest": audit,
     "module_versions": modules,
+    "dependency_hashes": pd.DataFrame([
+        {"dependency": name, "sha256": value}
+        for name, value in S["dependency_hashes"].items()
+    ]),
+    "transition_conservation": transition_qa,
 }, index=False)
 
 
 # ============================================================================
-# 13. D1_state_machine_audit.xlsx (NEW v1.1)
+# 13. D1_state_machine_audit.xlsx
 # ============================================================================
-print("\n[13] D1_state_machine_audit.xlsx (NEW v1.1)")
+print("\n[13] D1_state_machine_audit.xlsx")
 # All transitions
 trans_df = pd.DataFrame(S["transitions_all"])
 # State coverage per channel
@@ -616,9 +644,11 @@ for c in SCORED:
         "sensor_id": c,
         "Normal_h":            int((sl["state_name"] == "Normal").sum()),
         "Refractory_h":        int((sl["state_name"] == "Refractory").sum()),
+        "BaselinePending_h":   int((sl["state_name"] == "BaselinePending").sum()),
         "SustainedAnomaly_h":  int((sl["state_name"] == "SustainedAnomaly").sum()),
         "RecoveryCandidate_h": int((sl["state_name"] == "RecoveryCandidate").sum()),
         "Recovered_h":         int((sl["state_name"] == "Recovered").sum()),
+        "Recovered_state_occupancy_pct": float((sl["state_name"] == "Recovered").mean() * 100),
         "n_local_baseline_versions": int(sl["local_baseline_version"].max()),
         "n_transitions": sum(1 for tr in S["transitions_all"] if tr["sensor_id"] == c),
     })
@@ -633,6 +663,8 @@ for tr in S["transitions_all"]:
             "trigger": tr.get("trigger", ""),
             "baseline_center": tr["baseline_center"],
             "baseline_scale": tr["baseline_scale"],
+            "baseline_raw_scale": tr.get("baseline_raw_scale"),
+            "baseline_scale_floor": tr.get("baseline_scale_floor"),
             "init_window_start": tr["baseline_init_window"][0],
             "init_window_end": tr["baseline_init_window"][1],
         })
@@ -640,13 +672,21 @@ _save(OUT / "D1_state_machine_audit.xlsx", {
     "all_transitions": trans_df,
     "state_coverage_per_channel": cov_df,
     "local_baseline_records": pd.DataFrame(baseline_records),
+    "recovery_episodes": recovery_episodes,
+    "event_recovery_summary": recovery_summary,
+    "kaplan_meier_recovery": recovery_km,
+    "scale_calibration": pd.DataFrame([
+        {"sensor_id": sensor, **values}
+        for sensor, values in S["scale_calibration"].items()
+    ]),
+    "transition_conservation": transition_qa,
 }, index=False)
 
 
 # ============================================================================
-# 14. D1_pelt_changepoints.xlsx (NEW v1.1)
+# 14. D1_pelt_changepoints.xlsx
 # ============================================================================
-print("\n[14] D1_pelt_changepoints.xlsx (NEW v1.1)")
+print("\n[14] D1_pelt_changepoints.xlsx")
 all_cps = []
 for c, evts in S["pelt_results"].items():
     for ev in evts:
@@ -693,9 +733,9 @@ _save(OUT / "D1_v11_vs_strictV1_compare.xlsx", {
 
 
 # ============================================================================
-# 16. D1_qr_qir_side_outputs.xlsx (NEW v1.1, per QR/QIR 修订 §七)
+# 16. D1_qr_qir_side_outputs.xlsx
 # ============================================================================
-print("\n[16] D1_qr_qir_side_outputs.xlsx (NEW v1.1)")
+print("\n[16] D1_qr_qir_side_outputs.xlsx")
 ann = S["qr_qir_annotations"]
 # Daily summary
 daily_qr_jumps = (ann["qr_jump_annotation"] != "").resample("1D").sum()
@@ -716,7 +756,25 @@ _save(OUT / "D1_qr_qir_side_outputs.xlsx", {
 })
 
 
-print(f"\n{'='*70}\nAll 16 Excel deliverables generated.\nLocation: {OUT}\n{'='*70}")
+# ============================================================================
+# 17. D1_recovery_event_audit.xlsx
+# ============================================================================
+print("\n[17] D1_recovery_event_audit.xlsx")
+_save(OUT / "D1_recovery_event_audit.xlsx", {
+    "episode_level_outcomes": recovery_episodes,
+    "summary_by_channel": recovery_summary,
+    "kaplan_meier_curve": recovery_km,
+    "transition_conservation": transition_qa,
+    "metric_definitions": pd.DataFrame([
+        {"metric": "event_recovery_rate", "definition": "(direct + adapted recovery) / completed episodes; right-censored episodes excluded"},
+        {"metric": "Recovered_state_occupancy", "definition": "Recovered observation-state hours / all hours; not a recovery-rate metric"},
+        {"metric": "candidate_attempt_confirmation_rate", "definition": "candidate attempts reaching Recovered / all candidate entries"},
+        {"metric": "relapse_rate_24/48/72h", "definition": "new independent event within the stated horizon after recovery"},
+    ]),
+}, index=False)
+
+
+print(f"\n{'='*70}\nAll 17 core Excel deliverables generated.\nLocation: {OUT}\n{'='*70}")
 import os
 files = sorted(OUT.glob("*.xlsx"))
 total_kb = sum(f.stat().st_size for f in files) // 1024

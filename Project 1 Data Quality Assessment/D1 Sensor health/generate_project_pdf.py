@@ -18,7 +18,7 @@ SCRIPTS = [
      "# [ENTRY] Load 1-min/1-h data; run Hampel/KS/PLS/Freeze/Regime detectors; "
      "cache strict_v1_inputs.pkl"),
     ("run_v11_pipeline.py",
-     "# [ENTRY] Run 5-state cooldown machine; re-aggregate D1 v1.1; "
+     "# [ENTRY] Run causal six-state recovery machine; re-aggregate D1; "
      "save v11_state.pkl (32 MB)"),
     ("make_baseline_figures_v11.py",
      "# [ENTRY] Generate Fig 1–11 baseline figures (D1 matrix, heatmap, "
@@ -71,7 +71,7 @@ SCRIPTS = [
     ("src/aggregation/d1_aggregator.py",
      "# Weighted D1_base + D1_pre computation; applies Veto rules 1/2/3"),
     ("src/aggregation/cooldown_state_machine.py",
-     "# 5-state FSM: Normal→Refractory→SustainedAnomaly→RecoveryCandidate→Recovered"),
+     "# Six-state FSM: Normal→Refractory→BaselinePending/SustainedAnomaly→RecoveryCandidate→Recovered"),
     ("src/aggregation/multiscale_export.py",
      "# Aggregate hourly D1 → daily / weekly multi-scale summaries"),
     ("src/aggregation/process_aware_mask.py",
@@ -157,7 +157,7 @@ TREE_LINES = [
     ("│   │   └── mapper.py                # Raw score → [1,5] via logistic/linear", 3),
     ("│   ├── aggregation/                 # Scoring & state machine", 2),
     ("│   │   ├── d1_aggregator.py         # D1_base/pre + Veto-1/2/3 application", 3),
-    ("│   │   ├── cooldown_state_machine.py# 5-state FSM per channel", 3),
+    ("│   │   ├── cooldown_state_machine.py# six-state FSM per channel", 3),
     ("│   │   ├── multiscale_export.py     # Hourly → daily/weekly aggregation", 3),
     ("│   │   └── process_aware_mask.py    # Maintenance window masking", 3),
     ("│   ├── pipeline/                    # Pipeline orchestration", 2),

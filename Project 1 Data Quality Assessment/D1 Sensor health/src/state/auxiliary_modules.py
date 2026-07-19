@@ -91,7 +91,9 @@ class PELTBatchCalibrator:
                 we = min(len(x), cp + self.min_seg)
                 events.append({
                     "timestamp": cp_time,
+                    "available_at": seg.index[-1],
                     "magnitude": float(abs(np.mean(x[cp:we]) - np.mean(x[ws:cp]))),
+                    "signed_magnitude": float(np.mean(x[cp:we]) - np.mean(x[ws:cp])),
                     "before_mean": float(np.mean(x[ws:cp])),
                     "after_mean":  float(np.mean(x[cp:we])),
                 })

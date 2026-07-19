@@ -326,7 +326,7 @@ def collect_metrics(variant_results: dict, Q_regime_variants: dict,
                 "Refractory_pct":       state_pcts.get("Refractory", 0),
                 "SustainedAnomaly_pct": state_pcts.get("SustainedAnomaly", 0),
                 "RecoveryCandidate_pct":state_pcts.get("RecoveryCandidate", 0),
-                "Recovered_pct":        state_pcts.get("Recovered", 0),
+                "Recovered_state_occupancy_pct": state_pcts.get("Recovered", 0),
                 # D1
                 "D1_mean":   d1c.mean(),
                 "D1_std":    d1c.std(),

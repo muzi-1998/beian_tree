@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import re
+from pathlib import Path
 
 import matplotlib
 import matplotlib.ticker as mticker
@@ -21,6 +22,7 @@ PALETTE = {
 STATE_COLORS = {
     "Normal": PALETTE["green"],
     "Refractory": PALETTE["orange"],
+    "BaselinePending": PALETTE["amber"],
     "SustainedAnomaly": PALETTE["purple"],
     "RecoveryCandidate": "#D8CCE4",
     "Recovered": PALETTE["blue"],
@@ -111,6 +113,20 @@ def annotate_data_label(ax, text: str, xy, *, xytext=(4, 4),
     )
 
 
+def positive_data_ylim(values, *, headroom: float = 0.08,
+                       minimum_upper: float = 1.0) -> tuple[float, float]:
+    """Return a zero-based y-range with modest data-driven headroom."""
+    array = np.asarray(values, dtype=float).ravel()
+    finite = array[np.isfinite(array)]
+    if finite.size == 0:
+        return 0.0, float(minimum_upper)
+    maximum = max(float(finite.max()), 0.0)
+    upper = max(float(minimum_upper), maximum * (1.0 + float(headroom)))
+    if maximum > 0 and upper <= maximum:
+        upper = np.nextafter(maximum, np.inf)
+    return 0.0, upper
+
+
 def finalize_figure(fig, auto_panel_labels: bool = True) -> None:
     """Enforce Arial, equal axis weights, endpoint ticks, and panel-label syntax."""
     fig.canvas.draw()
@@ -168,3 +184,26 @@ def finalize_figure(fig, auto_panel_labels: bool = True) -> None:
                     fontfamily="Arial", clip_on=False,
                     bbox={"facecolor": "white", "edgecolor": "none", "pad": 0.15})
     fig.canvas.draw()
+
+
+def synchronise_figure_version(fig, version_label: str) -> None:
+    """Replace stale display-only version labels with the computed run version."""
+    short_label = "final" if "final" in version_label.lower() else version_label
+    for text in fig.findobj(match=Text):
+        value = text.get_text()
+        value = value.replace("v1.1", short_label)
+        value = value.replace("5-state cooldown", "causal recovery")
+        value = value.replace("5-state machine", "causal six-state machine")
+        value = value.replace("5-state", "causal six-state")
+        text.set_text(value)
+
+
+def save_publication_bundle(fig, output_base, *, version_label: str) -> None:
+    """Export an editable Nature-style figure bundle from the Python backend."""
+    output_base = Path(output_base)
+    synchronise_figure_version(fig, version_label)
+    finalize_figure(fig)
+    fig.savefig(output_base.with_suffix(".svg"), bbox_inches="tight")
+    fig.savefig(output_base.with_suffix(".pdf"), bbox_inches="tight")
+    fig.savefig(output_base.with_suffix(".png"), dpi=600, bbox_inches="tight")
+    fig.savefig(output_base.with_suffix(".tiff"), dpi=600, bbox_inches="tight")

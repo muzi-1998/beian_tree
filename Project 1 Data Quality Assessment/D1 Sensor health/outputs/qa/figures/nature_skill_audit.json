@@ -1,0 +1,353 @@
+{
+  "figure_dir": "D:\\004_git\\beian_tree\\Project 1 Data Quality Assessment\\D1 Sensor health\\outputs\\figures",
+  "figures": 20,
+  "failed": 0,
+  "records": [
+    {
+      "stem": "Fig10_two_tier_regime",
+      "png": true,
+      "svg": true,
+      "pdf": true,
+      "png_size_px": [
+        3661,
+        2717
+      ],
+      "png_nonblank": true,
+      "svg_text_elements": 34,
+      "svg_arial_declared": true,
+      "panel_labels": [],
+      "nonconforming_bare_panel_labels": [],
+      "fresh_vs_sources": true
+    },
+    {
+      "stem": "Fig11_pls_peer_audit",
+      "png": true,
+      "svg": true,
+      "pdf": true,
+      "png_size_px": [
+        3722,
+        2459
+      ],
+      "png_nonblank": true,
+      "svg_text_elements": 45,
+      "svg_arial_declared": true,
+      "panel_labels": [],
+      "nonconforming_bare_panel_labels": [],
+      "fresh_vs_sources": true
+    },
+    {
+      "stem": "Fig1_D1_dimension_matrix",
+      "png": true,
+      "svg": true,
+      "pdf": true,
+      "png_size_px": [
+        3488,
+        2096
+      ],
+      "png_nonblank": true,
+      "svg_text_elements": 47,
+      "svg_arial_declared": true,
+      "panel_labels": [],
+      "nonconforming_bare_panel_labels": [],
+      "fresh_vs_sources": true
+    },
+    {
+      "stem": "Fig2_monthly_heatmap",
+      "png": true,
+      "svg": true,
+      "pdf": true,
+      "png_size_px": [
+        4019,
+        2240
+      ],
+      "png_nonblank": true,
+      "svg_text_elements": 158,
+      "svg_arial_declared": true,
+      "panel_labels": [],
+      "nonconforming_bare_panel_labels": [],
+      "fresh_vs_sources": true
+    },
+    {
+      "stem": "Fig3_case_subscores",
+      "png": true,
+      "svg": true,
+      "pdf": true,
+      "png_size_px": [
+        3589,
+        3834
+      ],
+      "png_nonblank": true,
+      "svg_text_elements": 83,
+      "svg_arial_declared": true,
+      "panel_labels": [
+        "(a)",
+        "(b)",
+        "(c)",
+        "(d)",
+        "(e)",
+        "(f)",
+        "(g)",
+        "(h)"
+      ],
+      "nonconforming_bare_panel_labels": [],
+      "fresh_vs_sources": true
+    },
+    {
+      "stem": "Fig4_subscore_distribution",
+      "png": true,
+      "svg": true,
+      "pdf": true,
+      "png_size_px": [
+        3599,
+        3915
+      ],
+      "png_nonblank": true,
+      "svg_text_elements": 35,
+      "svg_arial_declared": true,
+      "panel_labels": [
+        "(a)",
+        "(b)",
+        "(c)",
+        "(d)",
+        "(e)"
+      ],
+      "nonconforming_bare_panel_labels": [],
+      "fresh_vs_sources": true
+    },
+    {
+      "stem": "Fig5_mapping_curves",
+      "png": true,
+      "svg": true,
+      "pdf": true,
+      "png_size_px": [
+        3655,
+        2835
+      ],
+      "png_nonblank": true,
+      "svg_text_elements": 74,
+      "svg_arial_declared": true,
+      "panel_labels": [],
+      "nonconforming_bare_panel_labels": [
+        "Q"
+      ],
+      "fresh_vs_sources": true
+    },
+    {
+      "stem": "Fig6_dominant_fault",
+      "png": true,
+      "svg": true,
+      "pdf": true,
+      "png_size_px": [
+        3670,
+        2101
+      ],
+      "png_nonblank": true,
+      "svg_text_elements": 27,
+      "svg_arial_declared": true,
+      "panel_labels": [],
+      "nonconforming_bare_panel_labels": [],
+      "fresh_vs_sources": true
+    },
+    {
+      "stem": "Fig7_daily_timeseries",
+      "png": true,
+      "svg": true,
+      "pdf": true,
+      "png_size_px": [
+        3658,
+        3158
+      ],
+      "png_nonblank": true,
+      "svg_text_elements": 53,
+      "svg_arial_declared": true,
+      "panel_labels": [],
+      "nonconforming_bare_panel_labels": [],
+      "fresh_vs_sources": true
+    },
+    {
+      "stem": "Fig8_veto_cooldown",
+      "png": true,
+      "svg": true,
+      "pdf": true,
+      "png_size_px": [
+        3636,
+        2077
+      ],
+      "png_nonblank": true,
+      "svg_text_elements": 30,
+      "svg_arial_declared": true,
+      "panel_labels": [],
+      "nonconforming_bare_panel_labels": [],
+      "fresh_vs_sources": true
+    },
+    {
+      "stem": "Fig9_harmonic_demo",
+      "png": true,
+      "svg": true,
+      "pdf": true,
+      "png_size_px": [
+        3747,
+        3068
+      ],
+      "png_nonblank": true,
+      "svg_text_elements": 44,
+      "svg_arial_declared": true,
+      "panel_labels": [],
+      "nonconforming_bare_panel_labels": [],
+      "fresh_vs_sources": true
+    },
+    {
+      "stem": "FigV12_v11_vs_strictV1_hero",
+      "png": true,
+      "svg": true,
+      "pdf": true,
+      "png_size_px": [
+        4186,
+        3940
+      ],
+      "png_nonblank": true,
+      "svg_text_elements": 116,
+      "svg_arial_declared": true,
+      "panel_labels": [],
+      "nonconforming_bare_panel_labels": [],
+      "fresh_vs_sources": true
+    },
+    {
+      "stem": "FigV13_state_machine_DO_2_3",
+      "png": true,
+      "svg": true,
+      "pdf": true,
+      "png_size_px": [
+        4126,
+        3842
+      ],
+      "png_nonblank": true,
+      "svg_text_elements": 76,
+      "svg_arial_declared": true,
+      "panel_labels": [],
+      "nonconforming_bare_panel_labels": [],
+      "fresh_vs_sources": true
+    },
+    {
+      "stem": "FigV14_veto3_state_audit",
+      "png": true,
+      "svg": true,
+      "pdf": true,
+      "png_size_px": [
+        4612,
+        4025
+      ],
+      "png_nonblank": true,
+      "svg_text_elements": 226,
+      "svg_arial_declared": true,
+      "panel_labels": [],
+      "nonconforming_bare_panel_labels": [],
+      "fresh_vs_sources": true
+    },
+    {
+      "stem": "FigV15_pelt_event_id",
+      "png": true,
+      "svg": true,
+      "pdf": true,
+      "png_size_px": [
+        4376,
+        3809
+      ],
+      "png_nonblank": true,
+      "svg_text_elements": 77,
+      "svg_arial_declared": true,
+      "panel_labels": [],
+      "nonconforming_bare_panel_labels": [],
+      "fresh_vs_sources": true
+    },
+    {
+      "stem": "FigV16_regime_templates",
+      "png": true,
+      "svg": true,
+      "pdf": true,
+      "png_size_px": [
+        4450,
+        3700
+      ],
+      "png_nonblank": true,
+      "svg_text_elements": 100,
+      "svg_arial_declared": true,
+      "panel_labels": [],
+      "nonconforming_bare_panel_labels": [],
+      "fresh_vs_sources": true
+    },
+    {
+      "stem": "FigV17_scope_qr_qir_offline",
+      "png": true,
+      "svg": true,
+      "pdf": true,
+      "png_size_px": [
+        4022,
+        3627
+      ],
+      "png_nonblank": true,
+      "svg_text_elements": 55,
+      "svg_arial_declared": true,
+      "panel_labels": [],
+      "nonconforming_bare_panel_labels": [],
+      "fresh_vs_sources": true
+    },
+    {
+      "stem": "FigV18_aggregate_summary",
+      "png": true,
+      "svg": true,
+      "pdf": true,
+      "png_size_px": [
+        4077,
+        3643
+      ],
+      "png_nonblank": true,
+      "svg_text_elements": 105,
+      "svg_arial_declared": true,
+      "panel_labels": [],
+      "nonconforming_bare_panel_labels": [],
+      "fresh_vs_sources": true
+    },
+    {
+      "stem": "FigV19_recovery_validation",
+      "png": true,
+      "svg": true,
+      "pdf": true,
+      "png_size_px": [
+        4237,
+        3534
+      ],
+      "png_nonblank": true,
+      "svg_text_elements": 86,
+      "svg_arial_declared": true,
+      "panel_labels": [],
+      "nonconforming_bare_panel_labels": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "A",
+        "B",
+        "C",
+        "D"
+      ],
+      "fresh_vs_sources": true
+    },
+    {
+      "stem": "FigV20_adapted_recovery_case",
+      "png": true,
+      "svg": true,
+      "pdf": true,
+      "png_size_px": [
+        3470,
+        3256
+      ],
+      "png_nonblank": true,
+      "svg_text_elements": 36,
+      "svg_arial_declared": true,
+      "panel_labels": [],
+      "nonconforming_bare_panel_labels": [],
+      "fresh_vs_sources": true
+    }
+  ]
+}
