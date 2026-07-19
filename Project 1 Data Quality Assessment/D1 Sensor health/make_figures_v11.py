@@ -26,7 +26,7 @@ from matplotlib.patches import Rectangle, Patch, FancyArrowPatch
 from publication_style import (PALETTE as C, STATE_COLORS as STATE_COL,
                                annotate_data_label,
                                configure_publication_style, finalize_figure,
-                               save_publication_bundle)
+                               positive_data_ylim, save_publication_bundle)
 
 OUT = ROOT / "outputs" / "figures"
 OUT.mkdir(parents=True, exist_ok=True)
@@ -118,8 +118,9 @@ def save(fig, name, plot_data: dict = None):
 # ============================================================================
 print("[V12] D1 v1.1 vs STRICT V1 — hero comparison ...")
 fig = plt.figure(figsize=(7.2, 6.7))
-gs = gridspec.GridSpec(3, 3, figure=fig, hspace=0.62, wspace=0.32,
+gs = gridspec.GridSpec(3, 3, figure=fig, hspace=0.78, wspace=0.32,
                         height_ratios=[1.2, 1.0, 1.0])
+fig.subplots_adjust(top=0.86, bottom=0.08)
 
 # (a) Per-channel mean D1: V1 vs v1.1 (DO/ORP only)
 ax = fig.add_subplot(gs[0, :2])
@@ -144,7 +145,8 @@ leg_h = [Line2D([], [], marker="o", color=C["gray"], ms=7,
           Line2D([], [], marker="o", color=C["red"], ms=7,
                   linestyle="", markerfacecolor=C["red"], label="v1.1 (Δ < 0; SustainedAnomaly cap)"),
           Line2D([], [], color="0.5", ls=":", lw=0.8, label="grade boundary D1 = 3")]
-ax.legend(handles=leg_h, loc="upper left", fontsize=6.6, ncol=2, frameon=False)
+fig.legend(handles=leg_h, loc="upper center", bbox_to_anchor=(0.5, 0.935),
+           fontsize=6.3, ncol=4, frameon=False)
 # data-driven x-limits: means are ~3.7–4.5; keep the grade boundary (3.0) visible
 # but never clip the markers (the old fixed (2.0, 3.6) clipped every channel).
 _va = np.r_[df_sorted["D1_v1"].values, df_sorted["D1_v11"].values]
@@ -163,8 +165,7 @@ mean_d = float(df_sorted["delta_D1"].mean())
 ax.axvline(mean_d, color=C["amber"], ls="--", lw=1.0,
             label=f"mean Δ = {mean_d:+.4f}")
 ax.set_xlabel(r"$\Delta D_1$  (v1.1 − STRICT V1)", fontsize=9)
-ax.set_title("(b)  $\\Delta D_1$ distribution", loc="left")
-ax.legend(loc="upper right", fontsize=7.5)
+ax.set_title(f"(b)  $\\Delta D_1$ distribution (mean={mean_d:+.4f})", loc="left")
 
 # (c) State distribution stacked (one bar per channel)
 ax = fig.add_subplot(gs[1, :])
@@ -189,33 +190,37 @@ for s_name in non_normal_states:
     bottom += vals
 ax.set_xticks(xs); ax.set_xticklabels(SCORED, rotation=45, ha="right", fontsize=7.8)
 ax.set_ylabel("Non-normal occupancy (%)", fontsize=9)
-ax.set_ylim(0, max(2.0, float(bottom.max()) * 1.28))
-ax.set_title("(c) Non-normal causal state occupancy", loc="left")
-ax.legend(loc="upper right", ncol=3, fontsize=6.4, frameon=False)
+ax.set_ylim(*positive_data_ylim(bottom, headroom=0.23, minimum_upper=2.0))
+ax.set_title("(c) State occupancy", loc="left")
+ax.legend(loc="upper center", bbox_to_anchor=(0.57, 0.995), ncol=5,
+          fontsize=5.6, frameon=False, borderaxespad=0)
 
 # (d) Daily median trajectory
 ax = fig.add_subplot(gs[2, :2])
 d1v1_d = D1_v1.resample("1D").median().median(axis=1)
 d1v11_d = D1_v11.resample("1D").median().median(axis=1)
 ax.plot(d1v1_d.index, d1v1_d.values, color=C["gray"], lw=1.2,
-        label="STRICT V1 (DO/ORP only, daily median)", alpha=0.85)
+        label="STRICT V1", alpha=0.85)
 ax.plot(d1v11_d.index, d1v11_d.values, color=C["blue"], lw=1.4,
-        label="v1.1", alpha=0.92)
+        label="final", alpha=0.92)
 ax.fill_between(d1v1_d.index, d1v1_d.values, d1v11_d.values,
                  where=d1v11_d.values >= d1v1_d.values,
-                 alpha=0.18, color=C["green"], label="v1.1 ≥ V1")
+                 alpha=0.18, color=C["green"], label="final ≥ V1")
 ax.fill_between(d1v1_d.index, d1v1_d.values, d1v11_d.values,
                  where=d1v11_d.values < d1v1_d.values,
-                 alpha=0.18, color=C["red"], label="v1.1 < V1")
+                 alpha=0.18, color=C["red"], label="final < V1")
 ax.set_ylabel(r"Median daily $D_1$  (across DO/ORP)", fontsize=9)
 ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
 ax.xaxis.set_major_locator(mdates.MonthLocator(interval=2))
 plt.setp(ax.get_xticklabels(), rotation=25, ha="right")
-ax.set_title("(d)  Daily median $D_1$ trajectory", loc="left")
-# add top headroom so the legend sits above the trajectory (was overlapping it)
+ax.set_title("(d) Daily median $D_1$", loc="left")
 _dmin = float(min(d1v1_d.min(), d1v11_d.min()))
-ax.set_ylim(_dmin - 0.15, 5.3)
-ax.legend(loc="upper right", fontsize=7.5, ncol=2, framealpha=0.92)
+_dmax = float(max(d1v1_d.max(), d1v11_d.max()))
+_dpad = max((_dmax - _dmin) * 0.08, 0.05)
+ax.set_ylim(_dmin - _dpad, _dmax + _dpad)
+ax.legend(loc="lower right", bbox_to_anchor=(1.0, 1.025), fontsize=5.6,
+          ncol=4, frameon=False, borderaxespad=0, columnspacing=0.8,
+          handlelength=1.4)
 
 # (e) Weekly delta heatmap
 ax = fig.add_subplot(gs[2, 2])
@@ -235,8 +240,8 @@ cbar.set_label(r"$\Delta D_1$", fontsize=8)
 cbar.ax.tick_params(labelsize=7)
 ax.grid(False)
 
-fig.suptitle("Figure V12. Final D1 versus STRICT V1", fontsize=11.5,
-              fontweight="bold", y=1.0)
+fig.suptitle("Figure V12. Final D1 versus STRICT V1", fontsize=9.8,
+              fontweight="bold", y=0.995)
 save(fig, "FigV12_v11_vs_strictV1_hero",
       plot_data={"per_channel_delta": delta_df,
                   "state_pcts": state_pcts,
@@ -251,6 +256,7 @@ print("[V13] causal six-state recovery machine ...")
 fig = plt.figure(figsize=(7.2, 6.7))
 gs = gridspec.GridSpec(4, 1, figure=fig, hspace=0.80,
                         height_ratios=[1.2, 1.0, 1.0, 1.2])
+fig.subplots_adjust(right=0.78, top=0.91, bottom=0.08)
 
 # Pick the worst sensor for illustration: DO_2_3
 target = "DO_2_3"
@@ -278,11 +284,12 @@ ax.plot(idx, qs, color=C["blue"], lw=0.45, alpha=0.85, label="$Q_{step}$")
 ax.plot(idx, qr, color=C["green"], lw=0.45, alpha=0.85, label="$Q_{regime}$")
 ax.plot(idx, qf, color=C["amber"], lw=0.45, alpha=0.85, label="$Q_{freeze}$")
 ax.axhline(2.0, color=C["red"], ls=":", lw=0.7, alpha=0.7)
-ax.set_ylim(1, 5.2)
+ax.set_ylim(1, 5.1)
 ax.set_ylabel("Sub-score", fontsize=9)
 ax.set_title(f"(a)  Sub-score timeseries with state-machine shading — {target}", loc="left")
 # legend in the lower band (sub-scores live at 3.5–5; the 1–2.5 band is sparse)
-ax.legend(loc="lower center", ncol=4, fontsize=6.8, framealpha=0.92)
+ax.legend(loc="center left", bbox_to_anchor=(1.01, 0.5), ncol=1,
+          fontsize=5.7, frameon=False, borderaxespad=0)
 ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
 
 # (b) Q_drift v1 vs Q_drift_eff (showing α-thaw effect)
@@ -298,10 +305,11 @@ ax.plot(idx, qd_eff, color=C["purple"], lw=0.6, alpha=0.92,
         label="$Q_{drift}^{eff}$ — v1.1 (after α-thaw)")
 ax.axhline(3.0, color=C["amber"], ls="--", lw=0.7, alpha=0.6,
             label="neutral 3.0 (during Refractory)")
-ax.set_ylim(1, 5.2)
+ax.set_ylim(1, 5.1)
 ax.set_ylabel("$Q_{drift}$ score", fontsize=9)
 ax.set_title(r"(b)  $Q_{\rm drift}$  vs  $Q_{\rm drift}^{\rm eff}$  (α-thaw effect)", loc="left")
-ax.legend(loc="lower center", ncol=3, fontsize=7.2, framealpha=0.92)
+ax.legend(loc="center left", bbox_to_anchor=(1.01, 0.5), ncol=1,
+          fontsize=5.8, frameon=False, borderaxespad=0)
 ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
 
 # (c) α(t) timeline + recovery_streak
@@ -317,7 +325,8 @@ ax2.plot(idx, state_log["recovery_streak"].values, color=C["red"], lw=0.55,
           alpha=0.85, label="recovery_streak (h)")
 ax2.set_ylabel("recovery_streak (h)", fontsize=9, color=C["red"])
 ax2.tick_params(axis="y", colors=C["red"])
-ax2.set_ylim(0, max(state_log["recovery_streak"].max(), 25))
+ax2.set_ylim(*positive_data_ylim(state_log["recovery_streak"].values,
+                                 headroom=0.10, minimum_upper=1.0))
 ax.set_title("(c)  α-thaw schedule + recovery_streak counter", loc="left")
 ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
 
@@ -335,16 +344,17 @@ ax.plot(idx, d1v11, color=C["blue"], lw=0.65, alpha=0.92,
 ax.axhline(2.5, color=C["red"], ls="--", lw=0.7, alpha=0.7,
             label="SustainedAnomaly / Veto-3 cap = 2.5")
 ax.axhline(3.0, color="0.5", ls=":", lw=0.7, alpha=0.6, label="grade boundary")
-ax.set_ylim(1.5, 4.5)
+ax.set_ylim(1.5, 5.1)
 ax.set_ylabel("$D_1$ total", fontsize=9)
 ax.set_title(f"(d)  Final $D_1$ — {target} ({len(state_log[state_log.state_name=='Refractory'])} h Refractory, "
               f"{len(state_log[state_log.state_name=='SustainedAnomaly'])} h Sustained)",
               loc="left")
-ax.legend(loc="lower left", fontsize=7.2, framealpha=0.92)
+ax.legend(loc="center left", bbox_to_anchor=(1.01, 0.5), ncol=1,
+          fontsize=5.8, frameon=False, borderaxespad=0)
 ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
 
 fig.suptitle("Figure V13.  Causal six-state recovery machine — DO_2_3 case study",
-              fontsize=11.5, fontweight="bold", y=1.0)
+              fontsize=9.8, fontweight="bold", y=0.995)
 save(fig, "FigV13_state_machine_DO_2_3",
       plot_data={"state_log": state_log,
                   "Q_drift_compare": pd.DataFrame({
@@ -358,6 +368,7 @@ print("[V14] Signal-only Veto-3 ...")
 fig = plt.figure(figsize=(7.2, 6.7))
 gs = gridspec.GridSpec(3, 2, figure=fig, hspace=0.90, wspace=0.36,
                         height_ratios=[1.0, 1.0, 1.0])
+fig.subplots_adjust(top=0.86, bottom=0.08)
 
 # (a) Per-channel state distribution heatmap
 ax = fig.add_subplot(gs[0, 0])
@@ -426,8 +437,9 @@ for i, col_name in enumerate(trans_counts.columns):
     bottom += values
 ax.set_xticks(xs); ax.set_xticklabels(SCORED, rotation=48, ha="right", fontsize=6.5)
 ax.set_ylabel("# transitions", fontsize=9)
+ax.set_ylim(*positive_data_ylim(bottom, headroom=0.12))
 ax.set_title("(c)  State-transition counts (entire 8.4 mo)", loc="left")
-ax.legend(loc="upper left", fontsize=5.9, ncol=2, frameon=False)
+_h14, _l14 = ax.get_legend_handles_labels()
 
 # (d) Veto rule overlap heat (for one representative sensor)
 ax = fig.add_subplot(gs[1, 1])
@@ -487,12 +499,19 @@ ax.bar(xs + bw, [sust_v11[c] for c in SCORED], bw, color=STATE_COL["SustainedAno
         label="v1.1: SustainedAnomaly (with α-thaw, recoverable)")
 ax.set_xticks(xs); ax.set_xticklabels(SCORED, rotation=45, ha="right", fontsize=7.8)
 ax.set_ylabel("State % of timeline", fontsize=9)
+_e_values = np.r_[[cd_v1_est[c] for c in SCORED],
+                  [refr_v11[c] for c in SCORED],
+                  [sust_v11[c] for c in SCORED]]
+ax.set_ylim(*positive_data_ylim(_e_values, headroom=0.12))
 ax.set_title("(e) Timer baseline versus causal event states",
               loc="left")
-ax.legend(loc="upper right", fontsize=6.5, ncol=1, frameon=False)
+ax.legend(loc="lower right", bbox_to_anchor=(1.0, 1.01), fontsize=5.7,
+          ncol=3, frameon=False, borderaxespad=0)
 
 fig.suptitle("Figure V14.  Signal-only Veto-3 and six-state machine audit",
-              fontsize=11.5, fontweight="bold", y=1.0)
+              fontsize=9.8, fontweight="bold", y=0.995)
+fig.legend(_h14, _l14, loc="upper center", bbox_to_anchor=(0.5, 0.935),
+           fontsize=6.0, ncol=6, frameon=False)
 save(fig, "FigV14_veto3_state_audit",
       plot_data={"state_dist": state_dist_all,
                   "veto3_rate": v3.to_frame("rate_pct"),
@@ -507,9 +526,10 @@ save(fig, "FigV14_veto3_state_audit",
 # Figure V15 — PELT change-points and event_id timeline
 # ============================================================================
 print("[V15] PELT batch change-points ...")
-fig = plt.figure(figsize=(7.2, 5.8))
-gs = gridspec.GridSpec(3, 2, figure=fig, hspace=0.55, wspace=0.28,
+fig = plt.figure(figsize=(7.2, 6.5))
+gs = gridspec.GridSpec(3, 2, figure=fig, hspace=0.88, wspace=0.28,
                         height_ratios=[1.4, 1.1, 1.0])
+fig.subplots_adjust(right=0.80, top=0.92, bottom=0.10)
 
 # (a) PELT CPs overlay on residual + state machine on DO_2_3
 ax = fig.add_subplot(gs[0, :])
@@ -535,7 +555,8 @@ ax.plot([], [], color=C["green"], lw=1.0,
 ax.set_ylabel(f"{target} residual (mg/L)", fontsize=9)
 ax.set_title(f"(a)  PELT change-points + new-event-id Refractory triggers — {target}",
               loc="left")
-ax.legend(loc="upper right", fontsize=7.5)
+ax.legend(loc="center left", bbox_to_anchor=(1.01, 0.5), fontsize=6.2,
+          frameon=False, borderaxespad=0)
 ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
 
 # (b) PELT CP count per scored channel
@@ -563,16 +584,26 @@ ax.scatter(df_cmp["PELT CPs"], df_cmp["Refractory triggers"], s=72,
            color=point_colors, edgecolor="white", alpha=0.88, linewidths=0.8)
 label_channels = set(
     df_cmp.assign(information=df_cmp.max(axis=1))
-    .nlargest(6, "information").index
+    .nlargest(4, "information").index
 )
+label_offsets = {
+    "ORP_1_3": (7, 6), "DO_2_3": (7, 9), "DO_2_4": (7, 3),
+    "DO_1_2": (-8, 12), "DO_1_3": (-8, 0), "ORP_2_1": (8, 7),
+}
 for c in SCORED:
     if c not in label_channels:
         continue
     xy = (df_cmp.at[c, "PELT CPs"], df_cmp.at[c, "Refractory triggers"])
-    annotate_data_label(ax, c, xy, xytext=(4, 5), fontsize=6.2,
-                        ha="left", va="bottom")
+    offset = label_offsets.get(c, (5, 5))
+    annotate_data_label(
+        ax, c, xy, xytext=offset, fontsize=5.8, arrow=True,
+        ha="left" if offset[0] >= 0 else "right",
+        va="bottom" if offset[1] >= 0 else "top",
+    )
 mx = max(df_cmp.max()) + 5
 ax.plot([0, mx], [0, mx], "k--", lw=0.6, alpha=0.5, label="1:1")
+ax.set_xlim(-2, mx)
+ax.set_ylim(-2, mx)
 ax.set_xlabel("PELT CPs", fontsize=9)
 ax.set_ylabel("Refractory triggers", fontsize=9)
 ax.set_title("(c)  PELT CPs vs Refractory triggers (event-uniqueness filter)",
@@ -588,8 +619,9 @@ if ts_list:
     ax.bar(monthly.index, monthly.values, width=20, color=C["amber"],
             edgecolor="white", alpha=0.88, linewidth=0.6)
     for x, y in zip(monthly.index, monthly.values):
-        ax.text(x, y + 4, str(int(y)), ha="center", va="bottom",
+        ax.text(x, y + 0.25, str(int(y)), ha="center", va="bottom",
                   fontsize=7.5, fontweight="bold")
+    ax.set_ylim(*positive_data_ylim(monthly.values, headroom=0.14))
 ax.set_ylabel("# event triggers / month", fontsize=9)
 ax.set_title("(d)  Refractory trigger density timeline (all channels)", loc="left")
 ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
@@ -597,7 +629,7 @@ ax.xaxis.set_major_locator(mdates.MonthLocator(interval=1))
 plt.setp(ax.get_xticklabels(), rotation=45, ha="right")
 
 fig.suptitle("Figure V15.  PELT batch calibration + event-uniqueness filter",
-              fontsize=11.5, fontweight="bold", y=1.0)
+              fontsize=9.8, fontweight="bold", y=0.995)
 save(fig, "FigV15_pelt_event_id",
       plot_data={"cp_count": pd.Series(ch_cp_counts).to_frame("cp_count"),
                   "refractory_triggers": pd.Series(refr_triggers).to_frame("triggers"),

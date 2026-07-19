@@ -195,7 +195,8 @@ def make_recovery_case_figure(state: dict) -> None:
     ax.set_ylabel("Quality score")
     ax.set_ylim(0, 5.15)
     ax.set_title(f"(a) Recovery gates: {channel}", loc="left", fontweight="bold")
-    ax.legend(frameon=False, ncol=4, fontsize=7, loc="lower right")
+    ax.legend(frameon=False, ncol=1, fontsize=6.5, loc="center left",
+              bbox_to_anchor=(1.01, 0.5), borderaxespad=0)
     ax.spines[["top", "right"]].set_visible(False)
 
     ax = axes[1]
@@ -210,7 +211,8 @@ def make_recovery_case_figure(state: dict) -> None:
                label="Peer gate")
     ax.set_ylabel("Standardised residual")
     ax.set_title("(b) Independent recovery evidence", loc="left", fontweight="bold")
-    ax.legend(frameon=False, ncol=2, fontsize=7, loc="upper right")
+    ax.legend(frameon=False, ncol=1, fontsize=6.5, loc="center left",
+              bbox_to_anchor=(1.01, 0.5), borderaxespad=0)
     ax.spines[["top", "right"]].set_visible(False)
 
     ax = axes[2]
@@ -245,7 +247,7 @@ def make_recovery_case_figure(state: dict) -> None:
         "Figure V20. Adapted recovery after a persistent regime departure",
         fontsize=10, fontweight="bold", y=0.995,
     )
-    fig.tight_layout(rect=(0, 0.05, 1, 0.97), h_pad=1.1)
+    fig.tight_layout(rect=(0, 0.05, 0.82, 0.97), h_pad=1.1)
     export = case.reset_index().rename(columns={case.index.name or "index": "timestamp"})
     export.insert(1, "hours_from_event", x.to_numpy(float))
     export["Q_step"] = subs["Q_step"].loc[case.index].to_numpy()

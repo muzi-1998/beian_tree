@@ -18,7 +18,8 @@ from matplotlib.colors import LinearSegmentedColormap, BoundaryNorm
 from matplotlib.lines import Line2D
 from matplotlib.patches import Rectangle, Patch
 from publication_style import (PALETTE as C, configure_publication_style,
-                               finalize_figure, save_publication_bundle)
+                               finalize_figure, positive_data_ylim,
+                               save_publication_bundle)
 
 OUT = ROOT / "outputs" / "figures"
 PLOTDATA = ROOT / "outputs" / "plot_data"
@@ -164,7 +165,7 @@ worst4 = df_means.nsmallest(4).index.tolist()
 best4 = df_means.nlargest(4).index.tolist()
 case_channels = worst4 + best4
 fig, axes = plt.subplots(4, 2, figsize=(7.2, 6.7), sharex=True)
-fig.subplots_adjust(hspace=0.50, wspace=0.18, top=0.90)
+fig.subplots_adjust(hspace=0.58, wspace=0.18, top=0.84, bottom=0.08)
 for i, c in enumerate(case_channels):
     ax = axes[i // 2, i % 2]
     s = subs_v11[c]
@@ -181,8 +182,11 @@ for i, c in enumerate(case_channels):
     ax.axhline(2.5, color=C["red"], ls="--", lw=0.6, alpha=0.6)
     ax.set_ylim(1, 5.2)
     title_pre = "WORST" if i < 4 else "BEST"
-    ax.set_title(f"({chr(97+i)}) {title_pre}: {c} (mean $D_1$={df_means[c]:.3f})",
-                  loc="left")
+    ax.set_title(f"{title_pre}: {c} (mean $D_1$={df_means[c]:.3f})",
+                 loc="left", fontsize=7.6, fontweight="normal", pad=4)
+    ax.text(-0.08, 1.04, f"({chr(97+i)})", transform=ax.transAxes,
+            ha="left", va="bottom", fontsize=8, fontweight="bold",
+            clip_on=False)
     if i % 2 == 0:
         ax.set_ylabel("Sub-score / D1", fontsize=8.5)
     # every panel carries its own date labels (was shared via sharex → bottom row)
@@ -192,10 +196,10 @@ for i, c in enumerate(case_channels):
 # shared legend at the figure top (outside the dense panels — was overlapping
 # panel (a)'s data at lower-right)
 _h3, _l3 = axes[0, 0].get_legend_handles_labels()
-fig.legend(_h3, _l3, loc="upper center", bbox_to_anchor=(0.5, 0.955),
-           ncol=6, fontsize=8.5, framealpha=0.9)
+fig.legend(_h3, _l3, loc="upper center", bbox_to_anchor=(0.5, 0.935),
+           ncol=6, fontsize=7.2, frameon=False)
 fig.suptitle("Figure 3.  Sub-score timeseries — 4 worst + 4 best (v1.1)",
-              fontsize=11, fontweight="bold", y=0.99)
+              fontsize=9.8, fontweight="bold", y=0.992)
 save(fig, "Fig3_case_subscores",
       plot_data={c: D1_v11[[c]] for c in case_channels})
 
@@ -315,7 +319,7 @@ ax.set_xlabel("rel-var / unique-ratio", fontsize=9)
 ax.set_ylabel(r"$Q$", fontsize=9)
 ax.set_title("(e) Freeze metrics", loc="left")
 ax.set_ylim(0.8, 5.2)
-ax.legend(fontsize=7.5)
+ax.legend(fontsize=7.2, loc="upper right", frameon=False)
 
 # Q_regime: logistic
 ax = axes[1, 2]
@@ -339,6 +343,7 @@ save(fig, "Fig5_mapping_curves")
 # ============================================================================
 print("[Fig6] Dominant fault per channel ...")
 fig, ax = plt.subplots(figsize=(7.2, 4.0))
+fig.subplots_adjust(top=0.82, bottom=0.26)
 dom = S["dominant_v11"]
 faults = ["Q_spike", "Q_step", "Q_drift", "Q_freeze", "Q_regime"]
 fclr = {"Q_spike": C["amber"], "Q_step": C["blue"], "Q_drift": C["purple"],
@@ -356,10 +361,12 @@ for f in faults:
     bottom += np.array(shares[f])
 ax.set_xticks(xs); ax.set_xticklabels(SCORED, rotation=45, ha="right", fontsize=8.5)
 ax.set_ylabel("Dominant-fault share (%)", fontsize=9)
-ax.set_ylim(0, 120)
-ax.set_title("Figure 6.  Dominant fault decomposition per channel (v1.1)",
-              loc="left")
-ax.legend(loc="upper right", ncol=5, fontsize=8, framealpha=0.92)
+ax.set_ylim(*positive_data_ylim(bottom, headroom=0.05))
+_h6, _l6 = ax.get_legend_handles_labels()
+fig.legend(_h6, _l6, loc="upper center", bbox_to_anchor=(0.5, 0.885),
+           ncol=5, fontsize=7.4, frameon=False)
+fig.suptitle("Figure 6.  Dominant fault decomposition per channel (v1.1)",
+             fontsize=9.8, fontweight="bold", y=0.98)
 save(fig, "Fig6_dominant_fault",
       plot_data={"dominant_share": pd.DataFrame(shares, index=SCORED)})
 
@@ -370,6 +377,7 @@ save(fig, "Fig6_dominant_fault",
 print("[Fig7] Daily timeseries ...")
 fig = plt.figure(figsize=(7.2, 5.6))
 gs = gridspec.GridSpec(2, 1, figure=fig, hspace=0.32, height_ratios=[1, 1])
+fig.subplots_adjust(right=0.79, top=0.91, bottom=0.10)
 
 # (a) DO daily
 ax = fig.add_subplot(gs[0])
@@ -381,7 +389,8 @@ ax.axhline(3, color=C["red"], ls=":", lw=0.7)
 ax.set_ylabel("Daily $D_1$ (median)", fontsize=9.5)
 ax.set_ylim(1.5, 5.0)
 ax.set_title("(a)  DO channels (n=8)", loc="left")
-ax.legend(loc="lower right", ncol=4, fontsize=7.5, framealpha=0.92)
+ax.legend(loc="center left", bbox_to_anchor=(1.01, 0.5), ncol=1,
+          fontsize=6.7, frameon=False, borderaxespad=0)
 ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
 
 # (b) ORP daily
@@ -393,7 +402,8 @@ ax.axhline(3, color=C["red"], ls=":", lw=0.7)
 ax.set_ylabel("Daily $D_1$ (median)", fontsize=9.5)
 ax.set_ylim(1.5, 5.0)
 ax.set_title("(b)  ORP channels (n=6)", loc="left")
-ax.legend(loc="lower right", ncol=3, fontsize=7.5, framealpha=0.92)
+ax.legend(loc="center left", bbox_to_anchor=(1.01, 0.5), ncol=1,
+          fontsize=6.7, frameon=False, borderaxespad=0)
 ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
 
 fig.suptitle("Figure 7.  Daily $D_1$ trajectories by sensor group (v1.1, DO/ORP only)",
@@ -406,6 +416,7 @@ save(fig, "Fig7_daily_timeseries", plot_data={"D1_daily": D1_d})
 # ============================================================================
 print("[Fig8] Veto + state-machine activation rates ...")
 fig, ax = plt.subplots(figsize=(7.2, 4.0))
+fig.subplots_adjust(top=0.79, bottom=0.27)
 delta_df = S["delta_df"]
 xs = np.arange(len(SCORED))
 bw = 0.12
@@ -435,10 +446,12 @@ for i, (k_name, clr) in enumerate(clr_map.items()):
             edgecolor="white", linewidth=0.4, alpha=0.88, label=k_name)
 ax.set_xticks(xs); ax.set_xticklabels(SCORED, rotation=45, ha="right", fontsize=8.5)
 ax.set_ylabel("Activation rate (%)", fontsize=9.5)
-ax.set_ylim(0, 40)
-ax.set_title("Figure 8.  Veto and state-machine activation rates per channel (v1.1)",
-              loc="left")
-ax.legend(loc="upper right", ncol=4, fontsize=7.4, framealpha=0.92)
+ax.set_ylim(*positive_data_ylim(df_v.to_numpy(), headroom=0.10))
+_h8, _l8 = ax.get_legend_handles_labels()
+fig.legend(_h8, _l8, loc="upper center", bbox_to_anchor=(0.5, 0.875),
+           ncol=4, fontsize=6.7, frameon=False)
+fig.suptitle("Figure 8.  Veto and state-machine activation rates per channel (v1.1)",
+             fontsize=9.8, fontweight="bold", y=0.98)
 save(fig, "Fig8_veto_cooldown",
       plot_data={"activation_rates": df_v})
 
@@ -448,7 +461,7 @@ save(fig, "Fig8_veto_cooldown",
 # ============================================================================
 print("[Fig9] Harmonic decomposition ...")
 fig, axes = plt.subplots(3, 1, figsize=(7.2, 5.4), sharex=True)
-fig.subplots_adjust(hspace=0.45)   # room for each panel's own date labels
+fig.subplots_adjust(hspace=0.52, top=0.80, bottom=0.09)
 df_h = S["df_h"]; resid_h = S["resid_h"]
 for i, ch in enumerate(["DO_2_3", "ORP_1_1", "ORP_2_1"]):
     ax = axes[i]
@@ -456,22 +469,22 @@ for i, ch in enumerate(["DO_2_3", "ORP_1_1", "ORP_2_1"]):
     r = resid_h[ch].iloc[:24*7]
     seasonal = x - r
     ax.plot(x.index, x.values, color=C["gray"], lw=0.6, alpha=0.65,
-            label=f"{ch} raw hourly mean")
+            label="raw hourly mean")
     ax.plot(seasonal.index, seasonal.values, color=C["blue"], lw=1.2, alpha=0.92,
-            label="harmonic seasonal (daily T=24h + weekly T=168h, 3 each)")
+            label="harmonic seasonal component")
     ax.plot(r.index, r.values, color=C["red"], lw=0.7, alpha=0.85,
             label="residual after harmonic removal")
     ax.set_ylabel(ch, fontsize=9.5)
     ax.axhline(0, color="0.5", lw=0.4, alpha=0.5)
-    # add top headroom so the (full-width) legend sits above the data, not over it
-    _y0, _y1 = ax.get_ylim()
-    ax.set_ylim(_y0, _y1 + 0.32 * (_y1 - _y0))
-    ax.legend(loc="upper right", fontsize=7.5, ncol=3, framealpha=0.9)
+    ax.set_title(f"({chr(97+i)}) {ch}", loc="left", fontsize=8)
 # each panel carries its own date labels (was shared via sharex → only bottom)
 for ax in axes:
     ax.tick_params(axis="x", labelbottom=True)
 fig.suptitle("Figure 9.  Harmonic decomposition demonstration (first 7 days)",
-              fontsize=11, fontweight="bold", y=0.995)
+              fontsize=9.8, fontweight="bold", y=0.985)
+_h9, _l9 = axes[0].get_legend_handles_labels()
+fig.legend(_h9, _l9, loc="upper center", bbox_to_anchor=(0.5, 0.90),
+           ncol=3, fontsize=7.0, frameon=False)
 save(fig, "Fig9_harmonic_demo")
 
 
@@ -480,7 +493,7 @@ save(fig, "Fig9_harmonic_demo")
 # ============================================================================
 print("[Fig10] Two-tier regime ...")
 fig, axes = plt.subplots(2, 1, figsize=(7.2, 4.8), sharex=True)
-fig.subplots_adjust(hspace=0.42)   # room for each panel's own date labels
+fig.subplots_adjust(hspace=0.42, top=0.76, bottom=0.10)
 ch = "DO_2_3"
 det_raw = S["detectors_raw"]
 w1 = det_raw["w1_normalised_hourly"][ch]
@@ -488,30 +501,36 @@ ks = det_raw["ks_statistic_hourly"][ch]
 qregime = subs_v11[ch]["Q_regime"]
 
 ax = axes[0]
-ax.plot(w1.index, w1.values, color=C["red"], lw=0.5, alpha=0.85,
-        label="W1 normalised (Tier-1)")
-ax.fill_between(w1.index, 0, w1.values, where=w1.values > 3,
-                 color=C["red"], alpha=0.15, label="Tier-1 active (W1>3)")
+line_w1, = ax.plot(w1.index, w1.values, color=C["red"], lw=0.5, alpha=0.85,
+                   label="W1 normalised (Tier-1)")
+fill_w1 = ax.fill_between(w1.index, 0, w1.values, where=w1.values > 3,
+                          color=C["red"], alpha=0.15,
+                          label="Tier-1 active (W1>3)")
 ax.set_ylabel("W1 normalised", fontsize=9.5)
 ax.set_yscale("symlog", linthresh=2)
+ax.set_ylim(*positive_data_ylim(w1.values, headroom=0.08))
 ax.set_title(f"(a)  Tier-1 W1 distance — {ch}", loc="left")
-ax.legend(loc="upper left", fontsize=7.5)
 
 ax = axes[1]
-ax.plot(ks.index, ks.values, color=C["blue"], lw=0.5, alpha=0.85,
-        label="adjacent KS statistic (Tier-2)")
-ax.fill_between(ks.index, 0, ks.values, where=ks.values > 0.3,
-                 color=C["blue"], alpha=0.15, label="Tier-2 active (KS>0.3)")
+line_ks, = ax.plot(ks.index, ks.values, color=C["blue"], lw=0.5, alpha=0.85,
+                   label="adjacent KS statistic (Tier-2)")
+fill_ks = ax.fill_between(ks.index, 0, ks.values, where=ks.values > 0.3,
+                          color=C["blue"], alpha=0.15,
+                          label="Tier-2 active (KS>0.3)")
 ax.set_ylabel("adjacent KS", fontsize=9.5)
+ax.set_ylim(*positive_data_ylim(ks.values, headroom=0.08, minimum_upper=0.5))
 ax.set_title(f"(b)  Tier-2 adjacent KS — {ch}", loc="left")
-ax.legend(loc="upper left", fontsize=7.5)
 # each panel carries its own date labels (was shared via sharex → only bottom)
 for _ax in axes:
     _ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
     _ax.tick_params(axis="x", labelbottom=True)
 
 fig.suptitle(f"Figure 10.  Two-tier regime detector outputs — {ch} (v1.1)",
-              fontsize=11, fontweight="bold", y=0.995)
+              fontsize=9.8, fontweight="bold", y=0.985)
+fig.legend([line_w1, fill_w1, line_ks, fill_ks],
+           ["W1 normalised", "W1 > 3", "Adjacent KS", "KS > 0.3"],
+           loc="upper center", bbox_to_anchor=(0.5, 0.895), ncol=4,
+           fontsize=6.9, frameon=False)
 save(fig, "Fig10_two_tier_regime")
 
 

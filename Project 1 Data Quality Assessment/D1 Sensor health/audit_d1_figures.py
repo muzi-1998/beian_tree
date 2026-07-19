@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+from datetime import datetime
 from pathlib import Path
 
 import numpy as np
@@ -33,6 +34,36 @@ EXPECTED = [
     "FigV19_recovery_validation",
     "FigV20_adapted_recovery_case",
 ]
+FULL_RESOLUTION_REVIEWED = {
+    "Fig3_case_subscores",
+    "Fig6_dominant_fault",
+    "Fig7_daily_timeseries",
+    "Fig8_veto_cooldown",
+    "Fig9_harmonic_demo",
+    "Fig10_two_tier_regime",
+    "FigV12_v11_vs_strictV1_hero",
+    "FigV13_state_machine_DO_2_3",
+    "FigV15_pelt_event_id",
+    "FigV18_aggregate_summary",
+    "FigV20_adapted_recovery_case",
+}
+VISUAL_REVIEW_CHECKS = [
+    "panel labels follow the (a), (b), ... convention",
+    "legends and annotations do not obscure decision-relevant data",
+    "over-data annotation backgrounds remain partially transparent",
+    "data-driven y limits provide only justified headroom",
+    "axis labels and tick labels remain legible at final export size",
+]
+
+
+def _generator_for(name: str) -> Path:
+    if name.startswith("FigV19") or name.startswith("FigV20"):
+        return ROOT / "make_recovery_figures.py"
+    if name.startswith(("FigV12", "FigV13", "FigV14", "FigV15")):
+        return ROOT / "make_figures_v11.py"
+    if name.startswith(("FigV16", "FigV17", "FigV18")):
+        return ROOT / "make_figures_v11_part2.py"
+    return ROOT / "make_baseline_figures_v11.py"
 
 
 def _contact_sheet(names: list[str], output: Path) -> None:
@@ -57,11 +88,20 @@ def main() -> None:
     QA_DIR.mkdir(parents=True, exist_ok=True)
     rows = []
     for name in EXPECTED:
-        row = {"figure": name}
+        generator = _generator_for(name)
+        sources = [ROOT / "publication_style.py", generator]
+        source_mtime = max(path.stat().st_mtime for path in sources)
+        row = {
+            "figure": name,
+            "generator": generator.name,
+            "fresh_vs_generator": True,
+        }
         for suffix in ("svg", "pdf", "png", "tiff"):
             path = FIG_DIR / f"{name}.{suffix}"
             row[f"{suffix}_exists"] = path.exists()
             row[f"{suffix}_bytes"] = path.stat().st_size if path.exists() else 0
+            if not path.exists() or path.stat().st_mtime < source_mtime:
+                row["fresh_vs_generator"] = False
         png_path = FIG_DIR / f"{name}.png"
         if png_path.exists():
             image = Image.open(png_path).convert("L")
@@ -75,18 +115,30 @@ def main() -> None:
         if svg_path.exists():
             svg_text = svg_path.read_text(encoding="utf-8", errors="ignore")
             row["svg_has_editable_text"] = "<text" in svg_text
+        row["visual_review"] = (
+            "contact_sheet_and_full_resolution"
+            if name in FULL_RESOLUTION_REVIEWED else "contact_sheet"
+        )
+        row["visual_review_checks"] = VISUAL_REVIEW_CHECKS
         rows.append(row)
 
     required = [
         "svg_exists", "pdf_exists", "png_exists", "tiff_exists",
-        "png_nonblank", "svg_has_editable_text",
+        "png_nonblank", "svg_has_editable_text", "fresh_vs_generator",
     ]
     for row in rows:
         row["bundle_pass"] = all(bool(row.get(field, False)) for field in required)
     report = {
+        "generated_at": datetime.now().astimezone().isoformat(timespec="seconds"),
         "n_expected": len(EXPECTED),
         "n_passed": sum(row["bundle_pass"] for row in rows),
         "all_passed": all(row["bundle_pass"] for row in rows),
+        "visual_review_contract": {
+            "all_figures_reviewed_in_contact_sheets": True,
+            "full_resolution_reviewed": sorted(FULL_RESOLUTION_REVIEWED),
+            "checks": VISUAL_REVIEW_CHECKS,
+            "note": "Visual review is recorded separately from automated bundle_pass.",
+        },
         "figures": rows,
     }
     (QA_DIR / "D1_figure_bundle_audit.json").write_text(
