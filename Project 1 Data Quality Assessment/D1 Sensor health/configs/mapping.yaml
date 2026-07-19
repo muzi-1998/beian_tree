@@ -12,10 +12,12 @@ spike:
 step:
   function: logistic
   metric: ks_statistic
-  k: 8.0           # slope (P1-2: relaxed from 12 → 8, less sharp drop)
-  x0: 0.40         # midpoint (P1-2: shifted from 0.30 → 0.40, higher KS threshold)
+  k: 16.0
+  x0: 0.55
   direction: high_quality_low_metric
-  rate_floor: 0.005  # baseline FAR to subtract
+  source: detector_input_fault_injection
+  calibration_id: step-injection-ea8d55282211
+  calibration_scope: iid routed inputs; 780 sustained-step scenarios; 10-channel LOCO
 
 drift:
   function: logistic

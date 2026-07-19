@@ -14,12 +14,13 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import matplotlib.gridspec as gridspec
-from matplotlib.colors import LinearSegmentedColormap, BoundaryNorm
+from matplotlib.colors import LinearSegmentedColormap, BoundaryNorm, ListedColormap
 from matplotlib.lines import Line2D
 from matplotlib.patches import Rectangle, Patch
 from publication_style import (PALETTE as C, configure_publication_style,
                                finalize_figure, positive_data_ylim,
                                save_publication_bundle)
+from src.config.loader import load_project_config
 
 OUT = ROOT / "outputs" / "figures"
 PLOTDATA = ROOT / "outputs" / "plot_data"
@@ -53,6 +54,7 @@ DO_CH = [c for c in SCORED if c.startswith("DO_")]
 ORP_CH = [c for c in SCORED if c.startswith("ORP_")]
 D1_v11 = S["D1_v11"]
 subs_v11 = S["subs_v11"]
+MAPPING_CFG = load_project_config().mapping
 
 
 def _finish_axes(fig):
@@ -94,8 +96,8 @@ matrix_text = [
        "elevated",       "high (sustained)"],
     ["PLS residual z", "|z| < 1.5",   "1.5–2.0",    "2.0–2.5",
        "2.5–3.0",         "> 3.0 sustained"],
-    ["RLE / unique ratio", "no freeze", "<5 min",   "5–15 min",
-       "15–60 min",       ">60 min"],
+    ["RLE duration", "<15 min", "15–30 min", "30–60 min",
+       "60–360 min", "≥360 min"],
     ["W1 normalised", "< 1.0",        "1.0–2.0",    "2.0–3.0",
        "3.0–4.0",         "> 4.0"],
 ]
@@ -268,14 +270,17 @@ ax.set_ylim(0.8, 5.2); ax.set_xlim(0, 0.3)
 for b, s in zip(breaks[:-1], scores[:-1]):
     ax.axvline(b, color="0.6", ls=":", lw=0.5)
 
-# Q_step: logistic k=8.0, x0=0.40
+# Q_step: injection-calibrated logistic mapping
 ax = axes[0, 1]
-x = np.linspace(0, 0.6, 200)
-y = logistic(x, 8.0, 0.40)
+x = np.linspace(0, 1.0, 300)
+step_k = float(MAPPING_CFG.step.k)
+step_x0 = float(MAPPING_CFG.step.x0)
+y = logistic(x, step_k, step_x0)
 ax.plot(x, y, color=C["blue"], lw=1.8)
+ax.axvline(step_x0, color="0.35", ls=":", lw=0.8)
 ax.set_xlabel("KS statistic", fontsize=9)
 ax.set_ylabel(r"$Q_{step}$", fontsize=9)
-ax.set_title("(b) Step: $k=8.0$, $x_0=0.40$", loc="left")
+ax.set_title(f"(b) Step: $k={step_k:.0f}$, $x_0={step_x0:.2f}$", loc="left")
 ax.set_ylim(0.8, 5.2)
 
 # Q_drift: logistic k=1.5, x0=2.5
@@ -290,7 +295,7 @@ ax.set_ylim(0.8, 5.2)
 
 # Q_freeze: stepwise duration
 ax = axes[1, 0]
-durations = [5, 15, 30, 60, 360]
+durations = [15, 30, 60, 360]
 scores_f = [5, 4, 3, 2, 1]
 x_f = np.linspace(0, 400, 400)
 y_f = np.zeros_like(x_f)
@@ -305,21 +310,21 @@ ax.set_xlabel("freeze RLE duration (min)", fontsize=9)
 ax.set_ylabel(r"$Q_{freeze,RLE}$", fontsize=9)
 ax.set_title("(d) Freeze duration", loc="left")
 ax.set_ylim(0.8, 5.2)
-for d in durations[:-1]:
+for d in durations:
     ax.axvline(d, color="0.6", ls=":", lw=0.5)
 
 # Q_freeze: low_var (logistic neg)
 ax = axes[1, 1]
 x = np.linspace(0, 1, 200)
-y = logistic(x, -10, 0.2, "lo_hi")
+y = logistic(x, 10, 0.2, "lo_hi")
 ax.plot(x, y, color=C["red"], lw=1.8, label="low_var")
-y2 = logistic(x, -15, 0.2, "lo_hi")
+y2 = logistic(x, 15, 0.2, "lo_hi")
 ax.plot(x, y2, color=C["orange"], lw=1.8, label="unique_ratio", ls="--")
 ax.set_xlabel("rel-var / unique-ratio", fontsize=9)
 ax.set_ylabel(r"$Q$", fontsize=9)
 ax.set_title("(e) Freeze metrics", loc="left")
 ax.set_ylim(0.8, 5.2)
-ax.legend(fontsize=7.2, loc="upper right", frameon=False)
+ax.legend(fontsize=7.2, loc="lower right", frameon=False)
 
 # Q_regime: logistic
 ax = axes[1, 2]
@@ -339,45 +344,95 @@ save(fig, "Fig5_mapping_curves")
 
 
 # ============================================================================
-# Fig 6: Dominant fault per channel (stacked bar)
+# Fig 6: Exact pre-cap score-loss attribution + severe evidence rate
 # ============================================================================
-print("[Fig6] Dominant fault per channel ...")
-fig, ax = plt.subplots(figsize=(7.2, 4.0))
-fig.subplots_adjust(top=0.82, bottom=0.26)
-dom = S["dominant_v11"]
+print("[Fig6] Pre-cap score-loss attribution ...")
+fig, axes = plt.subplots(2, 1, figsize=(7.2, 5.8), gridspec_kw={"height_ratios": [1.15, 1.0]})
+fig.subplots_adjust(hspace=0.55, top=0.82, bottom=0.18, right=0.92)
 faults = ["Q_spike", "Q_step", "Q_drift", "Q_freeze", "Q_regime"]
 fclr = {"Q_spike": C["amber"], "Q_step": C["blue"], "Q_drift": C["purple"],
         "Q_freeze": C["red"], "Q_regime": C["green"]}
-shares = {f: [] for f in faults}
+
+weights = S["rules_yaml"]["aggregation"]["weights"]
+lambda_blend = float(S["rules_yaml"]["aggregation"]["lambda_blend"])
+weight_by_q = {
+    "Q_spike": weights["spike"], "Q_step": weights["step"],
+    "Q_drift": weights["drift"], "Q_freeze": weights["freeze"],
+    "Q_regime": weights["regime"],
+}
+loss_share = pd.DataFrame(index=SCORED, columns=faults, dtype=float)
+severe_rate = pd.DataFrame(index=faults, columns=SCORED, dtype=float)
+loss_closure = []
 for c in SCORED:
-    counts = dom[c].value_counts(normalize=True)
+    q = pd.DataFrame({f: subs_v11[c][f] for f in faults})
+    min_q = q.min(axis=1)
+    is_min = q.eq(min_q, axis=0)
+    tie_count = is_min.sum(axis=1).clip(lower=1)
+    min_penalty = (1.0 - lambda_blend) * (5.0 - min_q)
+    contribution = pd.DataFrame(index=q.index, columns=faults, dtype=float)
     for f in faults:
-        shares[f].append(float(counts.get(f, 0)) * 100)
+        weighted_loss = lambda_blend * weight_by_q[f] * (5.0 - q[f])
+        limiting_loss = min_penalty * is_min[f] / tie_count
+        contribution[f] = weighted_loss + limiting_loss
+        severe_rate.at[f, c] = 100.0 * float((q[f] < 3.0).mean())
+    integrated = contribution.sum(axis=0)
+    total = float(integrated.sum())
+    loss_share.loc[c] = 100.0 * integrated / total if total > 0 else 0.0
+    expected_loss = 5.0 - S["components_v11"][c]["D1_pre"]
+    loss_closure.append(float((contribution.sum(axis=1) - expected_loss).abs().max()))
+
+ax = axes[0]
 xs = np.arange(len(SCORED))
 bottom = np.zeros(len(SCORED))
 for f in faults:
-    ax.bar(xs, shares[f], bottom=bottom, color=fclr[f], label=f.replace("Q_", ""),
+    values = loss_share[f].to_numpy(dtype=float)
+    ax.bar(xs, values, bottom=bottom, color=fclr[f], label=f.replace("Q_", ""),
             alpha=0.92, edgecolor="white", linewidth=0.5)
-    bottom += np.array(shares[f])
-ax.set_xticks(xs); ax.set_xticklabels(SCORED, rotation=45, ha="right", fontsize=8.5)
-ax.set_ylabel("Dominant-fault share (%)", fontsize=9)
-ax.set_ylim(*positive_data_ylim(bottom, headroom=0.05))
+    bottom += values
+ax.set_xticks(xs); ax.set_xticklabels([])
+ax.set_ylabel("Share of pre-cap $D_1$ loss (%)", fontsize=9)
+ax.set_ylim(0, 100)
+ax.set_title("(a) Exact additive attribution of $5-D_{1,pre}$", loc="left")
 _h6, _l6 = ax.get_legend_handles_labels()
-fig.legend(_h6, _l6, loc="upper center", bbox_to_anchor=(0.5, 0.885),
+fig.legend(_h6, _l6, loc="upper center", bbox_to_anchor=(0.5, 0.89),
            ncol=5, fontsize=7.4, frameon=False)
-fig.suptitle("Figure 6.  Dominant fault decomposition per channel (v1.1)",
+
+ax = axes[1]
+im = ax.imshow(severe_rate.to_numpy(dtype=float), cmap="Reds", aspect="auto", vmin=0,
+               vmax=max(1.0, float(np.nanpercentile(severe_rate.to_numpy(dtype=float), 98))))
+ax.set_yticks(np.arange(len(faults)))
+ax.set_yticklabels([f.replace("Q_", "") for f in faults])
+ax.set_xticks(xs)
+ax.set_xticklabels(SCORED, rotation=45, ha="right", fontsize=8.0)
+ax.set_ylabel("Sub-score")
+ax.set_title("(b) Absolute severe-evidence frequency", loc="left")
+ax.grid(False)
+for i in range(len(faults)):
+    for j in range(len(SCORED)):
+        value = float(severe_rate.iat[i, j])
+        if value >= 0.05:
+            ax.text(j, i, f"{value:.1f}", ha="center", va="center", fontsize=6.2,
+                    color="white" if value > im.norm.vmax * 0.55 else "black")
+cbar = fig.colorbar(im, ax=ax, fraction=0.025, pad=0.025)
+cbar.set_label("Hours with $Q<3$ (%)", fontsize=8.5)
+
+fig.suptitle("Figure 6.  Sensor-health score-loss attribution and severe evidence",
              fontsize=9.8, fontweight="bold", y=0.98)
-save(fig, "Fig6_dominant_fault",
-      plot_data={"dominant_share": pd.DataFrame(shares, index=SCORED)})
+save(fig, "Fig6_score_loss_attribution",
+      plot_data={"loss_attribution_pct": loss_share,
+                 "subscore_lt3_pct": severe_rate,
+                 "closure_audit": pd.DataFrame({
+                     "sensor_id": SCORED, "max_abs_error": loss_closure,
+                 }).set_index("sensor_id")})
 
 
 # ============================================================================
 # Fig 7: Daily timeseries by sensor group
 # ============================================================================
 print("[Fig7] Daily timeseries ...")
-fig = plt.figure(figsize=(7.2, 5.6))
-gs = gridspec.GridSpec(2, 1, figure=fig, hspace=0.32, height_ratios=[1, 1])
-fig.subplots_adjust(right=0.79, top=0.91, bottom=0.10)
+fig = plt.figure(figsize=(7.2, 6.5))
+gs = gridspec.GridSpec(3, 1, figure=fig, hspace=0.52, height_ratios=[1, 1, 1.05])
+fig.subplots_adjust(right=0.79, top=0.91, bottom=0.09)
 
 # (a) DO daily
 ax = fig.add_subplot(gs[0])
@@ -406,9 +461,51 @@ ax.legend(loc="center left", bbox_to_anchor=(1.01, 0.5), ncol=1,
           fontsize=6.7, frameon=False, borderaxespad=0)
 ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
 
-fig.suptitle("Figure 7.  Daily $D_1$ trajectories by sensor group (v1.1, DO/ORP only)",
-              fontsize=11, fontweight="bold", y=0.99)
-save(fig, "Fig7_daily_timeseries", plot_data={"D1_daily": D1_d})
+# (c) ORP_1_2 platform mechanism: state cap is retained but made explicit
+case_channel = "ORP_1_2"
+ax = fig.add_subplot(gs[2])
+pre_daily = S["components_v11"][case_channel]["D1_pre"].resample("1D").median()
+final_daily = D1_d[case_channel]
+cap_daily = (
+    S["veto_logs_v11"][case_channel]["sustained_active"].resample("1D").mean() * 100
+)
+line_pre, = ax.plot(pre_daily.index, pre_daily, color="0.55", lw=0.8,
+                    label=r"Pre-cap $D_{1,pre}$")
+line_final, = ax.plot(final_daily.index, final_daily, color=C["purple"], lw=1.15,
+                      label=r"Final $D_1$")
+ax.axhline(2.5, color=C["red"], ls=":", lw=0.8)
+ax.set_ylabel("Daily score")
+ax.set_ylim(1.5, 5.0)
+ax.set_title(f"(c)  {case_channel}: state-cap mechanism behind the 2.5 platform",
+             loc="left")
+ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
+cap_ax = ax.twinx()
+cap_ax.fill_between(cap_daily.index, 0, cap_daily.values,
+                    color=C["amber"], alpha=0.18)
+cap_ax.set_ylabel("Cap-active hours (%)", color=C["amber"])
+cap_ax.set_ylim(0, 105)
+cap_ax.tick_params(axis="y", colors=C["amber"], direction="out")
+cap_ax.spines["right"].set_visible(True)
+cap_ax.spines["right"].set_color(C["amber"])
+ax.legend(
+    [line_pre, line_final, Line2D([0], [0], color=C["red"], ls=":"),
+     Patch(facecolor=C["amber"], alpha=0.25)],
+    [r"Pre-cap $D_{1,pre}$", r"Final $D_1$", "State cap (2.5)",
+     "Cap-active hours"],
+    loc="upper left", bbox_to_anchor=(0.01, 0.98), fontsize=6.7,
+    frameon=True, framealpha=0.68, facecolor="white", edgecolor="none",
+    borderaxespad=0,
+)
+
+fig.suptitle("Figure 7.  Daily sensor-health trajectories and state-cap interpretation",
+             fontsize=9.8, fontweight="bold", y=0.985)
+save(fig, "Fig7_daily_timeseries",
+     plot_data={"D1_daily": D1_d,
+                "ORP_1_2_platform": pd.DataFrame({
+                    "D1_pre_daily": pre_daily,
+                    "D1_final_daily": final_daily,
+                    "cap_active_hours_pct": cap_daily,
+                })})
 
 
 # ============================================================================
@@ -459,33 +556,84 @@ save(fig, "Fig8_veto_cooldown",
 # ============================================================================
 # Fig 9: Harmonic decomposition demonstration  (carry over from STRICT V1)
 # ============================================================================
-print("[Fig9] Harmonic decomposition ...")
-fig, axes = plt.subplots(3, 1, figsize=(7.2, 5.4), sharex=True)
-fig.subplots_adjust(hspace=0.52, top=0.80, bottom=0.09)
-df_h = S["df_h"]; resid_h = S["resid_h"]
-for i, ch in enumerate(["DO_2_3", "ORP_1_1", "ORP_2_1"]):
-    ax = axes[i]
-    x = df_h[ch].iloc[:24*7]   # 7 days
-    r = resid_h[ch].iloc[:24*7]
-    seasonal = x - r
-    ax.plot(x.index, x.values, color=C["gray"], lw=0.6, alpha=0.65,
-            label="raw hourly mean")
-    ax.plot(seasonal.index, seasonal.values, color=C["blue"], lw=1.2, alpha=0.92,
-            label="harmonic seasonal component")
-    ax.plot(r.index, r.values, color=C["red"], lw=0.7, alpha=0.85,
-            label="residual after harmonic removal")
-    ax.set_ylabel(ch, fontsize=9.5)
-    ax.axhline(0, color="0.5", lw=0.4, alpha=0.5)
-    ax.set_title(f"({chr(97+i)}) {ch}", loc="left", fontsize=8)
-# each panel carries its own date labels (was shared via sharex → only bottom)
-for ax in axes:
-    ax.tick_params(axis="x", labelbottom=True)
-fig.suptitle("Figure 9.  Harmonic decomposition demonstration (first 7 days)",
-              fontsize=9.8, fontweight="bold", y=0.985)
-_h9, _l9 = axes[0].get_legend_handles_labels()
-fig.legend(_h9, _l9, loc="upper center", bbox_to_anchor=(0.5, 0.90),
-           ncol=3, fontsize=7.0, frameon=False)
-save(fig, "Fig9_harmonic_demo")
+print("[Fig9] Input-routing audit ...")
+fig, axes = plt.subplots(1, 3, figsize=(7.2, 4.3),
+                         gridspec_kw={"width_ratios": [1.25, 1.0, 0.9]})
+fig.subplots_adjust(wspace=0.50, top=0.84, bottom=0.25)
+resid_h = S["resid_h"]
+routed_h = S.get("whitened_input_h", resid_h)
+scoring_mode = S.get("scoring_mode", {})
+eff_neff = S.get("eff_neff", {})
+route_columns = ["PLS/state\nresidual", "KS/PELT\ninnovation",
+                 "KS/PELT\n$n_{eff}$ residual", "KS/PELT\nexcluded"]
+route_matrix = pd.DataFrame(0, index=SCORED, columns=route_columns, dtype=int)
+route_matrix.iloc[:, 0] = 1
+for channel in SCORED:
+    mode = scoring_mode.get(channel, "iid")
+    target_column = 1 if mode == "iid" else 2 if mode == "autocorr_aware" else 3
+    route_matrix.at[channel, route_columns[target_column]] = 1
+
+ax = axes[0]
+ax.imshow(route_matrix.values, cmap=ListedColormap(["#F2F2F2", C["blue"]]),
+          aspect="auto", vmin=0, vmax=1)
+ax.set_yticks(np.arange(len(SCORED))); ax.set_yticklabels(SCORED, fontsize=7.2)
+ax.set_xticks(np.arange(len(route_columns)))
+ax.set_xticklabels(route_columns, rotation=50, ha="right", fontsize=6.7)
+ax.set_title("(a) Routed evidence", loc="left")
+ax.grid(False)
+
+acf_audit = pd.DataFrame(index=SCORED,
+                         columns=["residual_abs_acf1", "routed_abs_acf1"], dtype=float)
+for channel in SCORED:
+    acf_audit.at[channel, "residual_abs_acf1"] = abs(float(resid_h[channel].autocorr(1)))
+    acf_audit.at[channel, "routed_abs_acf1"] = abs(float(routed_h[channel].autocorr(1)))
+ax = axes[1]
+ys = np.arange(len(SCORED))
+for y_pos, channel in zip(ys, SCORED):
+    x0_acf = acf_audit.at[channel, "residual_abs_acf1"]
+    x1_acf = acf_audit.at[channel, "routed_abs_acf1"]
+    ax.plot([x0_acf, x1_acf], [y_pos, y_pos], color="0.75", lw=0.7, zorder=1)
+ax.scatter(acf_audit["residual_abs_acf1"], ys, s=13, color="0.55",
+           label="1.1 residual", zorder=2)
+ax.scatter(acf_audit["routed_abs_acf1"], ys, s=14, color=C["blue"], marker="D",
+           label="D1 detector input", zorder=3)
+ax.set_yticks(ys); ax.set_yticklabels([])
+ax.set_xlim(0, 1.02); ax.set_xlabel(r"Absolute lag-1 ACF, $|\rho_1|$")
+ax.set_title("(b) Whitening effect", loc="left")
+ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.24), ncol=1,
+          fontsize=6.5, frameon=False)
+
+reachability = pd.DataFrame({
+    "scoring_mode": [scoring_mode.get(c, "iid") for c in SCORED],
+    "neff_ratio": [float(eff_neff.get(c, 1.0)) for c in SCORED],
+}, index=SCORED)
+reachability["max_corrected_ks"] = np.sqrt(reachability["neff_ratio"].clip(0, 1))
+mode_colors = {"iid": C["blue"], "autocorr_aware": C["amber"],
+               "floor_freeze": "0.65"}
+ax = axes[2]
+ax.barh(ys, reachability["max_corrected_ks"],
+        color=[mode_colors.get(mode, "0.65") for mode in reachability["scoring_mode"]],
+        height=0.68)
+ax.axvline(step_x0, color=C["red"], ls=":", lw=0.9,
+           label=fr"Mapping midpoint $x_0={step_x0:.2f}$")
+ax.set_yticks(ys); ax.set_yticklabels([])
+ax.set_xlim(0, 1.05); ax.set_xlabel("Theoretical corrected-KS bound")
+ax.set_title("(c) Step applicability", loc="left")
+ax.legend(handles=[
+    Patch(facecolor=C["blue"], label="iid route"),
+    Patch(facecolor=C["amber"], label=r"$n_{eff}$-aware route"),
+    Patch(facecolor="0.65", label="process-floor route"),
+    Line2D([0], [0], color=C["red"], ls=":",
+           label=fr"Midpoint $x_0={step_x0:.2f}$"),
+], loc="upper center", bbox_to_anchor=(0.5, -0.24), ncol=2, fontsize=6.2,
+          frameon=False)
+
+fig.suptitle("Figure 9.  Section 1.1-to-D1 input routing and detector applicability",
+             fontsize=9.8, fontweight="bold", y=0.98)
+save(fig, "Fig9_input_routing_audit",
+     plot_data={"route_matrix": route_matrix,
+                "acf_audit": acf_audit,
+                "step_applicability": reachability})
 
 
 # ============================================================================
@@ -538,58 +686,52 @@ save(fig, "Fig10_two_tier_regime")
 # Fig 11: PLS peer audit (engineered peers)
 # ============================================================================
 print("[Fig11] PLS peer audit ...")
-fig, axes = plt.subplots(1, 2, figsize=(7.2, 3.8))
-# (a) Peer matrix for DO targets
-peer_matrix = pd.DataFrame(0, index=DO_CH, columns=SCORED, dtype=int)
-for t in DO_CH:
-    p, seg = t.split("_")[1], int(t.split("_")[2])
-    peers = []
-    # Rule 1: same-pool adjacent
-    if seg > 1: peers.append(f"DO_{p}_{seg-1}")
-    if seg < 4: peers.append(f"DO_{p}_{seg+1}")
-    orp_seg = min(seg, 3)
-    peers.append(f"ORP_{p}_{orp_seg}")
-    # Rule 2: twin-pool counterpart
-    p_twin = "2" if p == "1" else "1"
-    peers.append(f"DO_{p_twin}_{seg}")
-    # Rule 3: exogenous flow (NOT in current scored set, but historic peers)
-    # NOTE: in v1.1 PLS is peer-only per QR/QIR 修订 §四 — no QR/QIR
-    # We mark with light shade for completeness
-    for pp in peers:
-        if pp in peer_matrix.columns:
-            peer_matrix.at[t, pp] = 1
+fig, axes = plt.subplots(1, 2, figsize=(7.2, 4.3),
+                         gridspec_kw={"width_ratios": [1.45, 0.9]})
+fig.subplots_adjust(wspace=0.42, top=0.84, bottom=0.25)
+peer_matrix = S["detectors_raw"]["pls_peer_matrix"].reindex(
+    index=SCORED, columns=SCORED
+).fillna(0).astype(int)
+peer_audit = S["detectors_raw"]["pls_peer_selection_audit"].reindex(SCORED)
+
 ax = axes[0]
-im = ax.imshow(peer_matrix.values, cmap="Blues", aspect="auto", vmin=0, vmax=1)
-ax.set_yticks(np.arange(len(DO_CH))); ax.set_yticklabels(DO_CH, fontsize=8)
-ax.set_xticks(np.arange(len(SCORED))); ax.set_xticklabels(SCORED, rotation=70, fontsize=7.5)
-ax.set_title("(a) DO targets", loc="left")
+peer_cmap = ListedColormap(["#F2F2F2", C["blue"], C["amber"]])
+peer_norm = BoundaryNorm([-0.5, 0.5, 1.5, 2.5], peer_cmap.N)
+ax.imshow(peer_matrix.values, cmap=peer_cmap, norm=peer_norm, aspect="auto")
+ax.set_yticks(np.arange(len(SCORED))); ax.set_yticklabels(SCORED, fontsize=7.2)
+ax.set_xticks(np.arange(len(SCORED)))
+ax.set_xticklabels(SCORED, rotation=55, ha="right", fontsize=6.8)
+ax.set_xlabel("Predictor")
+ax.set_ylabel("Target")
+ax.set_title("(a) Selected same-analyte peers", loc="left")
 ax.grid(False)
+ax.legend(handles=[Patch(facecolor=C["blue"], label="Structural core"),
+                   Patch(facecolor=C["amber"], label="CV-added peer")],
+          loc="upper center", bbox_to_anchor=(0.5, -0.25), ncol=2,
+          fontsize=6.5, frameon=False)
 
-# (b) ORP peer matrix
-peer_matrix2 = pd.DataFrame(0, index=ORP_CH, columns=SCORED, dtype=int)
-for t in ORP_CH:
-    p, seg = t.split("_")[1], int(t.split("_")[2])
-    peers = []
-    if seg > 1: peers.append(f"ORP_{p}_{seg-1}")
-    if seg < 3: peers.append(f"ORP_{p}_{seg+1}")
-    peers.append(f"DO_{p}_{seg}")
-    p_twin = "2" if p == "1" else "1"
-    peers.append(f"ORP_{p_twin}_{seg}")
-    for pp in peers:
-        if pp in peer_matrix2.columns:
-            peer_matrix2.at[t, pp] = 1
 ax = axes[1]
-im = ax.imshow(peer_matrix2.values, cmap="Greens", aspect="auto", vmin=0, vmax=1)
-ax.set_yticks(np.arange(len(ORP_CH))); ax.set_yticklabels(ORP_CH, fontsize=8)
-ax.set_xticks(np.arange(len(SCORED))); ax.set_xticklabels(SCORED, rotation=70, fontsize=7.5)
-ax.set_title("(b) ORP targets", loc="left")
-ax.grid(False)
+improvement = peer_audit["cv_improvement_pct"].fillna(0.0)
+colors = [C["amber"] if str(peer_audit.at[c, "selected_noncore_peers"]).strip()
+          else "0.65" for c in SCORED]
+ax.barh(np.arange(len(SCORED)), improvement.values, color=colors, height=0.68)
+ax.axvline(2.0, color=C["red"], ls=":", lw=0.8, label="2% inclusion threshold")
+ax.set_yticks(np.arange(len(SCORED))); ax.set_yticklabels(SCORED, fontsize=7.2)
+ax.invert_yaxis()
+ax.set_xlabel("CV NRMSE gain (%)")
+ax.set_title("(b) Predictive gain", loc="left")
+improvement_upper = positive_data_ylim(
+    improvement.values, headroom=0.12, minimum_upper=2.5
+)[1]
+ax.set_xlim(0.0, improvement_upper)
+ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.25), fontsize=6.5,
+          frameon=False)
 
-fig.suptitle("Figure 11. PLS peer-selection matrix (peer-only)",
-              fontsize=11, fontweight="bold", y=1.02)
-save(fig, "Fig11_pls_peer_audit",
-      plot_data={"DO_peer_matrix": peer_matrix,
-                  "ORP_peer_matrix": peer_matrix2})
+fig.suptitle("Figure 11.  Same-analyte PLS peer selection with blocked temporal validation",
+             fontsize=9.8, fontweight="bold", y=0.98)
+save(fig, "Fig11_pls_peer_selection",
+     plot_data={"selected_peer_matrix": peer_matrix,
+                "blocked_cv_audit": peer_audit})
 
 print("\n[done] Updated baseline figures Fig 1-11 complete.\n")
 try:

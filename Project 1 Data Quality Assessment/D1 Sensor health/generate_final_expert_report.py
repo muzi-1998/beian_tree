@@ -232,6 +232,8 @@ def build_report(force: bool = True) -> Path:
         sheet_name="injection_summary",
     )
     overall = state["recovery_summary"].query("sensor_id == 'Overall'").iloc[0]
+    step_calibration = state["step_mapping_calibration"]
+    step_metrics = step_calibration["metrics"]
 
     doc = Document()
     _configure_document(doc)
@@ -314,7 +316,8 @@ def build_report(force: bool = True) -> Path:
         ["95% Wilson interval", f"{overall.event_recovery_rate_ci95_low:.4f}-{overall.event_recovery_rate_ci95_high:.4f}", "Sampling uncertainty"],
         ["Median recovery time", f"{overall.median_recovery_h:.0f} h", "Event onset to confirmation"],
         ["Recovered occupancy", f"{overall.recovered_state_occupancy:.2%}", "Observation-state occupancy, not recovery rate"],
-        ["Transition conservation", "PASS", "51 opened = 51 episode records; no duplicate IDs"],
+        ["Transition conservation", "PASS",
+         f"{int(overall.n_episodes)} opened = {int(overall.n_episodes)} episode records; no duplicate IDs"],
     ]
     _add_table(doc, ["Metric", "Result", "Interpretation"], result_rows, [2600, 1900, 4860])
 
@@ -361,30 +364,65 @@ def build_report(force: bool = True) -> Path:
         doc,
         "Production selection",
         f"Variant C passed {len(prod)}/4 challenge classes across 14 channel-scaled templates "
-        "with a pass rate of 1.00 in every class. Variant D was not selected because it used "
-        "more candidate attempts and completed fewer natural-data episodes without improving "
+        "with a pass rate of 1.00 in every class. Variant D was not selected because its longer "
+        "entry and confirmation windows reduced candidate responsiveness without improving "
         "event recovery or controlled challenge outcomes.",
     )
 
-    doc.add_heading("7. Mapping and aggregation consistency", level=1)
+    doc.add_heading("7. Detector calibration, routing, and peer selection", level=1)
     doc.add_paragraph(
         "The Step mapping is synchronized across mapping.yaml, the figure generator, and "
-        "D1_mapping_params.xlsx: logistic k=8.0 and x0=0.40. The final D1 mean is 4.100 "
-        "versus 4.112 for STRICT V1, a controlled mean change of -0.0115. Conservative caps "
+        f"D1_mapping_params.xlsx: logistic k={step_calibration['selected_k']:.1f} and "
+        f"x0={step_calibration['selected_x0']:.2f}. The final D1 mean is "
+        f"{state['D1_v11'].mean().mean():.3f} versus "
+        f"{state['D1_v1_scored'].mean().mean():.3f} for STRICT V1. Conservative caps "
         "apply only during causally defined non-normal states."
     )
+    calibration_rows = [
+        ["DO_1_4 freeze", "Process-floor route; production Q_freeze uses hard RLE only",
+         "Low variance and low uniqueness remain diagnostic fields"],
+        ["Step mapping", f"k={step_calibration['selected_k']:.1f}; x0={step_calibration['selected_x0']:.2f}",
+         f"10 iid channels; 780 scenarios; detection={step_metrics['material_detection_rate']:.3f}"],
+        ["Step applicability", "Autocorrelation-aware and floor routes excluded from parameter fit",
+         "Theoretical corrected-KS bound retained in the audit"],
+        ["PLS peers", "Same-analyte structural core + three-fold blocked temporal CV",
+         "No automatic DO-ORP binding; process-floor sensor excluded as predictor"],
+        ["ORP_1_2 platform", "State cap retained",
+         "Fig. 7 exposes pre-cap score, cap-active hours, and final score"],
+    ]
+    _add_table(doc, ["Component", "Final rule", "Audit evidence"], calibration_rows,
+               [1900, 3740, 3720])
     _add_figure(
         doc,
         "Fig5_mapping_curves.png",
-        "Figure 5. Final D1 mapping functions. The Step panel explicitly reports k=8.0 and x0=0.40.",
+        f"Figure 5. Final D1 mapping functions. The Step panel reports "
+        f"k={step_calibration['selected_k']:.1f} and x0={step_calibration['selected_x0']:.2f}.",
+        width=6.1,
+    )
+    _add_figure(
+        doc,
+        "Fig6_score_loss_attribution.png",
+        "Figure 6. Exact pre-cap score-loss attribution and absolute severe-evidence frequency.",
+        width=6.1,
+    )
+    _add_figure(
+        doc,
+        "Fig9_input_routing_audit.png",
+        "Figure 9. Section 1.1-to-D1 input routing, whitening effect, and Step applicability.",
+        width=6.1,
+    )
+    _add_figure(
+        doc,
+        "Fig11_pls_peer_selection.png",
+        "Figure 11. Same-analyte PLS peer matrix and blocked-CV predictive gain.",
         width=6.1,
     )
 
     doc.add_heading("8. Reproducibility and release gate", level=1)
     release_rows = [
-        ["Unit tests", "7 passed", "Causality, gap handling, event identity, recovery, censoring"],
+        ["Unit tests", "PASS", "Causality, routing, mapping calibration, peer selection, recovery"],
         ["Transition audit", "PASS", "All opened episodes accounted; all terminal or censored"],
-        ["Excel audit", "PASS", "18 workbooks open; no formula-error tokens"],
+        ["Excel audit", "PASS", "19 workbooks open; no error-cell tokens"],
         ["Figure bundle", "20/20", "SVG/PDF/600 dpi PNG/TIFF"],
         ["Nature skill audit", "0 failed", "Editable SVG text; Arial declared; sources fresh"],
         ["Run trace", state["run_id"], "Dependency SHA256 hashes in run manifest"],
@@ -412,6 +450,7 @@ def build_report(force: bool = True) -> Path:
         ["Run manifest", "outputs/logs/D1_run_manifest.json"],
         ["Recovery audit", "outputs/data/D1_recovery_event_audit.xlsx"],
         ["Sensitivity", "outputs/data/D1_recovery_validation.xlsx"],
+        ["Step calibration", "outputs/data/D1_step_mapping_calibration.xlsx"],
         ["Figure source data", "outputs/plot_data/"],
         ["Figure QA", "outputs/qa/figures/"],
     ]

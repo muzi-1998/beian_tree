@@ -32,12 +32,12 @@ FIGURES = {
     "Fig 3": OUT / "figures" / "Fig3_case_subscores.png",
     "Fig 4": OUT / "figures" / "Fig4_subscore_distribution.png",
     "Fig 5": OUT / "figures" / "Fig5_mapping_curves.png",
-    "Fig 6": OUT / "figures" / "Fig6_dominant_fault.png",
+    "Fig 6": OUT / "figures" / "Fig6_score_loss_attribution.png",
     "Fig 7": OUT / "figures" / "Fig7_daily_timeseries.png",
     "Fig 8": OUT / "figures" / "Fig8_veto_cooldown.png",
-    "Fig 9": OUT / "figures" / "Fig9_harmonic_demo.png",
+    "Fig 9": OUT / "figures" / "Fig9_input_routing_audit.png",
     "Fig 10": OUT / "figures" / "Fig10_two_tier_regime.png",
-    "Fig 11": OUT / "figures" / "Fig11_pls_peer_audit.png",
+    "Fig 11": OUT / "figures" / "Fig11_pls_peer_selection.png",
     "Fig V12": OUT / "figures" / "FigV12_v11_vs_strictV1_hero.png",
     "Fig V13": OUT / "figures" / "FigV13_state_machine_DO_2_3.png",
     "Fig V14": OUT / "figures" / "FigV14_veto3_state_audit.png",
@@ -470,7 +470,7 @@ def chapter_config(doc: Document, m: dict):
     doc.add_heading("4.1  configs/mapping.yaml", level=2)
     add_table(doc, ["子分", "函数族", "关键参数/边界", "专家说明"], [
         ("Q_spike", "piecewise", "6 h 尖峰率", "短时异常对 D1 的高频入口"),
-        ("Q_step", "logistic", "k=8, x0=0.40", "P1 放宽后降低 KS 噪声敏感性"),
+        ("Q_step", "logistic", "k=16, x0=0.55", "原始检测输入故障注入 + 留一通道验证"),
         ("Q_drift", "piecewise/logistic", "PLS |z|", "对慢漂与同伴关系破坏敏感"),
         ("Q_freeze", "stepwise + logistic", "RLE/rel_var/unique_ratio", "覆盖死值与响应损失"),
         ("Q_regime", "logistic", "R90 + 7 d W1/KS", "离线工况域迁移证据"),
@@ -543,7 +543,7 @@ def chapter_p1p2(doc: Document, m: dict):
     doc.add_heading("第七章  P1 / P2 工程优化与敏感性分析", level=1)
     doc.add_heading("7.1  P1 优化清单", level=2)
     add_table(doc, ["编号", "项", "V1 → P1 / v1.1", "影响"], [
-        ("P1-1", "step 映射放宽", "k=12 → 8；x0=0.30 → 0.40", "降低边界振荡"),
+        ("P1-1", "step 映射校准", "k=16；x0=0.55", "iid 路由输入注入与留一通道验证"),
         ("P1-2", "恢复阈值", "更可达的 recovery 判据", "避免长期低分无法恢复"),
         ("P1-3", "事件唯一性", "新 event_id 才触发冷却", "避免同一事件反复刷新"),
         ("P1-4", "§1.1 桥接", "残差/创新/manifest 路由", "提高统计检验合法性"),

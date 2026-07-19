@@ -1,0 +1,176 @@
+{
+  "calibration_id": "step-injection-ea8d55282211",
+  "library_sha256": "775d423be3d728fd48533c6e84bfc07af3233164dc6186bf33b3c1969259b970",
+  "selected_k": 16.0,
+  "selected_x0": 0.55,
+  "metrics": {
+    "rmse_channel_balanced": 0.6712747728961548,
+    "null_warning_rate": 0.0,
+    "small_hard_rate": 0.008333333333333333,
+    "material_detection_rate": 0.8666666666666667,
+    "material_miss_rate": 0.13333333333333333
+  },
+  "config": {
+    "window_h": 192,
+    "event_h": 72,
+    "evaluation_start_h": 12,
+    "evaluation_end_h": 60,
+    "windows_per_channel": 6,
+    "amplitudes_sigma": [
+      0.0,
+      0.5,
+      1.0,
+      1.5,
+      2.0,
+      3.0,
+      4.0
+    ],
+    "k_grid": [
+      4.0,
+      6.0,
+      8.0,
+      10.0,
+      12.0,
+      14.0,
+      16.0
+    ],
+    "x0_grid": [
+      0.25,
+      0.3,
+      0.35,
+      0.4,
+      0.45,
+      0.5,
+      0.55
+    ],
+    "max_null_warning_rate": 0.05,
+    "max_small_hard_rate": 0.05,
+    "max_material_miss_rate": 0.2,
+    "min_normal_fraction": 0.95,
+    "calibration_scoring_modes": [
+      "iid"
+    ]
+  },
+  "source_run_id": "d1-final-57bdbc83894f",
+  "included_scoring_modes": [
+    "iid"
+  ],
+  "excluded_scoring_modes": [
+    "autocorr_aware",
+    "floor_freeze"
+  ],
+  "applicability": [
+    {
+      "sensor_id": "DO_1_1",
+      "scoring_mode": "autocorr_aware",
+      "neff_ratio": 0.012,
+      "max_corrected_ks": 0.10954451150103323,
+      "included_in_mapping_fit": false,
+      "exclusion_reason": "n_eff-deflated KS is an auxiliary detector, outside global mapping fit"
+    },
+    {
+      "sensor_id": "DO_1_2",
+      "scoring_mode": "iid",
+      "neff_ratio": 1.0,
+      "max_corrected_ks": 1.0,
+      "included_in_mapping_fit": true,
+      "exclusion_reason": "eligible iid detector route"
+    },
+    {
+      "sensor_id": "DO_1_3",
+      "scoring_mode": "iid",
+      "neff_ratio": 1.0,
+      "max_corrected_ks": 1.0,
+      "included_in_mapping_fit": true,
+      "exclusion_reason": "eligible iid detector route"
+    },
+    {
+      "sensor_id": "DO_1_4",
+      "scoring_mode": "floor_freeze",
+      "neff_ratio": 0.0,
+      "max_corrected_ks": 0.0,
+      "included_in_mapping_fit": false,
+      "exclusion_reason": "process-floor channel excluded from adjacent-KS calibration"
+    },
+    {
+      "sensor_id": "DO_2_1",
+      "scoring_mode": "autocorr_aware",
+      "neff_ratio": 0.0085,
+      "max_corrected_ks": 0.09219544457292887,
+      "included_in_mapping_fit": false,
+      "exclusion_reason": "n_eff-deflated KS is an auxiliary detector, outside global mapping fit"
+    },
+    {
+      "sensor_id": "DO_2_2",
+      "scoring_mode": "autocorr_aware",
+      "neff_ratio": 0.0076,
+      "max_corrected_ks": 0.08717797887081347,
+      "included_in_mapping_fit": false,
+      "exclusion_reason": "n_eff-deflated KS is an auxiliary detector, outside global mapping fit"
+    },
+    {
+      "sensor_id": "DO_2_3",
+      "scoring_mode": "iid",
+      "neff_ratio": 1.0,
+      "max_corrected_ks": 1.0,
+      "included_in_mapping_fit": true,
+      "exclusion_reason": "eligible iid detector route"
+    },
+    {
+      "sensor_id": "DO_2_4",
+      "scoring_mode": "iid",
+      "neff_ratio": 1.0,
+      "max_corrected_ks": 1.0,
+      "included_in_mapping_fit": true,
+      "exclusion_reason": "eligible iid detector route"
+    },
+    {
+      "sensor_id": "ORP_1_1",
+      "scoring_mode": "iid",
+      "neff_ratio": 1.0,
+      "max_corrected_ks": 1.0,
+      "included_in_mapping_fit": true,
+      "exclusion_reason": "eligible iid detector route"
+    },
+    {
+      "sensor_id": "ORP_1_2",
+      "scoring_mode": "iid",
+      "neff_ratio": 1.0,
+      "max_corrected_ks": 1.0,
+      "included_in_mapping_fit": true,
+      "exclusion_reason": "eligible iid detector route"
+    },
+    {
+      "sensor_id": "ORP_1_3",
+      "scoring_mode": "iid",
+      "neff_ratio": 1.0,
+      "max_corrected_ks": 1.0,
+      "included_in_mapping_fit": true,
+      "exclusion_reason": "eligible iid detector route"
+    },
+    {
+      "sensor_id": "ORP_2_1",
+      "scoring_mode": "iid",
+      "neff_ratio": 1.0,
+      "max_corrected_ks": 1.0,
+      "included_in_mapping_fit": true,
+      "exclusion_reason": "eligible iid detector route"
+    },
+    {
+      "sensor_id": "ORP_2_2",
+      "scoring_mode": "iid",
+      "neff_ratio": 1.0,
+      "max_corrected_ks": 1.0,
+      "included_in_mapping_fit": true,
+      "exclusion_reason": "eligible iid detector route"
+    },
+    {
+      "sensor_id": "ORP_2_3",
+      "scoring_mode": "iid",
+      "neff_ratio": 1.0,
+      "max_corrected_ks": 1.0,
+      "included_in_mapping_fit": true,
+      "exclusion_reason": "eligible iid detector route"
+    }
+  ]
+}
