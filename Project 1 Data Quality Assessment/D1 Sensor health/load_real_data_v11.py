@@ -35,9 +35,9 @@ from src.baseline.deperiodise import harmonic_decomposition_dataframe
 from src.baseline.bridge_decomposition_11 import (load_decomposition_11,
                                                   effective_neff, summarise)
 from src.detectors import (HampelSpikeDetector, AdjacentKSStepDetector,
-                            PLSVirtualSensorDetector, engineered_peers,
+                            PLSVirtualSensorDetector, select_pls_peers,
                             CompositeFreezeDetector, TwoTierRegimeDetector)
-from src.mapping.mapper import apply_mapping
+from src.mapping.mapper import apply_mapping, combine_freeze_subscores
 
 # ── §1.1 Decomposition bridge gate ────────────────────────────────────────────
 # When ON (default), D1 consumes §1.1's whitened residual/innovation + the
@@ -299,6 +299,7 @@ def confirmation_gate_fusion(Q_24: pd.Series, Q_36: pd.Series) -> tuple[pd.Serie
 
 
 def run_drift_detector(resid_h: pd.DataFrame, channels: list,
+                       scoring_mode: dict | None = None,
                        cache_tag: str = "") -> dict:
     cache_path = CACHE_DIR / f"drift_results{cache_tag}.pkl"
     if cache_path.exists():
@@ -306,16 +307,28 @@ def run_drift_detector(resid_h: pd.DataFrame, channels: list,
         with open(cache_path, "rb") as f:
             return pickle.load(f)
 
-    log("[3-drift] PLS 虚拟传感器漂移检测器 (train=21天)...")
+    log("[3-drift] PLS 虚拟传感器漂移检测器 (同变量 + 3-fold blocked CV)...")
     t = time.time()
     detector = PLSVirtualSensorDetector(n_components=3, train_days=21)
     results = {}
+    excluded_predictors = {
+        channel for channel, mode in (scoring_mode or {}).items()
+        if mode == "floor_freeze"
+    }
     for i, c in enumerate(channels, 1):
-        peers = engineered_peers(c, list(resid_h.columns))
-        if len(peers) < 2:
-            peers = [x for x in resid_h.columns if x != c][:6]
         try:
-            results[c] = detector.score(resid_h, target=c, peer_cols=peers)
+            selection = select_pls_peers(
+                resid_h,
+                c,
+                n_components=3,
+                excluded_predictors=excluded_predictors,
+            )
+            results[c] = detector.score(
+                resid_h,
+                target=c,
+                peer_cols=selection["selected_peers"],
+                selection_audit=selection,
+            )
         except Exception as e:
             log(f"    ! PLS 对 {c} 失败: {e}, 使用零填充")
             empty = pd.Series(0.0, index=resid_h.index)
@@ -385,7 +398,10 @@ def run_regime_detector(resid_h: pd.DataFrame, channels: list,
 # ─── 4. 映射到子分数 [1–5] ────────────────────────────────────────────────────
 def compute_subscores(spike_results, step_results_24, step_results_36, drift_results,
                        freeze_results, regime_results,
-                       spike_rate_6h, channels, mapping_cfg) -> tuple[dict, dict]:
+                       spike_rate_6h, channels, mapping_cfg,
+                       scoring_mode: dict | None = None,
+                       freeze_floor_policy: dict | None = None,
+                       ) -> tuple[dict, dict, dict]:
     """返回 (subs, step_confirmed_dict)。
     subs[c]["Q_step"] 为 Q_step_final（确认门控融合后）。
     step_confirmed_dict[c] 为 step_confirmed 标志序列（供状态机两级触发）。
@@ -393,6 +409,8 @@ def compute_subscores(spike_results, step_results_24, step_results_36, drift_res
     log("[4] 将检测器输出映射到 [1–5] 子分数（双窗 Q_step_final）...")
     subs = {}
     step_confirmed_dict = {}
+    freeze_mapping_mode = {}
+    scoring_mode = scoring_mode or {}
     for c in channels:
         Q_spike = apply_mapping(spike_rate_6h[c].rename("spike_rate_6h"),
                                 mapping_cfg.spike)
@@ -425,8 +443,14 @@ def compute_subscores(spike_results, step_results_24, step_results_36, drift_res
         Q_rle  = apply_mapping(rle_col.rename("rle_max_duration_min"),  mapping_cfg.freeze.rle)
         Q_lv   = apply_mapping(relv_col.rename("relvar_to_ref"),         mapping_cfg.freeze.low_var)
         Q_uq   = apply_mapping(uniq_col.rename("unique_ratio"),          mapping_cfg.freeze.unique)
-        cw = mapping_cfg.freeze.combined_weights
-        Q_freeze = (cw["rle"]*Q_rle + cw["low_var"]*Q_lv + cw["unique"]*Q_uq).clip(1, 5)
+        Q_freeze, freeze_mapping_mode[c] = combine_freeze_subscores(
+            Q_rle,
+            Q_lv,
+            Q_uq,
+            mapping_cfg.freeze.combined_weights,
+            scoring_mode=scoring_mode.get(c, "iid"),
+            floor_policy=freeze_floor_policy,
+        )
 
         Q_regime = apply_mapping(regime_results[c].raw_score.fillna(0.0).rename("w1_normalised"),
                                  mapping_cfg.regime)
@@ -439,7 +463,7 @@ def compute_subscores(spike_results, step_results_24, step_results_36, drift_res
             "Q_freeze": Q_freeze.reindex(idx).ffill().bfill().clip(1, 5),
             "Q_regime": Q_regime.reindex(idx).ffill().bfill().clip(1, 5),
         }
-    return subs, step_confirmed_dict
+    return subs, step_confirmed_dict, freeze_mapping_mode
 
 
 # ─── 5. STRICT V1 D1 聚合（无状态机）─────────────────────────────────────────
@@ -541,17 +565,24 @@ def main():
     step_results_24, step_results_36 = run_step_detector(
         step_in[SCORED_CHANNELS], SCORED_CHANNELS, eff_neff=eff_neff, cache_tag=cache_tag)
     # drift: PLS 多变量稳健 → §1.1 残差（全通道，含 support 作 peer）
-    drift_results  = run_drift_detector(resid_for_drift, SCORED_CHANNELS, cache_tag=cache_tag)
+    drift_results = run_drift_detector(
+        resid_for_drift[SCORED_CHANNELS],
+        SCORED_CHANNELS,
+        scoring_mode=scoring_mode,
+        cache_tag=f"{cache_tag}_peer_cv_v2",
+    )
     freeze_results = run_freeze_detector(df_min[SCORED_CHANNELS], SCORED_CHANNELS)
     # regime: 两层 W1+KS，i.i.d. 敏感 → §1.1 路由输入 + 按通道 n_eff 去敏
     regime_results = run_regime_detector(
         regime_in[SCORED_CHANNELS], SCORED_CHANNELS, eff_neff=eff_neff, cache_tag=cache_tag)
 
     # ── 步骤 4: 子分数映射（返回 subs 和 step_confirmed_dict）
-    subs_per_ch, step_confirmed_dict = compute_subscores(
+    subs_per_ch, step_confirmed_dict, freeze_mapping_mode = compute_subscores(
         spike_results, step_results_24, step_results_36, drift_results,
         freeze_results, regime_results,
-        spike_rate_6h, SCORED_CHANNELS, cfg.mapping)
+        spike_rate_6h, SCORED_CHANNELS, cfg.mapping,
+        scoring_mode=scoring_mode,
+        freeze_floor_policy=cfg.rules.get("freeze_floor_policy"))
 
     # ── 步骤 5: STRICT V1 D1 聚合
     D1_v1 = aggregate_d1_strict(subs_per_ch, SCORED_CHANNELS, weights, lambda_blend)
@@ -587,7 +618,45 @@ def main():
         "spike_rate_6h_input": pd.DataFrame(
             {c: spike_rate_6h[c].reindex(idx).ffill().bfill().fillna(0.01)
              for c in SCORED_CHANNELS}),
+        "freeze_routing_audit": pd.DataFrame({
+            "sensor_id": SCORED_CHANNELS,
+            "scoring_mode": [scoring_mode.get(c, "iid") for c in SCORED_CHANNELS],
+            "freeze_mapping_mode": [freeze_mapping_mode[c] for c in SCORED_CHANNELS],
+            "low_var_in_production": [freeze_mapping_mode[c] == "weighted_composite"
+                                      for c in SCORED_CHANNELS],
+            "unique_in_production": [freeze_mapping_mode[c] == "weighted_composite"
+                                     for c in SCORED_CHANNELS],
+        }).set_index("sensor_id"),
     }
+    pls_audit_rows = []
+    pls_peer_matrix = pd.DataFrame(0, index=SCORED_CHANNELS,
+                                   columns=SCORED_CHANNELS, dtype=np.int8)
+    for c in SCORED_CHANNELS:
+        audit = drift_results[c].metadata.get("peer_selection_audit", {})
+        selected_peers = list(audit.get("selected_peers", []))
+        core_peers = set(audit.get("core_peers", []))
+        noncore_peers = set(audit.get("selected_noncore_peers", []))
+        for peer in selected_peers:
+            if peer in pls_peer_matrix.columns:
+                pls_peer_matrix.at[c, peer] = 2 if peer in noncore_peers else 1
+        pls_audit_rows.append({
+            "sensor_id": c,
+            "core_peers": ";".join(sorted(core_peers)),
+            "candidate_peers": ";".join(audit.get("candidate_peers", [])),
+            "selected_peers": ";".join(selected_peers),
+            "selected_noncore_peers": ";".join(sorted(noncore_peers)),
+            "core_cv_nrmse_median": audit.get("core_cv_nrmse_median", np.nan),
+            "core_cv_nrmse_p90": audit.get("core_cv_nrmse_p90", np.nan),
+            "selected_cv_nrmse_median": audit.get("selected_cv_nrmse_median", np.nan),
+            "selected_cv_nrmse_p90": audit.get("selected_cv_nrmse_p90", np.nan),
+            "cv_improvement_pct": audit.get("cv_improvement_pct", np.nan),
+            "n_blocked_folds": audit.get("n_blocked_folds", 0),
+            "selection_rule": audit.get("selection_rule", "fallback"),
+        })
+    detectors_raw["pls_peer_selection_audit"] = pd.DataFrame(pls_audit_rows).set_index(
+        "sensor_id"
+    )
+    detectors_raw["pls_peer_matrix"] = pls_peer_matrix
     # 冻结分量：从分钟级 components 聚合到小时（与 compute_subscores 保持一致用 max）
     for freeze_key, comp_col, default in [
         ("freeze_rle_run_min", "rle_run_min", 0.0),

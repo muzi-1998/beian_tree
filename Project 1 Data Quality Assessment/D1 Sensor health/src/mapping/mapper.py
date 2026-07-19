@@ -76,6 +76,43 @@ def apply_mapping(metric: pd.Series, mapping_entry) -> pd.Series:
     return pd.Series(out, index=metric.index, name=f"Q_{mapping_entry.metric}")
 
 
+def combine_freeze_subscores(
+    q_rle: pd.Series,
+    q_low_var: pd.Series,
+    q_unique: pd.Series,
+    weights: dict,
+    *,
+    scoring_mode: str = "iid",
+    floor_policy: dict | None = None,
+) -> tuple[pd.Series, str]:
+    """Combine freeze evidence without treating an expected process floor as a fault.
+
+    ``floor_freeze`` is an input-routing class, not a diagnosis.  Until an
+    independently calibrated response-loss signal is available, only hard RLE
+    evidence is allowed to lower the production freeze score for this class.
+    Low variance and unique-value ratio remain available in detector outputs for
+    audit and future calibration.
+    """
+    policy = floor_policy or {}
+    floor_modes = set(policy.get("scoring_modes", ["floor_freeze"]))
+    floor_enabled = bool(policy.get("enabled", False))
+    production_mode = policy.get("production_mode", "weighted_composite")
+
+    if floor_enabled and scoring_mode in floor_modes:
+        if production_mode != "hard_rle_only":
+            raise ValueError(
+                f"Unsupported freeze floor production_mode: {production_mode}"
+            )
+        return q_rle.clip(1, 5).rename("Q_freeze"), "floor_hard_rle_only"
+
+    combined = (
+        weights["rle"] * q_rle
+        + weights["low_var"] * q_low_var
+        + weights["unique"] * q_unique
+    )
+    return combined.clip(1, 5).rename("Q_freeze"), "weighted_composite"
+
+
 def export_mapping_params(mapping_cfg) -> pd.DataFrame:
     """Build the D1_mapping_params table per output spec §4.1."""
     rows = []

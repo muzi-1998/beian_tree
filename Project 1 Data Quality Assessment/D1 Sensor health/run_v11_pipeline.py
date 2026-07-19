@@ -79,6 +79,15 @@ def main():
     cfg = load_project_config()
     rules  = cfg.rules          # raw rules.yaml dict
     sm_cfg = cfg.state_machine  # raw state_machine.yaml dict
+    calibration_path = _ROOT / "outputs" / "logs" / "D1_step_mapping_calibration.json"
+    with open(calibration_path, "r", encoding="utf-8") as handle:
+        step_mapping_calibration = json.load(handle)
+    if (
+        float(cfg.mapping.step.k) != float(step_mapping_calibration["selected_k"])
+        or float(cfg.mapping.step.x0) != float(step_mapping_calibration["selected_x0"])
+        or cfg.mapping.step.calibration_id != step_mapping_calibration["calibration_id"]
+    ):
+        raise RuntimeError("Step mapping config does not match its calibration manifest")
     log(f"[cfg] loaded via src.config.loader — windows, mapping, rules, state_machine, paths")
 
     # ── Channel definitions come from rules.yaml, not hardcoded
@@ -402,6 +411,10 @@ def main():
         "regime_templates": templates,
         "qr_qir_annotations": qr_qir_annotations,
         "df_h": df_h, "resid_h": resid_h,
+        "whitened_input_h": pelt_input,
+        "scoring_mode": raw.get("scoring_mode", {}),
+        "eff_neff": eff_neff,
+        "step_mapping_calibration": step_mapping_calibration,
         "detectors_raw": detectors_raw,
         "delta_df": delta_df,
         "rules_yaml": rules,
@@ -434,6 +447,7 @@ def main():
             and transition_qa.loc[0, "all_episodes_terminal_or_censored"]
         ),
         "scale_calibration": scale_calibration,
+        "step_mapping_calibration": step_mapping_calibration,
     }
     with open(OUT / "logs" / "D1_run_manifest.json", "w", encoding="utf-8") as handle:
         json.dump(run_manifest, handle, indent=2, ensure_ascii=True)

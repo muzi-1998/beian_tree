@@ -57,6 +57,21 @@ process_aware_step_masking: false
 response_loss_online: false
 pls_exogenous_drivers: false   # PLS uses peer-only
 
+# === Process-floor-aware freeze scoring ===
+# A floor_freeze route means that the signal is left-censored near its expected
+# process floor; it is not itself evidence of a frozen instrument.  Low variance
+# and low unique-value ratio remain diagnostic, while production Q_freeze is
+# driven by hard run-length evidence until an independent response-loss channel
+# is enabled and calibrated.
+freeze_floor_policy:
+  enabled: true
+  scoring_modes:
+    - floor_freeze
+  production_mode: "hard_rle_only"
+  diagnostic_components:
+    - low_var
+    - unique
+
 # === Drift restart policy (per Cooldown 修订 §九) ===
 drift_restart_policy:
   mode: "alpha_thaw"           # Q_drift_eff(t) = α(t)·3.0 + (1-α(t))·Q_drift_new(t)

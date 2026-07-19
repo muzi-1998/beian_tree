@@ -70,6 +70,9 @@ class MappingEntry(BaseModel):
     breaks:     Optional[List[float]] = None
     direction:  Optional[str] = "high_quality_low_metric"
     rate_floor: Optional[float] = 0.0
+    source: Optional[str] = None
+    calibration_id: Optional[str] = None
+    calibration_scope: Optional[str] = None
 
     @model_validator(mode="after")
     def _validate_function_params(self) -> "MappingEntry":
@@ -103,6 +106,9 @@ class MappingEntry(BaseModel):
             breaks     = d.get("breaks"),
             direction  = d.get("direction", "high_quality_low_metric"),
             rate_floor = d.get("rate_floor", 0.0),
+            source = d.get("source"),
+            calibration_id = d.get("calibration_id"),
+            calibration_scope = d.get("calibration_scope"),
         )
 
 

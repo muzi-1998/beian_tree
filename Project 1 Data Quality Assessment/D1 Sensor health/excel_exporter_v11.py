@@ -29,6 +29,8 @@ sys.path.insert(0, str(ROOT))
 
 import numpy as np
 import pandas as pd
+from src.calibration.step_injection import logistic_quality
+from src.config.loader import load_project_config
 
 OUT = ROOT / "outputs" / "data"
 OUT.mkdir(parents=True, exist_ok=True)
@@ -49,6 +51,24 @@ recovery_episodes = S["recovery_episodes"]
 recovery_summary = S["recovery_summary"]
 recovery_km = S["recovery_km"]
 transition_qa = S["transition_qa"]
+mapping_cfg = load_project_config().mapping
+step_cfg = mapping_cfg.step
+step_calibration = S.get("step_mapping_calibration", {})
+step_metrics = step_calibration.get("metrics", {})
+step_calibration_summary = pd.DataFrame([{
+    "calibration_id": step_calibration.get("calibration_id"),
+    "library_sha256": step_calibration.get("library_sha256"),
+    "selected_k": step_calibration.get("selected_k"),
+    "selected_x0": step_calibration.get("selected_x0"),
+    "rmse_channel_balanced": step_metrics.get("rmse_channel_balanced"),
+    "null_warning_rate": step_metrics.get("null_warning_rate"),
+    "small_hard_rate": step_metrics.get("small_hard_rate"),
+    "material_detection_rate": step_metrics.get("material_detection_rate"),
+    "material_miss_rate": step_metrics.get("material_miss_rate"),
+    "source_run_id": step_calibration.get("source_run_id"),
+    "included_scoring_modes": ";".join(step_calibration.get("included_scoring_modes", [])),
+    "excluded_scoring_modes": ";".join(step_calibration.get("excluded_scoring_modes", [])),
+}])
 
 
 def _save(path, sheets, **kwargs):
@@ -153,6 +173,9 @@ for sn in ["hampel_z_hourly_max", "ks_statistic_hourly", "pls_residual_z_hourly"
     if sn in det:
         df = det[sn].reindex(columns=SCORED)  # only scored channels
         sheets[sn] = df
+for sn in ["freeze_routing_audit", "pls_peer_selection_audit", "pls_peer_matrix"]:
+    if sn in det:
+        sheets[sn] = det[sn]
 _save(OUT / "D1_detector_outputs_raw.xlsx", sheets)
 
 
@@ -227,10 +250,14 @@ mapping_master = pd.DataFrame([
     {"mapping_id": "D1_step_adjacent_ks", "subscore_name": "D1_step",
      "detector_name": "adjacent_ks", "input_metric": "ks_statistic",
      "mapping_type": "logistic", "direction": "high_quality_low_metric",
-     "k": 8.0, "x0": 0.40,
-     "thresholds": np.nan, "scores": np.nan, "breaks": np.nan, "rate_floor": 0.005,
-     "version": "v1.1", "source": "expert_calibrated",
-     "sensor_scope": "DO/ORP only", "window_scope": "24h"},
+     "k": step_cfg.k, "x0": step_cfg.x0,
+     "thresholds": np.nan, "scores": np.nan, "breaks": np.nan,
+     "rate_floor": step_cfg.rate_floor,
+     "version": S["algorithm_version"], "source": step_cfg.source,
+     "calibration_id": step_cfg.calibration_id,
+     "calibration_scope": step_cfg.calibration_scope,
+     "sensor_scope": "iid-routed DO/ORP mapping domain; other routes audited separately",
+     "window_scope": "24h main + 36h confirmation"},
     {"mapping_id": "D1_drift_pls_virtual", "subscore_name": "D1_drift",
      "detector_name": "pls_virtual_peer_only", "input_metric": "pls_residual_z",
      "mapping_type": "logistic", "direction": "high_quality_low_metric",
@@ -276,15 +303,20 @@ mapping_versions = pd.DataFrame([
      "n_subscores": 7, "calibration_source": "expert + 4 strict-V1 fixes"},
     {"version": "v1.1", "effective_date": "2026-05-06",
      "n_subscores": 7, "calibration_source": "v1.0_strict + DO/ORP-only + signal-only Veto-3"},
-    {"version": S["algorithm_version"], "effective_date": "2026-07-17",
+    {"version": S["algorithm_version"], "effective_date": "2026-07-19",
      "n_subscores": 7,
-     "calibration_source": "causal six-state recovery + event-level validation; mapping coefficients unchanged"},
+     "calibration_source": (
+         "causal recovery + event validation + raw-input Step fault injection; "
+         f"{step_cfg.calibration_id}"
+     )},
 ])
+step_example_x = [0.0, 0.25, 0.40, float(step_cfg.x0), 0.70, 1.0]
 mapping_examples = pd.DataFrame([
-    {"subscore": "D1_step", "x": 0.0, "Q": 4.84},
-    {"subscore": "D1_step", "x": 0.2, "Q": 4.33},
-    {"subscore": "D1_step", "x": 0.3, "Q": 3.76},
-    {"subscore": "D1_step", "x": 0.4, "Q": 3.00},
+    *[
+        {"subscore": "D1_step", "x": x,
+         "Q": float(logistic_quality([x], step_cfg.k, step_cfg.x0)[0])}
+        for x in step_example_x
+    ],
     {"subscore": "D1_drift", "x": 1.0, "Q": 4.62},
     {"subscore": "D1_drift", "x": 2.5, "Q": 3.00},
     {"subscore": "D1_drift", "x": 4.0, "Q": 1.38},
@@ -296,6 +328,7 @@ _save(OUT / "D1_mapping_params.xlsx", {
     "mapping_master": mapping_master,
     "mapping_versions": mapping_versions,
     "mapping_examples": mapping_examples,
+    "step_calibration_summary": step_calibration_summary,
 }, index=False)
 
 

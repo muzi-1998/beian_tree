@@ -1,0 +1,283 @@
+{
+  "run_id": "d1-final-57bdbc83894f",
+  "algorithm_version": "1.3.0-final-candidate",
+  "generated_at": "2026-07-19T17:09:20",
+  "dependency_hashes": {
+    "strict_v1_inputs": "e4c05b08cd3cb2e409eb281f7541c2595fed44abb259df6a10fc5c235df6ba2d",
+    "raw_hourly": "3ff3d9cd4600b88e89fcc5c106d622ae5ae46edb0508f32a153a215b1a066568",
+    "state_machine_config": "af52f70efce08486bec1067fc1cf1c7e81a68517b5cc1d25e683ef01a839b5fa",
+    "rules_config": "abadac5b4dfd104f8e8509f0d3a14f5091fec609db948725f8d0f19b8c9d39f7",
+    "mapping_config": "67e6705ade9383184f88b71a780b8b02e51b94438e547fe291cc8550c20ce0f0",
+    "state_machine_code": "07a21c71db5d70ce283412706704548250f407121c7899364aad2a644bfdeb48",
+    "local_baseline_code": "89c150fb64a30870bc2fb8babec415adf7fc5ad2879ede90dc7c9a34be643788",
+    "pipeline_code": "bfe1d9150897671534d8898ee3c008c2ee93393ed8f0ed976d93701a2493992d"
+  },
+  "state_pickle_sha256": "a5fcc68f2bdd4f1e226d9f62baaf0ef331826303650eab610ebb96c4ebd67eeb",
+  "n_channels": 14,
+  "n_hourly_rows": 6138,
+  "n_state_transitions": 142,
+  "n_recovery_episodes": 22,
+  "transition_conservation_passed": true,
+  "scale_calibration": {
+    "DO_1_1": {
+      "scale_floor": 0.0785582517289977,
+      "noise_floor": 0.0785582517289977,
+      "resolution_estimate": 8.63416845318543e-05,
+      "calibration_n": 720
+    },
+    "DO_1_2": {
+      "scale_floor": 0.16607783327012662,
+      "noise_floor": 0.16607783327012662,
+      "resolution_estimate": 0.00011334946434908288,
+      "calibration_n": 720
+    },
+    "DO_1_3": {
+      "scale_floor": 0.12134421173165276,
+      "noise_floor": 0.12134421173165276,
+      "resolution_estimate": 9.424676861224149e-05,
+      "calibration_n": 720
+    },
+    "DO_1_4": {
+      "scale_floor": 0.0016380364877374891,
+      "noise_floor": 0.0016380364877374891,
+      "resolution_estimate": 4.535409929514421e-06,
+      "calibration_n": 720
+    },
+    "DO_2_1": {
+      "scale_floor": 0.10698442823073778,
+      "noise_floor": 0.10698442823073778,
+      "resolution_estimate": 9.999355356550832e-05,
+      "calibration_n": 698
+    },
+    "DO_2_2": {
+      "scale_floor": 0.144680835344222,
+      "noise_floor": 0.144680835344222,
+      "resolution_estimate": 0.00012168529508500557,
+      "calibration_n": 720
+    },
+    "DO_2_3": {
+      "scale_floor": 0.10257755529661125,
+      "noise_floor": 0.10257755529661125,
+      "resolution_estimate": 7.653248549742004e-05,
+      "calibration_n": 718
+    },
+    "DO_2_4": {
+      "scale_floor": 0.0844453137041271,
+      "noise_floor": 0.0844453137041271,
+      "resolution_estimate": 7.4609547367821e-05,
+      "calibration_n": 720
+    },
+    "ORP_1_1": {
+      "scale_floor": 6.0111712052275355,
+      "noise_floor": 6.0111712052275355,
+      "resolution_estimate": 0.005220670654384207,
+      "calibration_n": 720
+    },
+    "ORP_1_2": {
+      "scale_floor": 11.902176651437296,
+      "noise_floor": 11.902176651437296,
+      "resolution_estimate": 0.011541728953504027,
+      "calibration_n": 720
+    },
+    "ORP_1_3": {
+      "scale_floor": 41.71766598928208,
+      "noise_floor": 41.71766598928208,
+      "resolution_estimate": 0.03528027666058131,
+      "calibration_n": 717
+    },
+    "ORP_2_1": {
+      "scale_floor": 5.452859426469353,
+      "noise_floor": 5.452859426469353,
+      "resolution_estimate": 0.005697200004480862,
+      "calibration_n": 720
+    },
+    "ORP_2_2": {
+      "scale_floor": 6.61797234220143,
+      "noise_floor": 6.61797234220143,
+      "resolution_estimate": 0.00559193884025595,
+      "calibration_n": 720
+    },
+    "ORP_2_3": {
+      "scale_floor": 50.71946363723845,
+      "noise_floor": 50.71946363723845,
+      "resolution_estimate": 0.04699724128026225,
+      "calibration_n": 720
+    }
+  },
+  "step_mapping_calibration": {
+    "calibration_id": "step-injection-ea8d55282211",
+    "library_sha256": "775d423be3d728fd48533c6e84bfc07af3233164dc6186bf33b3c1969259b970",
+    "selected_k": 16.0,
+    "selected_x0": 0.55,
+    "metrics": {
+      "rmse_channel_balanced": 0.6712747728961548,
+      "null_warning_rate": 0.0,
+      "small_hard_rate": 0.008333333333333333,
+      "material_detection_rate": 0.8666666666666667,
+      "material_miss_rate": 0.13333333333333333
+    },
+    "config": {
+      "window_h": 192,
+      "event_h": 72,
+      "evaluation_start_h": 12,
+      "evaluation_end_h": 60,
+      "windows_per_channel": 6,
+      "amplitudes_sigma": [
+        0.0,
+        0.5,
+        1.0,
+        1.5,
+        2.0,
+        3.0,
+        4.0
+      ],
+      "k_grid": [
+        4.0,
+        6.0,
+        8.0,
+        10.0,
+        12.0,
+        14.0,
+        16.0
+      ],
+      "x0_grid": [
+        0.25,
+        0.3,
+        0.35,
+        0.4,
+        0.45,
+        0.5,
+        0.55
+      ],
+      "max_null_warning_rate": 0.05,
+      "max_small_hard_rate": 0.05,
+      "max_material_miss_rate": 0.2,
+      "min_normal_fraction": 0.95,
+      "calibration_scoring_modes": [
+        "iid"
+      ]
+    },
+    "source_run_id": "d1-final-57bdbc83894f",
+    "included_scoring_modes": [
+      "iid"
+    ],
+    "excluded_scoring_modes": [
+      "autocorr_aware",
+      "floor_freeze"
+    ],
+    "applicability": [
+      {
+        "sensor_id": "DO_1_1",
+        "scoring_mode": "autocorr_aware",
+        "neff_ratio": 0.012,
+        "max_corrected_ks": 0.10954451150103323,
+        "included_in_mapping_fit": false,
+        "exclusion_reason": "n_eff-deflated KS is an auxiliary detector, outside global mapping fit"
+      },
+      {
+        "sensor_id": "DO_1_2",
+        "scoring_mode": "iid",
+        "neff_ratio": 1.0,
+        "max_corrected_ks": 1.0,
+        "included_in_mapping_fit": true,
+        "exclusion_reason": "eligible iid detector route"
+      },
+      {
+        "sensor_id": "DO_1_3",
+        "scoring_mode": "iid",
+        "neff_ratio": 1.0,
+        "max_corrected_ks": 1.0,
+        "included_in_mapping_fit": true,
+        "exclusion_reason": "eligible iid detector route"
+      },
+      {
+        "sensor_id": "DO_1_4",
+        "scoring_mode": "floor_freeze",
+        "neff_ratio": 0.0,
+        "max_corrected_ks": 0.0,
+        "included_in_mapping_fit": false,
+        "exclusion_reason": "process-floor channel excluded from adjacent-KS calibration"
+      },
+      {
+        "sensor_id": "DO_2_1",
+        "scoring_mode": "autocorr_aware",
+        "neff_ratio": 0.0085,
+        "max_corrected_ks": 0.09219544457292887,
+        "included_in_mapping_fit": false,
+        "exclusion_reason": "n_eff-deflated KS is an auxiliary detector, outside global mapping fit"
+      },
+      {
+        "sensor_id": "DO_2_2",
+        "scoring_mode": "autocorr_aware",
+        "neff_ratio": 0.0076,
+        "max_corrected_ks": 0.08717797887081347,
+        "included_in_mapping_fit": false,
+        "exclusion_reason": "n_eff-deflated KS is an auxiliary detector, outside global mapping fit"
+      },
+      {
+        "sensor_id": "DO_2_3",
+        "scoring_mode": "iid",
+        "neff_ratio": 1.0,
+        "max_corrected_ks": 1.0,
+        "included_in_mapping_fit": true,
+        "exclusion_reason": "eligible iid detector route"
+      },
+      {
+        "sensor_id": "DO_2_4",
+        "scoring_mode": "iid",
+        "neff_ratio": 1.0,
+        "max_corrected_ks": 1.0,
+        "included_in_mapping_fit": true,
+        "exclusion_reason": "eligible iid detector route"
+      },
+      {
+        "sensor_id": "ORP_1_1",
+        "scoring_mode": "iid",
+        "neff_ratio": 1.0,
+        "max_corrected_ks": 1.0,
+        "included_in_mapping_fit": true,
+        "exclusion_reason": "eligible iid detector route"
+      },
+      {
+        "sensor_id": "ORP_1_2",
+        "scoring_mode": "iid",
+        "neff_ratio": 1.0,
+        "max_corrected_ks": 1.0,
+        "included_in_mapping_fit": true,
+        "exclusion_reason": "eligible iid detector route"
+      },
+      {
+        "sensor_id": "ORP_1_3",
+        "scoring_mode": "iid",
+        "neff_ratio": 1.0,
+        "max_corrected_ks": 1.0,
+        "included_in_mapping_fit": true,
+        "exclusion_reason": "eligible iid detector route"
+      },
+      {
+        "sensor_id": "ORP_2_1",
+        "scoring_mode": "iid",
+        "neff_ratio": 1.0,
+        "max_corrected_ks": 1.0,
+        "included_in_mapping_fit": true,
+        "exclusion_reason": "eligible iid detector route"
+      },
+      {
+        "sensor_id": "ORP_2_2",
+        "scoring_mode": "iid",
+        "neff_ratio": 1.0,
+        "max_corrected_ks": 1.0,
+        "included_in_mapping_fit": true,
+        "exclusion_reason": "eligible iid detector route"
+      },
+      {
+        "sensor_id": "ORP_2_3",
+        "scoring_mode": "iid",
+        "neff_ratio": 1.0,
+        "max_corrected_ks": 1.0,
+        "included_in_mapping_fit": true,
+        "exclusion_reason": "eligible iid detector route"
+      }
+    ]
+  }
+}
