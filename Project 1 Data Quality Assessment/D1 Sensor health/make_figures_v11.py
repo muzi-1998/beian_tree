@@ -410,12 +410,12 @@ save(fig, "FigV13_state_machine_DO_2_3",
 # Figure V14 — Signal-only Veto-3 and event_id timeline
 # ============================================================================
 print("[V14] Signal-only Veto-3 ...")
-fig = plt.figure(figsize=(7.2, 5.6))
+fig = plt.figure(figsize=(7.2, 5.15))
 gs = gridspec.GridSpec(
-    2, 2, figure=fig, hspace=0.76, wspace=0.46,
-    height_ratios=[1.22, 1.0],
+    2, 2, figure=fig, hspace=0.38, wspace=0.46,
+    height_ratios=[1.18, 1.0],
 )
-fig.subplots_adjust(top=0.92, bottom=0.12, left=0.10, right=0.96)
+fig.subplots_adjust(top=0.91, bottom=0.12, left=0.10, right=0.96)
 
 v3 = pd.Series({
     c: S["veto_logs_v11"][c]["veto3_signal_only"].mean() * 100
@@ -470,12 +470,12 @@ for i, col_name in enumerate(trans_counts.columns):
     bottom += values
 ax.set_xticks(xs); ax.set_xticklabels(SCORED, rotation=48, ha="right", fontsize=6.5)
 ax.set_ylabel("# transitions", fontsize=9)
-ax.set_ylim(*positive_data_ylim(bottom, headroom=0.28))
+ax.set_ylim(*positive_data_ylim(bottom, headroom=0.50))
 ax.set_title("(b)  State-transition counts (entire 8.4 mo)", loc="left")
 _h14, _l14 = ax.get_legend_handles_labels()
 ax.legend(
-    _h14, _l14, loc="upper left", bbox_to_anchor=(0.01, 0.985),
-    fontsize=5.5, ncol=2, frameon=True, framealpha=0.72,
+    _h14, _l14, loc="upper center", bbox_to_anchor=(0.50, 0.985),
+    fontsize=5.5, ncol=3, frameon=True, framealpha=0.72,
     facecolor="white", edgecolor="none", borderaxespad=0,
 )
 

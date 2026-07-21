@@ -82,7 +82,7 @@ grade_clrs = ["#9E1F1F", "#F46D43", "#FEE08B", "#A6D96A", "#1A9850"]
 grade_cmap = LinearSegmentedColormap.from_list("grade", grade_clrs[::-1], N=256)
 score_cmap = LinearSegmentedColormap.from_list(
     "d1_score",
-    ["#B84A45", "#E98A65", "#F6E7A8", "#A6D96A", "#238B45"],
+    ["#B2182B", "#EF8A62", "#F7F7F7", "#67A9CF", "#2166AC"],
     N=256,
 )
 
