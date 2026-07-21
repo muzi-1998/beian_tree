@@ -24,11 +24,11 @@ SCRIPTS = [
      "# [ENTRY] Generate Fig 1–11 baseline figures (D1 matrix, heatmap, "
      "violin, regime, PLS…)"),
     ("make_figures_v11.py",
-     "# [ENTRY] Generate Fig V12–V15 (v1.1 vs STRICT V1 hero, state machine, "
+     "# [ENTRY] Generate Fig V12–V15 (current D1 profile, state machine, "
      "Veto-3, PELT)"),
     ("make_figures_v11_part2.py",
-     "# [ENTRY] Generate Fig V16–V18 (regime templates, QR/QIR scope, "
-     "aggregate summary)"),
+     "# [ENTRY] Generate Fig V17–V18 (QR/QIR scope and current event summary); "
+     "fixed-k regime Fig V16 retired"),
     ("excel_exporter_v11.py",
      "# [ENTRY] Export 16 Excel deliverables to outputs/data/ "
      "(scores, events, audit, QR/QIR…)"),
@@ -103,7 +103,7 @@ SCRIPTS = [
     ("src/baseline/local_baseline.py",
      "# Local rolling baseline (median ± IQR) for residual normalisation"),
     ("src/baseline/regime_clustering.py",
-     "# k-means regime template clustering (k=4) for FigV16 visualisation"),
+     "# Exploratory fixed-k regime clustering retained for D7 redevelopment; not a D1 figure"),
     ("src/baseline/__init__.py",
      "# Package init"),
 
@@ -129,7 +129,7 @@ TREE_LINES = [
     ("├── run_v11_pipeline.py              # ENTRY: state machine + D1 v1.1", 1),
     ("├── make_baseline_figures_v11.py     # ENTRY: Fig 1-11", 1),
     ("├── make_figures_v11.py              # ENTRY: Fig V12-V15", 1),
-    ("├── make_figures_v11_part2.py        # ENTRY: Fig V16-V18", 1),
+    ("├── make_figures_v11_part2.py        # ENTRY: Fig V17-V18", 1),
     ("├── excel_exporter_v11.py            # ENTRY: 16 Excel deliverables", 1),
     ("├── run_v12_P2_sensitivity.py        # OPT-P2: regime sensitivity", 1),
     ("├── generate_mock_data.py            # UTIL: synthetic test data", 1),
@@ -182,7 +182,7 @@ TREE_LINES = [
     ("│   └── strict_v1_inputs.pkl         # Merged detector outputs (10.9 MB)", 2),
     ("│", 0),
     ("└── outputs/                         # All deliverables", 1),
-    ("    ├── figures/                      # Fig 1-11, FigV12-V18 (600 DPI PNG)", 2),
+    ("    ├── figures/                      # 20 current-result formal figure bundles", 2),
     ("    ├── data/                         # 16 Excel deliverables", 2),
     ("    ├── plot_data/                    # Per-figure xlsx data tables", 2),
     ("    └── v12_P2/                       # P2 regime sensitivity: 10 figures + CSVs", 2),

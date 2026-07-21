@@ -1,6 +1,8 @@
-"""make_figures_v11_part2.py — V16-V18 + updated Fig 1-11 baselines
+"""Generate current-result D1 validation figures V17-V18.
 
-Continues from make_figures_v11.py.
+The former V16 fixed-k regime clustering panel is intentionally excluded from
+the formal D1 bundle. It was an unvalidated D7 exploratory construct rather
+than a D1 sensor-health result.
 """
 from __future__ import annotations
 import sys, pickle
@@ -54,8 +56,8 @@ SCORED = S["scored_channels"]
 SUPPORT = S["support_channels"]
 DO_CH = [c for c in SCORED if c.startswith("DO_")]
 ORP_CH = [c for c in SCORED if c.startswith("ORP_")]
-D1_v1 = S["D1_v1_scored"]
 D1_v11 = S["D1_v11"]
+df_h = S["df_h"]
 
 
 def _finish_axes(fig):
@@ -75,113 +77,6 @@ def save(fig, name, plot_data: dict = None):
                 elif isinstance(v, pd.Series): v.to_frame(k).to_excel(w, sheet_name=k[:31], index=True)
                 elif isinstance(v, dict): pd.DataFrame(v).to_excel(w, sheet_name=k[:31], index=True)
     print(f"  [OK] {name}.png + .svg + .pdf + .tiff")
-
-
-# ============================================================================
-# Figure V16 — D7 multi-regime templates (NOT for D1 scoring)
-# ============================================================================
-print("[V16] Multi-regime templates ...")
-fig = plt.figure(figsize=(7.2, 6.3))
-gs = gridspec.GridSpec(3, 2, figure=fig, hspace=0.5, wspace=0.55,
-                        height_ratios=[1.0, 1.1, 1.0])
-fig.subplots_adjust(left=0.09, right=0.93, top=0.80, bottom=0.08)
-
-regime_labels = S["regime_labels"]
-regime_info = S["regime_info"]
-templates = S["regime_templates"]
-df_h = S["df_h"]
-k = regime_info["k"]
-cmap = plt.cm.Set2
-clrs = [cmap(i / max(k-1, 1)) for i in range(k)]
-
-# (a) Regime label timeline
-ax = fig.add_subplot(gs[0, :])
-for r in range(k):
-    mask = regime_labels == r
-    ax.fill_between(regime_labels.index, 0, mask.astype(float),
-                     where=mask, alpha=0.85, color=clrs[r],
-                     label=f"R{r}  ({mask.sum()} h, {mask.mean()*100:.1f}%)",
-                     step="mid")
-ax.set_ylim(0, 1.05); ax.set_yticks([])
-ax.set_title("(a)  Regime label timeline (k-means k=4) — used for D7 templates only",
-              loc="left")
-_h16, _l16 = ax.get_legend_handles_labels()
-ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
-
-# (b) Centers heatmap (DO/ORP only)
-ax = fig.add_subplot(gs[1, 0])
-do_cols = DO_CH + ORP_CH
-centers_do = pd.DataFrame()
-for r in range(k):
-    if r in templates:
-        row = {c: templates[r]["centers"].get(c, np.nan) for c in do_cols}
-        centers_do[f"R{r}"] = pd.Series(row)
-centers_z = centers_do.subtract(centers_do.mean(axis=1), axis=0).divide(
-    centers_do.std(axis=1) + 1e-6, axis=0)
-im = ax.imshow(centers_z.values, cmap="RdBu_r", aspect="auto", vmin=-2, vmax=2)
-ax.set_yticks(np.arange(len(do_cols))); ax.set_yticklabels(do_cols, fontsize=7.5)
-ax.set_xticks(np.arange(k)); ax.set_xticklabels([f"R{i}" for i in range(k)], fontsize=8)
-cbar = plt.colorbar(im, ax=ax, fraction=0.045, pad=0.02)
-cbar.set_label("z-score across regimes", fontsize=8); cbar.ax.tick_params(labelsize=7)
-ax.set_title("(b)  DO/ORP regime centers (z-scored)", loc="left")
-ax.grid(False)
-
-# (c) Twin-pool symmetry
-ax = fig.add_subplot(gs[1, 1])
-sym_data = []
-for r in range(k):
-    if r in templates:
-        for s in templates[r]["symmetry"]:
-            sym_data.append({"regime": f"R{r}", "pair": s["pair"], "corr": s["corr"]})
-sym_df = pd.DataFrame(sym_data)
-if len(sym_df) > 0:
-    pivot = sym_df.pivot(index="pair", columns="regime", values="corr").fillna(0)
-    im = ax.imshow(pivot.values, cmap="RdYlGn", aspect="auto", vmin=-1, vmax=1)
-    ax.set_yticks(np.arange(len(pivot)))
-    ax.set_yticklabels(pivot.index.tolist(), fontsize=7)
-    ax.set_xticks(np.arange(len(pivot.columns)))
-    ax.set_xticklabels(pivot.columns.tolist(), fontsize=8)
-    for i in range(len(pivot)):
-        for j in range(len(pivot.columns)):
-            v = pivot.values[i, j]
-            ax.text(j, i, f"{v:.2f}", ha="center", va="center",
-                      fontsize=7, color="white" if abs(v) > 0.6 else "black")
-    cbar = plt.colorbar(im, ax=ax, fraction=0.045, pad=0.02)
-    cbar.set_label("twin-pair correlation", fontsize=8); cbar.ax.tick_params(labelsize=7)
-ax.set_title("(c)  Twin-pool symmetry (DO_1_*↔DO_2_*; ORP)", loc="left")
-ax.grid(False)
-
-# (d) D1 distribution per regime — violin
-ax = fig.add_subplot(gs[2, :])
-median_d1 = D1_v11.median(axis=1)
-for r in range(k):
-    mask = regime_labels == r
-    if mask.sum() < 30: continue
-    vals = median_d1[mask].dropna().values
-    parts = ax.violinplot(vals, positions=[r], widths=0.7,
-                            showmedians=True, showextrema=False)
-    for body in parts["bodies"]:
-        body.set_facecolor(clrs[r]); body.set_edgecolor("0.3"); body.set_alpha(0.85)
-    parts["cmedians"].set_color("k"); parts["cmedians"].set_linewidth(1.2)
-ax.set_xticks(range(k))
-ax.set_xticklabels([f"R{i}\n({(regime_labels==i).mean()*100:.0f}%)" for i in range(k)])
-ax.set_ylabel(r"Median $D_1$ across DO/ORP", fontsize=9)
-ax.axhline(3, color=C["red"], ls=":", lw=0.7); ax.set_ylim(2, 5)
-ax.set_title("(d)  v1.1 $D_1$ distribution per regime (template seeding mass)",
-              loc="left")
-
-fig.suptitle("Figure V16.  Multi-regime templates for D7 (offline; NOT D1 scoring)",
-              fontsize=9.8, fontweight="bold", y=0.995)
-fig.legend(_h16, _l16, loc="upper center", bbox_to_anchor=(0.5, 0.90),
-           fontsize=6.8, ncol=k, frameon=False)
-save(fig, "FigV16_regime_templates",
-      plot_data={"regime_centers_z": centers_z, "twin_symmetry": sym_df,
-                  "regime_summary": pd.DataFrame({
-                      f"R{r}": [(regime_labels==r).sum(),
-                                  (regime_labels==r).mean(),
-                                  templates.get(r, {}).get("n_hours_used", 0)]
-                      for r in range(k)},
-                      index=["n_hours", "time_pct", "n_high_quality_h"]).T})
 
 
 # ============================================================================
@@ -282,138 +177,190 @@ save(fig, "FigV17_scope_qr_qir_offline",
 
 
 # ============================================================================
-# Figure V18 — Aggregate v1.0 vs v1.1 final summary
+# Figure V18 — current D1 distribution and event burden
 # ============================================================================
-print("[V18] Aggregate summary ...")
-fig = plt.figure(figsize=(7.2, 6.2))
-gs = gridspec.GridSpec(2, 3, figure=fig, hspace=0.58, wspace=0.32,
-                        height_ratios=[1.0, 1.0])
-fig.subplots_adjust(top=0.91, bottom=0.09)
+print("[V18] Current D1 distribution and event burden ...")
+final_flat = D1_v11.to_numpy().ravel()
+final_flat = final_flat[np.isfinite(final_flat)]
 
-# (a) Hourly D1 distribution
-ax = fig.add_subplot(gs[0, 0])
-v1_flat = D1_v1.values.flatten(); v11_flat = D1_v11.values.flatten()
-v1_flat = v1_flat[~np.isnan(v1_flat)]
-v11_flat = v11_flat[~np.isnan(v11_flat)]
-bins = np.linspace(1, 5, 60)
-ax.hist(v1_flat, bins=bins, color=C["gray"], alpha=0.6,
-         label=f"STRICT V1 DO/ORP (μ={v1_flat.mean():.3f})", density=True)
-ax.hist(v11_flat, bins=bins, color=C["blue"], alpha=0.55,
-         label=f"v1.1 (μ={v11_flat.mean():.3f})", density=True)
-ax.axvline(3, color=C["red"], ls=":", lw=0.7, alpha=0.7, label="grade boundary")
-_dens_max = max(np.histogram(v1_flat, bins=bins, density=True)[0].max(),
-                np.histogram(v11_flat, bins=bins, density=True)[0].max())
-ax.set_ylim(0, _dens_max * 1.12)
-ax.set_xlabel(r"Hourly $D_1$", fontsize=9); ax.set_ylabel("Density", fontsize=9)
-ax.set_title("(a)  Hourly $D_1$ distribution", loc="left")
-ax.legend(loc="upper left", fontsize=6.6, framealpha=0.72)
-
-# (b) Grade percentage stacked
-ax = fig.add_subplot(gs[0, 1])
 def grade_dist(arr):
-    a = (arr >= 4.5).mean()
-    b = ((arr >= 3.5) & (arr < 4.5)).mean()
-    c = ((arr >= 2.5) & (arr < 3.5)).mean()
-    d = ((arr >= 1.5) & (arr < 2.5)).mean()
-    f = (arr < 1.5).mean()
-    return [a, b, c, d, f]
-gd_v1 = grade_dist(v1_flat); gd_v11 = grade_dist(v11_flat)
-labels_g = ["A (≥4.5)", "B (3.5-4.5)", "C (2.5-3.5)", "D (1.5-2.5)", "F (<1.5)"]
-gclrs = ["#1A9850", "#A6D96A", "#FEE08B", "#F46D43", "#9E1F1F"]
-xpos = [0, 1.60]
-bottom = np.zeros(2)
-for i, (lbl, clr) in enumerate(zip(labels_g, gclrs)):
-    vals = [gd_v1[i] * 100, gd_v11[i] * 100]
-    ax.bar(xpos, vals, bottom=bottom, color=clr, edgecolor="white",
-            label=lbl, width=0.45, alpha=0.92)
-    for x, v, b in zip(xpos, vals, bottom):
-        if v > 3:
-            ax.text(x, b + v/2, f"{v:.1f}%", ha="center", va="center",
-                     fontsize=8, fontweight="bold", color="black")
-    bottom += np.array(vals)
-ax.set_xticks(xpos); ax.set_xticklabels(["STRICT V1\n(DO/ORP)", "final"])
-ax.set_ylabel("Grade percentage (%)", fontsize=9)
-ax.set_title("(b)  Grade distribution", loc="left")
-# bars sit at x=0,1 — free space on the right and put the legend there (was
-# overlapping the v1.1 bar at lower-right)
-ax.set_xlim(-0.60, 4.80)
-ax.set_ylim(0, 100)
-ax.legend(loc="center right", fontsize=6.2, frameon=False)
+    return [
+        float((arr >= 4.5).mean()),
+        float(((arr >= 3.5) & (arr < 4.5)).mean()),
+        float(((arr >= 2.5) & (arr < 3.5)).mean()),
+        float(((arr >= 1.5) & (arr < 2.5)).mean()),
+        float((arr < 1.5).mean()),
+    ]
 
-# (c) State machine vs simple timer — Q_drift_eff effect
+grade_labels = ["A (>=4.5)", "B (3.5-4.5)", "C (2.5-3.5)",
+                "D (1.5-2.5)", "F (<1.5)"]
+grade_colors = ["#1A9850", "#A6D96A", "#FEE08B", "#F46D43", "#9E1F1F"]
+grade_pct = np.asarray(grade_dist(final_flat)) * 100
+
+qdrift_rows = []
+for channel in SCORED:
+    values = pd.Series(S["Q_drift_eff_dict"][channel]).dropna()
+    qdrift_rows.append({
+        "channel": channel,
+        "median": float(values.median()),
+        "q25": float(values.quantile(0.25)),
+        "q75": float(values.quantile(0.75)),
+    })
+qdrift_summary = pd.DataFrame(qdrift_rows).sort_values("median")
+
+events = S["events_v11"].copy()
+event_burden = pd.DataFrame(index=SCORED)
+event_burden["event_count"] = events.groupby("sensor_id").size().reindex(SCORED, fill_value=0)
+event_burden["event_hours"] = (
+    events.groupby("sensor_id")["duration_h"].sum().reindex(SCORED, fill_value=0.0)
+)
+event_burden["event_hours_pct"] = event_burden["event_hours"] / len(D1_v11) * 100
+event_burden["D1_lt_3_pct"] = (D1_v11 < 3.0).mean().reindex(SCORED) * 100
+event_burden["mean_D1"] = D1_v11.mean().reindex(SCORED)
+event_burden["analyte"] = ["DO" if c.startswith("DO_") else "ORP" for c in SCORED]
+
+dominant = {name: 0 for name in ["Q_spike", "Q_step", "Q_drift", "Q_freeze", "Q_regime"]}
+for _, event in events.iterrows():
+    channel = event["sensor_id"]
+    evidence = pd.DataFrame({
+        name: S["subs_v11"][channel][name].loc[event["start"]:event["end"]]
+        for name in dominant
+    })
+    if not evidence.empty:
+        dominant[evidence.mean(axis=0).idxmin()] += 1
+faults = ["spike", "step", "drift", "freeze", "regime"]
+fault_counts = np.asarray([dominant[f"Q_{fault}"] for fault in faults])
+
+fig = plt.figure(figsize=(7.2, 5.95))
+gs = gridspec.GridSpec(2, 3, figure=fig, hspace=0.48, wspace=0.56,
+                        height_ratios=[1.0, 1.25])
+fig.subplots_adjust(top=0.91, bottom=0.09, left=0.10, right=0.97)
+
+# (a) Current hourly score distribution
+ax = fig.add_subplot(gs[0, 0])
+bins = np.linspace(1, 5, 60)
+ax.hist(final_flat, bins=bins, color=C["blue"], alpha=0.72,
+        density=True, edgecolor="white", linewidth=0.2)
+for threshold in (1.5, 2.5, 3.5, 4.5):
+    ax.axvline(threshold, color="0.45", ls=":", lw=0.65, alpha=0.7)
+density_max = np.histogram(final_flat, bins=bins, density=True)[0].max()
+ax.set_ylim(0, density_max * 1.10)
+ax.set_xlim(1, 5)
+ax.set_xlabel(r"Hourly $D_1$", fontsize=8.6)
+ax.set_ylabel("Density", fontsize=8.6)
+ax.set_title("(a) Final score distribution", loc="left")
+ax.text(
+    0.04, 0.94, f"mean = {final_flat.mean():.3f}", transform=ax.transAxes,
+    ha="left", va="top", fontsize=6.8,
+    bbox={"facecolor": "white", "edgecolor": "none", "alpha": 0.72,
+          "pad": 1.0},
+)
+
+# (b) Current grade composition
+ax = fig.add_subplot(gs[0, 1])
+y = np.arange(len(grade_labels))
+ax.barh(y, grade_pct, color=grade_colors, edgecolor="white", linewidth=0.5)
+ax.set_yticks(y)
+ax.set_yticklabels(grade_labels, fontsize=7.1)
+ax.invert_yaxis()
+ax.set_xlabel("All sensor-hours (%)", fontsize=8.6)
+ax.set_title("(b) Grade composition", loc="left")
+ax.set_xlim(0, max(1.0, float(grade_pct.max()) * 1.18))
+for yi, value in zip(y, grade_pct):
+    ax.text(value + max(grade_pct.max() * 0.015, 0.05), yi, f"{value:.1f}%",
+            va="center", fontsize=6.7)
+
+# (c) Event counts classified by weakest sub-score
 ax = fig.add_subplot(gs[0, 2])
-# Compute mean Q_drift_eff vs raw Q_drift across channels
-qd_v1_mean = {c: float(S["subs_v1"]["Q_drift"][c].mean()) for c in SCORED}
-qd_v11_mean = {c: float(S["Q_drift_eff_dict"][c].mean()) for c in SCORED}
-xs = np.arange(len(SCORED))
-ax.bar(xs - 0.2, [qd_v1_mean[c] for c in SCORED], 0.4, color=C["gray"],
-        alpha=0.85, label="$Q_{drift}$ raw", edgecolor="white")
-ax.bar(xs + 0.2, [qd_v11_mean[c] for c in SCORED], 0.4, color=C["purple"],
-        alpha=0.85, label="$Q_{drift}^{eff}$", edgecolor="white")
-ax.set_xticks(xs); ax.set_xticklabels(SCORED, rotation=90, ha="center", fontsize=6.2)
-ax.set_ylabel(r"Mean $Q_{\rm drift}$", fontsize=9)
-ax.axhline(3.0, color=C["amber"], ls="--", lw=0.7, alpha=0.6,
-            label="neutral = 3.0")
-_qdrift_values = np.r_[[qd_v1_mean[c] for c in SCORED],
-                       [qd_v11_mean[c] for c in SCORED]]
-ax.set_ylim(*positive_data_ylim(_qdrift_values, headroom=0.08))
-ax.set_title("(c)  $Q_{\\rm drift}$ raw vs effective (α-thaw)", loc="left")
-ax.set_xlim(-0.7, len(SCORED) + 10.0)
-ax.legend(loc="center left", bbox_to_anchor=(0.60, 0.50), fontsize=5.8,
-          frameon=False, handlelength=1.4, borderaxespad=0)
+x = np.arange(len(faults))
+ax.bar(x, fault_counts, color=[C["blue"], C["amber"], C["purple"],
+                               C["teal"], C["red"]],
+       alpha=0.86, edgecolor="white", linewidth=0.5)
+ax.set_xticks(x)
+ax.set_xticklabels(faults, rotation=30, ha="right", fontsize=7.1)
+ax.set_ylabel("Event count", fontsize=8.6)
+ax.set_ylim(*positive_data_ylim(fault_counts, headroom=0.18, minimum_upper=1.0))
+ax.set_title(f"(c) Dominant evidence (n={int(fault_counts.sum())})", loc="left")
+for xi, value in zip(x, fault_counts):
+    if value > 0:
+        ax.text(xi, value + max(float(fault_counts.max()) * 0.025, 0.05),
+                str(int(value)), ha="center", fontsize=6.8)
 
-# (d) Per-channel D1 v1 vs v11 scatter coloured by sensor type
+# (d) Final state-conditioned drift score by channel
 ax = fig.add_subplot(gs[1, :2])
-for c in SCORED:
-    clr = C["blue"] if c.startswith("DO_") else C["green"]
-    n_show = 800
-    sample = np.random.RandomState(42).choice(len(D1_v1), n_show, replace=False)
-    ax.scatter(D1_v1[c].values[sample], D1_v11[c].values[sample],
-                color=clr, marker="o", s=4, alpha=0.18, rasterized=True)
-ax.plot([1, 5], [1, 5], "k--", lw=0.7, alpha=0.7)
-ax.set_xlabel("STRICT V1 hourly $D_1$", fontsize=9)
-ax.set_ylabel("v1.1 hourly $D_1$", fontsize=9)
-ax.set_title("(d)  Hourly $D_1$ scatter (800 samples / channel)", loc="left")
-ax.set_xlim(1, 5); ax.set_ylim(1, 5)
-hndl = [Line2D([], [], marker="o", color=C["blue"], linestyle="", label="DO"),
-         Line2D([], [], marker="o", color=C["green"], linestyle="", label="ORP")]
-ax.legend(handles=hndl, loc="upper left", fontsize=7.5)
+y = np.arange(len(qdrift_summary))
+for yi, row in enumerate(qdrift_summary.itertuples()):
+    color = C["blue"] if row.channel.startswith("DO_") else C["green"]
+    marker = "o" if row.channel.startswith("DO_") else "s"
+    ax.errorbar(
+        row.median, yi,
+        xerr=[[row.median - row.q25], [row.q75 - row.median]],
+        fmt=marker, color=color, ecolor=color, ms=4.5, elinewidth=1.0,
+        capsize=2.0, markeredgecolor="white", markeredgewidth=0.45,
+    )
+ax.axvline(3.0, color=C["amber"], ls="--", lw=0.75, label="neutral = 3.0")
+ax.set_yticks(y)
+ax.set_yticklabels(qdrift_summary["channel"].tolist(), fontsize=7.1)
+ax.set_xlim(1, 5)
+ax.set_xlabel(r"Median $Q_{\rm drift}^{eff}$ (interquartile range)", fontsize=8.6)
+ax.set_title("(d) State-conditioned drift evidence", loc="left")
+ax.legend(
+    handles=[
+        Line2D([], [], marker="o", color=C["blue"], linestyle="", label="DO"),
+        Line2D([], [], marker="s", color=C["green"], linestyle="", label="ORP"),
+        Line2D([], [], color=C["amber"], ls="--", lw=0.75, label="neutral = 3.0"),
+    ], loc="upper left", bbox_to_anchor=(0.01, 0.985), ncol=1,
+    fontsize=6.1, frameon=True, framealpha=0.72,
+    facecolor="white", edgecolor="none", borderaxespad=0,
+)
 
-# (e) Event count comparison
+# (e) Per-channel event frequency and occupied duration
 ax = fig.add_subplot(gs[1, 2])
-v11_dom = {"Q_spike":0,"Q_step":0,"Q_drift":0,"Q_freeze":0,"Q_regime":0}
-for _, ev in S["events_v11"].iterrows():
-    c = ev["sensor_id"]
-    s = pd.DataFrame({k: S["subs_v11"][c][k].loc[ev["start"]:ev["end"]]
-                       for k in v11_dom})
-    if len(s) == 0: continue
-    dom = s.mean(axis=0).idxmin()
-    v11_dom[dom] += 1
-faults = ["spike","step","drift","freeze","regime"]
-v11_counts = [v11_dom.get(f"Q_{f}", 0) for f in faults]
-xs = np.arange(len(faults)); bw = 0.55
-ax.bar(xs, v11_counts, bw, color=C["blue"], alpha=0.85,
-        label=f"v1.1 (total={sum(v11_counts)})")
-for i, b in enumerate(v11_counts):
-    if b > 0:
-        ax.text(i, b + max(v11_counts) * 0.025, str(b), ha="center",
-                fontsize=7.5)
-ax.set_xticks(xs); ax.set_xticklabels(faults, rotation=25, ha="right", fontsize=7.5)
-ax.set_ylabel("# events", fontsize=9)
-ax.set_ylim(*positive_data_ylim(v11_counts, headroom=0.12))
-ax.set_title("(e)  Events by dominant fault (v1.1)", loc="left")
+for analyte, color, marker in [("DO", C["blue"], "o"), ("ORP", C["green"], "s")]:
+    subset = event_burden[event_burden["analyte"] == analyte]
+    sizes = 18 + 2.0 * subset["D1_lt_3_pct"].clip(upper=35)
+    ax.scatter(
+        subset["event_count"], subset["event_hours_pct"], s=sizes,
+        color=color, marker=marker, alpha=0.78, edgecolor="white",
+        linewidth=0.5, label=analyte, zorder=3,
+    )
+label_channels = event_burden.sort_values(
+    ["event_hours_pct", "event_count"], ascending=False
+).head(4).index
+offsets = [(4, 4), (4, -9), (-28, 5), (-28, -9)]
+for channel, offset in zip(label_channels, offsets):
+    row = event_burden.loc[channel]
+    ax.annotate(
+        channel, (row["event_count"], row["event_hours_pct"]),
+        xytext=offset, textcoords="offset points", fontsize=6.0,
+        bbox={"facecolor": "white", "edgecolor": "none", "alpha": 0.72,
+              "pad": 0.8},
+        arrowprops={"arrowstyle": "-", "color": "0.45", "lw": 0.4},
+        annotation_clip=False,
+    )
+ax.set_xlabel("Event count", fontsize=8.6)
+ax.set_ylabel("Event duration / record (%)", fontsize=8.6)
+ax.set_xlim(-0.5, max(1.0, float(event_burden["event_count"].max()) + 2.0))
+ax.set_ylim(*positive_data_ylim(event_burden["event_hours_pct"],
+                                 headroom=0.22, minimum_upper=0.5))
+ax.set_title("(e) Channel-level event burden", loc="left")
+ax.legend(loc="upper left", fontsize=6.3, frameon=False)
 
-fig.suptitle("Figure V18.  D1 v1.1 vs STRICT V1 — final aggregate summary",
+fig.suptitle("Figure V18. Current D1 distribution and event burden",
               fontsize=9.8, fontweight="bold", y=0.995)
-save(fig, "FigV18_aggregate_summary",
-      plot_data={"hourly_D1": pd.DataFrame({"v1_describe": pd.Series(v1_flat).describe(),
-                                              "v11_describe": pd.Series(v11_flat).describe()}),
-                  "grade_dist": pd.DataFrame({"v1": gd_v1, "v11": gd_v11}, index=labels_g),
-                  "qdrift_compare": pd.DataFrame({"v1": qd_v1_mean, "v11_eff": qd_v11_mean}),
-                  "fault_counts": pd.DataFrame({"v11": v11_counts}, index=faults)})
+save(
+    fig, "FigV18_current_D1_event_summary",
+    plot_data={
+        "hourly_D1_describe": pd.Series(final_flat).describe().to_frame("final_D1"),
+        "grade_distribution": pd.DataFrame({"percentage": grade_pct}, index=grade_labels),
+        "qdrift_summary": qdrift_summary.set_index("channel"),
+        "event_burden": event_burden,
+        "fault_counts": pd.DataFrame({"count": fault_counts}, index=faults),
+    },
+)
 
 
-print("\n[part 2 done] V16-V18 complete.\n")
+print("\n[part 2 done] V17-V18 complete.\n")
 try:
     from generate_expert_report_v11 import maybe_update_report
     maybe_update_report()

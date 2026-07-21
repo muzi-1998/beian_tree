@@ -382,8 +382,7 @@ def build_report(force: bool = True) -> Path:
         "The Step mapping is synchronized across mapping.yaml, the figure generator, and "
         f"D1_mapping_params.xlsx: logistic k={step_calibration['selected_k']:.1f} and "
         f"x0={step_calibration['selected_x0']:.2f}. The final D1 mean is "
-        f"{state['D1_v11'].mean().mean():.3f} versus "
-        f"{state['D1_v1_scored'].mean().mean():.3f} for STRICT V1. Conservative caps "
+        f"{state['D1_v11'].mean().mean():.3f}. Conservative caps "
         "apply only during causally defined non-normal states."
     )
     calibration_rows = [
@@ -453,12 +452,40 @@ def build_report(force: bool = True) -> Path:
         width=6.1,
     )
 
+    doc.add_heading("7.1 Current-result synthesis and figure scope", level=2)
+    doc.add_paragraph(
+        "The manuscript-facing validation figures now report the locked current pipeline only. "
+        "Historical score overlays remain an internal software-regression artifact and are not "
+        "interpreted as scientific validation in the absence of independent fault truth."
+    )
+    _add_figure(
+        doc,
+        "FigV12_current_D1_profile.png",
+        "Figure V12. Current D1 operating profile: channel-level 7-day moving-block-bootstrap "
+        "intervals, low-quality occupancy, state occupancy, and the cross-sensor temporal envelope.",
+        width=6.1,
+    )
+    _add_figure(
+        doc,
+        "FigV18_current_D1_event_summary.png",
+        "Figure V18. Current grade composition, state-conditioned drift evidence, dominant "
+        "event evidence, and channel-level event burden.",
+        width=6.1,
+    )
+    doc.add_paragraph(
+        "The former Figure V16 fixed-k regime panel is retired from D1. R0 was an arbitrary "
+        "KMeans label whose 44.0% share represented 2,700 of 6,138 hours, not a validated "
+        "normal regime. Its long contiguous runs were more consistent with temporal epochs. "
+        "A future D7 regime analysis must independently validate cluster number, stability, "
+        "recurrence, and operational meaning."
+    )
+
     doc.add_heading("8. Reproducibility and release gate", level=1)
     release_rows = [
         ["Unit tests", "PASS", "Causality, routing, mapping calibration, peer selection, recovery"],
         ["Transition audit", "PASS", "All opened episodes accounted; all terminal or censored"],
         ["Excel audit", "PASS", "18 core / 20 total workbooks open; no error-cell tokens"],
-        ["Figure bundle", "21/21", "SVG/PDF/600 dpi PNG/TIFF"],
+        ["Figure bundle", "20/20", "SVG/PDF/600 dpi PNG/TIFF"],
         ["Nature skill audit", "0 failed", "Editable SVG text; Arial declared; sources fresh"],
         ["Run trace", state["run_id"], "Dependency SHA256 hashes in run manifest"],
     ]

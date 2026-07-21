@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-07-21T12:34:50+08:00",
+  "generated_at": "2026-07-21T16:42:42+08:00",
   "figure_dir": "D:\\004_git\\beian_tree\\Project 1 Data Quality Assessment\\D1 Sensor health\\outputs\\figures",
-  "figures": 21,
+  "figures": 20,
   "failed": 0,
   "all_passed": true,
   "source_warning_disposition": {
@@ -160,13 +160,16 @@
       "fresh_vs_sources": true
     },
     {
-      "stem": "FigV12_v11_vs_strictV1_hero",
+      "stem": "FigV12_current_D1_profile",
       "bundle_pass": true,
       "png_dpi_x": 599.9988,
       "svg_has_editable_text": true,
       "svg_arial_declared": true,
       "panel_labels": [
-        "(c)  State occupancy"
+        "(a)  Channel-level final score",
+        "(b)  Low-quality occupancy",
+        "(c)  State-machine occupancy",
+        "(d)  Temporal profile across scored channels"
       ],
       "fresh_vs_sources": true
     },
@@ -190,10 +193,8 @@
       "svg_arial_declared": true,
       "panel_labels": [
         "(a)   Per-channel state distribution",
-        "(b)   Signal-only Veto-3 activation per channel",
-        "(c)   State-transition counts (entire 8.4 mo)",
-        "(d)   Veto/state co-activation matrix (DO_2_3)",
-        "(e)  Timer baseline versus causal event states"
+        "(b)   State-transition counts (entire 8.4 mo)",
+        "(c) Veto/state co-activation (DO_2_3)"
       ],
       "fresh_vs_sources": true
     },
@@ -212,19 +213,6 @@
       "fresh_vs_sources": true
     },
     {
-      "stem": "FigV16_regime_templates",
-      "bundle_pass": true,
-      "png_dpi_x": 599.9988,
-      "svg_has_editable_text": true,
-      "svg_arial_declared": true,
-      "panel_labels": [
-        "(a)   Regime label timeline (k-means k=4) \u2014 used for D7 templates only",
-        "(b)   DO/ORP regime centers (z-scored)",
-        "(c)   Twin-pool symmetry (DO_1_*\u2194DO_2_*; ORP)"
-      ],
-      "fresh_vs_sources": true
-    },
-    {
       "stem": "FigV17_scope_qr_qir_offline",
       "bundle_pass": true,
       "png_dpi_x": 599.9988,
@@ -238,14 +226,17 @@
       "fresh_vs_sources": true
     },
     {
-      "stem": "FigV18_aggregate_summary",
+      "stem": "FigV18_current_D1_event_summary",
       "bundle_pass": true,
       "png_dpi_x": 599.9988,
       "svg_has_editable_text": true,
       "svg_arial_declared": true,
       "panel_labels": [
-        "(b)   Grade distribution",
-        "(e)   Events by dominant fault (final)"
+        "(a)  Final score distribution",
+        "(b)  Grade composition",
+        "(c)  Dominant evidence (n=81)",
+        "(d)  State-conditioned drift evidence",
+        "(e)  Channel-level event burden"
       ],
       "fresh_vs_sources": true
     },

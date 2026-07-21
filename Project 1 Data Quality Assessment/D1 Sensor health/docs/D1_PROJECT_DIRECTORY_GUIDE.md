@@ -12,7 +12,7 @@
 | `make_baseline_figures_v11.py` | Figures 1-11 |
 | `make_pls_peer_topology_figure.py` | Supplementary Fig. S1 formal all-channel PLS peer topology |
 | `make_figures_v11.py` | Figures V12-V15 |
-| `make_figures_v11_part2.py` | Figures V16-V18 |
+| `make_figures_v11_part2.py` | Figures V17-V18; former V16 regime diagnostic retired from D1 |
 | `make_recovery_figures.py` | Figures V19-V20 |
 | `audit_d1_figures.py` | Figure bundle and contact-sheet QA |
 | `generate_final_expert_report.py` | Synchronized expert DOCX report |
@@ -45,10 +45,12 @@
 | `outputs/data/D1_mapping_params.xlsx` | Config-synchronized mapping coefficients and calibration summary |
 | `outputs/data/D1_detector_outputs_raw.xlsx` | Detector evidence, freeze routing, PLS peer audit and matrix |
 | `outputs/data/D1_pls_DO24_validation.xlsx` | Model definitions, temporal split, 6,138 hourly predictions/errors, all fold gains, bootstrap samples, clean windows, 936 injection rows, gates, and final decision |
-| `outputs/figures/` | Twenty-one formal figure bundles only |
+| `outputs/figures/` | Twenty formal figure bundles only |
 | `outputs/plot_data/` | Figure source workbooks and calibration scenario CSV |
 | `outputs/qa/figures/` | Contact sheets and automated audit JSON |
 | `outputs/D1_Sensor_Health_Expert_Report_Auto.docx` | Synchronized final expert report |
+
+The formal bundle contains current-pipeline results only. `D1_v11_vs_strictV1_compare.xlsx` may be retained under `outputs/data/` for software regression traceability, but it is not a manuscript result and is not consumed by the current expert report. The retired fixed-`k=4` regime figure must not be restored to D1 without independent D7 validation of cluster number, stability, recurrence, and operational meaning.
 
 ## PLS peer-topology contract
 

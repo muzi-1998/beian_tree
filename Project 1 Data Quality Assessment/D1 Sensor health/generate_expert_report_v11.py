@@ -39,13 +39,12 @@ FIGURES = {
     "Fig 10": OUT / "figures" / "Fig10_two_tier_regime.png",
     "Fig 11": OUT / "figures" / "Fig11_pls_peer_selection.png",
     "Fig S1": OUT / "figures" / "FigS1_pls_formal_peer_topology.png",
-    "Fig V12": OUT / "figures" / "FigV12_v11_vs_strictV1_hero.png",
+    "Fig V12": OUT / "figures" / "FigV12_current_D1_profile.png",
     "Fig V13": OUT / "figures" / "FigV13_state_machine_DO_2_3.png",
     "Fig V14": OUT / "figures" / "FigV14_veto3_state_audit.png",
     "Fig V15": OUT / "figures" / "FigV15_pelt_event_id.png",
-    "Fig V16": OUT / "figures" / "FigV16_regime_templates.png",
     "Fig V17": OUT / "figures" / "FigV17_scope_qr_qir_offline.png",
-    "Fig V18": OUT / "figures" / "FigV18_aggregate_summary.png",
+    "Fig V18": OUT / "figures" / "FigV18_current_D1_event_summary.png",
     "Fig P2-01": OUT / "v12_P2" / "figures" / "fig01_variant_overview.png",
     "Fig P2-10": OUT / "v12_P2" / "figures" / "fig10_global_summary.png",
 }
@@ -54,7 +53,6 @@ SOURCE_FILES = [
     ROOT / "v11_state.pkl",
     ROOT / "v12_P2_state.pkl",
     OUT / "logs" / "run_v11.log",
-    OUT / "data" / "D1_v11_vs_strictV1_compare.xlsx",
     OUT / "data" / "D1_state_machine_audit.xlsx",
     OUT / "data" / "D1_sensor_profile_summary.xlsx",
     OUT / "data" / "D1_pelt_changepoints.xlsx",
@@ -109,16 +107,12 @@ def collect_metrics() -> dict:
     state = _load_pickle("v11_state.pkl")
     p2 = _load_pickle("v12_P2_state.pkl") if (ROOT / "v12_P2_state.pkl").exists() else None
     d1 = state["D1_v11"]
-    d1_v1 = state["D1_v1_scored"]
-    delta = d1 - d1_v1
     n_state = sum(state["state_dist"].values())
     state_pct = {k: v / n_state * 100 for k, v in state["state_dist"].items()}
 
     per_channel = pd.DataFrame({
         "channel": d1.columns,
-        "D1_v1": d1_v1.mean().reindex(d1.columns).values,
         "D1_v11": d1.mean().values,
-        "delta": delta.mean().values,
         "lt3_pct": (d1 < 3).mean().values * 100,
         "min": d1.min().values,
     }).sort_values("D1_v11")
@@ -163,14 +157,11 @@ def collect_metrics() -> dict:
         "state": state,
         "p2": p2,
         "d1": d1,
-        "d1_v1": d1_v1,
-        "delta": delta,
         "per_channel": per_channel,
         "event_summary": event_summary,
         "component_df": component_df,
         "p2_summary": p2_summary,
         "state_pct": state_pct,
-        "grade_v1": _grade_counts(d1_v1),
         "grade_v11": _grade_counts(d1),
         "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
     }
@@ -335,7 +326,7 @@ def add_title(doc: Document, m: dict):
         ("报告生成时间", m["generated_at"]),
         ("数据期", f"{m['d1'].index.min():%Y-%m-%d} ~ {m['d1'].index.max():%Y-%m-%d}  ({len(m['d1']):,} 小时)"),
         ("主链评分范围", f"{len(m['state']['scored_channels'])} 路 DO/ORP；QR/QIR 仅作离线支撑"),
-        ("当前均值", f"STRICT V1={_score(m['d1_v1'].mean().mean())}；D1 v1.1={_score(m['d1'].mean().mean())}；Δ={_score(m['delta'].mean().mean())}"),
+        ("当前最终均值", f"D1={_score(m['d1'].mean().mean())}"),
     ]
     add_table(doc, ["项目", "内容"], rows, [Inches(1.6), Inches(4.9)])
 
@@ -344,18 +335,16 @@ def add_summary(doc: Document, m: dict):
     doc.add_heading("摘要", level=1)
     state = m["state"]
     d1 = m["d1"]
-    d1_v1 = m["d1_v1"]
     per = m["per_channel"]
     doc.add_paragraph(
         "本报告围绕 DO / ORP 在线水质传感器的健康度评估（Class-C min-DQR · D1 维度）项目，"
         "从顶层方案、工程实现、配置参数、运行结果和逐图诊断五个层面给出体系化专家级回顾。"
         "报告样式与 D1_Sensor_Health_Research_Report 保持一致，但所有运行结论均重新读取当前最新产物，"
-        "包括 v11_state.pkl、v12_P2_state.pkl、16 个 Excel 交付表、Fig 1-11、Fig V12-V18 及 P2 图组。"
+        "包括 v11_state.pkl、v12_P2_state.pkl、当前结果 Excel 交付表、Fig 1-11、Fig V12-V15、Fig V17-V20 及 P2 图组。"
     )
     doc.add_paragraph(
         f"最新运行覆盖 {d1.index.min():%Y-%m-%d %H:%M} 至 {d1.index.max():%Y-%m-%d %H:%M}，"
-        f"共 {len(d1):,} 个小时、{len(d1.columns)} 个主链评分通道。STRICT V1 均值为 {_score(d1_v1.mean().mean())}，"
-        f"D1 v1.1 均值为 {_score(d1.mean().mean())}，平均 ΔD1={_score((d1-d1_v1).mean().mean())}。"
+        f"共 {len(d1):,} 个小时、{len(d1.columns)} 个主链评分通道。当前最终 D1 均值为 {_score(d1.mean().mean())}。"
         f"最低均值通道为 {per.iloc[0]['channel']}（{_score(per.iloc[0]['D1_v11'])}），"
         f"最高均值通道为 {per.iloc[-1]['channel']}（{_score(per.iloc[-1]['D1_v11'])}）。"
     )
@@ -363,7 +352,7 @@ def add_summary(doc: Document, m: dict):
         f"状态机覆盖率为 Normal {_pct(m['state_pct'].get('Normal',0))} / Refractory {_pct(m['state_pct'].get('Refractory',0))} / "
         f"SustainedAnomaly {_pct(m['state_pct'].get('SustainedAnomaly',0))} / RecoveryCandidate {_pct(m['state_pct'].get('RecoveryCandidate',0))}。"
         f"D1<3 且持续不低于 6 h 的事件共 {len(state['events_v11'])} 个；PELT 变更点共 {state['n_pelt_cps']} 个。"
-        "与旧静态报告中较大幅度降分的版本不同，当前版本的修正更温和，重点在于输入合法性、事件唯一性和状态可恢复性。"
+        "当前结果的解释重点是输入合法性、事件唯一性、状态可恢复性以及低分事件的可追溯性。"
     )
     doc.add_heading("核心结论速览", level=2)
     add_bullet(doc, "scope 收敛：D1 主链严格限定为 14 路 DO/ORP；QR/QIR 仅作为 D5/D7 与离线案例支撑，不参与最终健康度评分。")
@@ -387,7 +376,7 @@ def chapter_background(doc: Document):
     )
     doc.add_heading("1.2  D1 v1.1 与 §1.1 桥接的迭代背景", level=2)
     doc.add_paragraph(
-        "早期 STRICT V1 的弱点在于：若直接在自相关残差上运行 KS / PELT，容易把正常闭环记忆误解释为持续异常；"
+        "早期实现若直接在自相关残差上运行 KS / PELT，容易把正常闭环记忆误解释为持续异常；"
         "同时电平式冷却也可能导致同一事件反复刷新。当前版本通过 1.1 Decomposition 提供的 whiteness_manifest、"
         "残差 / 创新路由和 n_eff 约束修正了输入口径，再通过五态状态机修正事件生命周期。"
     )
@@ -412,7 +401,7 @@ def chapter_architecture(doc: Document):
         ("run_v11_pipeline.py", "运行 PELT、五态状态机、D1 v1.1 聚合", "v11_state.pkl, run_v11.log"),
         ("make_baseline_figures_v11.py", "生成 Fig 1-11 基线图组", "outputs/figures/Fig1-11"),
         ("make_pls_peer_topology_figure.py", "生成全通道正式 PLS 同伴图", "outputs/figures/FigS1"),
-        ("make_figures_v11.py / part2", "生成 Fig V12-V18 修订图组", "outputs/figures/FigV12-V18"),
+        ("make_figures_v11.py / part2", "生成当前结果验证图组", "outputs/figures/FigV12-V15, V17-V18"),
         ("excel_exporter_v11.py", "导出 16 个审计 Excel", "outputs/data/*.xlsx"),
         ("run_v12_P2_sensitivity.py", "生成 R30/R60/R90/R60W14 敏感性分析", "outputs/v12_P2"),
         ("generate_expert_report_v11.py", "按源签名自动生成本专家报告", REPORT_PATH.name),
@@ -530,13 +519,12 @@ def figure_analysis_text(label: str, m: dict) -> tuple[str, str]:
             "因此不作为正式边出现。DO_2_4 已完成全期前向、末端留出和故障注入审计；其余模型当前仍为"
             "拓扑约束三折 blocked CV 证据。",
         ),
-        "Fig V12": ("v1.1 vs STRICT V1 hero 诊断面板", f"当前 STRICT V1 均值 {_score(m['d1_v1'].mean().mean())}，v1.1 均值 {_score(m['d1'].mean().mean())}，平均 ΔD1={_score(m['delta'].mean().mean())}，修正幅度温和。"),
-        "Fig V13": ("5 态冷却机 DO_2_3 案例", "该图展示事件进入 Refractory、转入 SustainedAnomaly、再进入恢复候选的路径，是 v1.1 相比旧电平冷却的核心证据。"),
+        "Fig V12": ("当前 D1 运行画像", f"当前最终 D1 均值为 {_score(m['d1'].mean().mean())}；图中同时给出通道级块 bootstrap 置信区间、低分占比、状态占用和跨传感器时间轨迹。"),
+        "Fig V13": ("六态恢复机 DO_2_3 案例", "该图仅展示当前状态机中事件进入 Refractory、转入 SustainedAnomaly、进入恢复候选及返回 Normal 的因果路径。"),
         "Fig V14": ("信号-only Veto-3 审计", "Veto-3 在无泵阀信号时只使用信号证据，严控触发条件，避免把工艺驱动变化误判为传感器失效。"),
         "Fig V15": ("PELT 批量校正与事件唯一性过滤", f"最新 PELT 变更点为 {state['n_pelt_cps']} 个，状态机转移日志 {len(state['transitions_all'])} 条；该图审计事件过滤是否有效。"),
-        "Fig V16": ("多区段模板", "该图服务 D7 离线模板，不进入 D1 主链评分；它帮助解释不同 regime 下健康评分为何会发生基线迁移。"),
         "Fig V17": ("评分范围与 QR/QIR 离线支撑", "该图明确 DO/ORP 是评分主链，QR/QIR 仅作为工况驱动和离线案例注释。"),
-        "Fig V18": ("v1.1 vs STRICT V1 最终汇总", "该图汇总等级分布、Q_drift 修正、散点对照和事件主因，是最终结果的总证据图。"),
+        "Fig V18": ("当前 D1 分布与事件负担", "该图汇总当前等级构成、状态条件化漂移证据、事件主因及各通道事件频率与持续时间，不使用历史版本作为科学对照。"),
         "Fig P2-01": ("P2 变体总览", "该图说明 R30/R60/R90/R60W14 的参数差异，是解释 P2 敏感性的入口。"),
         "Fig P2-10": ("P2 全局总结", "R60W14 在当前数据上更敏感，Qreg<2 与 cooldown 指标均高于 R30/R60/R90；因此当前报告维持 R90 作为稳健审计口径。"),
     }
@@ -556,8 +544,9 @@ def chapter_figures(doc: Document, m: dict):
     for i, label in enumerate([f"Fig {n}" for n in range(1, 12)], 1):
         add_figure_section(doc, label, f"5.{i}", m)
     add_figure_section(doc, "Fig S1", "5.12", m)
-    doc.add_heading("第六章  v1.1 与 STRICT V1 全方位对照 (Fig V12 – Fig V18)", level=1)
-    for i, label in enumerate([f"Fig V{n}" for n in range(12, 19)], 1):
+    doc.add_heading("第六章  当前 D1 状态机与结果验证图组", level=1)
+    validation_labels = ["Fig V12", "Fig V13", "Fig V14", "Fig V15", "Fig V17", "Fig V18"]
+    for i, label in enumerate(validation_labels, 1):
         add_figure_section(doc, label, f"6.{i}", m)
 
 
@@ -606,8 +595,8 @@ def chapter_conclusion(doc: Document, m: dict):
     doc.add_heading("第九章  结论", level=1)
     doc.add_paragraph(
         f"当前 D1 自动报告已按 D1_Sensor_Health_Research_Report 的章节样式完成更新，并将旧报告中的静态数值替换为最新结果。"
-        f"本轮 D1 v1.1 均值 {_score(m['d1'].mean().mean())}，STRICT V1 均值 {_score(m['d1_v1'].mean().mean())}，"
-        f"平均修正 {_score(m['delta'].mean().mean())}；主链仍保持 14 路 DO/ORP，支撑通道为 {', '.join(m['state']['support_channels'])}。"
+        f"本轮最终 D1 均值 {_score(m['d1'].mean().mean())}；主链保持 14 路 DO/ORP，"
+        f"支撑通道为 {', '.join(m['state']['support_channels'])}。"
     )
     doc.add_paragraph("总体判断：当前版本已形成“§1.1 合法输入—五类检测器—映射评分—状态机约束—图表/Excel/报告自动交付”的闭环。报告应作为每次 D1 输出更新后的正式审计件，而不是手工后补说明。")
 
@@ -620,14 +609,13 @@ def appendices(doc: Document, signature: dict):
     add_table(doc, ["脚本", "自动报告更新关系", "说明"], [
         ("run_v11_pipeline.py", "调用 maybe_update_report()", "状态文件变化后触发"),
         ("make_baseline_figures_v11.py", "调用 maybe_update_report()", "Fig 1-11 变化后触发"),
-        ("make_figures_v11.py / part2", "调用 maybe_update_report()", "Fig V12-V18 变化后触发"),
+        ("make_figures_v11.py / part2", "调用 maybe_update_report()", "当前验证图变化后触发"),
         ("excel_exporter_v11.py", "调用 maybe_update_report()", "Excel 交付变化后触发"),
         ("run_v12_P2_sensitivity.py", "调用 maybe_update_report()", "P2 输出变化后触发"),
     ], [Inches(1.9), Inches(2.2), Inches(2.4)])
     doc.add_heading("附录 C   术语与缩写", level=1)
     add_table(doc, ["缩写 / 术语", "含义", "说明"], [
         ("D1", "Sensor Health", "传感器健康度动态评分"),
-        ("STRICT V1", "旧基线版本", "用于与 v1.1 配对审计"),
         ("PELT", "Pruned Exact Linear Time", "批量变更点检测"),
         ("W1", "Wasserstein-1", "分布距离，用于 regime 漂移"),
         ("n_eff", "有效样本量", "自相关通道的统计量收缩依据"),

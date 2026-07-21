@@ -27,13 +27,12 @@ EXPECTED = [
     "Fig10_two_tier_regime",
     "Fig11_pls_peer_selection",
     "FigS1_pls_formal_peer_topology",
-    "FigV12_v11_vs_strictV1_hero",
+    "FigV12_current_D1_profile",
     "FigV13_state_machine_DO_2_3",
     "FigV14_veto3_state_audit",
     "FigV15_pelt_event_id",
-    "FigV16_regime_templates",
     "FigV17_scope_qr_qir_offline",
-    "FigV18_aggregate_summary",
+    "FigV18_current_D1_event_summary",
     "FigV19_recovery_validation",
     "FigV20_adapted_recovery_case",
 ]
@@ -46,10 +45,11 @@ FULL_RESOLUTION_REVIEWED = {
     "Fig10_two_tier_regime",
     "Fig11_pls_peer_selection",
     "FigS1_pls_formal_peer_topology",
-    "FigV12_v11_vs_strictV1_hero",
+    "FigV12_current_D1_profile",
     "FigV13_state_machine_DO_2_3",
+    "FigV14_veto3_state_audit",
     "FigV15_pelt_event_id",
-    "FigV18_aggregate_summary",
+    "FigV18_current_D1_event_summary",
     "FigV20_adapted_recovery_case",
 }
 VISUAL_REVIEW_CHECKS = [
@@ -80,7 +80,7 @@ def _generator_for(name: str) -> Path:
         return ROOT / "make_recovery_figures.py"
     if name.startswith(("FigV12", "FigV13", "FigV14", "FigV15")):
         return ROOT / "make_figures_v11.py"
-    if name.startswith(("FigV16", "FigV17", "FigV18")):
+    if name.startswith(("FigV17", "FigV18")):
         return ROOT / "make_figures_v11_part2.py"
     return ROOT / "make_baseline_figures_v11.py"
 

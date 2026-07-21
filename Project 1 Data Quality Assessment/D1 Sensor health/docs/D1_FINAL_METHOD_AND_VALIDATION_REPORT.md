@@ -39,7 +39,7 @@ The implementation is suitable as the locked internal final candidate for thesis
 | Recovered occupancy | 0.207% | Observation-state occupancy, not recovery rate |
 | Relapse at 24/48/72 h | 0/0/0 | No confirmed relapse in this run |
 | Transition conservation | Pass | 22 opened = 22 episode records; no duplicate IDs |
-| Final mean D1 | 4.2450 | STRICT V1 mean = 4.2536 |
+| Final mean D1 | 4.2450 | Current locked pipeline |
 
 ## Detector calibration and routing
 
@@ -78,7 +78,7 @@ Three `autocorr_aware` channels and the process-floor channel remain in the appl
 - No DO-ORP pair was selected; `DO_1_4` remains excluded as another target's predictor. No lexical, distant-channel, or cross-train fallback is permitted when the topology core is sparse.
 - PLS residual z-scores use training residual scale with a 5% target-scale floor.
 
-This correction preserves removal of the unsupported `DO_2_4 -> DO_1_1/DO_1_2` fallback and also rejects the provisional `DO_2_2` expansion. Relative to run `d1-final-ab36d51d4f60`, the `DO_2_4` final mean changes from 3.842 to 3.896 and the number of `D1 < 3` event windows lasting at least 6 h changes from 88 to 81. These are downstream consequences of a pre-specified admission test, not score-targeted tuning.
+This correction preserves removal of the unsupported `DO_2_4 -> DO_1_1/DO_1_2` fallback and rejects the provisional `DO_2_2` expansion. In the locked result, the `DO_2_4` final mean is 3.896 and the full project contains 81 `D1 < 3` event windows lasting at least 6 h.
 
 ## Figure decisions
 
@@ -87,14 +87,18 @@ This correction preserves removal of the unsupported `DO_2_4 -> DO_1_1/DO_1_2` f
 - Fig. 9 harmonic demonstration was removed because it duplicated Section 1.1 and mislabelled `raw-residual` as a harmonic component. The replacement audits 1.1-to-D1 routing and detector applicability.
 - Fig. 11 now reports all forward-block gains, median and 95% block-bootstrap interval, positive-gain fraction, P90 error change, terminal-test gain, and controlled-injection deltas. It explicitly records the decision to retain `M0`.
 - Supplementary Fig. S1 restores the all-channel audit view that the revised Fig. 11 replaced. It shows only production-active peer links and lists the effective predictor set and PLS component count for every scored channel; rejected candidates remain confined to Fig. 11. Its note and source workbook disclose that DO_2_4 has the full forward/hold-out/injection audit, whereas the remaining targets currently retain topology-constrained three-fold blocked-CV evidence.
+- Fig. V12 now reports the current D1 operating profile only: channel-level 7-day moving-block bootstrap intervals, low-quality occupancy, state occupancy, and the cross-sensor temporal envelope.
+- Fig. V13 and Fig. V14 retain the current state-machine audit but no longer overlay legacy score trajectories or timer estimates.
+- The former Fig. V16 fixed-`k=4` clustering panel is retired from the formal D1 bundle. Its labels were arbitrary KMeans identifiers, its 44.0% R0 share was only `2700/6138 h` occupancy, and the long contiguous runs indicated temporal epochs rather than externally validated recurrent operating regimes. Any future D7 regime figure requires data-driven `k`, stability/recurrence tests, and independent load or control semantics.
+- Fig. V18 now reports current grade composition, state-conditioned drift evidence, and event burden only. Historical-version comparison remains an internal software traceability artifact and is not used as manuscript evidence.
 
 ## Release gate
 
-- `pytest`: 21 passed.
+- `pytest`: 23 passed.
 - Formal transition conservation: passed.
 - Recovery mechanism challenges: 4/4 classes passed for production variant C.
 - Excel exporter: 18 core workbooks generated successfully; 20 D1 workbooks are present including calibration/validation companions.
-- Figure bundle: 21/21 SVG, PDF, PNG, and TIFF bundles passed.
+- Figure bundle: 20/20 SVG, PDF, PNG, and TIFF bundles passed.
 - Nature source preflight: 0 failures; editable SVG/PDF text and Arial-compatible font stack.
 - Quantitative figure source data are exported under `outputs/plot_data/`.
 

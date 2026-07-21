@@ -80,6 +80,11 @@ def save(fig, name, plot_data: dict = None):
 # Grade colormap
 grade_clrs = ["#9E1F1F", "#F46D43", "#FEE08B", "#A6D96A", "#1A9850"]
 grade_cmap = LinearSegmentedColormap.from_list("grade", grade_clrs[::-1], N=256)
+score_cmap = LinearSegmentedColormap.from_list(
+    "d1_score",
+    ["#B84A45", "#E98A65", "#F6E7A8", "#A6D96A", "#238B45"],
+    N=256,
+)
 
 
 # ============================================================================
@@ -92,11 +97,11 @@ sub_names = ["Q_spike\n(spike)", "Q_step\n(step)", "Q_drift\n(drift)",
 grades = ["A (≥4.5)", "B (3.5–4.5)", "C (2.5–3.5)", "D (1.5–2.5)", "F (<1.5)"]
 matrix_text = [
     ["spike rate ≤ 2%", "very rare", "rare", "occasional", "frequent",
-       "very frequent (>20%)"],
+       "very frequent\n(>20%)"],
     ["KS statistic", "near 0",        "low",        "moderate",
-       "elevated",       "high (sustained)"],
+       "elevated",       "high\n(sustained)"],
     ["PLS residual z", "|z| < 1.5",   "1.5–2.0",    "2.0–2.5",
-       "2.5–3.0",         "> 3.0 sustained"],
+       "2.5–3.0",         "> 3.0\nsustained"],
     ["RLE duration", "<15 min", "15–30 min", "30–60 min",
        "60–360 min", "≥360 min"],
     ["W1 normalised", "< 1.0",        "1.0–2.0",    "2.0–3.0",
@@ -137,7 +142,7 @@ print("[Fig2] Monthly D1 heatmap ...")
 fig, ax = plt.subplots(figsize=(7.2, 4.0))
 monthly = D1_v11.resample("ME").mean().T
 months = [t.strftime("%Y-%m") for t in monthly.columns]
-im = ax.imshow(monthly.values, cmap="RdBu_r", aspect="auto", vmin=2.0, vmax=5.0)
+im = ax.imshow(monthly.values, cmap=score_cmap, aspect="auto", vmin=3.0, vmax=5.0)
 ax.set_yticks(np.arange(len(monthly))); ax.set_yticklabels(monthly.index.tolist(),
                                                               fontsize=8.5)
 ax.set_xticks(np.arange(len(months))); ax.set_xticklabels(months, rotation=30,
@@ -146,11 +151,11 @@ for i in range(len(monthly)):
     for j in range(len(months)):
         v = monthly.values[i, j]
         if not np.isnan(v):
-            txt_clr = "white" if (v < 2.75 or v > 4.25) else "black"
+            txt_clr = "white" if (v < 3.45 or v > 4.62) else "black"
             ax.text(j, i, f"{v:.2f}", ha="center", va="center",
                       fontsize=7.5, color=txt_clr, fontweight="bold")
-cbar = plt.colorbar(im, ax=ax, fraction=0.025, pad=0.09)
-cbar.set_label(r"Mean monthly $D_1$  (2.0=poor — 5.0=excellent)", fontsize=9)
+cbar = plt.colorbar(im, ax=ax, fraction=0.028, pad=0.018)
+cbar.set_label(r"Mean monthly $D_1$  (3.0=grade boundary — 5.0=excellent)", fontsize=9)
 cbar.ax.tick_params(labelsize=7.5)
 ax.set_title("Figure 2.  Per-channel monthly $D_1$ heatmap (v1.1, DO/ORP n=14)",
              loc="left")
@@ -199,7 +204,7 @@ for i, c in enumerate(case_channels):
 # shared legend at the figure top (outside the dense panels — was overlapping
 # panel (a)'s data at lower-right)
 _h3, _l3 = axes[0, 0].get_legend_handles_labels()
-fig.legend(_h3, _l3, loc="upper center", bbox_to_anchor=(0.5, 0.935),
+fig.legend(_h3, _l3, loc="upper center", bbox_to_anchor=(0.5, 0.895),
            ncol=6, fontsize=7.2, frameon=False)
 fig.suptitle("Figure 3.  Sub-score timeseries — 4 worst + 4 best (v1.1)",
               fontsize=9.8, fontweight="bold", y=0.992)
@@ -361,8 +366,8 @@ save(fig, "Fig5_mapping_curves")
 # Fig 6: Exact pre-cap score-loss attribution + severe evidence rate
 # ============================================================================
 print("[Fig6] Pre-cap score-loss attribution ...")
-fig, axes = plt.subplots(2, 1, figsize=(7.2, 5.8), gridspec_kw={"height_ratios": [1.15, 1.0]})
-fig.subplots_adjust(hspace=0.55, top=0.82, bottom=0.18, right=0.92)
+fig, axes = plt.subplots(2, 1, figsize=(7.2, 6.25), gridspec_kw={"height_ratios": [1.15, 1.0]})
+fig.subplots_adjust(hspace=0.82, top=0.82, bottom=0.16, right=0.92)
 faults = ["Q_spike", "Q_step", "Q_drift", "Q_freeze", "Q_regime"]
 fclr = {"Q_spike": C["amber"], "Q_step": C["blue"], "Q_drift": C["purple"],
         "Q_freeze": C["red"], "Q_regime": C["green"]}
@@ -403,7 +408,8 @@ for f in faults:
     ax.bar(xs, values, bottom=bottom, color=fclr[f], label=f.replace("Q_", ""),
             alpha=0.92, edgecolor="white", linewidth=0.5)
     bottom += values
-ax.set_xticks(xs); ax.set_xticklabels([])
+ax.set_xticks(xs)
+ax.set_xticklabels(SCORED, rotation=45, ha="right", fontsize=7.2)
 ax.set_ylabel("Share of pre-cap $D_1$ loss (%)", fontsize=9)
 ax.set_ylim(0, 100)
 ax.set_title("(a) Exact additive attribution of $5-D_{1,pre}$", loc="left")
@@ -451,9 +457,15 @@ fig.subplots_adjust(right=0.79, top=0.91, bottom=0.09)
 # (a) DO daily
 ax = fig.add_subplot(gs[0])
 D1_d = D1_v11.resample("1D").median()
-do_clrs = plt.cm.Blues(np.linspace(0.4, 0.95, len(DO_CH)))
-for c, clr in zip(DO_CH, do_clrs):
-    ax.plot(D1_d.index, D1_d[c].values, color=clr, lw=0.85, alpha=0.85, label=c)
+channel_clrs = [
+    C["blue"], C["orange"], C["green"], C["purple"],
+    C["teal"], C["red"], C["navy"], C["amber"],
+]
+channel_styles = ["-", "--", "-.", ":", (0, (5, 1)), (0, (3, 1, 1, 1)),
+                  (0, (1, 1)), (0, (4, 2))]
+for c, clr, ls in zip(DO_CH, channel_clrs, channel_styles):
+    ax.plot(D1_d.index, D1_d[c].values, color=clr, ls=ls,
+            lw=0.9, alpha=0.88, label=c)
 ax.axhline(3, color=C["red"], ls=":", lw=0.7)
 ax.set_ylabel("Daily $D_1$ (median)", fontsize=9.5)
 ax.set_ylim(1.5, 5.0)
@@ -464,9 +476,9 @@ ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
 
 # (b) ORP daily
 ax = fig.add_subplot(gs[1])
-orp_clrs = plt.cm.Greens(np.linspace(0.4, 0.95, len(ORP_CH)))
-for c, clr in zip(ORP_CH, orp_clrs):
-    ax.plot(D1_d.index, D1_d[c].values, color=clr, lw=0.85, alpha=0.85, label=c)
+for c, clr, ls in zip(ORP_CH, channel_clrs, channel_styles):
+    ax.plot(D1_d.index, D1_d[c].values, color=clr, ls=ls,
+            lw=0.9, alpha=0.88, label=c)
 ax.axhline(3, color=C["red"], ls=":", lw=0.7)
 ax.set_ylabel("Daily $D_1$ (median)", fontsize=9.5)
 ax.set_ylim(1.5, 5.0)
@@ -506,7 +518,7 @@ ax.legend(
      Patch(facecolor=C["amber"], alpha=0.25)],
     [r"Pre-cap $D_{1,pre}$", r"Final $D_1$", "State cap (2.5)",
      "Cap-active hours"],
-    loc="upper left", bbox_to_anchor=(0.01, 0.98), fontsize=6.7,
+    loc="lower left", bbox_to_anchor=(0.01, 0.03), ncol=2, fontsize=6.7,
     frameon=True, framealpha=0.68, facecolor="white", edgecolor="none",
     borderaxespad=0,
 )
@@ -655,7 +667,7 @@ save(fig, "Fig9_input_routing_audit",
 # ============================================================================
 print("[Fig10] Two-tier regime ...")
 fig, axes = plt.subplots(2, 1, figsize=(7.2, 4.8), sharex=True)
-fig.subplots_adjust(hspace=0.42, top=0.76, bottom=0.10)
+fig.subplots_adjust(hspace=0.48, top=0.91, bottom=0.10)
 ch = "DO_2_3"
 det_raw = S["detectors_raw"]
 w1 = det_raw["w1_normalised_hourly"][ch]
@@ -672,6 +684,12 @@ ax.set_ylabel("W1 normalised", fontsize=9.5)
 ax.set_yscale("symlog", linthresh=2)
 ax.set_ylim(*positive_data_ylim(w1.values, headroom=0.08))
 ax.set_title(f"(a)  Tier-1 W1 distance — {ch}", loc="left")
+ax.legend(
+    [line_w1, fill_w1], ["W1 normalised", "W1 > 3"],
+    loc="upper left", bbox_to_anchor=(0.01, 0.98), ncol=2,
+    fontsize=6.9, frameon=True, framealpha=0.72,
+    facecolor="white", edgecolor="none", borderaxespad=0,
+)
 
 ax = axes[1]
 line_ks, = ax.plot(ks.index, ks.values, color=C["blue"], lw=0.5, alpha=0.85,
@@ -682,6 +700,12 @@ fill_ks = ax.fill_between(ks.index, 0, ks.values, where=ks.values > 0.3,
 ax.set_ylabel("adjacent KS", fontsize=9.5)
 ax.set_ylim(*positive_data_ylim(ks.values, headroom=0.08, minimum_upper=0.5))
 ax.set_title(f"(b)  Tier-2 adjacent KS — {ch}", loc="left")
+ax.legend(
+    [line_ks, fill_ks], ["Adjacent KS", "KS > 0.3"],
+    loc="upper left", bbox_to_anchor=(0.01, 0.98), ncol=2,
+    fontsize=6.9, frameon=True, framealpha=0.72,
+    facecolor="white", edgecolor="none", borderaxespad=0,
+)
 # each panel carries its own date labels (was shared via sharex → only bottom)
 for _ax in axes:
     _ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
@@ -689,10 +713,6 @@ for _ax in axes:
 
 fig.suptitle(f"Figure 10.  Two-tier regime detector outputs — {ch} (v1.1)",
               fontsize=9.8, fontweight="bold", y=0.985)
-fig.legend([line_w1, fill_w1, line_ks, fill_ks],
-           ["W1 normalised", "W1 > 3", "Adjacent KS", "KS > 0.3"],
-           loc="upper center", bbox_to_anchor=(0.5, 0.895), ncol=4,
-           fontsize=6.9, frameon=False)
 save(fig, "Fig10_two_tier_regime")
 
 
