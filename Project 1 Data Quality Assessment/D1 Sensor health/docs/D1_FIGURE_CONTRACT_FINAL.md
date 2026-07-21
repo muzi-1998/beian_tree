@@ -6,6 +6,8 @@ Every figure must state one principal conclusion and expose the data needed to a
 
 For Fig. 11, the claim is whether adding `DO_2_2` and/or a second PLS component improves `DO_2_4` prediction without weakening target-fault detection or increasing peer/common-process false alarms. The five panels must retain all forward-fold results, uncertainty, tail error, terminal hold-out, and controlled-injection evidence; a topology diagram alone is insufficient.
 
+For Supplementary Fig. S1, the claim is which peer predictors are actually active in production for every scored channel. Panel (a) must be generated from the formal peer matrix in the current state, while panel (b) must list each target's effective predictors, peer count, retained PLS components, and limited-redundancy status. Rejected candidates belong in Fig. 11 evidence and must not appear as formal links in Fig. S1. The figure note and source workbook must distinguish the full DO_2_4 forward/hold-out/injection audit from the topology-constrained three-fold blocked-CV status of the remaining targets.
+
 ## Geometry and typography
 
 - Python/matplotlib backend only for this release.

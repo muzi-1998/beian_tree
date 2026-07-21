@@ -38,6 +38,7 @@ FIGURES = {
     "Fig 9": OUT / "figures" / "Fig9_input_routing_audit.png",
     "Fig 10": OUT / "figures" / "Fig10_two_tier_regime.png",
     "Fig 11": OUT / "figures" / "Fig11_pls_peer_selection.png",
+    "Fig S1": OUT / "figures" / "FigS1_pls_formal_peer_topology.png",
     "Fig V12": OUT / "figures" / "FigV12_v11_vs_strictV1_hero.png",
     "Fig V13": OUT / "figures" / "FigV13_state_machine_DO_2_3.png",
     "Fig V14": OUT / "figures" / "FigV14_veto3_state_audit.png",
@@ -410,6 +411,7 @@ def chapter_architecture(doc: Document):
         ("load_real_data_v11.py", "读取原始数据并接入 §1.1 残差/创新/manifest", "strict_v1_inputs.pkl, raw_hourly.pkl"),
         ("run_v11_pipeline.py", "运行 PELT、五态状态机、D1 v1.1 聚合", "v11_state.pkl, run_v11.log"),
         ("make_baseline_figures_v11.py", "生成 Fig 1-11 基线图组", "outputs/figures/Fig1-11"),
+        ("make_pls_peer_topology_figure.py", "生成全通道正式 PLS 同伴图", "outputs/figures/FigS1"),
         ("make_figures_v11.py / part2", "生成 Fig V12-V18 修订图组", "outputs/figures/FigV12-V18"),
         ("excel_exporter_v11.py", "导出 16 个审计 Excel", "outputs/data/*.xlsx"),
         ("run_v12_P2_sensitivity.py", "生成 R30/R60/R90/R60W14 敏感性分析", "outputs/v12_P2"),
@@ -521,6 +523,13 @@ def figure_analysis_text(label: str, m: dict) -> tuple[str, str]:
         "Fig 9": ("1.1 到 D1 的输入路由审计", "该图不再重复展示谐波分解，而是核对 residual/innovation 路由、白化效果及各检测器适用域，防止 D1 与 1.1 的证据重复。"),
         "Fig 10": ("双层工况检测器", "W1 与邻区 KS 的组合把慢迁移和确认性分布变化分开，避免把单点噪声直接判为工况域偏移。"),
         "Fig 11": ("DO_2_4 PLS peer 准入验证", fig11_text),
+        "Fig S1": (
+            "全部通道正式 PLS 同伴拓扑",
+            "该补充图从当前正式状态读取全部 14 个目标通道的生产同伴。矩阵仅显示实际进入 Q_drift 的有效边，"
+            "右侧逐行列出 peer 数和有效 PLS 成分数；DO_2_2 对 DO_2_4 的候选关系已在 Fig. 11 中否决，"
+            "因此不作为正式边出现。DO_2_4 已完成全期前向、末端留出和故障注入审计；其余模型当前仍为"
+            "拓扑约束三折 blocked CV 证据。",
+        ),
         "Fig V12": ("v1.1 vs STRICT V1 hero 诊断面板", f"当前 STRICT V1 均值 {_score(m['d1_v1'].mean().mean())}，v1.1 均值 {_score(m['d1'].mean().mean())}，平均 ΔD1={_score(m['delta'].mean().mean())}，修正幅度温和。"),
         "Fig V13": ("5 态冷却机 DO_2_3 案例", "该图展示事件进入 Refractory、转入 SustainedAnomaly、再进入恢复候选的路径，是 v1.1 相比旧电平冷却的核心证据。"),
         "Fig V14": ("信号-only Veto-3 审计", "Veto-3 在无泵阀信号时只使用信号证据，严控触发条件，避免把工艺驱动变化误判为传感器失效。"),
@@ -546,6 +555,7 @@ def chapter_figures(doc: Document, m: dict):
     doc.add_heading("第五章  基线诊断图组分析 (Fig 1 – Fig 11)", level=1)
     for i, label in enumerate([f"Fig {n}" for n in range(1, 12)], 1):
         add_figure_section(doc, label, f"5.{i}", m)
+    add_figure_section(doc, "Fig S1", "5.12", m)
     doc.add_heading("第六章  v1.1 与 STRICT V1 全方位对照 (Fig V12 – Fig V18)", level=1)
     for i, label in enumerate([f"Fig V{n}" for n in range(12, 19)], 1):
         add_figure_section(doc, label, f"6.{i}", m)

@@ -442,13 +442,23 @@ def build_report(force: bool = True) -> Path:
         "injections. The topology core M0 is retained.",
         width=6.1,
     )
+    _add_figure(
+        doc,
+        "FigS1_pls_formal_peer_topology.png",
+        "Supplementary Figure S1. Production-active PLS peer topology for all 14 scored "
+        "channels. Rows are targets and columns are formal predictors; the adjacent table "
+        "reports effective peer and component counts. Rejected candidates are omitted. "
+        "DO_2_4 has the full forward/hold-out/injection audit; remaining targets retain "
+        "topology-constrained three-fold blocked-CV evidence.",
+        width=6.1,
+    )
 
     doc.add_heading("8. Reproducibility and release gate", level=1)
     release_rows = [
         ["Unit tests", "PASS", "Causality, routing, mapping calibration, peer selection, recovery"],
         ["Transition audit", "PASS", "All opened episodes accounted; all terminal or censored"],
         ["Excel audit", "PASS", "18 core / 20 total workbooks open; no error-cell tokens"],
-        ["Figure bundle", "20/20", "SVG/PDF/600 dpi PNG/TIFF"],
+        ["Figure bundle", "21/21", "SVG/PDF/600 dpi PNG/TIFF"],
         ["Nature skill audit", "0 failed", "Editable SVG text; Arial declared; sources fresh"],
         ["Run trace", state["run_id"], "Dependency SHA256 hashes in run manifest"],
     ]

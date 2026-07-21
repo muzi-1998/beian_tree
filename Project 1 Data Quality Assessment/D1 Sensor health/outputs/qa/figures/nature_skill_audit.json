@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-07-21T12:03:43+08:00",
+  "generated_at": "2026-07-21T12:34:50+08:00",
   "figure_dir": "D:\\004_git\\beian_tree\\Project 1 Data Quality Assessment\\D1 Sensor health\\outputs\\figures",
-  "figures": 20,
+  "figures": 21,
   "failed": 0,
   "all_passed": true,
   "source_warning_disposition": {
@@ -144,6 +144,18 @@
         "(c)   Directional consistency",
         "(d)   Tail-error stability",
         "(e)   Controlled injections"
+      ],
+      "fresh_vs_sources": true
+    },
+    {
+      "stem": "FigS1_pls_formal_peer_topology",
+      "bundle_pass": true,
+      "png_dpi_x": 599.9988,
+      "svg_has_editable_text": true,
+      "svg_arial_declared": true,
+      "panel_labels": [
+        "(a)  Production-active topology matrix",
+        "(b)  Effective model specification"
       ],
       "fresh_vs_sources": true
     },

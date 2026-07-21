@@ -86,6 +86,7 @@ This correction preserves removal of the unsupported `DO_2_4 -> DO_1_1/DO_1_2` f
 - Fig. 7 retains the state cap and exposes the `ORP_1_2` pre-cap score, cap-active hours, and final 2.5 platform.
 - Fig. 9 harmonic demonstration was removed because it duplicated Section 1.1 and mislabelled `raw-residual` as a harmonic component. The replacement audits 1.1-to-D1 routing and detector applicability.
 - Fig. 11 now reports all forward-block gains, median and 95% block-bootstrap interval, positive-gain fraction, P90 error change, terminal-test gain, and controlled-injection deltas. It explicitly records the decision to retain `M0`.
+- Supplementary Fig. S1 restores the all-channel audit view that the revised Fig. 11 replaced. It shows only production-active peer links and lists the effective predictor set and PLS component count for every scored channel; rejected candidates remain confined to Fig. 11. Its note and source workbook disclose that DO_2_4 has the full forward/hold-out/injection audit, whereas the remaining targets currently retain topology-constrained three-fold blocked-CV evidence.
 
 ## Release gate
 
@@ -93,7 +94,7 @@ This correction preserves removal of the unsupported `DO_2_4 -> DO_1_1/DO_1_2` f
 - Formal transition conservation: passed.
 - Recovery mechanism challenges: 4/4 classes passed for production variant C.
 - Excel exporter: 18 core workbooks generated successfully; 20 D1 workbooks are present including calibration/validation companions.
-- Figure bundle: 20/20 SVG, PDF, PNG, and TIFF bundles passed.
+- Figure bundle: 21/21 SVG, PDF, PNG, and TIFF bundles passed.
 - Nature source preflight: 0 failures; editable SVG/PDF text and Arial-compatible font stack.
 - Quantitative figure source data are exported under `outputs/plot_data/`.
 

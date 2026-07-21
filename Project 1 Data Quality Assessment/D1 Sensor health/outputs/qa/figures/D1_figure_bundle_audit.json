@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-07-21T12:03:43+08:00",
-  "n_expected": 20,
-  "n_passed": 20,
+  "generated_at": "2026-07-21T12:34:50+08:00",
+  "n_expected": 21,
+  "n_passed": 21,
   "all_passed": true,
   "visual_review_contract": {
     "all_figures_reviewed_in_contact_sheets": true,
@@ -13,6 +13,7 @@
       "Fig7_daily_timeseries",
       "Fig8_veto_cooldown",
       "Fig9_input_routing_audit",
+      "FigS1_pls_formal_peer_topology",
       "FigV12_v11_vs_strictV1_hero",
       "FigV13_state_machine_DO_2_3",
       "FigV15_pelt_event_id",
@@ -387,6 +388,39 @@
         "(c)   Directional consistency",
         "(d)   Tail-error stability",
         "(e)   Controlled injections"
+      ],
+      "visual_review": "contact_sheet_and_full_resolution",
+      "visual_review_checks": [
+        "panel labels follow the (a), (b), ... convention",
+        "legends and annotations do not obscure decision-relevant data",
+        "over-data annotation backgrounds remain partially transparent",
+        "data-driven y limits provide only justified headroom",
+        "axis labels and tick labels remain legible at final export size"
+      ],
+      "bundle_pass": true
+    },
+    {
+      "figure": "FigS1_pls_formal_peer_topology",
+      "generator": "make_pls_peer_topology_figure.py",
+      "fresh_vs_generator": true,
+      "svg_exists": true,
+      "svg_bytes": 50210,
+      "pdf_exists": true,
+      "pdf_bytes": 51885,
+      "png_exists": true,
+      "png_bytes": 644663,
+      "tiff_exists": true,
+      "tiff_bytes": 54615426,
+      "png_width_px": 4295,
+      "png_height_px": 3179,
+      "png_std": 51.4082716648423,
+      "png_nonblank": true,
+      "png_dpi_x": 599.9988,
+      "svg_has_editable_text": true,
+      "svg_arial_declared": true,
+      "panel_labels": [
+        "(a)  Production-active topology matrix",
+        "(b)  Effective model specification"
       ],
       "visual_review": "contact_sheet_and_full_resolution",
       "visual_review_checks": [

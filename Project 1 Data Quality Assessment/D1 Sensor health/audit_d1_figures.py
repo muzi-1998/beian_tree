@@ -26,6 +26,7 @@ EXPECTED = [
     "Fig9_input_routing_audit",
     "Fig10_two_tier_regime",
     "Fig11_pls_peer_selection",
+    "FigS1_pls_formal_peer_topology",
     "FigV12_v11_vs_strictV1_hero",
     "FigV13_state_machine_DO_2_3",
     "FigV14_veto3_state_audit",
@@ -44,6 +45,7 @@ FULL_RESOLUTION_REVIEWED = {
     "Fig9_input_routing_audit",
     "Fig10_two_tier_regime",
     "Fig11_pls_peer_selection",
+    "FigS1_pls_formal_peer_topology",
     "FigV12_v11_vs_strictV1_hero",
     "FigV13_state_machine_DO_2_3",
     "FigV15_pelt_event_id",
@@ -72,6 +74,8 @@ def _svg_text_values(path: Path) -> list[str]:
 
 
 def _generator_for(name: str) -> Path:
+    if name.startswith("FigS1"):
+        return ROOT / "make_pls_peer_topology_figure.py"
     if name.startswith("FigV19") or name.startswith("FigV20"):
         return ROOT / "make_recovery_figures.py"
     if name.startswith(("FigV12", "FigV13", "FigV14", "FigV15")):
