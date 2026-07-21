@@ -1,20 +1,21 @@
 {
   "report": "outputs\\D1_Sensor_Health_Expert_Report_Auto.docx",
-  "report_sha256": "e4e4c199868ca6185f3c106e299ce00cb64d4b7beddb05d5d369db3d48f69722",
-  "run_id": "d1-final-ab36d51d4f60",
+  "report_sha256": "46b5d3a19fae1f54a751390a9386f437bd2afb5813ba361b25c8c80c7e89a2f4",
+  "run_id": "d1-final-8fdd3599890f",
   "algorithm_version": "1.3.0-final-candidate",
   "generator": "generate_final_expert_report.py",
   "design_preset": "compact_reference_guide",
   "source_dependencies": {
-    "strict_v1_inputs": "ea9ccc7dbe432d7c9958ff5466a1a981045075e0c79c4688c1785625f03c2a89",
+    "strict_v1_inputs": "7de8f54722ac1f804a9456d4883eebe5aa35990f2210e22add0eb6c023675d96",
     "raw_hourly": "3ff3d9cd4600b88e89fcc5c106d622ae5ae46edb0508f32a153a215b1a066568",
     "state_machine_config": "af52f70efce08486bec1067fc1cf1c7e81a68517b5cc1d25e683ef01a839b5fa",
     "rules_config": "abadac5b4dfd104f8e8509f0d3a14f5091fec609db948725f8d0f19b8c9d39f7",
     "mapping_config": "67e6705ade9383184f88b71a780b8b02e51b94438e547fe291cc8550c20ce0f0",
     "state_machine_code": "07a21c71db5d70ce283412706704548250f407121c7899364aad2a644bfdeb48",
     "local_baseline_code": "89c150fb64a30870bc2fb8babec415adf7fc5ad2879ede90dc7c9a34be643788",
-    "detector_bridge_code": "7f33f4e8f676bb187d3d80c028b094d8c64596a707e0d841559c91ec004787fe",
-    "pls_detector_code": "b40a3d87b064594455ed2431f65f31f84b48c0482c632c5ffefbe2fc4654523c",
-    "pipeline_code": "551132ad06c8e79d354f0dace98905a3577564be54c3e23e4a6db9e25f0b55d3"
+    "detector_bridge_code": "3d8c8755b627407c1dbdf957540d566cb82ea6ed203a3b52fbca8e8cee2d3ebf",
+    "pls_detector_code": "087cfbcfb520ee2c2d8e0e66469866318918394327eeff7f17b62421b51c9c8f",
+    "pls_peer_validation_code": "ea1646bfc61e69d507fae03bcb830d70fca673686539f9bf6213b904cf854cbb",
+    "pipeline_code": "9876b725e63c0f69b2a77b83e6982a1f2bf7c5cee349b1c399a08558b314fbe2"
   }
 }

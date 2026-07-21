@@ -497,18 +497,30 @@ def figure_analysis_text(label: str, m: dict) -> tuple[str, str]:
     per = m["per_channel"]
     state = m["state"]
     p2 = m["p2_summary"]
+    pls_perf = state["detectors_raw"].get("pls_do24_performance_summary")
+    if pls_perf is not None and len(pls_perf):
+        pls_perf = pls_perf.set_index("model_id")
+        pls_m11 = pls_perf.loc["M1_1"]
+        fig11_text = (
+            "该图以完整证据链审计 DO_2_4 的二阶 peer 候选。"
+            f"一成分增强模型的开发期中位增益为 {pls_m11['median_gain_pct']:.2f}%，"
+            f"末端 42 d 独立测试增益为 {pls_m11['independent_test_gain_pct']:.2f}%；"
+            "结合尾误差与四类注入，最终保留 DO_2_3 单 peer、1 个成分。"
+        )
+    else:
+        fig11_text = "该图审计 DO_2_4 的前向验证、独立测试和受控注入证据。"
     mapping = {
         "Fig 1": ("D1 子分到等级参照矩阵", "该图是 D1 体系的翻译字典，把尖峰率、KS、PLS 残差、冻结证据和工况距离统一映射到 A-F 等级。当前报告沿用该语义，并用最新 v1.1 状态文件刷新所有运行结论。"),
         "Fig 2": ("各通道月度 D1 热图", f"热图用于月度运维 review。最新最低均值通道为 {per.iloc[0]['channel']}，建议结合月份低谷定位维护窗口和工况转换区间。"),
         "Fig 3": ("4 worst + 4 best 子分时序", "该图说明低分通常不是五类子分同时变差，而是由 Q_step、Q_regime 或 Q_drift 中的主导证据拉低；健康通道则保持多子分同步稳定。"),
         "Fig 4": ("子分分布小提琴图", "该图用于查看各子分的分布宽度和低尾。低尾越长，越需要通过事件表和状态机判断是短时异常还是持续风险。"),
-        "Fig 5": ("D1 映射函数曲线", "映射函数是算法证据进入评分体系的门槛。P1 后 step 曲线更平滑，有助于减少边界噪声导致的跨档跳变。"),
+        "Fig 5": ("D1 映射函数曲线", "映射函数是算法证据进入评分体系的门槛。Step 参数由 detector-input 故障注入和 LOCO 稳定性锁定，图中参数与 mapping.yaml 及导出工作簿同步。"),
         "Fig 6": ("主导故障分解", "该图回答每个通道为什么降分。结合当前风险排序，应重点核对 ORP_1_2、ORP_1_3、DO_2_3 与 DO_2_4 的主导故障构成。"),
         "Fig 7": ("按传感器组的日均 D1 轨迹", "日均轨迹将小时级噪声压缩为运维节奏，适合识别连续数日的健康度下降与恢复。"),
         "Fig 8": ("状态机与否决激活率", f"当前 Normal 占 {_pct(m['state_pct'].get('Normal',0))}，说明否决/冷却机制未过度激活；Refractory 与 SustainedAnomaly 合计约 {_pct(m['state_pct'].get('Refractory',0)+m['state_pct'].get('SustainedAnomaly',0))}。"),
-        "Fig 9": ("谐波分解演示", "该图保留作为 D1 与 1.1 Decomposition 的方法衔接说明：正常周期结构应先剥离，再评价异常证据。"),
+        "Fig 9": ("1.1 到 D1 的输入路由审计", "该图不再重复展示谐波分解，而是核对 residual/innovation 路由、白化效果及各检测器适用域，防止 D1 与 1.1 的证据重复。"),
         "Fig 10": ("双层工况检测器", "W1 与邻区 KS 的组合把慢迁移和确认性分布变化分开，避免把单点噪声直接判为工况域偏移。"),
-        "Fig 11": ("工程化 PLS 同伴矩阵", "peer-only 设计是避免 QR/QIR 驱动量泄露的关键；该图审计每个目标通道的同伴来源。"),
+        "Fig 11": ("DO_2_4 PLS peer 准入验证", fig11_text),
         "Fig V12": ("v1.1 vs STRICT V1 hero 诊断面板", f"当前 STRICT V1 均值 {_score(m['d1_v1'].mean().mean())}，v1.1 均值 {_score(m['d1'].mean().mean())}，平均 ΔD1={_score(m['delta'].mean().mean())}，修正幅度温和。"),
         "Fig V13": ("5 态冷却机 DO_2_3 案例", "该图展示事件进入 Refractory、转入 SustainedAnomaly、再进入恢复候选的路径，是 v1.1 相比旧电平冷却的核心证据。"),
         "Fig V14": ("信号-only Veto-3 审计", "Veto-3 在无泵阀信号时只使用信号证据，严控触发条件，避免把工艺驱动变化误判为传感器失效。"),

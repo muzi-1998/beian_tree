@@ -236,9 +236,12 @@ def build_report(force: bool = True) -> Path:
     step_metrics = step_calibration["metrics"]
     pls_audit = state["detectors_raw"]["pls_peer_selection_audit"]
     do24_pls = pls_audit.loc["DO_2_4"]
-    do24_p90_change = 100.0 * (
-        do24_pls["selected_cv_nrmse_p90"] / do24_pls["core_cv_nrmse_p90"] - 1.0
+    pls_performance = state["detectors_raw"]["pls_do24_performance_summary"].set_index(
+        "model_id"
     )
+    pls_decision = state["detectors_raw"]["pls_do24_decision"].iloc[0]
+    pls_m11 = pls_performance.loc["M1_1"]
+    pls_m12 = pls_performance.loc["M1_2"]
 
     doc = Document()
     _configure_document(doc)
@@ -390,9 +393,11 @@ def build_report(force: bool = True) -> Path:
          f"10 iid channels; 780 scenarios; detection={step_metrics['material_detection_rate']:.3f}"],
         ["Step applicability", "Autocorrelation-aware and floor routes excluded from parameter fit",
          "Theoretical corrected-KS bound retained in the audit"],
-        ["PLS peers", "Adjacent/twin topology core; same-pool second-order CV expansion only",
-         f"DO_2_4: {do24_pls['core_peers']} -> {do24_pls['selected_peers']}; "
-         f"median gain={do24_pls['cv_improvement_pct']:.2f}%; p90 change={do24_p90_change:+.2f}%"],
+        ["PLS peers", "Forward blocks + block bootstrap + terminal test + four injection classes",
+         f"DO_2_4 retains {do24_pls['selected_peers']} ({int(do24_pls['selected_n_components'])} component); "
+         f"M1,1 median gain={pls_m11['median_gain_pct']:.2f}% "
+         f"(95% CI {pls_m11['gain_ci95_low_pct']:.2f}% to {pls_m11['gain_ci95_high_pct']:.2f}%); "
+         f"terminal gain={pls_m11['independent_test_gain_pct']:.2f}%"],
         ["ORP_1_2 platform", "State cap retained",
          "Fig. 7 exposes pre-cap score, cap-active hours, and final score"],
     ]
@@ -402,8 +407,12 @@ def build_report(force: bool = True) -> Path:
         "The PLS selector preserves a valid one-peer topology core and reports limited "
         "redundancy explicitly. It does not fill sparse peer sets by lexical order or with "
         "distant/cross-train channels. This removes the previous unsupported DO_2_4 links "
-        "to DO_1_1 and DO_1_2; DO_2_3 is the structural core and DO_2_2 is the only "
-        "blocked-CV-supported expansion."
+        "to DO_1_1 and DO_1_2. DO_2_3 is the structural core; DO_2_2 was evaluated as the "
+        "only defensible second-order candidate but was not admitted. The one-component "
+        f"candidate had development and terminal-test gains of {pls_m11['median_gain_pct']:.2f}% "
+        f"and {pls_m11['independent_test_gain_pct']:.2f}%, respectively; the two-component "
+        f"candidate was still weaker ({pls_m12['median_gain_pct']:.2f}% development gain). "
+        f"The formal decision is {pls_decision['decision_status']}."
     )
     _add_figure(
         doc,
@@ -427,8 +436,10 @@ def build_report(force: bool = True) -> Path:
     _add_figure(
         doc,
         "Fig11_pls_peer_selection.png",
-        "Figure 11. Topology-approved PLS peer matrix and blocked-CV gain. Blue cells are "
-        "adjacent/twin core peers; amber cells are CV-added same-pool second-order peers.",
+        "Figure 11. DO_2_4 PLS peer-admission evidence. Panels report forward-block gains, "
+        "median and 95% moving-block-bootstrap intervals, positive-gain fractions, P90 tail "
+        "error, terminal 42-day hold-out results, and controlled target/peer/common-process "
+        "injections. The topology core M0 is retained.",
         width=6.1,
     )
 
@@ -436,7 +447,7 @@ def build_report(force: bool = True) -> Path:
     release_rows = [
         ["Unit tests", "PASS", "Causality, routing, mapping calibration, peer selection, recovery"],
         ["Transition audit", "PASS", "All opened episodes accounted; all terminal or censored"],
-        ["Excel audit", "PASS", "19 workbooks open; no error-cell tokens"],
+        ["Excel audit", "PASS", "18 core / 20 total workbooks open; no error-cell tokens"],
         ["Figure bundle", "20/20", "SVG/PDF/600 dpi PNG/TIFF"],
         ["Nature skill audit", "0 failed", "Editable SVG text; Arial declared; sources fresh"],
         ["Run trace", state["run_id"], "Dependency SHA256 hashes in run manifest"],

@@ -8,7 +8,7 @@
 | `calibrate_step_mapping.py` | Raw-input Step fault injection, grid search, LOCO validation, applicability audit |
 | `run_v11_pipeline.py` | Formal final-candidate state machine, aggregation, and run manifest |
 | `run_recovery_validation.py` | Natural-data sensitivity and controlled mechanism challenges |
-| `excel_exporter_v11.py` | Seventeen core D1 workbooks |
+| `excel_exporter_v11.py` | Eighteen core D1 workbooks |
 | `make_baseline_figures_v11.py` | Figures 1-11 |
 | `make_figures_v11.py` | Figures V12-V15 |
 | `make_figures_v11_part2.py` | Figures V16-V18 |
@@ -22,7 +22,8 @@
 |---|---|
 | `src/baseline/bridge_decomposition_11.py` | Per-channel residual/innovation routing and effective sample size |
 | `src/calibration/step_injection.py` | Step injection library, mapping optimization, and LOCO validation |
-| `src/detectors/drift_pls.py` | Explicit same-analyte topology, same-pool second-order blocked-CV expansion, and residual-standardized PLS detector |
+| `src/detectors/drift_pls.py` | Explicit same-analyte topology and residual-standardized PLS detector |
+| `src/validation/pls_peer_upgrade.py` | DO_2_4 three-model forward validation, block bootstrap, terminal hold-out, controlled injections, and admission decision |
 | `src/mapping/mapper.py` | Score mappings and process-floor freeze combination |
 | `src/baseline/local_baseline.py` | Causal contiguous baseline and empirical scale floor |
 | `src/aggregation/cooldown_state_machine.py` | Six-state event and recovery logic |
@@ -42,6 +43,7 @@
 | `outputs/data/D1_step_mapping_calibration.xlsx` | Parameter grid, LOCO, scenarios, and applicability audit |
 | `outputs/data/D1_mapping_params.xlsx` | Config-synchronized mapping coefficients and calibration summary |
 | `outputs/data/D1_detector_outputs_raw.xlsx` | Detector evidence, freeze routing, PLS peer audit and matrix |
+| `outputs/data/D1_pls_DO24_validation.xlsx` | Model definitions, temporal split, 6,138 hourly predictions/errors, all fold gains, bootstrap samples, clean windows, 936 injection rows, gates, and final decision |
 | `outputs/figures/` | Twenty formal figure bundles only |
 | `outputs/plot_data/` | Figure source workbooks and calibration scenario CSV |
 | `outputs/qa/figures/` | Contact sheets and automated audit JSON |
@@ -50,10 +52,11 @@
 ## PLS peer-topology contract
 
 - Core peers are same-analyte adjacent sensors and available same-position twin-pool sensors.
-- Only same-pool second-order neighbours are eligible for blocked-CV expansion.
+- Only same-pool second-order neighbours are eligible candidates. Formal admission requires full-period forward validation, moving-block bootstrap uncertainty, terminal hold-out confirmation, and four controlled-injection classes.
 - A single valid core peer is scientifically reportable as limited redundancy; the implementation never fills a sparse core by channel-name order.
 - `DO_1_4` is excluded as a predictor because its process-floor behaviour is not exchangeable with ordinary DO channels.
-- `v11_state.pkl`, `D1_detector_outputs_raw.xlsx`, and `Fig11_pls_peer_selection_data.xlsx` preserve the selected peers, CV errors, redundancy status, and topology contract.
+- `DO_2_4` retains the `DO_2_3` one-component core model. `DO_2_2` is preserved as a tested and rejected candidate rather than being silently promoted.
+- `v11_state.pkl`, `D1_detector_outputs_raw.xlsx`, `D1_pls_DO24_validation.xlsx`, and `Fig11_pls_peer_selection_data.xlsx` preserve the selected peers, all validation evidence, redundancy status, and topology contract.
 
 ## Reproduction order
 

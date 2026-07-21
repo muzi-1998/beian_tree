@@ -101,6 +101,9 @@ def main():
         "local_baseline_code": _ROOT / "src" / "baseline" / "local_baseline.py",
         "detector_bridge_code": _ROOT / "load_real_data_v11.py",
         "pls_detector_code": _ROOT / "src" / "detectors" / "drift_pls.py",
+        "pls_peer_validation_code": (
+            _ROOT / "src" / "validation" / "pls_peer_upgrade.py"
+        ),
         "pipeline_code": Path(__file__),
     }
     dependency_hashes = {name: _sha256(path) for name, path in dependency_files.items()}

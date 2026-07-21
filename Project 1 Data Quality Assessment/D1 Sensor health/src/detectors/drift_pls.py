@@ -217,7 +217,15 @@ class PLSVirtualSensorDetector(BaseDetector):
         train_prediction = sy.inverse_transform(train_prediction_s.reshape(-1, 1)).ravel()
         sigma_y = max(float(np.std(y_train)), 1e-9)
         sigma_residual = max(float(np.std(y_train - train_prediction)), 0.05 * sigma_y, 1e-9)
-        self._models[target] = (model, sx, sy, sigma_residual, medians, list(peer_cols))
+        self._models[target] = (
+            model,
+            sx,
+            sy,
+            sigma_residual,
+            medians,
+            list(peer_cols),
+            max(1, components),
+        )
 
     def score(
         self,
@@ -231,7 +239,15 @@ class PLSVirtualSensorDetector(BaseDetector):
             peer_cols = core_engineered_peers(target, list(df_hourly.columns))
         if target not in self._models:
             self.fit(df_hourly, target=target, peer_cols=peer_cols)
-        model, sx, sy, sigma_residual, medians, peers_used = self._models[target]
+        (
+            model,
+            sx,
+            sy,
+            sigma_residual,
+            medians,
+            peers_used,
+            effective_components,
+        ) = self._models[target]
         frame = df_hourly.loc[:, [target, *peers_used]].copy()
         frame = frame.ffill().fillna(medians).fillna(0.0)
         prediction_s = model.predict(
@@ -242,11 +258,11 @@ class PLSVirtualSensorDetector(BaseDetector):
         residual_z = pd.Series(np.abs(residual) / sigma_residual, index=df_hourly.index)
         flag = (residual_z > 3.0).astype(np.int8)
         metadata = {
-            "n_components": self.k,
+            "n_components": effective_components,
             "train_days": self.train_days,
             "sigma_residual": sigma_residual,
             "peer_cols": peers_used,
-            "peer_selection_rule": "same-analyte blocked-CV v1",
+            "peer_selection_rule": "same-analyte topology with audited validation",
         }
         if selection_audit:
             metadata["peer_selection_audit"] = selection_audit

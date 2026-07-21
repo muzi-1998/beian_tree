@@ -697,75 +697,268 @@ save(fig, "Fig10_two_tier_regime")
 
 
 # ============================================================================
-# Fig 11: PLS peer audit (engineered peers)
+# Fig 11: DO_2_4 PLS peer-admission evidence chain
 # ============================================================================
-print("[Fig11] PLS peer audit ...")
-fig, axes = plt.subplots(1, 2, figsize=(7.2, 4.3),
-                         gridspec_kw={"width_ratios": [1.45, 0.9]})
-fig.subplots_adjust(wspace=0.42, top=0.84, bottom=0.25)
-peer_matrix = S["detectors_raw"]["pls_peer_matrix"].reindex(
-    index=SCORED, columns=SCORED
-).fillna(0).astype(int)
-peer_audit = S["detectors_raw"]["pls_peer_selection_audit"].reindex(SCORED)
+print("[Fig11] DO_2_4 PLS peer-admission validation ...")
+det_raw = S["detectors_raw"]
+folds = det_raw["pls_do24_fold_metrics"].copy()
+summary = det_raw["pls_do24_performance_summary"].copy()
+bootstrap = det_raw["pls_do24_bootstrap_samples"].copy()
+injection_summary = det_raw["pls_do24_injection_summary"].copy()
+injection_scenarios = det_raw["pls_do24_injection_scenarios"].copy()
+gates = det_raw["pls_do24_gate_results"].copy()
+decision = det_raw["pls_do24_decision"].copy()
+split_manifest = det_raw["pls_do24_split_manifest"].copy()
+model_definitions = det_raw["pls_do24_model_definitions"].copy()
+hourly_predictions = det_raw["pls_do24_hourly_predictions"].copy()
 
-ax = axes[0]
-peer_cmap = ListedColormap(["#F2F2F2", C["blue"], C["amber"]])
-peer_norm = BoundaryNorm([-0.5, 0.5, 1.5, 2.5], peer_cmap.N)
-ax.imshow(peer_matrix.values, cmap=peer_cmap, norm=peer_norm, aspect="auto")
-ax.set_yticks(np.arange(len(SCORED))); ax.set_yticklabels(SCORED, fontsize=7.2)
-ax.set_xticks(np.arange(len(SCORED)))
-ax.set_xticklabels(SCORED, rotation=55, ha="right", fontsize=6.8)
-ax.set_xlabel("Predictor")
-ax.set_ylabel("Target")
-ax.set_title("(a) Topology-approved peer matrix", loc="left")
-ax.grid(False)
-ax.legend(handles=[Patch(facecolor=C["blue"], label="Adjacent/twin core"),
-                   Patch(facecolor=C["amber"], label="CV-added same-pool second-order")],
-          loc="upper center", bbox_to_anchor=(0.5, -0.25), ncol=2,
-          fontsize=6.5, frameon=False)
+candidate_ids = ["M1_1", "M1_2"]
+model_labels = {
+    "M1_1": r"$M_{1,1}$: +DO_2_2, 1 comp.",
+    "M1_2": r"$M_{1,2}$: +DO_2_2, 2 comp.",
+}
+model_colors = {"M1_1": C["blue"], "M1_2": C["purple"]}
+model_markers = {"M1_1": "o", "M1_2": "^"}
 
-ax = axes[1]
-improvement = peer_audit["cv_improvement_pct"].fillna(0.0)
-expanded = pd.Series(
-    [bool(pd.notna(peer_audit.at[c, "selected_noncore_peers"])
-          and str(peer_audit.at[c, "selected_noncore_peers"]).strip())
-     for c in SCORED],
-    index=SCORED,
+fig = plt.figure(figsize=(7.2, 5.45))
+gs = fig.add_gridspec(
+    2, 3,
+    height_ratios=[1.12, 1.0],
+    width_ratios=[1.05, 1.0, 1.18],
+    left=0.085, right=0.985, top=0.91, bottom=0.13,
+    hspace=0.58, wspace=0.56,
 )
-colors = [C["amber"] if expanded.at[c] else "0.78" for c in SCORED]
-ax.barh(np.arange(len(SCORED)), improvement.values, color=colors, height=0.68)
-for row, channel in enumerate(SCORED):
-    if expanded.at[channel]:
-        core_count = len([
-            peer for peer in str(peer_audit.at[channel, "core_peers"]).split(";")
-            if peer
-        ])
-        selected_count = int(peer_audit.at[channel, "selected_peer_count"])
-        ax.text(improvement.at[channel] + max(improvement.max() * 0.018, 0.08), row,
-                f"{core_count}→{selected_count} peers", va="center", ha="left",
-                fontsize=6.4, color="0.25")
-    elif peer_audit.at[channel, "redundancy_status"] == "limited_single_peer":
-        ax.scatter([0], [row], s=16, marker="D", facecolor="white",
-                   edgecolor=C["blue"], linewidth=0.8, zorder=3)
-        ax.text(max(improvement.max() * 0.018, 0.08), row, "1 peer",
-                va="center", ha="left", fontsize=6.2, color="0.35")
-ax.axvline(2.0, color=C["red"], ls=":", lw=0.8, label="2% inclusion threshold")
-ax.set_yticks(np.arange(len(SCORED))); ax.set_yticklabels(SCORED, fontsize=7.2)
-ax.invert_yaxis()
-ax.set_xlabel("CV NRMSE gain (%)")
-ax.set_title("(b) Blocked-CV gain and redundancy", loc="left")
-improvement_upper = positive_data_ylim(
-    improvement.values, headroom=0.24, minimum_upper=2.5
-)[1]
-ax.set_xlim(0.0, improvement_upper)
-ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.25), fontsize=6.5,
-          frameon=False)
+ax_a = fig.add_subplot(gs[0, :2])
+ax_b = fig.add_subplot(gs[0, 2])
+ax_c = fig.add_subplot(gs[1, 0])
+ax_d = fig.add_subplot(gs[1, 1])
+ax_e = fig.add_subplot(gs[1, 2])
 
-fig.suptitle("Figure 11.  Topology-constrained PLS peers with blocked temporal validation",
-             fontsize=9.8, fontweight="bold", y=0.98)
-save(fig, "Fig11_pls_peer_selection",
-     plot_data={"selected_peer_matrix": peer_matrix,
-                "blocked_cv_audit": peer_audit})
+# (a) All forward validation blocks.
+for model_id in candidate_ids:
+    data = folds.loc[folds.model_id == model_id].sort_values("fold_id")
+    ax_a.plot(
+        data.fold_id,
+        data.gain_pct_vs_M0,
+        color=model_colors[model_id],
+        lw=0.55,
+        alpha=0.34,
+        zorder=1,
+    )
+    ax_a.scatter(
+        data.fold_id,
+        data.gain_pct_vs_M0,
+        s=18,
+        marker=model_markers[model_id],
+        facecolor=model_colors[model_id],
+        edgecolor="white",
+        linewidth=0.35,
+        label=model_labels[model_id],
+        zorder=2,
+    )
+all_gains = folds.loc[folds.model_id.isin(candidate_ids), "gain_pct_vs_M0"]
+gain_limit = max(10.0, float(np.nanmax(np.abs(all_gains))) * 1.10)
+ax_a.axhline(0.0, color="0.25", lw=0.8, ls="--")
+ax_a.set_xlim(0.4, folds.fold_id.max() + 0.6)
+ax_a.set_ylim(-gain_limit, gain_limit)
+ax_a.set_xlabel("Forward validation block")
+ax_a.set_ylabel("NRMSE gain vs $M_0$ (%)")
+ax_a.set_title("(a)  Forward-block predictive gain", loc="left")
+ax_a.legend(loc="upper left", ncol=2, fontsize=6.6, frameon=False,
+            handletextpad=0.4, columnspacing=0.9)
+
+# (b) Median block gain, block-bootstrap interval, and untouched terminal test.
+summary_i = summary.set_index("model_id")
+y_positions = {"M1_1": 1.0, "M1_2": 0.0}
+for model_id in candidate_ids:
+    row = summary_i.loc[model_id]
+    y = y_positions[model_id]
+    ax_b.hlines(
+        y,
+        row.gain_ci95_low_pct,
+        row.gain_ci95_high_pct,
+        color=model_colors[model_id],
+        lw=1.5,
+    )
+    ax_b.scatter(
+        row.median_gain_pct,
+        y,
+        s=28,
+        marker=model_markers[model_id],
+        color=model_colors[model_id],
+        edgecolor="white",
+        linewidth=0.4,
+        zorder=3,
+    )
+    ax_b.scatter(
+        row.independent_test_gain_pct,
+        y - 0.19,
+        s=24,
+        marker="D",
+        facecolor="white",
+        edgecolor=model_colors[model_id],
+        linewidth=0.9,
+        zorder=3,
+    )
+ci_and_test = summary_i.loc[candidate_ids, [
+    "gain_ci95_low_pct", "gain_ci95_high_pct", "independent_test_gain_pct"
+]].to_numpy(dtype=float)
+b_limit = max(10.0, float(np.nanmax(np.abs(ci_and_test))) * 1.12)
+ax_b.axvline(0.0, color="0.25", lw=0.8, ls="--")
+ax_b.set_xlim(-b_limit, b_limit)
+ax_b.set_ylim(-0.48, 1.35)
+ax_b.set_yticks([0.0, 1.0])
+ax_b.set_yticklabels([r"$M_{1,2}$", r"$M_{1,1}$"])
+ax_b.set_xlabel("Gain vs $M_0$ (%)")
+ax_b.set_title("(b)  Uncertainty and hold-out", loc="left")
+ax_b.legend(
+    handles=[
+        Line2D([0], [0], marker="o", color="0.35", lw=1.2,
+               markerfacecolor="0.35", markersize=4, label="Median (95% block CI)"),
+        Line2D([0], [0], marker="D", color="none", markeredgecolor="0.35",
+               markerfacecolor="white", markersize=4, label="Terminal 42-d test"),
+    ],
+    loc="lower right", fontsize=5.9,
+    frameon=False, handletextpad=0.4,
+)
+
+# (c) Directional consistency across validation blocks.
+y = np.arange(len(candidate_ids))
+positive = summary_i.loc[candidate_ids, "positive_gain_fold_fraction"].to_numpy(dtype=float)
+ax_c.barh(
+    y,
+    positive,
+    height=0.52,
+    color=[model_colors[key] for key in candidate_ids],
+    alpha=0.82,
+)
+for yi, value in zip(y, positive):
+    ax_c.text(min(value + 0.025, 0.93), yi, f"{value:.2f}", va="center",
+              ha="left", fontsize=6.6)
+ax_c.axvline(0.60, color=C["red"], lw=0.8, ls=":")
+ax_c.set_xlim(0.0, 1.0)
+ax_c.set_yticks(y)
+ax_c.set_yticklabels([r"$M_{1,1}$", r"$M_{1,2}$"])
+ax_c.invert_yaxis()
+ax_c.set_xlabel("Positive-gain block fraction")
+ax_c.set_title("(c)  Directional consistency", loc="left")
+ax_c.text(0.60, 0.97, "0.60", transform=ax_c.get_xaxis_transform(),
+          color=C["red"], fontsize=6.2, ha="center", va="top")
+
+# (d) Development and independent-test tail error.
+for model_id in candidate_ids:
+    row = summary_i.loc[model_id]
+    yi = y_positions[model_id]
+    ax_d.plot(
+        [row.development_p90_change_pct, row.independent_test_p90_change_pct],
+        [yi, yi],
+        color=model_colors[model_id],
+        lw=0.65,
+        alpha=0.45,
+    )
+    ax_d.scatter(row.development_p90_change_pct, yi, s=24, marker="o",
+                 color=model_colors[model_id], zorder=3)
+    ax_d.scatter(row.independent_test_p90_change_pct, yi, s=23, marker="D",
+                 facecolor="white", edgecolor=model_colors[model_id],
+                 linewidth=0.9, zorder=3)
+p90_values = summary_i.loc[candidate_ids, [
+    "development_p90_change_pct", "independent_test_p90_change_pct"
+]].to_numpy(dtype=float)
+p90_low = min(-5.0, float(np.nanmin(p90_values)) - 3.0)
+p90_high = max(10.0, float(np.nanmax(p90_values)) + 3.0)
+ax_d.axvline(5.0, color=C["red"], lw=0.8, ls=":")
+ax_d.set_xlim(p90_low, p90_high)
+ax_d.set_ylim(-0.45, 1.35)
+ax_d.set_yticks([0.0, 1.0])
+ax_d.set_yticklabels([r"$M_{1,2}$", r"$M_{1,1}$"])
+ax_d.set_xlabel("P90 error change vs $M_0$ (%)")
+ax_d.set_title("(d)  Tail-error stability", loc="left")
+ax_d.legend(
+    handles=[
+        Line2D([0], [0], marker="o", color="none", markerfacecolor="0.35",
+               markersize=4, label="Development"),
+        Line2D([0], [0], marker="D", color="none", markeredgecolor="0.35",
+               markerfacecolor="white", markersize=4, label="Terminal test"),
+    ],
+    loc="lower left", ncol=1, fontsize=5.8,
+    frameon=False, columnspacing=0.7, handletextpad=0.3,
+)
+
+# (e) Material injections (2-3 sigma): target detection and false-alarm deltas.
+injection_gate_order = [
+    ("target_detection_delta", "Target drift\nΔ detection (↑)"),
+    ("direct_peer_fa_delta", "Direct peer\nΔ false alarm (↓)"),
+    ("second_peer_fa_delta", "Second peer\nΔ false alarm (↓)"),
+    ("common_process_fa_delta", "Common process\nΔ false alarm (↓)"),
+]
+gate_i = gates.set_index(["model_id", "gate"])
+e_y = np.arange(len(injection_gate_order))
+all_delta = []
+for offset, model_id in zip((-0.10, 0.10), candidate_ids):
+    values = np.array([
+        100.0 * float(gate_i.loc[(model_id, gate_name), "value"])
+        for gate_name, _ in injection_gate_order
+    ])
+    all_delta.extend(values.tolist())
+    ax_e.scatter(
+        values,
+        e_y + offset,
+        s=24,
+        marker=model_markers[model_id],
+        color=model_colors[model_id],
+        edgecolor="white",
+        linewidth=0.35,
+        label=model_labels[model_id],
+        zorder=3,
+    )
+for yi, (gate_name, _) in zip(e_y, injection_gate_order):
+    threshold = -5.0 if gate_name == "target_detection_delta" else 5.0
+    ax_e.plot([threshold, threshold], [yi - 0.34, yi + 0.34],
+              color=C["red"], lw=0.8, ls=":")
+e_limit = max(10.0, float(np.nanmax(np.abs(all_delta))) * 1.18)
+ax_e.axvline(0.0, color="0.35", lw=0.7, ls="--")
+ax_e.set_xlim(-e_limit, e_limit)
+ax_e.set_yticks(e_y)
+ax_e.set_yticklabels([label for _, label in injection_gate_order], fontsize=6.6)
+ax_e.invert_yaxis()
+ax_e.set_xlabel("Change vs $M_0$ (percentage points)")
+ax_e.set_title("(e)  Controlled injections", loc="left")
+
+for ax in (ax_a, ax_b, ax_c, ax_d, ax_e):
+    ax.tick_params(axis="both", which="both", direction="out", length=3.0,
+                   width=0.8, top=False, right=False)
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+
+final_model = str(decision.loc[0, "final_model_id"])
+fig.text(
+    0.985,
+    0.025,
+    r"Final decision: retain $M_0$ (DO_2_3, 1 component)"
+    if final_model == "M0"
+    else f"Final decision: admit {final_model}",
+    ha="right",
+    va="bottom",
+    fontsize=7.1,
+    fontweight="bold",
+    color="0.20",
+)
+save(
+    fig,
+    "Fig11_pls_peer_selection",
+    plot_data={
+        "model_definitions": model_definitions,
+        "split_manifest": split_manifest,
+        "hourly_predictions": hourly_predictions,
+        "fold_metrics": folds,
+        "performance": summary,
+        "bootstrap": bootstrap,
+        "injection_summary": injection_summary,
+        "injection_scenarios": injection_scenarios,
+        "admission_gates": gates,
+        "decision": decision,
+    },
+)
 
 print("\n[done] Updated baseline figures Fig 1-11 complete.\n")
 try:

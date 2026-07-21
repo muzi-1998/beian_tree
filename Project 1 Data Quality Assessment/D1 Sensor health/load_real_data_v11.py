@@ -38,6 +38,7 @@ from src.detectors import (HampelSpikeDetector, AdjacentKSStepDetector,
                             PLSVirtualSensorDetector, select_pls_peers,
                             CompositeFreezeDetector, TwoTierRegimeDetector)
 from src.mapping.mapper import apply_mapping, combine_freeze_subscores
+from src.validation import build_do24_selection_audit, validate_do24_peer_upgrade
 
 # ── §1.1 Decomposition bridge gate ────────────────────────────────────────────
 # When ON (default), D1 consumes §1.1's whitened residual/innovation + the
@@ -307,28 +308,71 @@ def run_drift_detector(resid_h: pd.DataFrame, channels: list,
         with open(cache_path, "rb") as f:
             return pickle.load(f)
 
-    log("[3-drift] PLS 虚拟传感器漂移检测器 (显式拓扑 + 3-fold blocked CV)...")
+    log("[3-drift] PLS virtual sensor: topology audit + DO_2_4 full validation ...")
     t = time.time()
-    detector = PLSVirtualSensorDetector(n_components=3, train_days=21)
     results = {}
     excluded_predictors = {
         channel for channel, mode in (scoring_mode or {}).items()
         if mode == "floor_freeze"
     }
+    do24_validation = None
+    do24_validation_error = None
+    try:
+        do24_validation = validate_do24_peer_upgrade(resid_h)
+        decision = do24_validation["decision"].iloc[0]
+        log(
+            "    DO_2_4 peer decision: "
+            f"{decision['decision_status']} -> {decision['final_model_id']}"
+        )
+    except Exception as exc:
+        do24_validation_error = str(exc)
+        log(f"    ! DO_2_4 validation unavailable; retain topology core: {exc}")
+
     for i, c in enumerate(channels, 1):
         try:
-            selection = select_pls_peers(
-                resid_h,
-                c,
-                n_components=3,
-                excluded_predictors=excluded_predictors,
+            if c == "DO_2_4":
+                if do24_validation is not None:
+                    selection = build_do24_selection_audit(do24_validation)
+                else:
+                    selection = {
+                        "target": c,
+                        "core_peers": ["DO_2_3"],
+                        "candidate_peers": ["DO_2_2"],
+                        "selected_peers": ["DO_2_3"],
+                        "selected_noncore_peers": [],
+                        "selected_n_components": 1,
+                        "selected_peer_count": 1,
+                        "redundancy_status": "limited_single_peer",
+                        "topology_contract": (
+                            "same-analyte adjacent core; same-pool second-order candidate"
+                        ),
+                        "selection_rule": "fail-safe core retention",
+                        "validation_status": "unavailable",
+                        "validation_rationale": do24_validation_error,
+                    }
+            else:
+                selection = select_pls_peers(
+                    resid_h,
+                    c,
+                    n_components=3,
+                    excluded_predictors=excluded_predictors,
+                )
+                selection["selected_n_components"] = min(
+                    3, len(selection["selected_peers"])
+                )
+            detector = PLSVirtualSensorDetector(
+                n_components=int(selection["selected_n_components"]),
+                train_days=21,
             )
-            results[c] = detector.score(
+            result = detector.score(
                 resid_h,
                 target=c,
                 peer_cols=selection["selected_peers"],
                 selection_audit=selection,
             )
+            if c == "DO_2_4" and do24_validation is not None:
+                result.metadata["peer_upgrade_validation"] = do24_validation
+            results[c] = result
         except Exception as e:
             log(f"    ! PLS 对 {c} 失败: {e}, 使用零填充")
             empty = pd.Series(0.0, index=resid_h.index)
@@ -339,6 +383,7 @@ def run_drift_detector(resid_h: pd.DataFrame, channels: list,
                 "candidate_peers": [],
                 "selected_peers": [],
                 "selected_noncore_peers": [],
+                "selected_n_components": 0,
                 "selected_peer_count": 0,
                 "redundancy_status": "unavailable",
                 "topology_contract": (
@@ -590,7 +635,7 @@ def main():
         resid_for_drift[SCORED_CHANNELS],
         SCORED_CHANNELS,
         scoring_mode=scoring_mode,
-        cache_tag=f"{cache_tag}_peer_cv_v3",
+        cache_tag=f"{cache_tag}_peer_validation_v2",
     )
     freeze_results = run_freeze_detector(df_min[SCORED_CHANNELS], SCORED_CHANNELS)
     # regime: 两层 W1+KS，i.i.d. 敏感 → §1.1 路由输入 + 按通道 n_eff 去敏
@@ -666,6 +711,7 @@ def main():
             "candidate_peers": ";".join(audit.get("candidate_peers", [])),
             "selected_peers": ";".join(selected_peers),
             "selected_noncore_peers": ";".join(sorted(noncore_peers)),
+            "selected_n_components": audit.get("selected_n_components", np.nan),
             "core_cv_nrmse_median": audit.get("core_cv_nrmse_median", np.nan),
             "core_cv_nrmse_p90": audit.get("core_cv_nrmse_p90", np.nan),
             "selected_cv_nrmse_median": audit.get("selected_cv_nrmse_median", np.nan),
@@ -676,11 +722,23 @@ def main():
             "redundancy_status": audit.get("redundancy_status", "unavailable"),
             "topology_contract": audit.get("topology_contract", "not recorded"),
             "selection_rule": audit.get("selection_rule", "fallback"),
+            "validation_status": audit.get("validation_status", "legacy_blocked_cv"),
+            "nominated_before_test": audit.get("nominated_before_test", "not_applicable"),
+            "validation_rationale": audit.get("validation_rationale", "not_applicable"),
         })
     detectors_raw["pls_peer_selection_audit"] = pd.DataFrame(pls_audit_rows).set_index(
         "sensor_id"
     )
     detectors_raw["pls_peer_matrix"] = pls_peer_matrix
+    do24_validation = (
+        drift_results["DO_2_4"].metadata.get("peer_upgrade_validation")
+        if "DO_2_4" in drift_results
+        else None
+    )
+    if do24_validation:
+        for table_name, table in do24_validation.items():
+            if isinstance(table, pd.DataFrame):
+                detectors_raw[f"pls_do24_{table_name}"] = table
     # 冻结分量：从分钟级 components 聚合到小时（与 compute_subscores 保持一致用 max）
     for freeze_key, comp_col, default in [
         ("freeze_rle_run_min", "rle_run_min", 0.0),

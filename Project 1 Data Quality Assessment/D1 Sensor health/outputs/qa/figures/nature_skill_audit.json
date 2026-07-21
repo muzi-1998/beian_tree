@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-21T09:35:42+08:00",
+  "generated_at": "2026-07-21T12:03:43+08:00",
   "figure_dir": "D:\\004_git\\beian_tree\\Project 1 Data Quality Assessment\\D1 Sensor health\\outputs\\figures",
   "figures": 20,
   "failed": 0,
@@ -139,8 +139,11 @@
       "svg_has_editable_text": true,
       "svg_arial_declared": true,
       "panel_labels": [
-        "(a)  Topology-approved peer matrix",
-        "(b)  Blocked-CV gain and redundancy"
+        "(a)   Forward-block predictive gain",
+        "(b)   Uncertainty and hold-out",
+        "(c)   Directional consistency",
+        "(d)   Tail-error stability",
+        "(e)   Controlled injections"
       ],
       "fresh_vs_sources": true
     },

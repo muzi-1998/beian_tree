@@ -4,6 +4,8 @@
 
 Every figure must state one principal conclusion and expose the data needed to audit it. Figures V19 and V20 are the primary recovery evidence. `Recovered` occupancy must never be labeled as a recovery rate.
 
+For Fig. 11, the claim is whether adding `DO_2_2` and/or a second PLS component improves `DO_2_4` prediction without weakening target-fault detection or increasing peer/common-process false alarms. The five panels must retain all forward-fold results, uncertainty, tail error, terminal hold-out, and controlled-injection evidence; a topology diagram alone is insufficient.
+
 ## Geometry and typography
 
 - Python/matplotlib backend only for this release.
