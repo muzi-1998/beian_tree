@@ -474,9 +474,11 @@ ax.set_ylim(*positive_data_ylim(bottom, headroom=0.50))
 ax.set_title("(b)  State-transition counts (entire 8.4 mo)", loc="left")
 _h14, _l14 = ax.get_legend_handles_labels()
 ax.legend(
-    _h14, _l14, loc="upper center", bbox_to_anchor=(0.50, 0.985),
+    _h14, _l14, loc="upper left", bbox_to_anchor=(0.07, 0.82, 0.90, 0.15),
+    mode="expand",
     fontsize=5.5, ncol=3, frameon=True, framealpha=0.72,
     facecolor="white", edgecolor="none", borderaxespad=0,
+    columnspacing=0.8, handletextpad=0.35,
 )
 
 # (c) Veto rule overlap heat (for one representative sensor)
