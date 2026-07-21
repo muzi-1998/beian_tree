@@ -4,7 +4,7 @@
 
 | Path | Responsibility |
 |---|---|
-| `load_real_data_v11.py` | Section 1.1 bridge, detector execution, freeze routing, PLS selection |
+| `load_real_data_v11.py` | Section 1.1 bridge, detector execution, freeze routing, and topology-constrained PLS selection |
 | `calibrate_step_mapping.py` | Raw-input Step fault injection, grid search, LOCO validation, applicability audit |
 | `run_v11_pipeline.py` | Formal final-candidate state machine, aggregation, and run manifest |
 | `run_recovery_validation.py` | Natural-data sensitivity and controlled mechanism challenges |
@@ -22,7 +22,7 @@
 |---|---|
 | `src/baseline/bridge_decomposition_11.py` | Per-channel residual/innovation routing and effective sample size |
 | `src/calibration/step_injection.py` | Step injection library, mapping optimization, and LOCO validation |
-| `src/detectors/drift_pls.py` | Same-analyte peer rules, blocked CV, and residual-standardized PLS detector |
+| `src/detectors/drift_pls.py` | Explicit same-analyte topology, same-pool second-order blocked-CV expansion, and residual-standardized PLS detector |
 | `src/mapping/mapper.py` | Score mappings and process-floor freeze combination |
 | `src/baseline/local_baseline.py` | Causal contiguous baseline and empirical scale floor |
 | `src/aggregation/cooldown_state_machine.py` | Six-state event and recovery logic |
@@ -37,7 +37,7 @@
 | Path | Contents |
 |---|---|
 | `v11_state.pkl` | Formal run state and downstream source of truth |
-| `outputs/logs/D1_run_manifest.json` | Run ID, hashes, conservation, scale and mapping calibration |
+| `outputs/logs/D1_run_manifest.json` | Run ID, bridge/detector code hashes, conservation, scale and mapping calibration |
 | `outputs/logs/D1_step_mapping_calibration.json` | Machine-readable Step calibration manifest |
 | `outputs/data/D1_step_mapping_calibration.xlsx` | Parameter grid, LOCO, scenarios, and applicability audit |
 | `outputs/data/D1_mapping_params.xlsx` | Config-synchronized mapping coefficients and calibration summary |
@@ -46,6 +46,14 @@
 | `outputs/plot_data/` | Figure source workbooks and calibration scenario CSV |
 | `outputs/qa/figures/` | Contact sheets and automated audit JSON |
 | `outputs/D1_Sensor_Health_Expert_Report_Auto.docx` | Synchronized final expert report |
+
+## PLS peer-topology contract
+
+- Core peers are same-analyte adjacent sensors and available same-position twin-pool sensors.
+- Only same-pool second-order neighbours are eligible for blocked-CV expansion.
+- A single valid core peer is scientifically reportable as limited redundancy; the implementation never fills a sparse core by channel-name order.
+- `DO_1_4` is excluded as a predictor because its process-floor behaviour is not exchangeable with ordinary DO channels.
+- `v11_state.pkl`, `D1_detector_outputs_raw.xlsx`, and `Fig11_pls_peer_selection_data.xlsx` preserve the selected peers, CV errors, redundancy status, and topology contract.
 
 ## Reproduction order
 

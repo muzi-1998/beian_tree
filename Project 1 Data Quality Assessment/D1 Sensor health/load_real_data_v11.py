@@ -307,7 +307,7 @@ def run_drift_detector(resid_h: pd.DataFrame, channels: list,
         with open(cache_path, "rb") as f:
             return pickle.load(f)
 
-    log("[3-drift] PLS 虚拟传感器漂移检测器 (同变量 + 3-fold blocked CV)...")
+    log("[3-drift] PLS 虚拟传感器漂移检测器 (显式拓扑 + 3-fold blocked CV)...")
     t = time.time()
     detector = PLSVirtualSensorDetector(n_components=3, train_days=21)
     results = {}
@@ -333,8 +333,29 @@ def run_drift_detector(resid_h: pd.DataFrame, channels: list,
             log(f"    ! PLS 对 {c} 失败: {e}, 使用零填充")
             empty = pd.Series(0.0, index=resid_h.index)
             from src.detectors.base import DetectorResult
-            results[c] = DetectorResult(c, "pls_fallback", resid_h.index,
-                                        empty, empty.astype(np.int8), {})
+            unavailable_audit = {
+                "target": c,
+                "core_peers": [],
+                "candidate_peers": [],
+                "selected_peers": [],
+                "selected_noncore_peers": [],
+                "selected_peer_count": 0,
+                "redundancy_status": "unavailable",
+                "topology_contract": (
+                    "same-analyte adjacent/twin core; "
+                    "same-pool second-order CV expansion"
+                ),
+                "selection_rule": "topology-constrained PLS unavailable",
+                "selection_error": str(e),
+            }
+            results[c] = DetectorResult(
+                c,
+                "pls_unavailable",
+                resid_h.index,
+                empty,
+                empty.astype(np.int8),
+                {"peer_selection_audit": unavailable_audit},
+            )
         if i % 3 == 0:
             log(f"    [{time.time()-t:.1f}s] {i}/{len(channels)} 通道完成")
     log(f"    [{time.time()-t:.1f}s] 完成")
@@ -569,7 +590,7 @@ def main():
         resid_for_drift[SCORED_CHANNELS],
         SCORED_CHANNELS,
         scoring_mode=scoring_mode,
-        cache_tag=f"{cache_tag}_peer_cv_v2",
+        cache_tag=f"{cache_tag}_peer_cv_v3",
     )
     freeze_results = run_freeze_detector(df_min[SCORED_CHANNELS], SCORED_CHANNELS)
     # regime: 两层 W1+KS，i.i.d. 敏感 → §1.1 路由输入 + 按通道 n_eff 去敏
@@ -651,6 +672,9 @@ def main():
             "selected_cv_nrmse_p90": audit.get("selected_cv_nrmse_p90", np.nan),
             "cv_improvement_pct": audit.get("cv_improvement_pct", np.nan),
             "n_blocked_folds": audit.get("n_blocked_folds", 0),
+            "selected_peer_count": audit.get("selected_peer_count", len(selected_peers)),
+            "redundancy_status": audit.get("redundancy_status", "unavailable"),
+            "topology_contract": audit.get("topology_contract", "not recorded"),
             "selection_rule": audit.get("selection_rule", "fallback"),
         })
     detectors_raw["pls_peer_selection_audit"] = pd.DataFrame(pls_audit_rows).set_index(

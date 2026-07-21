@@ -26,6 +26,7 @@ OUT = ROOT / "outputs" / "figures"
 PLOTDATA = ROOT / "outputs" / "plot_data"
 OUT.mkdir(parents=True, exist_ok=True)
 PLOTDATA.mkdir(parents=True, exist_ok=True)
+RASTER_DPI = 600
 
 plt.rcParams.update({
     "font.family": "sans-serif",
@@ -34,7 +35,7 @@ plt.rcParams.update({
     "axes.titlesize": 9.5, "axes.labelsize": 9,
     "xtick.labelsize": 8, "ytick.labelsize": 8, "legend.fontsize": 7.5,
     "legend.framealpha": 0.92, "legend.edgecolor": "0.4",
-    "figure.dpi": 150, "savefig.dpi": 600, "savefig.bbox": "tight",
+    "figure.dpi": 150, "savefig.dpi": RASTER_DPI, "savefig.bbox": "tight",
     "savefig.pad_inches": 0.04,
     "axes.linewidth": 0.8, "axes.grid": True, "grid.alpha": 0.16,
     "grid.linewidth": 0.4, "lines.linewidth": 1.0,
@@ -214,11 +215,23 @@ fig, axes = plt.subplots(5, 1, figsize=(7.2, 6.7), sharex=True)
 fig.subplots_adjust(hspace=0.55)
 sub_names = ["Q_spike", "Q_step", "Q_drift", "Q_freeze", "Q_regime"]
 sub_clrs = [C["amber"], C["blue"], C["purple"], C["red"], C["green"]]
+fig4_counts = []
 for i, (sn, clr) in enumerate(zip(sub_names, sub_clrs)):
     ax = axes[i]
     data = []
     for c in SCORED:
-        v = subs_v11[c][sn].dropna().values
+        series = subs_v11[c][sn]
+        n_before = int(series.size)
+        observed = series.dropna()
+        n_after = int(observed.size)
+        fig4_counts.append({
+            "subscore": sn,
+            "sensor_id": c,
+            "n_before": n_before,
+            "n_after": n_after,
+            "excluded_count": n_before - n_after,
+        })
+        v = observed.values
         data.append(v)
     parts = ax.violinplot(data, positions=np.arange(len(SCORED)), widths=0.75,
                             showmedians=True, showextrema=False)
@@ -235,7 +248,8 @@ for i, (sn, clr) in enumerate(zip(sub_names, sub_clrs)):
         ax.set_xticklabels([])
 fig.suptitle("Figure 4.  Sub-score distribution per channel (v1.1, DO/ORP n=14)",
               fontsize=11, fontweight="bold", y=0.995)
-save(fig, "Fig4_subscore_distribution")
+save(fig, "Fig4_subscore_distribution",
+     plot_data={"observation_counts": pd.DataFrame(fig4_counts)})
 
 
 # ============================================================================
@@ -703,31 +717,51 @@ ax.set_xticks(np.arange(len(SCORED)))
 ax.set_xticklabels(SCORED, rotation=55, ha="right", fontsize=6.8)
 ax.set_xlabel("Predictor")
 ax.set_ylabel("Target")
-ax.set_title("(a) Selected same-analyte peers", loc="left")
+ax.set_title("(a) Topology-approved peer matrix", loc="left")
 ax.grid(False)
-ax.legend(handles=[Patch(facecolor=C["blue"], label="Structural core"),
-                   Patch(facecolor=C["amber"], label="CV-added peer")],
+ax.legend(handles=[Patch(facecolor=C["blue"], label="Adjacent/twin core"),
+                   Patch(facecolor=C["amber"], label="CV-added same-pool second-order")],
           loc="upper center", bbox_to_anchor=(0.5, -0.25), ncol=2,
           fontsize=6.5, frameon=False)
 
 ax = axes[1]
 improvement = peer_audit["cv_improvement_pct"].fillna(0.0)
-colors = [C["amber"] if str(peer_audit.at[c, "selected_noncore_peers"]).strip()
-          else "0.65" for c in SCORED]
+expanded = pd.Series(
+    [bool(pd.notna(peer_audit.at[c, "selected_noncore_peers"])
+          and str(peer_audit.at[c, "selected_noncore_peers"]).strip())
+     for c in SCORED],
+    index=SCORED,
+)
+colors = [C["amber"] if expanded.at[c] else "0.78" for c in SCORED]
 ax.barh(np.arange(len(SCORED)), improvement.values, color=colors, height=0.68)
+for row, channel in enumerate(SCORED):
+    if expanded.at[channel]:
+        core_count = len([
+            peer for peer in str(peer_audit.at[channel, "core_peers"]).split(";")
+            if peer
+        ])
+        selected_count = int(peer_audit.at[channel, "selected_peer_count"])
+        ax.text(improvement.at[channel] + max(improvement.max() * 0.018, 0.08), row,
+                f"{core_count}→{selected_count} peers", va="center", ha="left",
+                fontsize=6.4, color="0.25")
+    elif peer_audit.at[channel, "redundancy_status"] == "limited_single_peer":
+        ax.scatter([0], [row], s=16, marker="D", facecolor="white",
+                   edgecolor=C["blue"], linewidth=0.8, zorder=3)
+        ax.text(max(improvement.max() * 0.018, 0.08), row, "1 peer",
+                va="center", ha="left", fontsize=6.2, color="0.35")
 ax.axvline(2.0, color=C["red"], ls=":", lw=0.8, label="2% inclusion threshold")
 ax.set_yticks(np.arange(len(SCORED))); ax.set_yticklabels(SCORED, fontsize=7.2)
 ax.invert_yaxis()
 ax.set_xlabel("CV NRMSE gain (%)")
-ax.set_title("(b) Predictive gain", loc="left")
+ax.set_title("(b) Blocked-CV gain and redundancy", loc="left")
 improvement_upper = positive_data_ylim(
-    improvement.values, headroom=0.12, minimum_upper=2.5
+    improvement.values, headroom=0.24, minimum_upper=2.5
 )[1]
 ax.set_xlim(0.0, improvement_upper)
 ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.25), fontsize=6.5,
           frameon=False)
 
-fig.suptitle("Figure 11.  Same-analyte PLS peer selection with blocked temporal validation",
+fig.suptitle("Figure 11.  Topology-constrained PLS peers with blocked temporal validation",
              fontsize=9.8, fontweight="bold", y=0.98)
 save(fig, "Fig11_pls_peer_selection",
      plot_data={"selected_peer_matrix": peer_matrix,

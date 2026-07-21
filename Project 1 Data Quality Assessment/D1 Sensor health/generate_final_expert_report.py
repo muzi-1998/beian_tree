@@ -234,6 +234,11 @@ def build_report(force: bool = True) -> Path:
     overall = state["recovery_summary"].query("sensor_id == 'Overall'").iloc[0]
     step_calibration = state["step_mapping_calibration"]
     step_metrics = step_calibration["metrics"]
+    pls_audit = state["detectors_raw"]["pls_peer_selection_audit"]
+    do24_pls = pls_audit.loc["DO_2_4"]
+    do24_p90_change = 100.0 * (
+        do24_pls["selected_cv_nrmse_p90"] / do24_pls["core_cv_nrmse_p90"] - 1.0
+    )
 
     doc = Document()
     _configure_document(doc)
@@ -385,13 +390,21 @@ def build_report(force: bool = True) -> Path:
          f"10 iid channels; 780 scenarios; detection={step_metrics['material_detection_rate']:.3f}"],
         ["Step applicability", "Autocorrelation-aware and floor routes excluded from parameter fit",
          "Theoretical corrected-KS bound retained in the audit"],
-        ["PLS peers", "Same-analyte structural core + three-fold blocked temporal CV",
-         "No automatic DO-ORP binding; process-floor sensor excluded as predictor"],
+        ["PLS peers", "Adjacent/twin topology core; same-pool second-order CV expansion only",
+         f"DO_2_4: {do24_pls['core_peers']} -> {do24_pls['selected_peers']}; "
+         f"median gain={do24_pls['cv_improvement_pct']:.2f}%; p90 change={do24_p90_change:+.2f}%"],
         ["ORP_1_2 platform", "State cap retained",
          "Fig. 7 exposes pre-cap score, cap-active hours, and final score"],
     ]
     _add_table(doc, ["Component", "Final rule", "Audit evidence"], calibration_rows,
                [1900, 3740, 3720])
+    doc.add_paragraph(
+        "The PLS selector preserves a valid one-peer topology core and reports limited "
+        "redundancy explicitly. It does not fill sparse peer sets by lexical order or with "
+        "distant/cross-train channels. This removes the previous unsupported DO_2_4 links "
+        "to DO_1_1 and DO_1_2; DO_2_3 is the structural core and DO_2_2 is the only "
+        "blocked-CV-supported expansion."
+    )
     _add_figure(
         doc,
         "Fig5_mapping_curves.png",
@@ -414,7 +427,8 @@ def build_report(force: bool = True) -> Path:
     _add_figure(
         doc,
         "Fig11_pls_peer_selection.png",
-        "Figure 11. Same-analyte PLS peer matrix and blocked-CV predictive gain.",
+        "Figure 11. Topology-approved PLS peer matrix and blocked-CV gain. Blue cells are "
+        "adjacent/twin core peers; amber cells are CV-added same-pool second-order peers.",
         width=6.1,
     )
 

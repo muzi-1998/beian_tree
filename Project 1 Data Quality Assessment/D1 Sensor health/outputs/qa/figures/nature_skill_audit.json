@@ -1,83 +1,37 @@
 {
+  "generated_at": "2026-07-21T09:35:42+08:00",
   "figure_dir": "D:\\004_git\\beian_tree\\Project 1 Data Quality Assessment\\D1 Sensor health\\outputs\\figures",
   "figures": 20,
   "failed": 0,
+  "all_passed": true,
+  "source_warning_disposition": {
+    "RASTER-DPI": "Resolved: RASTER_DPI=600 is explicit in the baseline generator; every audited PNG reports approximately 600 dpi.",
+    "DATA-EXCLUSION": "Resolved: Fig. 4 exports n_before, n_after, and excluded_count for each sensor-subscore distribution."
+  },
   "records": [
     {
-      "stem": "Fig10_two_tier_regime",
-      "png": true,
-      "svg": true,
-      "pdf": true,
-      "png_size_px": [
-        3661,
-        2717
-      ],
-      "png_nonblank": true,
-      "svg_text_elements": 34,
-      "svg_arial_declared": true,
-      "panel_labels": [],
-      "nonconforming_bare_panel_labels": [],
-      "fresh_vs_sources": true
-    },
-    {
-      "stem": "Fig11_pls_peer_audit",
-      "png": true,
-      "svg": true,
-      "pdf": true,
-      "png_size_px": [
-        3722,
-        2459
-      ],
-      "png_nonblank": true,
-      "svg_text_elements": 45,
-      "svg_arial_declared": true,
-      "panel_labels": [],
-      "nonconforming_bare_panel_labels": [],
-      "fresh_vs_sources": true
-    },
-    {
       "stem": "Fig1_D1_dimension_matrix",
-      "png": true,
-      "svg": true,
-      "pdf": true,
-      "png_size_px": [
-        3488,
-        2096
-      ],
-      "png_nonblank": true,
-      "svg_text_elements": 47,
+      "bundle_pass": true,
+      "png_dpi_x": 599.9988,
+      "svg_has_editable_text": true,
       "svg_arial_declared": true,
       "panel_labels": [],
-      "nonconforming_bare_panel_labels": [],
       "fresh_vs_sources": true
     },
     {
       "stem": "Fig2_monthly_heatmap",
-      "png": true,
-      "svg": true,
-      "pdf": true,
-      "png_size_px": [
-        4019,
-        2240
-      ],
-      "png_nonblank": true,
-      "svg_text_elements": 158,
+      "bundle_pass": true,
+      "png_dpi_x": 599.9988,
+      "svg_has_editable_text": true,
       "svg_arial_declared": true,
       "panel_labels": [],
-      "nonconforming_bare_panel_labels": [],
       "fresh_vs_sources": true
     },
     {
       "stem": "Fig3_case_subscores",
-      "png": true,
-      "svg": true,
-      "pdf": true,
-      "png_size_px": [
-        3589,
-        3834
-      ],
-      "png_nonblank": true,
-      "svg_text_elements": 83,
+      "bundle_pass": true,
+      "png_dpi_x": 599.9988,
+      "svg_has_editable_text": true,
       "svg_arial_declared": true,
       "panel_labels": [
         "(a)",
@@ -89,20 +43,13 @@
         "(g)",
         "(h)"
       ],
-      "nonconforming_bare_panel_labels": [],
       "fresh_vs_sources": true
     },
     {
       "stem": "Fig4_subscore_distribution",
-      "png": true,
-      "svg": true,
-      "pdf": true,
-      "png_size_px": [
-        3599,
-        3915
-      ],
-      "png_nonblank": true,
-      "svg_text_elements": 35,
+      "bundle_pass": true,
+      "png_dpi_x": 599.9988,
+      "svg_has_editable_text": true,
       "svg_arial_declared": true,
       "panel_labels": [
         "(a)",
@@ -111,242 +58,207 @@
         "(d)",
         "(e)"
       ],
-      "nonconforming_bare_panel_labels": [],
       "fresh_vs_sources": true
     },
     {
       "stem": "Fig5_mapping_curves",
-      "png": true,
-      "svg": true,
-      "pdf": true,
-      "png_size_px": [
-        3655,
-        2835
-      ],
-      "png_nonblank": true,
-      "svg_text_elements": 74,
+      "bundle_pass": true,
+      "png_dpi_x": 599.9988,
+      "svg_has_editable_text": true,
       "svg_arial_declared": true,
-      "panel_labels": [],
-      "nonconforming_bare_panel_labels": [
-        "Q"
+      "panel_labels": [
+        "(a)  Spike: piecewise",
+        "(d)  Freeze duration",
+        "(e)  Freeze metrics",
+        "(f)  Regime mapping"
       ],
       "fresh_vs_sources": true
     },
     {
-      "stem": "Fig6_dominant_fault",
-      "png": true,
-      "svg": true,
-      "pdf": true,
-      "png_size_px": [
-        3670,
-        2101
-      ],
-      "png_nonblank": true,
-      "svg_text_elements": 27,
+      "stem": "Fig6_score_loss_attribution",
+      "bundle_pass": true,
+      "png_dpi_x": 599.9988,
+      "svg_has_editable_text": true,
       "svg_arial_declared": true,
-      "panel_labels": [],
-      "nonconforming_bare_panel_labels": [],
+      "panel_labels": [
+        "(b)  Absolute severe-evidence frequency"
+      ],
       "fresh_vs_sources": true
     },
     {
       "stem": "Fig7_daily_timeseries",
-      "png": true,
-      "svg": true,
-      "pdf": true,
-      "png_size_px": [
-        3658,
-        3158
-      ],
-      "png_nonblank": true,
-      "svg_text_elements": 53,
+      "bundle_pass": true,
+      "png_dpi_x": 599.9988,
+      "svg_has_editable_text": true,
       "svg_arial_declared": true,
-      "panel_labels": [],
-      "nonconforming_bare_panel_labels": [],
+      "panel_labels": [
+        "(a)   DO channels (n=8)",
+        "(b)   ORP channels (n=6)",
+        "(c)   ORP_1_2: state-cap mechanism behind the 2.5 platform"
+      ],
       "fresh_vs_sources": true
     },
     {
       "stem": "Fig8_veto_cooldown",
-      "png": true,
-      "svg": true,
-      "pdf": true,
-      "png_size_px": [
-        3636,
-        2077
-      ],
-      "png_nonblank": true,
-      "svg_text_elements": 30,
+      "bundle_pass": true,
+      "png_dpi_x": 599.9988,
+      "svg_has_editable_text": true,
       "svg_arial_declared": true,
       "panel_labels": [],
-      "nonconforming_bare_panel_labels": [],
       "fresh_vs_sources": true
     },
     {
-      "stem": "Fig9_harmonic_demo",
-      "png": true,
-      "svg": true,
-      "pdf": true,
-      "png_size_px": [
-        3747,
-        3068
-      ],
-      "png_nonblank": true,
-      "svg_text_elements": 44,
+      "stem": "Fig9_input_routing_audit",
+      "bundle_pass": true,
+      "png_dpi_x": 599.9988,
+      "svg_has_editable_text": true,
       "svg_arial_declared": true,
-      "panel_labels": [],
-      "nonconforming_bare_panel_labels": [],
+      "panel_labels": [
+        "(a)  Routed evidence",
+        "(b)  Whitening effect",
+        "(c)  Step applicability"
+      ],
+      "fresh_vs_sources": true
+    },
+    {
+      "stem": "Fig10_two_tier_regime",
+      "bundle_pass": true,
+      "png_dpi_x": 599.9988,
+      "svg_has_editable_text": true,
+      "svg_arial_declared": true,
+      "panel_labels": [
+        "(a)   Tier-1 W1 distance \u2014 DO_2_3",
+        "(b)   Tier-2 adjacent KS \u2014 DO_2_3"
+      ],
+      "fresh_vs_sources": true
+    },
+    {
+      "stem": "Fig11_pls_peer_selection",
+      "bundle_pass": true,
+      "png_dpi_x": 599.9988,
+      "svg_has_editable_text": true,
+      "svg_arial_declared": true,
+      "panel_labels": [
+        "(a)  Topology-approved peer matrix",
+        "(b)  Blocked-CV gain and redundancy"
+      ],
       "fresh_vs_sources": true
     },
     {
       "stem": "FigV12_v11_vs_strictV1_hero",
-      "png": true,
-      "svg": true,
-      "pdf": true,
-      "png_size_px": [
-        4186,
-        3940
-      ],
-      "png_nonblank": true,
-      "svg_text_elements": 116,
+      "bundle_pass": true,
+      "png_dpi_x": 599.9988,
+      "svg_has_editable_text": true,
       "svg_arial_declared": true,
-      "panel_labels": [],
-      "nonconforming_bare_panel_labels": [],
+      "panel_labels": [
+        "(c)  State occupancy"
+      ],
       "fresh_vs_sources": true
     },
     {
       "stem": "FigV13_state_machine_DO_2_3",
-      "png": true,
-      "svg": true,
-      "pdf": true,
-      "png_size_px": [
-        4126,
-        3842
-      ],
-      "png_nonblank": true,
-      "svg_text_elements": 76,
+      "bundle_pass": true,
+      "png_dpi_x": 599.9988,
+      "svg_has_editable_text": true,
       "svg_arial_declared": true,
-      "panel_labels": [],
-      "nonconforming_bare_panel_labels": [],
+      "panel_labels": [
+        "(a)   Sub-score timeseries with state-machine shading \u2014 DO_2_3",
+        "(c)   \u03b1-thaw schedule + recovery_streak counter"
+      ],
       "fresh_vs_sources": true
     },
     {
       "stem": "FigV14_veto3_state_audit",
-      "png": true,
-      "svg": true,
-      "pdf": true,
-      "png_size_px": [
-        4612,
-        4025
-      ],
-      "png_nonblank": true,
-      "svg_text_elements": 226,
+      "bundle_pass": true,
+      "png_dpi_x": 599.9988,
+      "svg_has_editable_text": true,
       "svg_arial_declared": true,
-      "panel_labels": [],
-      "nonconforming_bare_panel_labels": [],
+      "panel_labels": [
+        "(a)   Per-channel state distribution",
+        "(b)   Signal-only Veto-3 activation per channel",
+        "(c)   State-transition counts (entire 8.4 mo)",
+        "(d)   Veto/state co-activation matrix (DO_2_3)",
+        "(e)  Timer baseline versus causal event states"
+      ],
       "fresh_vs_sources": true
     },
     {
       "stem": "FigV15_pelt_event_id",
-      "png": true,
-      "svg": true,
-      "pdf": true,
-      "png_size_px": [
-        4376,
-        3809
-      ],
-      "png_nonblank": true,
-      "svg_text_elements": 77,
+      "bundle_pass": true,
+      "png_dpi_x": 599.9988,
+      "svg_has_editable_text": true,
       "svg_arial_declared": true,
-      "panel_labels": [],
-      "nonconforming_bare_panel_labels": [],
+      "panel_labels": [
+        "(a)   PELT change-points + new-event-id Refractory triggers \u2014 DO_2_3",
+        "(b)   PELT CP count per scored channel",
+        "(c)   PELT CPs vs Refractory triggers (event-uniqueness filter)",
+        "(d)   Refractory trigger density timeline (all channels)"
+      ],
       "fresh_vs_sources": true
     },
     {
       "stem": "FigV16_regime_templates",
-      "png": true,
-      "svg": true,
-      "pdf": true,
-      "png_size_px": [
-        4450,
-        3700
-      ],
-      "png_nonblank": true,
-      "svg_text_elements": 100,
+      "bundle_pass": true,
+      "png_dpi_x": 599.9988,
+      "svg_has_editable_text": true,
       "svg_arial_declared": true,
-      "panel_labels": [],
-      "nonconforming_bare_panel_labels": [],
+      "panel_labels": [
+        "(a)   Regime label timeline (k-means k=4) \u2014 used for D7 templates only",
+        "(b)   DO/ORP regime centers (z-scored)",
+        "(c)   Twin-pool symmetry (DO_1_*\u2194DO_2_*; ORP)"
+      ],
       "fresh_vs_sources": true
     },
     {
       "stem": "FigV17_scope_qr_qir_offline",
-      "png": true,
-      "svg": true,
-      "pdf": true,
-      "png_size_px": [
-        4022,
-        3627
-      ],
-      "png_nonblank": true,
-      "svg_text_elements": 55,
+      "bundle_pass": true,
+      "png_dpi_x": 599.9988,
+      "svg_has_editable_text": true,
       "svg_arial_declared": true,
-      "panel_labels": [],
-      "nonconforming_bare_panel_labels": [],
+      "panel_labels": [
+        "(a) Data roles in final D1 scoring",
+        "(b)   Driver-variable jump density timeline (offline annotation, NOT scored)",
+        "(c)   QR/QIR raw timelines (z-scored, 24h rolling) \u2014 for offline reference"
+      ],
       "fresh_vs_sources": true
     },
     {
       "stem": "FigV18_aggregate_summary",
-      "png": true,
-      "svg": true,
-      "pdf": true,
-      "png_size_px": [
-        4077,
-        3643
-      ],
-      "png_nonblank": true,
-      "svg_text_elements": 105,
+      "bundle_pass": true,
+      "png_dpi_x": 599.9988,
+      "svg_has_editable_text": true,
       "svg_arial_declared": true,
-      "panel_labels": [],
-      "nonconforming_bare_panel_labels": [],
+      "panel_labels": [
+        "(b)   Grade distribution",
+        "(e)   Events by dominant fault (final)"
+      ],
       "fresh_vs_sources": true
     },
     {
       "stem": "FigV19_recovery_validation",
-      "png": true,
-      "svg": true,
-      "pdf": true,
-      "png_size_px": [
-        4237,
-        3534
-      ],
-      "png_nonblank": true,
-      "svg_text_elements": 86,
+      "bundle_pass": true,
+      "png_dpi_x": 599.9988,
+      "svg_has_editable_text": true,
       "svg_arial_declared": true,
-      "panel_labels": [],
-      "nonconforming_bare_panel_labels": [
-        "A",
-        "B",
-        "C",
-        "D",
-        "A",
-        "B",
-        "C",
-        "D"
+      "panel_labels": [
+        "(a)  Event outcomes",
+        "(b)  Time-to-recovery",
+        "(c)  Natural-data sensitivity",
+        "(d)  Mechanism challenge pass rate"
       ],
       "fresh_vs_sources": true
     },
     {
       "stem": "FigV20_adapted_recovery_case",
-      "png": true,
-      "svg": true,
-      "pdf": true,
-      "png_size_px": [
-        3470,
-        3256
-      ],
-      "png_nonblank": true,
-      "svg_text_elements": 36,
+      "bundle_pass": true,
+      "png_dpi_x": 599.9988,
+      "svg_has_editable_text": true,
       "svg_arial_declared": true,
-      "panel_labels": [],
-      "nonconforming_bare_panel_labels": [],
+      "panel_labels": [
+        "(a)  Recovery gates: DO_1_2",
+        "(b)  Independent recovery evidence",
+        "(c)  Causal state path and 24 h observation"
+      ],
       "fresh_vs_sources": true
     }
   ]

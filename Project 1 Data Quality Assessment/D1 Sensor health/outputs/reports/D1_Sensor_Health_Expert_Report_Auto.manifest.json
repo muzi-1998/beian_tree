@@ -1,18 +1,20 @@
 {
   "report": "outputs\\D1_Sensor_Health_Expert_Report_Auto.docx",
-  "report_sha256": "21226d23df6da6b58c3c43a57e2a13b73259267cc75b5551566e6dbd6561e4f7",
-  "run_id": "d1-final-57bdbc83894f",
+  "report_sha256": "e4e4c199868ca6185f3c106e299ce00cb64d4b7beddb05d5d369db3d48f69722",
+  "run_id": "d1-final-ab36d51d4f60",
   "algorithm_version": "1.3.0-final-candidate",
   "generator": "generate_final_expert_report.py",
   "design_preset": "compact_reference_guide",
   "source_dependencies": {
-    "strict_v1_inputs": "e4c05b08cd3cb2e409eb281f7541c2595fed44abb259df6a10fc5c235df6ba2d",
+    "strict_v1_inputs": "ea9ccc7dbe432d7c9958ff5466a1a981045075e0c79c4688c1785625f03c2a89",
     "raw_hourly": "3ff3d9cd4600b88e89fcc5c106d622ae5ae46edb0508f32a153a215b1a066568",
     "state_machine_config": "af52f70efce08486bec1067fc1cf1c7e81a68517b5cc1d25e683ef01a839b5fa",
     "rules_config": "abadac5b4dfd104f8e8509f0d3a14f5091fec609db948725f8d0f19b8c9d39f7",
     "mapping_config": "67e6705ade9383184f88b71a780b8b02e51b94438e547fe291cc8550c20ce0f0",
     "state_machine_code": "07a21c71db5d70ce283412706704548250f407121c7899364aad2a644bfdeb48",
     "local_baseline_code": "89c150fb64a30870bc2fb8babec415adf7fc5ad2879ede90dc7c9a34be643788",
-    "pipeline_code": "bfe1d9150897671534d8898ee3c008c2ee93393ed8f0ed976d93701a2493992d"
+    "detector_bridge_code": "7f33f4e8f676bb187d3d80c028b094d8c64596a707e0d841559c91ec004787fe",
+    "pls_detector_code": "b40a3d87b064594455ed2431f65f31f84b48c0482c632c5ffefbe2fc4654523c",
+    "pipeline_code": "551132ad06c8e79d354f0dace98905a3577564be54c3e23e4a6db9e25f0b55d3"
   }
 }

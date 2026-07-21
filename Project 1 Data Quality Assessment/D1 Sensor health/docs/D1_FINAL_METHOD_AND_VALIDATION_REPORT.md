@@ -1,6 +1,6 @@
 # D1 Sensor Health: final method and validation record
 
-**Run ID:** `d1-final-57bdbc83894f`
+**Run ID:** `d1-final-ab36d51d4f60`
 
 **Algorithm:** `1.3.0-final-candidate`
 **Scope:** 14 DO/ORP channels; QR/QIR are offline support only.
@@ -22,7 +22,7 @@ The implementation is suitable as the locked internal final candidate for thesis
 9. Event identity, censoring, relapse, and transition conservation are formally audited.
 10. `DO_1_4` uses a process-floor freeze route: hard RLE is the production score; low variance and uniqueness are diagnostics only.
 11. Step mapping is calibrated by raw detector-input sustained-step injection on the valid `iid` domain.
-12. PLS uses same-analyte peers only, with three-fold blocked temporal validation; DO-ORP suffix matching is prohibited.
+12. PLS uses an explicit same-analyte topology: adjacent and available twin-pool sensors form the structural core, while only same-pool second-order neighbours may enter through three-fold blocked temporal validation. A valid one-peer core is retained; lexical or distant-channel fallback is prohibited.
 
 ## Final results
 
@@ -39,7 +39,7 @@ The implementation is suitable as the locked internal final candidate for thesis
 | Recovered occupancy | 0.207% | Observation-state occupancy, not recovery rate |
 | Relapse at 24/48/72 h | 0/0/0 | No confirmed relapse in this run |
 | Transition conservation | Pass | 22 opened = 22 episode records; no duplicate IDs |
-| Final mean D1 | 4.2436 | STRICT V1 mean = 4.2523 |
+| Final mean D1 | 4.2411 | STRICT V1 mean = 4.2496 |
 
 ## Detector calibration and routing
 
@@ -68,22 +68,24 @@ Three `autocorr_aware` channels and the process-floor channel remain in the appl
 
 ### PLS peers
 
-- Structural peers are same-analyte adjacent and twin-pool channels.
-- Additional same-analyte peers require at least 2% median blocked-CV NRMSE improvement and no more than 5% tail-error degradation.
-- CV-supported additions occurred for `DO_1_1` (2.31%), `ORP_1_2` (5.13%), and `ORP_2_1` (4.78%).
-- No DO-ORP pair was selected; `DO_1_4` is excluded as another target's predictor.
+- Structural peers are same-analyte adjacent and available twin-pool channels. If exclusions leave one valid structural peer, that peer is retained rather than being replaced by unrelated channels.
+- Candidate expansion is restricted to same-pool second-order neighbours. Admission requires at least 2% median blocked-CV NRMSE improvement and no more than 5% p90-error degradation.
+- For `DO_2_4`, the valid core is `DO_2_3`; blocked CV adds `DO_2_2`. Median NRMSE improves from 0.9754 to 0.8505 (12.81%), while p90 NRMSE changes from 1.8014 to 1.8352 (+1.87%), within the prespecified 5% guardrail.
+- No DO-ORP pair was selected; `DO_1_4` remains excluded as another target's predictor. No lexical, distant-channel, or cross-train fallback is permitted when the topology core is sparse.
 - PLS residual z-scores use training residual scale with a 5% target-scale floor.
+
+This correction removes the previous unsupported `DO_2_4 -> DO_1_1/DO_1_2` fallback. Relative to run `d1-final-57bdbc83894f`, the `DO_2_4` final mean changes from 3.907 to 3.842 and the number of `D1 < 3` event windows lasting at least 6 h changes from 81 to 88. The change is retained because it reflects removal of optimistic non-topological predictors, not a deterioration of the underlying sensor data.
 
 ## Figure decisions
 
 - Fig. 6 now reports exact additive attribution of `5-D1_pre` and absolute severe-evidence frequency. The previous dominant-minimum plot was removed.
 - Fig. 7 retains the state cap and exposes the `ORP_1_2` pre-cap score, cap-active hours, and final 2.5 platform.
 - Fig. 9 harmonic demonstration was removed because it duplicated Section 1.1 and mislabelled `raw-residual` as a harmonic component. The replacement audits 1.1-to-D1 routing and detector applicability.
-- Fig. 11 now shows the actual selected PLS matrix and blocked-CV gain. The hard-coded DO-ORP peer schematic was removed.
+- Fig. 11 now distinguishes topology-approved core peers from CV-added same-pool second-order peers and reports the actual blocked-CV gain. The hard-coded DO-ORP peer schematic and non-topological fallback were removed.
 
 ## Release gate
 
-- `pytest`: 17 passed.
+- `pytest`: 18 passed.
 - Formal transition conservation: passed.
 - Recovery mechanism challenges: 4/4 classes passed for production variant C.
 - Excel exporter: 17 core workbooks generated successfully.

@@ -2,8 +2,10 @@
 from __future__ import annotations
 
 import json
+import re
 from datetime import datetime
 from pathlib import Path
+from xml.etree import ElementTree
 
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
@@ -55,6 +57,18 @@ VISUAL_REVIEW_CHECKS = [
     "data-driven y limits provide only justified headroom",
     "axis labels and tick labels remain legible at final export size",
 ]
+
+
+def _svg_text_values(path: Path) -> list[str]:
+    try:
+        root = ElementTree.parse(path).getroot()
+    except ElementTree.ParseError:
+        return []
+    return [
+        "".join(node.itertext()).strip()
+        for node in root.iter()
+        if node.tag.rsplit("}", 1)[-1] == "text"
+    ]
 
 
 def _generator_for(name: str) -> Path:
@@ -116,6 +130,13 @@ def main() -> None:
         if svg_path.exists():
             svg_text = svg_path.read_text(encoding="utf-8", errors="ignore")
             row["svg_has_editable_text"] = "<text" in svg_text
+            row["svg_arial_declared"] = any(
+                family in svg_text for family in ("Arial", "Helvetica", "Liberation Sans")
+            )
+            text_values = _svg_text_values(svg_path)
+            row["panel_labels"] = [
+                value for value in text_values if re.match(r"^\([a-z]\)(?:\s|$)", value)
+            ]
         row["visual_review"] = (
             "contact_sheet_and_full_resolution"
             if name in FULL_RESOLUTION_REVIEWED else "contact_sheet"
@@ -144,6 +165,47 @@ def main() -> None:
     }
     (QA_DIR / "D1_figure_bundle_audit.json").write_text(
         json.dumps(report, indent=2), encoding="utf-8"
+    )
+    nature_rows = [
+        {
+            "stem": row["figure"],
+            "bundle_pass": row["bundle_pass"],
+            "png_dpi_x": row.get("png_dpi_x", 0.0),
+            "svg_has_editable_text": row.get("svg_has_editable_text", False),
+            "svg_arial_declared": row.get("svg_arial_declared", False),
+            "panel_labels": row.get("panel_labels", []),
+            "fresh_vs_sources": row["fresh_vs_generator"],
+        }
+        for row in rows
+    ]
+    nature_pass = all(
+        row["bundle_pass"]
+        and row["png_dpi_x"] >= 590.0
+        and row["svg_has_editable_text"]
+        and row["svg_arial_declared"]
+        and row["fresh_vs_sources"]
+        for row in nature_rows
+    )
+    nature_report = {
+        "generated_at": report["generated_at"],
+        "figure_dir": str(FIG_DIR),
+        "figures": len(nature_rows),
+        "failed": sum(not row["bundle_pass"] for row in nature_rows),
+        "all_passed": nature_pass,
+        "source_warning_disposition": {
+            "RASTER-DPI": (
+                "Resolved: RASTER_DPI=600 is explicit in the baseline generator; "
+                "every audited PNG reports approximately 600 dpi."
+            ),
+            "DATA-EXCLUSION": (
+                "Resolved: Fig. 4 exports n_before, n_after, and excluded_count for "
+                "each sensor-subscore distribution."
+            ),
+        },
+        "records": nature_rows,
+    }
+    (QA_DIR / "nature_skill_audit.json").write_text(
+        json.dumps(nature_report, indent=2), encoding="utf-8"
     )
     _contact_sheet(EXPECTED[:10], QA_DIR / "contact_sheet_01.png")
     _contact_sheet(EXPECTED[10:], QA_DIR / "contact_sheet_02.png")
