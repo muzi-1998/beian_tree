@@ -374,7 +374,9 @@ _save(OUT / "D1_regime_templates.xlsx", {
     "gradient_templates": pd.DataFrame(gradient_rows),
     "twin_symmetry_templates": pd.DataFrame(sym_rows),
     "template_versions": pd.DataFrame(versions_rows),
-    "regime_labels_hourly": regime_labels.to_frame("regime_id"),
+    "regime_labels_hourly": (
+        regime_labels.rename("regime_id").rename_axis("timestamp").reset_index()
+    ),
 }, index=False)
 
 

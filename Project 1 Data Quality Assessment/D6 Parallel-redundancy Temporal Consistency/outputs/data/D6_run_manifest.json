@@ -1,7 +1,7 @@
 {
-  "run_id": "D6V14_20260714_024929",
+  "run_id": "D6V14_20260722_021007",
   "config_version": "d6-v1.4-restored-v12-20260714",
-  "generated_utc": "2026-07-14T02:51:51.945917+00:00",
+  "generated_utc": "2026-07-22T02:12:16.781687+00:00",
   "data_span": [
     "2025-08-01 00:00:00",
     "2026-04-13 23:50:00"
@@ -9,7 +9,7 @@
   "rows": 42847,
   "pairs": 7,
   "d2_run_id": "D2V1_20260710_1733",
-  "calibration_id": "D6CAL-V14-20f697901061",
+  "calibration_id": "D6CAL-V14-d21144ef1b41",
   "dependencies": [
     {
       "dependency": "residuals",
@@ -26,14 +26,14 @@
     {
       "dependency": "d1_scores",
       "path_role": "D1_main_scores_min.xlsx",
-      "sha256": "abb941ac70ae2a0b94e081a6573cee472ea7681a93fb4d5a9b8113dcec8bd7e3",
-      "modified_utc": "2026-07-10T02:49:31.813900+00:00"
+      "sha256": "c825b4481c54a81f2d75d486183afd3ddea01593965b9bdef97d4277b44bbf78",
+      "modified_utc": "2026-07-22T02:04:23.222556+00:00"
     },
     {
       "dependency": "regime_templates",
       "path_role": "D1_regime_templates.xlsx",
-      "sha256": "cf4bd67afd8248d8b8bf0a92a549bb1c28504f1fea4e7cf2b443b7e6b0123153",
-      "modified_utc": "2026-07-10T02:49:40.805057+00:00"
+      "sha256": "7dba5c980a567645fff62ba3b46369ce2187498ee2e45e5abf4f25b0c6052d53",
+      "modified_utc": "2026-07-22T02:04:32.507595+00:00"
     },
     {
       "dependency": "d2_scores",
@@ -50,8 +50,8 @@
     {
       "dependency": "d6_pipeline_code",
       "path_role": "pipeline.py",
-      "sha256": "7b292b9f43248597dd9ac5974a343ae511f06bcbab8b5f5151fc1c9e96f7b927",
-      "modified_utc": "2026-07-14T02:48:27.198285+00:00"
+      "sha256": "c2243a6990ed1831fbed1694d6cd08b1e0d10a7efcb43d76cd47fd8ef43ecc48",
+      "modified_utc": "2026-07-22T02:04:05.834526+00:00"
     },
     {
       "dependency": "d6_scoring_code",

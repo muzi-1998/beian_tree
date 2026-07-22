@@ -1,0 +1,107 @@
+{
+  "schema_version": "d1-release-manifest-v1",
+  "release_id": "D1REL-1.3.0-f6074be3751f",
+  "release_version": "1.3.0",
+  "release_status": "released",
+  "generated_utc": "2026-07-22T02:05:04.270639+00:00",
+  "source_run_id": "d1-final-8fdd3599890f",
+  "source_algorithm_version": "1.3.0-final-candidate",
+  "source_run_manifest": {
+    "path": "outputs/logs/D1_run_manifest.json",
+    "sha256": "a19d030d0b05c8d26049c5a223fcb89fcab96b48fed2e50591681f4b16d4d825",
+    "state_pickle_sha256": "04ef182eda12346f9a6b4094e3a070a57475ff51bd3945bc364e1b596ee026b5"
+  },
+  "artifacts": [
+    {
+      "path": "outputs/data/D1_main_scores_min.xlsx",
+      "role": "authoritative hourly D1 score interface",
+      "sha256": "c825b4481c54a81f2d75d486183afd3ddea01593965b9bdef97d4277b44bbf78",
+      "bytes": 4816429,
+      "contract": {
+        "required_sheet": "D1_total_hourly",
+        "available_sheets": [
+          "summary",
+          "D1_total_hourly",
+          "Q_spike",
+          "Q_step",
+          "Q_drift",
+          "Q_freeze",
+          "Q_regime",
+          "grade_hourly",
+          "usable_tag_hourly"
+        ],
+        "rows": 6138,
+        "columns": [
+          "timestamp",
+          "DO_1_1",
+          "DO_1_2",
+          "DO_1_3",
+          "DO_1_4",
+          "DO_2_1",
+          "DO_2_2",
+          "DO_2_3",
+          "DO_2_4",
+          "ORP_1_1",
+          "ORP_1_2",
+          "ORP_1_3",
+          "ORP_2_1",
+          "ORP_2_2",
+          "ORP_2_3"
+        ]
+      }
+    },
+    {
+      "path": "outputs/data/D1_regime_templates.xlsx",
+      "role": "authoritative hourly regime context for downstream calibration",
+      "sha256": "7dba5c980a567645fff62ba3b46369ce2187498ee2e45e5abf4f25b0c6052d53",
+      "bytes": 81359,
+      "contract": {
+        "required_sheet": "regime_labels_hourly",
+        "available_sheets": [
+          "cluster_centers",
+          "rank_templates",
+          "gradient_templates",
+          "twin_symmetry_templates",
+          "template_versions",
+          "regime_labels_hourly"
+        ],
+        "rows": 6138,
+        "columns": [
+          "timestamp",
+          "regime_id"
+        ]
+      }
+    },
+    {
+      "path": "outputs/data/D1_event_windows.xlsx",
+      "role": "diagnostic D1 event interface for cross-dimension linkage",
+      "sha256": "afadba81c50521fbf3e84b1af43f52b9e1a84ebd21e89a5c2a6bd3fe9fbbf004",
+      "bytes": 15988,
+      "contract": {
+        "required_sheet": "all_events",
+        "available_sheets": [
+          "all_events",
+          "top_per_sensor",
+          "fault_summary"
+        ],
+        "rows": 81,
+        "columns": [
+          "sensor_id",
+          "start",
+          "end",
+          "duration_h",
+          "min_d1",
+          "mean_d1",
+          "dominant_fault",
+          "min_subscore"
+        ]
+      }
+    }
+  ],
+  "downstream_contract": {
+    "D2": "diagnostic event linkage only; D2 core score is immutable",
+    "D6": "benchmark admission and provisional bilateral D1 fuse",
+    "D7": "read-only sensitivity-track filter; D7 Local is isolated"
+  },
+  "immutability_rule": "Consumers must match artifact SHA-256 values exactly or rerun from this release. A file modification time is not evidence of freshness."
+}

@@ -2,7 +2,7 @@
 
 **Project:** Topological Role Consistency and Structural Representativeness  
 **Run:** `D7-LOCAL-20260716T125319Z`  
-**Generated:** 2026-07-16 21:19 CST  
+**Generated:** 2026-07-22 10:29 CST  
 **Decision:** Research package complete; production DQR release blocked.
 
 ## 1. Executive verdict
@@ -26,6 +26,8 @@ The project is **not production-ready**. The field topology, asset/serial/channe
 - Raw low-score fraction (`D7_raw < 3`): 43.8%; candidate persistent events: 499.
 - Full 10-min regime-state trajectory retained; OOD hold rate: 17.1%; confirmed switches: 1102.
 - Result provenance is bound to canonical input hashes, topology hash, template/mapping/regime versions and code commit in `D7_run_manifest.json`.
+- Sensitivity inputs are bound to frozen D1 release `D1REL-1.3.0-f6074be3751f` and exact D2/D4/Local artifact hashes in `D7_sensitivity_manifest.json`.
+- Production arbitration remains `pending_not_produced`; no `D7_forDQR` output was generated.
 
 ## 4. Applicability and support
 
@@ -48,8 +50,8 @@ ORP is deliberately forced to L1 `diagonal_robust_z` with `alpha=1.00`. It is ne
 | Common-mode FAR | 0.061 | <=0.10 | Pass |
 | Zone-coherent FAR | 0.039 | <=0.10 | Pass |
 | Switch chatter rate | 0.000 | <=0.05 | Pass |
-| IE_track | 0.041 | <=0.20 | Pass |
-| Event Jaccard | 0.844 | >=0.80 | Pass |
+| IE_track | 0.039 | <=0.20 | Pass |
+| Event Jaccard | 0.851 | >=0.80 | Pass |
 | Culprit Spearman rho | 0.978 | >=0.80 | Pass |
 
 Validation uses observed test-period spatial windows with frozen templates. Same-line, same-analyte position swaps are positive controls. Freeze, temporal ramps, common-mode and zone-coherent changes, DO4 floor behavior and dropout are negative/orthogonality controls. The swap detection metrics pass, but localization remains below the release criterion and must not be hidden by threshold tuning.

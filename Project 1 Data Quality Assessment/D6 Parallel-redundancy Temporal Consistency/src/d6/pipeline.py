@@ -38,6 +38,11 @@ def _load_context(
     regime_frame = pd.read_excel(cfg.paths["regime_templates"], sheet_name="regime_labels_hourly")
     if len(regime_frame) != len(d1):
         raise ValueError("D1 regime labels must align one-to-one with D1 hourly scores")
+    if "timestamp" not in regime_frame.columns:
+        raise ValueError("D1 regime labels require an explicit timestamp column")
+    regime_timestamps = pd.DatetimeIndex(pd.to_datetime(regime_frame["timestamp"]))
+    if not regime_timestamps.equals(pd.DatetimeIndex(d1.index)):
+        raise ValueError("D1 regime-label timestamps do not match D1 hourly scores")
     regime = pd.Series(
         regime_frame["regime_id"].to_numpy(), index=d1.index, name="regime_id"
     )

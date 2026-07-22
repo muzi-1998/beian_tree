@@ -55,6 +55,11 @@ class D7ReportBuilder:
             self.paths.sensitivity_output_root / "D7_track_invariance.xlsx",
             sheet_name="track_invariance",
         )
+        self.sensitivity_manifest = json.loads(
+            (self.paths.sensitivity_output_root / "D7_sensitivity_manifest.json").read_text(
+                encoding="utf-8"
+            )
+        )
         self.manifest = json.loads(
             (self.paths.local_output_root / "D7_run_manifest.json").read_text(encoding="utf-8")
         )
@@ -116,6 +121,8 @@ class D7ReportBuilder:
             "ie_track": float(invariance.loc["IE_track", "estimate"]),
             "jaccard": float(invariance.loc["event_jaccard", "estimate"]),
             "rho": float(invariance.loc["culprit_spearman", "estimate"]),
+            "d1_release_id": self.sensitivity_manifest["d1_release_id"],
+            "d7_fordqr_status": self.sensitivity_manifest["D7_forDQR_status"],
             "figure_qa": bool(self.figure_qa["passed"]),
         }
 
@@ -156,6 +163,8 @@ The project is **not production-ready**. The field topology, asset/serial/channe
 - Raw low-score fraction (`D7_raw < 3`): {f['low_rate']:.1%}; candidate persistent events: {f['events']}.
 - Full 10-min regime-state trajectory retained; OOD hold rate: {f['ood_rate']:.1%}; confirmed switches: {f['switches']}.
 - Result provenance is bound to canonical input hashes, topology hash, template/mapping/regime versions and code commit in `D7_run_manifest.json`.
+- Sensitivity inputs are bound to frozen D1 release `{f['d1_release_id']}` and exact D2/D4/Local artifact hashes in `D7_sensitivity_manifest.json`.
+- Production arbitration remains `{f['d7_fordqr_status']}`; no `D7_forDQR` output was generated.
 
 ## 4. Applicability and support
 
@@ -429,6 +438,10 @@ Current release classification: **research review complete, production blocked**
             self._bullet(doc, item)
         doc.add_page_break()
         self._heading(doc, "3. Current data and outputs", 1)
+        self._paragraph(
+            doc,
+            f"Sensitivity provenance is bound to frozen D1 release {f['d1_release_id']} and exact D2/D4/Local artifact hashes. Production arbitration remains {f['d7_fordqr_status']}; no D7_forDQR output was generated.",
+        )
         self._table(
             doc,
             ["Measure", "Current result", "Interpretation"],
