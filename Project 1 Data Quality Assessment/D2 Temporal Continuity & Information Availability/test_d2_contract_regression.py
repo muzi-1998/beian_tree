@@ -40,6 +40,10 @@ def test_production_subscores_equal_modular_scorers():
         "irregular_rate": [0.0, 0.01, 0.06, 0.2],
         "info_empty_cov": [0.0, 0.05, 0.25, 0.6],
         "freeze_cand_cov": 0.0,
+        "sensor_freeze_cov": 0.0,
+        "low_iqr_cov": 0.0,
+        "floor_occupancy": 0.0,
+        "resolution_limited": 0.0,
         "L_max_min": [0, 10, 90, 500],
         "gap_run_count": [0, 3, 20, 50],
         "P95_gap_min": [0, 5, 40, 150],
@@ -55,3 +59,45 @@ def test_production_subscores_equal_modular_scorers():
     assert np.allclose(produced["Q_TI"], ti)
     assert np.allclose(produced["Q_GS"], gs)
     assert np.allclose(produced["Q_FA"], fa)
+
+
+def test_qfa_uses_configured_six_hour_window(tmp_path):
+    idx = pd.date_range("2026-01-01", periods=24 * 60, freq="1min")
+    base = pd.DataFrame({
+        "missing": 0,
+        "duplicate": 0,
+        "out_of_order": 0,
+        "irregular_interval": 0,
+        "qfa_unavailable": np.r_[np.ones(18 * 60), np.zeros(6 * 60)],
+        "sensor_freeze": 0,
+        "low_iqr_diagnostic": 0,
+        "floor_occupancy": 0,
+        "resolution_limited": 0,
+    }, index=idx)
+    flags = {ch: base.copy() for ch in d2.SCORED_CHANNELS}
+    old_cache, old_key = d2.CACHE, d2.CACHE_KEY
+    d2.CACHE, d2.CACHE_KEY = tmp_path, "unit-test-qfa-six-hour"
+    try:
+        stats = d2.compute_window_stats(flags)
+    finally:
+        d2.CACHE, d2.CACHE_KEY = old_cache, old_key
+
+    assert d2._d2_cfg.freeze_window.length == "6h"
+    assert stats["DO_1_4"]["info_empty_cov"].iloc[-1] == 0.0
+
+
+def test_response_loss_peers_are_same_position_and_process_floor_is_disabled():
+    for sensor in d2._d2_cfg.sensors.values():
+        if sensor.response_loss_enabled:
+            assert sensor.response_loss_peers
+            for peer_id in sensor.response_loss_peers:
+                peer = d2._d2_cfg.sensors[peer_id]
+                assert peer.sensor_type == sensor.sensor_type
+                assert peer.position == sensor.position
+                assert peer.process_zone == sensor.process_zone
+
+    for sensor_id in ("DO_1_4", "DO_2_4"):
+        sensor = d2._d2_cfg.sensors[sensor_id]
+        assert sensor.availability_mode == "process_floor"
+        assert not sensor.response_loss_enabled
+        assert sensor.response_loss_peers == []

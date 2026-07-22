@@ -1,6 +1,6 @@
 {
   "schema_version": "cross-project-freshness-v1",
-  "generated_utc": "2026-07-22T02:30:19.886018+00:00",
+  "generated_utc": "2026-07-22T09:25:13.676585+00:00",
   "d1_release_id": "D1REL-1.3.0-f6074be3751f",
   "checks": [
     {
@@ -26,7 +26,7 @@
     {
       "check": "D2:core_scores_unchanged",
       "passed": true,
-      "detail": "3f233f4add980824db243db71fc0c0a9844742239c378bb5ca20d97a48720df0"
+      "detail": "70a4a093f0900b090d49dbe8eda8a025e5eb840fce44a267f43636627029c08a"
     },
     {
       "check": "D6:D1_scores_hash",
@@ -42,8 +42,8 @@
       "check": "D6:D7_arbitration_pending",
       "passed": true,
       "detail": {
-        "pending_D7_arbitration": 33881,
-        "not_evaluable_or_D1_missing": 8966
+        "pending_D7_arbitration": 37975,
+        "not_evaluable_or_D1_missing": 4872
       }
     },
     {
@@ -59,7 +59,7 @@
     {
       "check": "D7_sensitivity:D2_scores",
       "passed": true,
-      "detail": "3f233f4add980824db243db71fc0c0a9844742239c378bb5ca20d97a48720df0"
+      "detail": "70a4a093f0900b090d49dbe8eda8a025e5eb840fce44a267f43636627029c08a"
     },
     {
       "check": "D7_sensitivity:D4_scores",

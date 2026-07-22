@@ -1,6 +1,6 @@
 # D7 Project Directory Guide v2.1
 
-**Generated:** 2026-07-22 10:29 CST  
+**Generated:** 2026-07-22 17:24 CST  
 **Update rule:** every computational or figure change must rerun reports and release QA.
 
 ## 1. Project layout

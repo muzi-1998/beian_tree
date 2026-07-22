@@ -10,6 +10,10 @@ topology:
     DO: 4
     ORP: 3
 
+availability_defaults:
+  mode: standard
+  response_loss_enabled: true
+
 scored_channels:
   - DO_1_1
   - DO_1_2
@@ -44,7 +48,9 @@ sensors:
              precision: 0.01, unit: mg/L }
   DO_1_4:  { pool: 1, type: DO,  position: 4, parallel_to: DO_2_4,
              in_pool_neighbors: [DO_1_1, DO_1_2, DO_1_3],
-             precision: 0.01, unit: mg/L }
+             precision: 0.01, unit: mg/L, availability_mode: process_floor,
+             process_zone: post_anoxic, process_floor_threshold: 0.20,
+             response_loss_enabled: false, response_loss_peers: [] }
   DO_2_1:  { pool: 2, type: DO,  position: 1, parallel_to: DO_1_1,
              in_pool_neighbors: [DO_2_2, DO_2_3, DO_2_4],
              precision: 0.01, unit: mg/L }
@@ -56,7 +62,9 @@ sensors:
              precision: 0.01, unit: mg/L }
   DO_2_4:  { pool: 2, type: DO,  position: 4, parallel_to: DO_1_4,
              in_pool_neighbors: [DO_2_1, DO_2_2, DO_2_3],
-             precision: 0.01, unit: mg/L }
+             precision: 0.01, unit: mg/L, availability_mode: process_floor,
+             process_zone: post_anoxic, process_floor_threshold: 0.20,
+             response_loss_enabled: false, response_loss_peers: [] }
   ORP_1_1: { pool: 1, type: ORP, position: 1, parallel_to: ORP_2_1,
              in_pool_neighbors: [ORP_1_2, ORP_1_3],
              precision: 0.5, unit: mV }

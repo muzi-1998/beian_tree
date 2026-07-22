@@ -7,7 +7,7 @@ B-2  D1–D2 评分时序对比图 — 双轴时序 + D1 事件窗口 + D2 veto 
   - rcParams: Arial / sans-serif, svg.fonttype='none'
   - 轴：仅左+下，无网格，legend.frameon=False
   - 颜色：PALETTE（见下）
-  - DPI: 300（PNG）+ SVG
+  - DPI: 600（PNG）+ editable SVG/PDF
   - 导出：artifacts/figures/
 """
 from __future__ import annotations
@@ -16,6 +16,7 @@ import warnings
 import numpy as np
 import pandas as pd
 import matplotlib
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import matplotlib.patches as mpatches
@@ -28,11 +29,13 @@ warnings.filterwarnings("ignore")
 matplotlib.use("Agg")
 
 # ── 强制 rcParams（nature-skills 规范三行）────────────────────────────────────
-plt.rcParams["font.family"]     = "sans-serif"
-plt.rcParams["font.sans-serif"] = ["Arial", "Helvetica", "DejaVu Sans",
-                                    "Liberation Sans"]
-plt.rcParams["svg.fonttype"]    = "none"
-plt.rcParams["pdf.fonttype"]    = 42
+mpl.rcParams.update({
+    "font.family": "sans-serif",
+    "font.sans-serif": ["Arial", "Helvetica", "DejaVu Sans", "Liberation Sans"],
+    "font.size": 7,
+    "svg.fonttype": "none",
+    "pdf.fonttype": 42,
+})
 configure_publication_style()
 
 # ── PALETTE（nature-skills api.md）───────────────────────────────────────────
@@ -228,10 +231,10 @@ def make_b1(freeze_df: pd.DataFrame, D2: dict) -> None:
         dur_data[r] = freeze_df[freeze_df["relation_to_D1"]==r]["duration_min"].tolist()
 
     # ── 布局 ─────────────────────────────────────────────────────────────────
-    fig = plt.figure(figsize=(14, 7))
+    fig = plt.figure(figsize=(7.2, 4.2))
     gs  = gridspec.GridSpec(2, 2, figure=fig,
                             width_ratios=[1.7, 1.0],
-                            hspace=0.42, wspace=0.38)
+                            hspace=0.72, wspace=0.38)
     ax_a  = fig.add_subplot(gs[:, 0])    # 全高左列
     ax_b  = fig.add_subplot(gs[0, 1])   # 右上
     ax_c  = fig.add_subplot(gs[1, 1])   # 右下
@@ -337,14 +340,14 @@ def make_b2(D2: dict, D1: dict, d1_ev: pd.DataFrame) -> None:
     # 代表通道：覆盖高质量（4.9），中质量（3.5-4.5），低质量（<3）
     channels_b2 = [
         "DO_1_1",  # 健康 DO
-        "DO_1_4",  # 退化 DO（持续 freeze_severe）
-        "DO_2_4",  # 中等 DO
+        "DO_1_4",  # 后缺氧 process-floor DO
+        "DO_2_4",  # 平行后缺氧 process-floor DO
         "ORP_1_1", # 中等 ORP
         "ORP_2_1", # 低质 ORP
         "ORP_2_2", # 最低 ORP
     ]
 
-    fig, axes = plt.subplots(3, 2, figsize=(14, 10),
+    fig, axes = plt.subplots(3, 2, figsize=(7.2, 7.0),
                              sharex=False, sharey=False)
     axes_flat = axes.flatten()
     fs = 8

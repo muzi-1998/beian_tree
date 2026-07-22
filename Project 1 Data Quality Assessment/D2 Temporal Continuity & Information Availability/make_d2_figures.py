@@ -30,6 +30,7 @@ warnings.filterwarnings("ignore")
 import numpy as np
 import pandas as pd
 import matplotlib
+import matplotlib as mpl
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
@@ -41,11 +42,13 @@ from publication_style import (PALETTE as SHARED_PALETTE,
                                configure_publication_style, finalize_figure)
 
 # ── 强制 rcParams（nature-skills 三行必选）────────────────────────────────────
-plt.rcParams["font.family"]     = "sans-serif"
-plt.rcParams["font.sans-serif"] = ["Arial", "Helvetica", "DejaVu Sans",
-                                    "Liberation Sans"]
-plt.rcParams["svg.fonttype"]    = "none"
-plt.rcParams["pdf.fonttype"]    = 42
+mpl.rcParams.update({
+    "font.family": "sans-serif",
+    "font.sans-serif": ["Arial", "Helvetica", "DejaVu Sans", "Liberation Sans"],
+    "font.size": 7,
+    "svg.fonttype": "none",
+    "pdf.fonttype": 42,
+})
 configure_publication_style()
 
 # ── 路径 ─────────────────────────────────────────────────────────────────────
@@ -53,6 +56,8 @@ _ROOT = Path(__file__).parent
 _D1   = _ROOT.parent / "D1 Sensor health"
 FIGS  = _ROOT / "artifacts" / "figures"
 FIGS.mkdir(parents=True, exist_ok=True)
+DATA  = _ROOT / "artifacts" / "data"
+DATA.mkdir(parents=True, exist_ok=True)
 
 # ── PALETTE（nature-skills api.md 完整版）────────────────────────────────────
 PAL = {
@@ -498,74 +503,122 @@ def fig04_gap_severity(state: dict):
 # ─────────────────────────────────────────────────────────────────────────────
 
 def fig05_freeze_availability(state: dict):
-    channels      = state["scored_channels"]
-    subs_all      = state["subs_all"]
-    freeze_events = state["freeze_events"]
+    channels = state["scored_channels"]
+    subs_all = state["subs_all"]
+    floor_chs = ["DO_1_4", "DO_2_4"]
+    standard_do = [c for c in channels if c.startswith("DO") and c not in floor_chs]
+    standard_orp = [c for c in channels if c.startswith("ORP")]
 
-    do_chs  = [c for c in channels if c.startswith("DO")]
-    orp_chs = [c for c in channels if c.startswith("ORP")]
-    do_colors  = _DO_HUE + _DO_HUE;   do_ls  = ["-"] * 4 + ["--"] * 4
-    orp_colors = _ORP_HUE + _ORP_HUE; orp_ls = ["-"] * 3 + ["--"] * 3
+    fig, axes = plt.subplots(2, 2, figsize=(7.2, 5.3))
+    ax1, ax2, ax3, ax4 = axes.ravel()
+    fig.subplots_adjust(hspace=0.48, wspace=0.34)
 
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(7.2, 4.5), sharex=True)
-    fig.subplots_adjust(hspace=0.34)
+    # (a) Long-term evidence separation for post-anoxic DO channels.
+    metrics = [
+        ("floor_occupancy", "Floor\noccupancy", PAL["blue_light"]),
+        ("resolution_limited", "Resolution\nlimited", PAL["teal"]),
+        ("sensor_freeze_cov", "Hard sensor\nfreeze", PAL["red_strong"]),
+        ("info_empty_cov", "QFA\nunavailable", PAL["orange"]),
+    ]
+    x = np.arange(len(floor_chs)); width = 0.18
+    profile_rows = []
+    for j, (metric, label, color) in enumerate(metrics):
+        vals = [float(subs_all[ch][metric].mean() * 100) for ch in floor_chs]
+        xpos = x + (j - 1.5) * width
+        ax1.bar(xpos, vals, width=width, color=color,
+                edgecolor=PAL["neutral_dark"], linewidth=0.35,
+                label=label.replace("\n", " "))
+        for xp, value in zip(xpos, vals):
+            precision = 2 if value < 1 else 1
+            ax1.text(xp, max(value + 1.2, 1.2), f"{value:.{precision}f}",
+                     ha="center", va="bottom", fontsize=TK - 1,
+                     color=PAL["neutral_dark"], rotation=90 if value < 1 else 0)
+        for ch, value in zip(floor_chs, vals):
+            profile_rows.append({"sensor_id": ch, "metric": metric, "mean_pct": value})
+    ax1.set_xticks(x)
+    ax1.set_xticklabels([c.replace("_", " ") for c in floor_chs])
+    ax1.set_ylabel("Time coverage (%)")
+    ax1.set_ylim(0, 105)
+    ax1.set_title("Post-anoxic evidence separation", pad=4)
+    ax1.legend(loc="upper right", fontsize=TK - 1, ncol=2,
+               handlelength=0.9, columnspacing=0.7)
+    apply_publication_style(ax1)
+    add_panel_label(ax1, "a", x=-0.12)
 
-    def _draw_ie(ax, chs, group, base_color, ch_colors, ch_ls, panel_lbl):
-        ie_df    = pd.DataFrame({ch: subs_all[ch]["info_empty_cov"]
-                                 for ch in chs if ch in subs_all})
-        ie_daily = ie_df.resample("D").mean() * 100
-        median_d = ie_daily.median(axis=1)
-        q25 = ie_daily.quantile(0.25, axis=1)
-        q75 = ie_daily.quantile(0.75, axis=1)
+    # (b) Floor occupancy and resolution limitation remain visible diagnostics.
+    ch_colors = {"DO_1_4": PAL["blue_main"], "DO_2_4": PAL["teal"]}
+    daily_floor = {}
+    for ch in floor_chs:
+        daily_floor[f"{ch}_floor"] = subs_all[ch]["floor_occupancy"].resample("D").mean() * 100
+        daily_floor[f"{ch}_resolution"] = subs_all[ch]["resolution_limited"].resample("D").mean() * 100
+        ax2.plot(daily_floor[f"{ch}_floor"].index,
+                 daily_floor[f"{ch}_floor"].values, color=ch_colors[ch], lw=1.0,
+                 label=f"{ch.replace('_', ' ')} floor")
+        ax2.plot(daily_floor[f"{ch}_resolution"].index,
+                 daily_floor[f"{ch}_resolution"].values, color=ch_colors[ch], lw=0.9,
+                 ls="--", label=f"{ch.replace('_', ' ')} limited")
+    ax2.set_ylabel("Daily coverage (%)")
+    ax2.set_ylim(0, 105)
+    ax2.set_title("Process floor vs limited resolution", pad=4)
+    apply_publication_style(ax2)
+    leg2 = ax2.legend(loc="lower left", fontsize=TK - 1, ncol=2,
+                      handlelength=1.4, columnspacing=0.7,
+                      frameon=True, framealpha=0.68, facecolor="white",
+                      edgecolor="none")
+    leg2.set_zorder(10)
+    add_panel_label(ax2, "b", x=-0.12)
 
-        ax.fill_between(median_d.index, q25.values, q75.values,
-                        alpha=0.20, color=base_color, label="Interquartile range")
-        ax.plot(median_d.index, median_d.values, color=base_color,
-                lw=LWM, label="Group median")
+    # (c) Only production QFA evidence can activate freeze_severe.
+    daily_qfa = {}
+    for ch in floor_chs:
+        daily_qfa[ch] = subs_all[ch]["info_empty_cov"].resample("D").mean() * 100
+        ax3.plot(daily_qfa[ch].index, daily_qfa[ch].values,
+                 color=ch_colors[ch], lw=1.0, label=ch.replace("_", " "))
+    for thr in (2.0, 8.0, 20.0):
+        ax3.axhline(thr, color=PAL["neutral_mid"], lw=0.45, ls=":", alpha=0.65)
+    ymax = max(22.0, float(pd.DataFrame(daily_qfa).quantile(0.995).max() * 1.15))
+    ax3.set_ylim(0, min(100, ymax))
+    ax3.set_ylabel("QFA unavailable (%)")
+    ax3.set_title("Hard QFA evidence (6 h window)", pad=4)
+    ax3.legend(loc="upper left", fontsize=TK - 1, ncol=2, handlelength=1.2)
+    apply_publication_style(ax3)
+    add_panel_label(ax3, "c", x=-0.12)
 
-        for thr in [2.0, 8.0, 20.0]:
-            ax.axhline(thr, color=PAL["neutral_mid"],
-                       lw=0.4, ls=":", alpha=0.5)
+    # (d) Standard channels retain the established information-empty route.
+    standard_daily = {}
+    for label, chs, color in (("Standard DO", standard_do, C_DO),
+                              ("ORP", standard_orp, C_ORP)):
+        frame = pd.DataFrame({ch: subs_all[ch]["info_empty_cov"] for ch in chs}).resample("D").mean() * 100
+        median = frame.median(axis=1)
+        q25, q75 = frame.quantile(0.25, axis=1), frame.quantile(0.75, axis=1)
+        ax4.fill_between(median.index, q25.values, q75.values, color=color, alpha=0.15)
+        ax4.plot(median.index, median.values, color=color, lw=1.0, label=label)
+        standard_daily[f"{label}_median"] = median
+        standard_daily[f"{label}_q25"] = q25
+        standard_daily[f"{label}_q75"] = q75
+    ax4.set_ylim(bottom=0)
+    ax4.set_ylabel("Info-empty (%)")
+    ax4.set_title("Standard-route channel burden", pad=4)
+    apply_publication_style(ax4)
+    ax4.legend(loc="upper left", fontsize=TK - 1, ncol=2, handlelength=1.2,
+               frameon=True, framealpha=0.68, facecolor="white",
+               edgecolor="none")
+    add_panel_label(ax4, "d", x=-0.12)
 
-        # Daily event counts preserve burden without drawing thousands of spans.
-        if len(freeze_events) > 0:
-            ch_ev = freeze_events[freeze_events["sensor_id"].isin(chs)]
-            if len(ch_ev):
-                starts = pd.to_datetime(ch_ev["start_ts"]).dt.floor("D")
-                event_days = starts.value_counts().sort_index()
-                ax_event = ax.twinx()
-                ax_event.bar(event_days.index, event_days.values, width=0.9,
-                             color=PAL["red_strong"], alpha=0.10,
-                             edgecolor="none", zorder=0)
-                ax_event.set_ylabel("Events d$^{-1}$", fontsize=TK,
-                                    color=PAL["red_strong"])
-                ax_event.tick_params(axis="y", colors=PAL["red_strong"],
-                                     labelsize=TK - 1, length=2)
-                ax_event.spines["top"].set_visible(False)
-                ax_event.spines["right"].set_color(PAL["red_strong"])
-                ax_event.set_ylim(0, max(1, event_days.quantile(0.99) * 1.25))
+    for ax in (ax2, ax3, ax4):
+        ax.xaxis.set_major_locator(mdates.MonthLocator(interval=2))
+        ax.xaxis.set_major_formatter(mdates.DateFormatter("%b"))
+        ax.set_xlabel("Date")
 
-        ax.set_ylabel("Info-empty (%)", fontsize=FS)
-        ax.set_title(f"{group} — Info-Empty Coverage (Daily Mean)",
-                     fontsize=TS, pad=4)
-        ax.set_ylim(bottom=0)
-        apply_publication_style(ax, font_size=FS)
-        add_panel_label(ax, panel_lbl, x=-0.08)
+    with pd.ExcelWriter(DATA / "D2_Fig05_source_data.xlsx", engine="openpyxl") as writer:
+        pd.DataFrame(profile_rows).to_excel(writer, sheet_name="panel_a_profile", index=False)
+        pd.DataFrame(daily_floor).to_excel(writer, sheet_name="panel_b_floor_daily")
+        pd.DataFrame(daily_qfa).to_excel(writer, sheet_name="panel_c_qfa_daily")
+        pd.DataFrame(standard_daily).to_excel(writer, sheet_name="panel_d_standard_daily")
 
-    _draw_ie(ax1, do_chs,  "DO",  C_DO,  do_colors,  do_ls,  "A")
-    _draw_ie(ax2, orp_chs, "ORP", C_ORP, orp_colors, orp_ls, "B")
-
-    ax2.xaxis.set_major_locator(mticker.MaxNLocator(8))
-    ax2.set_xlabel("Date", fontsize=FS)
-    for lbl in ax2.get_xticklabels():
-        lbl.set_rotation(30)
-        lbl.set_ha("right")
-
-    ax1.legend(fontsize=TK - 0.5, loc="upper right", frameon=False)
-
-    fig.suptitle("Freeze–Availability Events: Info-Empty Coverage",
+    fig.suptitle("Process-floor diagnostics and production availability evidence",
                  fontsize=TS, y=1.02)
-    save_fig(fig, "D2_Fig05_freeze_availability")
+    save_fig(fig, "D2_Fig05_freeze_availability", pad=1.4)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -582,11 +635,12 @@ def fig06_mapping_curves(state: dict):
         "L_max_min": ("L$_{max}$ (min)", False),
         "P95_gap_min": ("P95 gap (min)", False),
         "gap_run_count": ("Gap count", False),
-        "info_empty_cov": ("Info-empty", True),
+        "info_empty_cov": ("QFA unavailable coverage", True),
     }
     sub_color = {"Q_TI": C_QTI, "Q_GS": C_QGS, "Q_FA": C_QFA}
     metrics = []
-    for _, row in mapping.iterrows():
+    piecewise_rows = mapping[mapping["mapping_type"] == "piecewise_linear"]
+    for _, row in piecewise_rows.iterrows():
         metric = row["input_metric"]
         label, pct = labels.get(metric, (metric, False))
         breaks = [row[f"break_{i}"] for i in range(1, 5)]

@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-07-22T02:30:03.154131+00:00",
+  "generated_utc": "2026-07-22T09:24:48.111895+00:00",
   "run_id": "D7-LOCAL-20260716T125319Z",
   "research_release_status": "complete_with_documented_caveats",
   "production_release_status": "blocked",
@@ -59,17 +59,17 @@
     {
       "path": "outputs/D7_RELEASE_QA.json",
       "size": 13602,
-      "sha256": "fa2466861d8a922e178b21cb7dc48ceae389d113a47cb70ecf6f78e4054e558e"
+      "sha256": "bd4643d83c7adc995f443d166b7049c389811d775b9dd23f2f021e9156372353"
     },
     {
       "path": "outputs/figures/D7_figure_qa.json",
-      "size": 2381,
-      "sha256": "6b2be960239cd2ceeb34404018114a5c17f59a578dad2405a13407a8eff6fbe4"
+      "size": 2382,
+      "sha256": "e6a4df553688a6a6c3c62afe49e80e7b4d56575913e55f548409ea06f11d3f3f"
     },
     {
       "path": "outputs/figures/FigD7_1_framework.pdf",
       "size": 49208,
-      "sha256": "ec761c6a520f2fe7877ee0c0923033444c3a7d306b21610db1147dbfa297d5a8"
+      "sha256": "d9a32f4c45fbc37a977d3aa6471439958b9b96dfda833847f6f873654a442521"
     },
     {
       "path": "outputs/figures/FigD7_1_framework.png",
@@ -79,12 +79,12 @@
     {
       "path": "outputs/figures/FigD7_1_framework.svg",
       "size": 37998,
-      "sha256": "28bdc0e5e549b2bc692e32c8d0ddd1de5bcdfbe966c0ebb5f93623dec3925e45"
+      "sha256": "3ea5adbd3e99d038c5cee9205769a9667889db607329b3d207474ca7118ebc7f"
     },
     {
       "path": "outputs/figures/FigD7_2_spatiotemporal.pdf",
       "size": 68792,
-      "sha256": "a829d5a7a81ec5c7f18b4995e4a51ca96bf3b08e4780f00e5f5e555b121c82dd"
+      "sha256": "0c2c1f35a5c2aae8806f5e894ae7b33195c9c97a3e6e50597f0a8f67488022f0"
     },
     {
       "path": "outputs/figures/FigD7_2_spatiotemporal.png",
@@ -94,12 +94,12 @@
     {
       "path": "outputs/figures/FigD7_2_spatiotemporal.svg",
       "size": 70324,
-      "sha256": "129d119a8a96f2eb3f12c19bce273f0e89de5336053f8e89a531b51f6e05b9ae"
+      "sha256": "a21ef5ec5f69fa2830f6e45398d60123a35d67350d1e7913dafe545b8f5e6cbf"
     },
     {
       "path": "outputs/figures/FigD7_3_evidence.pdf",
       "size": 54403,
-      "sha256": "95945989fd64a037ba7d895f5d161640ff3db2ed1f4b0f49b1e728abfc55ef86"
+      "sha256": "9b44a8dbc11b1371807476058aa01ac19a0a5707ea82a93850dbaee3a128b2c9"
     },
     {
       "path": "outputs/figures/FigD7_3_evidence.png",
@@ -109,27 +109,27 @@
     {
       "path": "outputs/figures/FigD7_3_evidence.svg",
       "size": 55032,
-      "sha256": "40f5f206a96b2a1ab537431d7402cfde549404c3fefd7874711e993ab2f57633"
+      "sha256": "0c79b045fb3e9bde63aa590ad4377075ccbe97f8bd9ffd722f39d79d0b479c6b"
     },
     {
       "path": "outputs/figures/FigD7_4_validation.pdf",
       "size": 48000,
-      "sha256": "6dc59f9a66722ba8511c03c1505b11594eedb05d44ba8635384cef9d3bf33eb1"
+      "sha256": "c0edba708a32383e91befd4c55813fba4e2dc4cdbbf4638a4ecd69dfdd7ab40d"
     },
     {
       "path": "outputs/figures/FigD7_4_validation.png",
-      "size": 521976,
-      "sha256": "a6a8d8b9b82be28cc4f0ee3e5ae4d7755f19589992e6025daccd79ec0722c367"
+      "size": 521995,
+      "sha256": "c3488d51590533f604b71ee41918987c7c7c07604fbf190bec3c653c394db6f4"
     },
     {
       "path": "outputs/figures/FigD7_4_validation.svg",
-      "size": 41913,
-      "sha256": "8e30293771ab6308eb70bbb62c4fd6ffbff6f88cf89fd9e4d11c55dcedfa6f28"
+      "size": 41915,
+      "sha256": "9ef811e36163ea2f00a4eee6fa97549d7cd0c11eddce9ca88f4a6b3b133ed693"
     },
     {
       "path": "outputs/figures/FigD7_5_governance.pdf",
       "size": 52504,
-      "sha256": "5d498bc77567ab27c4b2420739ee34c45dd05c7b0927908c49d9cfb456806624"
+      "sha256": "da194e7c341735eec0b37c10ede80e76ec1e23af4e651b986987d1e7a13b3780"
     },
     {
       "path": "outputs/figures/FigD7_5_governance.png",
@@ -139,17 +139,17 @@
     {
       "path": "outputs/figures/FigD7_5_governance.svg",
       "size": 45570,
-      "sha256": "2fee1e0187b6fd2127fbbbf224315ff95bbec2b9a5477ea73f205eca8f30c4fd"
+      "sha256": "57538fa17db33a2cddc13bc5a9f910b1673f3181ce33919ca2d8a66ae38317af"
     },
     {
       "path": "outputs/local/D7_ablation_redundancy.xlsx",
-      "size": 9864,
-      "sha256": "69afbeef7961bb539c37dbbf0dd441b7cb8ccfdb0efedbf48037d706fa216348"
+      "size": 9871,
+      "sha256": "08b4536fdb8c8c7764454a75baf7dc7289feacea022e4849ff8cb79598594701"
     },
     {
       "path": "outputs/local/D7_audit_log.xlsx",
-      "size": 84796,
-      "sha256": "2475d445af3100eb38803cb3b6c2c9fc985305d326e805855a7ad9d501704261"
+      "size": 84790,
+      "sha256": "1fb2c61017f90a2638871ce56ba7ba51ff8787abf224529202e0345b11336222"
     },
     {
       "path": "outputs/local/D7_case_study_exports.xlsx",
@@ -294,7 +294,7 @@
     {
       "path": "outputs/local/D7_validation_results.xlsx",
       "size": 30225,
-      "sha256": "84c3c35a3b4dc52e44bae38d481696fa84e82703c67b85c93640de122ee489f0"
+      "sha256": "52fd7857243deb4d1dad24ad45fb5c543db60759e769595e73f11d5b03d56db2"
     },
     {
       "path": "outputs/local/D7_zone_consensus.parquet",
@@ -309,27 +309,27 @@
     {
       "path": "outputs/plot_data/D7_plot_data.csv",
       "size": 5165043,
-      "sha256": "1f75dcfe75ea181d44756205c4c67c884b703df10e19a39baccc3a9b747c0e10"
+      "sha256": "1222ce6fb9af8e7b25ac656042a3127b963182bce77172d2c0595ff885ba5ecb"
     },
     {
       "path": "outputs/plot_data/D7_plot_data.parquet",
       "size": 180365,
-      "sha256": "384394c9daba8b84d7f72367f40b787581f979cc09602467d5c40a656f2f57f7"
+      "sha256": "805142eb1fe1ced95bd7a2ae0152db33f430f5bc7e27b89c5d78c3756a689423"
     },
     {
       "path": "outputs/plot_data/D7_plot_data_manifest.json",
       "size": 519,
-      "sha256": "8de67af78c2349fbef13626971e08bb6590b6e740ef3749c4f0845105762681b"
+      "sha256": "e430b9fc14647fcde8cc678f4e1a717332067b9da905c812c18a8564a6487331"
     },
     {
       "path": "outputs/reports/D7_EXPERT_REPORT_v2.1.docx",
-      "size": 1930182,
-      "sha256": "c84540388eff3016e62277d76059e4c96705ff51031c2a23eb03a8fb16a41a50"
+      "size": 1930403,
+      "sha256": "7b651b6a32b488944c03d88f9337cf71b23da393c88a754a92cf85776f14fdc7"
     },
     {
       "path": "outputs/reports/D7_EXPERT_REPORT_v2.1.md",
       "size": 6256,
-      "sha256": "75e15bb2ed88eac6aeffc2dff86d965618f949db99953d5761c5cce2a0b1d7c5"
+      "sha256": "2b775653078029d73f8840a9bfe7e0d3a3caaecb73d29126895f29c7b7c72c92"
     },
     {
       "path": "outputs/reports/D7_FIGURE_CAPTIONS_v2.1.md",
@@ -339,37 +339,37 @@
     {
       "path": "outputs/reports/D7_PROJECT_DIRECTORY_GUIDE_v2.1.docx",
       "size": 40298,
-      "sha256": "226969ec049043feb6d61d789e6ea4e2aece4e759f46c95f10859a22735937d8"
+      "sha256": "4faec9949a0a16273d5fa79fa8b754ffa5e679fb0037c62dbdee9bdf738eca89"
     },
     {
       "path": "outputs/reports/D7_PROJECT_DIRECTORY_GUIDE_v2.1.md",
       "size": 4870,
-      "sha256": "acbbbce207ca2b2e0291df73d164beb921480aa2585c506e2632c07dc711dcc5"
+      "sha256": "ca6459008e52356823b4fe8325128ec91f1c3a363e95565bdc30674acb299b2d"
     },
     {
       "path": "outputs/sensitivity/D7_sensitivity_manifest.json",
-      "size": 2294,
-      "sha256": "11779195ba6911be55e9a1c22ba203526fa59d5afc4aaab377e4496f842d9d9d"
+      "size": 2296,
+      "sha256": "846af89e9545f03a184dbc778eeec2dd0e6044ee86500c1f2ab45f2ae4a9153a"
     },
     {
       "path": "outputs/sensitivity/D7_shadow_scores.parquet",
-      "size": 2973499,
-      "sha256": "3f38d8437d14ae8e8fb4210d8089cc415d10e66b0decee393e2ba006b38426a3"
+      "size": 2993805,
+      "sha256": "9e7d5b249f60bdf3f3d43710b2b18f4efcd67f106e71e2ab87905198ad51a4c5"
     },
     {
       "path": "outputs/sensitivity/D7_shadow_scores.xlsx",
-      "size": 10056157,
-      "sha256": "e9d7baa44d45dee99f774e430831499b9112848152a8cbbbacbb41396ab75d22"
+      "size": 10027466,
+      "sha256": "5a4ce1d9a80826f737f74bc4a120989d7a6aae4350a13ed7a60488dda5476cdd"
     },
     {
       "path": "outputs/sensitivity/D7_shadow_template_shift.xlsx",
-      "size": 41828,
-      "sha256": "d59e19250c9a8fef78e39781d7ced325877570437e4a48fd7937f8a9f14d0a0d"
+      "size": 41664,
+      "sha256": "883f85352affa092b4d7363c17932141eddb2d4125f2d8524ee6d064c72d16e9"
     },
     {
       "path": "outputs/sensitivity/D7_track_invariance.xlsx",
-      "size": 14483,
-      "sha256": "54a33f642a94acd7bf5eca2f165f91be6b41682358d3a7120847e1e01c7bf04f"
+      "size": 14391,
+      "sha256": "65353706c72c28ac303edc80198112ac05417054df4da0cbad72c9ff1525e37f"
     },
     {
       "path": "outputs/shadow_v2/D7_graph_structure_learning_shadow.parquet",
