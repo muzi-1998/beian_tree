@@ -101,9 +101,9 @@ REL_COLORS = {
     "no_d1_index":  "#E8E8E8",
 }
 REL_LABELS = {
-    "subset":       "D2⊆D1 (subset)",
+    "subset":       "D2 within D1",
     "overlap":      "Overlap",
-    "superset":     "D2⊇D1 (superset)",
+    "superset":     "D2 contains D1",
     "d2_only":      "D2 only",
     "no_d1_index":  "No D1 index",
 }

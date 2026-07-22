@@ -1,4 +1,4 @@
-"""Generate the 17 final D1 module deliverables.
+"""Generate the 18 final D1 module deliverables.
 
 Per D1模块输出物设计说明_最终版.docx — 8 layers, 12 files:
   1.  D1_main_scores_min.xlsx           (主评分层)
@@ -20,6 +20,7 @@ Final-candidate audit outputs:
   15. D1_v11_vs_strictV1_compare.xlsx
   16. D1_qr_qir_side_outputs.xlsx
   17. D1_recovery_event_audit.xlsx
+  18. D1_pls_DO24_validation.xlsx
 """
 from __future__ import annotations
 import sys, pickle
@@ -373,7 +374,9 @@ _save(OUT / "D1_regime_templates.xlsx", {
     "gradient_templates": pd.DataFrame(gradient_rows),
     "twin_symmetry_templates": pd.DataFrame(sym_rows),
     "template_versions": pd.DataFrame(versions_rows),
-    "regime_labels_hourly": regime_labels.to_frame("regime_id"),
+    "regime_labels_hourly": (
+        regime_labels.rename("regime_id").rename_axis("timestamp").reset_index()
+    ),
 }, index=False)
 
 
@@ -807,7 +810,45 @@ _save(OUT / "D1_recovery_event_audit.xlsx", {
 }, index=False)
 
 
-print(f"\n{'='*70}\nAll 17 core Excel deliverables generated.\nLocation: {OUT}\n{'='*70}")
+# ============================================================================
+# 18. D1_pls_DO24_validation.xlsx
+# ============================================================================
+print("\n[18] D1_pls_DO24_validation.xlsx")
+pls_validation_sheet_map = {
+    "metadata": pd.DataFrame([{
+        "run_id": S.get("run_id"),
+        "algorithm_version": S.get("algorithm_version"),
+        "target": "DO_2_4",
+        "validation_role": "formal peer-admission evidence",
+    }]),
+    "model_definitions": det.get("pls_do24_model_definitions", pd.DataFrame()),
+    "split_manifest": det.get("pls_do24_split_manifest", pd.DataFrame()),
+    "hourly_predictions": det.get("pls_do24_hourly_predictions", pd.DataFrame()),
+    "performance_summary": det.get("pls_do24_performance_summary", pd.DataFrame()),
+    "fold_metrics": det.get("pls_do24_fold_metrics", pd.DataFrame()),
+    "bootstrap_samples": det.get("pls_do24_bootstrap_samples", pd.DataFrame()),
+    "clean_windows": det.get("pls_do24_clean_windows", pd.DataFrame()),
+    "injection_scenarios": det.get("pls_do24_injection_scenarios", pd.DataFrame()),
+    "injection_summary": det.get("pls_do24_injection_summary", pd.DataFrame()),
+    "gate_results": det.get("pls_do24_gate_results", pd.DataFrame()),
+    "decision": det.get("pls_do24_decision", pd.DataFrame()),
+    "validation_config": det.get("pls_do24_config", pd.DataFrame()).map(
+        lambda value: ";".join(map(str, value))
+        if isinstance(value, (tuple, list))
+        else value
+    ),
+    "metric_definitions": pd.DataFrame([
+        {"field": "gain_pct_vs_M0", "definition": "100 * (NRMSE_M0 - NRMSE_model) / NRMSE_M0 within the same forward block"},
+        {"field": "gain_ci95", "definition": "95% percentile interval of median fold gain from 5,000 circular moving-block bootstrap replicates; block length = 4 folds"},
+        {"field": "positive_gain_fold_fraction", "definition": "fraction of development folds with NRMSE lower than M0"},
+        {"field": "independent_test", "definition": "terminal 42-day block excluded from model nomination"},
+        {"field": "detected_3h", "definition": "absolute PLS residual z >= 2.5 for at least three consecutive hours"},
+    ]),
+}
+_save(OUT / "D1_pls_DO24_validation.xlsx", pls_validation_sheet_map, index=False)
+
+
+print(f"\n{'='*70}\nAll 18 core Excel deliverables generated.\nLocation: {OUT}\n{'='*70}")
 import os
 files = sorted(OUT.glob("*.xlsx"))
 total_kb = sum(f.stat().st_size for f in files) // 1024

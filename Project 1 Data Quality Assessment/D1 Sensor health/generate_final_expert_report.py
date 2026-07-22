@@ -234,6 +234,14 @@ def build_report(force: bool = True) -> Path:
     overall = state["recovery_summary"].query("sensor_id == 'Overall'").iloc[0]
     step_calibration = state["step_mapping_calibration"]
     step_metrics = step_calibration["metrics"]
+    pls_audit = state["detectors_raw"]["pls_peer_selection_audit"]
+    do24_pls = pls_audit.loc["DO_2_4"]
+    pls_performance = state["detectors_raw"]["pls_do24_performance_summary"].set_index(
+        "model_id"
+    )
+    pls_decision = state["detectors_raw"]["pls_do24_decision"].iloc[0]
+    pls_m11 = pls_performance.loc["M1_1"]
+    pls_m12 = pls_performance.loc["M1_2"]
 
     doc = Document()
     _configure_document(doc)
@@ -374,8 +382,7 @@ def build_report(force: bool = True) -> Path:
         "The Step mapping is synchronized across mapping.yaml, the figure generator, and "
         f"D1_mapping_params.xlsx: logistic k={step_calibration['selected_k']:.1f} and "
         f"x0={step_calibration['selected_x0']:.2f}. The final D1 mean is "
-        f"{state['D1_v11'].mean().mean():.3f} versus "
-        f"{state['D1_v1_scored'].mean().mean():.3f} for STRICT V1. Conservative caps "
+        f"{state['D1_v11'].mean().mean():.3f}. Conservative caps "
         "apply only during causally defined non-normal states."
     )
     calibration_rows = [
@@ -385,13 +392,27 @@ def build_report(force: bool = True) -> Path:
          f"10 iid channels; 780 scenarios; detection={step_metrics['material_detection_rate']:.3f}"],
         ["Step applicability", "Autocorrelation-aware and floor routes excluded from parameter fit",
          "Theoretical corrected-KS bound retained in the audit"],
-        ["PLS peers", "Same-analyte structural core + three-fold blocked temporal CV",
-         "No automatic DO-ORP binding; process-floor sensor excluded as predictor"],
+        ["PLS peers", "Forward blocks + block bootstrap + terminal test + four injection classes",
+         f"DO_2_4 retains {do24_pls['selected_peers']} ({int(do24_pls['selected_n_components'])} component); "
+         f"M1,1 median gain={pls_m11['median_gain_pct']:.2f}% "
+         f"(95% CI {pls_m11['gain_ci95_low_pct']:.2f}% to {pls_m11['gain_ci95_high_pct']:.2f}%); "
+         f"terminal gain={pls_m11['independent_test_gain_pct']:.2f}%"],
         ["ORP_1_2 platform", "State cap retained",
          "Fig. 7 exposes pre-cap score, cap-active hours, and final score"],
     ]
     _add_table(doc, ["Component", "Final rule", "Audit evidence"], calibration_rows,
                [1900, 3740, 3720])
+    doc.add_paragraph(
+        "The PLS selector preserves a valid one-peer topology core and reports limited "
+        "redundancy explicitly. It does not fill sparse peer sets by lexical order or with "
+        "distant/cross-train channels. This removes the previous unsupported DO_2_4 links "
+        "to DO_1_1 and DO_1_2. DO_2_3 is the structural core; DO_2_2 was evaluated as the "
+        "only defensible second-order candidate but was not admitted. The one-component "
+        f"candidate had development and terminal-test gains of {pls_m11['median_gain_pct']:.2f}% "
+        f"and {pls_m11['independent_test_gain_pct']:.2f}%, respectively; the two-component "
+        f"candidate was still weaker ({pls_m12['median_gain_pct']:.2f}% development gain). "
+        f"The formal decision is {pls_decision['decision_status']}."
+    )
     _add_figure(
         doc,
         "Fig5_mapping_curves.png",
@@ -414,15 +435,56 @@ def build_report(force: bool = True) -> Path:
     _add_figure(
         doc,
         "Fig11_pls_peer_selection.png",
-        "Figure 11. Same-analyte PLS peer matrix and blocked-CV predictive gain.",
+        "Figure 11. DO_2_4 PLS peer-admission evidence. Panels report forward-block gains, "
+        "median and 95% moving-block-bootstrap intervals, positive-gain fractions, P90 tail "
+        "error, terminal 42-day hold-out results, and controlled target/peer/common-process "
+        "injections. The topology core M0 is retained.",
         width=6.1,
+    )
+    _add_figure(
+        doc,
+        "FigS1_pls_formal_peer_topology.png",
+        "Supplementary Figure S1. Production-active PLS peer topology for all 14 scored "
+        "channels. Rows are targets and columns are formal predictors; the adjacent table "
+        "reports effective peer and component counts. Rejected candidates are omitted. "
+        "DO_2_4 has the full forward/hold-out/injection audit; remaining targets retain "
+        "topology-constrained three-fold blocked-CV evidence.",
+        width=6.1,
+    )
+
+    doc.add_heading("7.1 Current-result synthesis and figure scope", level=2)
+    doc.add_paragraph(
+        "The manuscript-facing validation figures now report the locked current pipeline only. "
+        "Historical score overlays remain an internal software-regression artifact and are not "
+        "interpreted as scientific validation in the absence of independent fault truth."
+    )
+    _add_figure(
+        doc,
+        "FigV12_current_D1_profile.png",
+        "Figure V12. Current D1 operating profile: channel-level 7-day moving-block-bootstrap "
+        "intervals, low-quality occupancy, state occupancy, and the cross-sensor temporal envelope.",
+        width=6.1,
+    )
+    _add_figure(
+        doc,
+        "FigV18_current_D1_event_summary.png",
+        "Figure V18. Current grade composition, state-conditioned drift evidence, dominant "
+        "event evidence, and channel-level event burden.",
+        width=6.1,
+    )
+    doc.add_paragraph(
+        "The former Figure V16 fixed-k regime panel is retired from D1. R0 was an arbitrary "
+        "KMeans label whose 44.0% share represented 2,700 of 6,138 hours, not a validated "
+        "normal regime. Its long contiguous runs were more consistent with temporal epochs. "
+        "A future D7 regime analysis must independently validate cluster number, stability, "
+        "recurrence, and operational meaning."
     )
 
     doc.add_heading("8. Reproducibility and release gate", level=1)
     release_rows = [
         ["Unit tests", "PASS", "Causality, routing, mapping calibration, peer selection, recovery"],
         ["Transition audit", "PASS", "All opened episodes accounted; all terminal or censored"],
-        ["Excel audit", "PASS", "19 workbooks open; no error-cell tokens"],
+        ["Excel audit", "PASS", "18 core / 20 total workbooks open; no error-cell tokens"],
         ["Figure bundle", "20/20", "SVG/PDF/600 dpi PNG/TIFF"],
         ["Nature skill audit", "0 failed", "Editable SVG text; Arial declared; sources fresh"],
         ["Run trace", state["run_id"], "Dependency SHA256 hashes in run manifest"],

@@ -9,7 +9,7 @@ import pandas as pd
 from scipy.stats import spearmanr
 
 from d7_common.config import D7_ROOT, load_yaml, resolve_paths
-from d7_common.hashing import hash_object
+from d7_common.hashing import hash_file, hash_object
 from d7_common.math.calibration import empirical_quality_score
 
 
@@ -161,17 +161,46 @@ class D7SensitivityPipeline:
         self._write_workbook(
             "D7_shadow_template_shift", {"quantile_shift": template_shift}
         )
+        d1_release_path = self.paths.d1_scores.parent / "D1_release_manifest.json"
+        d1_release = (
+            json.loads(d1_release_path.read_text(encoding="utf-8"))
+            if d1_release_path.exists()
+            else {}
+        )
+        dependency_paths = {
+            "D1_scores": self.paths.d1_scores,
+            "D2_scores": self.paths.d2_scores,
+            "D4_scores": self.paths.d4_scores,
+            "D7_local_evidence": self.paths.local_output_root / "D7_spatial_evidence.parquet",
+        }
+        workspace_root = D7_ROOT.parent.resolve()
+
+        def project_relative(path: Path) -> str:
+            return path.resolve().relative_to(workspace_root).as_posix()
+
         manifest = {
             "track_id": "sensitivity",
             "production_write_permission": False,
             "generated_utc": pd.Timestamp.utcnow().isoformat(),
+            "d1_release_id": d1_release.get("release_id"),
             "consumed_sources": [
-                str(self.paths.d1_scores),
-                str(self.paths.d2_scores),
-                str(self.paths.d4_scores),
-                "outputs/local/D7_spatial_evidence.parquet (read-only frozen evidence)",
+                project_relative(self.paths.d1_scores),
+                project_relative(self.paths.d2_scores),
+                project_relative(self.paths.d4_scores),
+                project_relative(
+                    self.paths.local_output_root / "D7_spatial_evidence.parquet"
+                ),
+            ],
+            "dependencies": [
+                {
+                    "role": role,
+                    "path": project_relative(path),
+                    "sha256": hash_file(path),
+                }
+                for role, path in dependency_paths.items()
             ],
             "forbidden_outputs": ["D7_forDQR", "D7_zone_consensus", "D6_arbitration"],
+            "D7_forDQR_status": "pending_not_produced",
             "local_imported": False,
             "rows": len(shadow),
             "invariance": invariance.to_dict("records"),

@@ -50,14 +50,24 @@ def candidate_same_analyte_peers(
     core_peers: list[str] | None = None,
     excluded_predictors: set[str] | None = None,
 ) -> list[str]:
-    kind, _, _ = _parse_sensor(target)
+    """Return topology-approved expansion peers beyond the structural core.
+
+    The default contract permits only second-order neighbours in the same
+    treatment train. Distant or cross-train channels require an external
+    topology contract and are not inferred from statistical association.
+    """
+    kind, pool, segment = _parse_sensor(target)
+    if kind is None:
+        return []
     core = set(core_peers or [])
     excluded = set(excluded_predictors or set())
-    return sorted(
-        channel for channel in all_columns
-        if channel != target and channel not in core and channel not in excluded
-        and _parse_sensor(channel)[0] == kind
-    )
+    columns = set(all_columns)
+    candidates = set()
+    for offset in (-2, 2):
+        candidate = f"{kind}_{pool}_{segment + offset}"
+        if candidate in columns and candidate not in core and candidate not in excluded:
+            candidates.add(candidate)
+    return sorted(candidates)
 
 
 def engineered_peers(target: str, all_columns: list[str]) -> list[str]:
@@ -122,15 +132,8 @@ def select_pls_peers(
     excluded = set(excluded_predictors or set())
     core = core_engineered_peers(target, columns, excluded)
     candidates = candidate_same_analyte_peers(target, columns, core, excluded)
-    if len(core) < 2:
-        core = sorted(
-            channel for channel in columns
-            if channel != target and channel not in excluded
-            and _parse_sensor(channel)[0] == _parse_sensor(target)[0]
-        )[:2]
-        candidates = candidate_same_analyte_peers(target, columns, core, excluded)
     if not core:
-        raise ValueError(f"No same-analyte PLS peers are available for {target}")
+        raise ValueError(f"No topology-approved PLS peers are available for {target}")
 
     selected = list(core)
     core_errors = _blocked_cv_errors(df_hourly, target, selected, n_components)
@@ -140,7 +143,7 @@ def select_pls_peers(
     remaining = list(candidates)
     additions = []
     while remaining:
-        trial_results = []
+        eligible_trials = []
         current_median = float(np.median(current_errors))
         current_tail = float(np.quantile(current_errors, 0.90))
         for candidate in remaining:
@@ -148,14 +151,15 @@ def select_pls_peers(
                 df_hourly, target, [*selected, candidate], n_components
             )
             if errors.size:
-                trial_results.append((float(np.median(errors)), candidate, errors))
-        if not trial_results:
+                trial_median = float(np.median(errors))
+                improvement = (current_median - trial_median) / max(current_median, 1e-9)
+                trial_tail = float(np.quantile(errors, 0.90))
+                tail_ok = trial_tail <= current_tail * (1.0 + max_tail_degradation)
+                if improvement >= min_improvement and tail_ok:
+                    eligible_trials.append((trial_median, candidate, errors))
+        if not eligible_trials:
             break
-        trial_median, candidate, errors = min(trial_results, key=lambda item: item[0])
-        improvement = (current_median - trial_median) / max(current_median, 1e-9)
-        tail_ok = float(np.quantile(errors, 0.90)) <= current_tail * (1.0 + max_tail_degradation)
-        if improvement < min_improvement or not tail_ok:
-            break
+        _, candidate, errors = min(eligible_trials, key=lambda item: item[0])
         selected.append(candidate)
         remaining.remove(candidate)
         current_errors = errors
@@ -163,6 +167,7 @@ def select_pls_peers(
 
     core_median = float(np.median(core_errors))
     selected_median = float(np.median(current_errors))
+    peer_count = len(selected)
     return {
         "target": target,
         "core_peers": core,
@@ -175,7 +180,10 @@ def select_pls_peers(
         "selected_cv_nrmse_p90": float(np.quantile(current_errors, 0.90)),
         "cv_improvement_pct": 100.0 * (core_median - selected_median) / max(core_median, 1e-9),
         "n_blocked_folds": int(len(current_errors)),
-        "selection_rule": "same-analyte core + blocked-CV forward selection",
+        "selected_peer_count": peer_count,
+        "redundancy_status": "limited_single_peer" if peer_count == 1 else "multi_peer",
+        "topology_contract": "same-analyte adjacent/twin core; same-pool second-order CV expansion",
+        "selection_rule": "topology core + same-pool second-order blocked-CV expansion",
     }
 
 
@@ -209,7 +217,15 @@ class PLSVirtualSensorDetector(BaseDetector):
         train_prediction = sy.inverse_transform(train_prediction_s.reshape(-1, 1)).ravel()
         sigma_y = max(float(np.std(y_train)), 1e-9)
         sigma_residual = max(float(np.std(y_train - train_prediction)), 0.05 * sigma_y, 1e-9)
-        self._models[target] = (model, sx, sy, sigma_residual, medians, list(peer_cols))
+        self._models[target] = (
+            model,
+            sx,
+            sy,
+            sigma_residual,
+            medians,
+            list(peer_cols),
+            max(1, components),
+        )
 
     def score(
         self,
@@ -223,7 +239,15 @@ class PLSVirtualSensorDetector(BaseDetector):
             peer_cols = core_engineered_peers(target, list(df_hourly.columns))
         if target not in self._models:
             self.fit(df_hourly, target=target, peer_cols=peer_cols)
-        model, sx, sy, sigma_residual, medians, peers_used = self._models[target]
+        (
+            model,
+            sx,
+            sy,
+            sigma_residual,
+            medians,
+            peers_used,
+            effective_components,
+        ) = self._models[target]
         frame = df_hourly.loc[:, [target, *peers_used]].copy()
         frame = frame.ffill().fillna(medians).fillna(0.0)
         prediction_s = model.predict(
@@ -234,11 +258,11 @@ class PLSVirtualSensorDetector(BaseDetector):
         residual_z = pd.Series(np.abs(residual) / sigma_residual, index=df_hourly.index)
         flag = (residual_z > 3.0).astype(np.int8)
         metadata = {
-            "n_components": self.k,
+            "n_components": effective_components,
             "train_days": self.train_days,
             "sigma_residual": sigma_residual,
             "peer_cols": peers_used,
-            "peer_selection_rule": "same-analyte blocked-CV v1",
+            "peer_selection_rule": "same-analyte topology with audited validation",
         }
         if selection_audit:
             metadata["peer_selection_audit"] = selection_audit

@@ -5,8 +5,7 @@ Compliance fixes vs prior V1:
     1. De-periodisation: harmonic decomposition (daily+weekly Fourier),
        NOT 24h rolling mean.
     2. Regime: TwoTierRegimeDetector (W1 + adjacent KS joint).
-    3. Drift: engineered peer selection (same-pool adjacent + twin-pool
-       counterpart + QR/QIR exogenous).
+    3. Drift: same-analyte engineered peers only; no lexical or QR/QIR fallback.
     4. WindowManager: every detector consults unified window catalogue.
 """
 from __future__ import annotations
@@ -56,13 +55,16 @@ def run_step_detector(resid_h, channels, wm):
 
 def run_drift_detector(resid_h, channels, wm):
     print(f"    [drift] PLS — engineered peers (spec v2 §7)")
-    detector = PLSVirtualSensorDetector(n_components=3, train_days=21)
     out = {}
     for c in channels:
         peers = engineered_peers(c, list(resid_h.columns))
-        if len(peers) < 2:
-            peers = [x for x in resid_h.columns if x != c][:6]
+        if not peers:
+            print(f"      ! No topology-approved PLS peer for {c}")
+            continue
         try:
+            detector = PLSVirtualSensorDetector(
+                n_components=min(3, len(peers)), train_days=21
+            )
             out[c] = detector.score(resid_h, target=c, peer_cols=peers)
         except Exception as e:
             print(f"      ! PLS failed on {c}: {e}")

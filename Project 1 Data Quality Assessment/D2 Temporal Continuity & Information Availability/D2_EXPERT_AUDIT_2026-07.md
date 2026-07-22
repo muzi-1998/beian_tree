@@ -12,6 +12,8 @@ calibration thresholds, veto rules or the D2 total score.
 
 ## Current Verified State
 
+- D1 linkage release: `D1REL-1.3.0-f6074be3751f`; linkage refreshed on
+  2026-07-22 without rerunning D2 calibration or scoring.
 - Canonical horizon: 2025-08-01 00:00 to 2026-04-13 23:59 (368,640 minutes).
 - D2 output: 6,121 hourly windows per sensor after a complete 24 h warm-up.
 - Scored sensors: 14; support channels: 4, excluded from the D2 main score.
@@ -19,9 +21,14 @@ calibration thresholds, veto rules or the D2 total score.
 - Interpolation ledger: maximum imputed run 5 min; long-gap imputation count 0.
 - Mapping table: all 8 configured metrics exported from `d2_mapping.yaml`.
 - Calibration: `D2_internal_engineering_v1`; D1 fit hours = 0.
-- D1 event index: 72 events loaded; D1-D2 concordant events = 650/15,146
-  (4.29%), reported descriptively rather than used as an acceptance threshold.
-- Figure bundles: 1.1 = 89, D1 = 18, D2 = 12; all have PNG/SVG/PDF counterparts.
+- D1 event index: 81 events loaded; D1-D2 concordant events = 419/15,146
+  (2.77%): 406 subset, 10 overlap and 3 superset relations. These are reported
+  descriptively rather than used as an acceptance threshold.
+- The D2 core-score SHA-256 remained
+  `3f233f4add980824db243db71fc0c0a9844742239c378bb5ca20d97a48720df0`
+  before and after the linkage-only refresh.
+- Joint D1-D2 figures 11 and 12 were regenerated from the released D1 event
+  index and the unchanged D2 run `D2V1_20260710_1733`.
 - Tests: D2 contract/regression 11/11 and modular scorer 8/8 pass.
 
 ## Scientific Interpretation

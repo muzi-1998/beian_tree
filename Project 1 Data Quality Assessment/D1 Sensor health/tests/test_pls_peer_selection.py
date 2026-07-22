@@ -42,3 +42,29 @@ def test_floor_route_can_be_target_but_not_another_targets_predictor():
     )
     assert "DO_1_4" not in audit["core_peers"]
     assert "DO_1_4" not in audit["candidate_peers"]
+
+
+def test_single_topology_peer_is_preserved_when_twin_is_excluded():
+    rng = np.random.default_rng(9)
+    n = 24 * 50
+    adjacent = rng.normal(size=n)
+    frame = pd.DataFrame({
+        "DO_1_1": rng.normal(size=n),
+        "DO_1_2": rng.normal(size=n),
+        "DO_1_4": rng.normal(size=n),
+        "DO_2_2": rng.normal(size=n),
+        "DO_2_3": adjacent,
+        "DO_2_4": 1.4 * adjacent + rng.normal(scale=0.08, size=n),
+    })
+    audit = select_pls_peers(
+        frame,
+        "DO_2_4",
+        excluded_predictors={"DO_1_4"},
+    )
+
+    assert audit["core_peers"] == ["DO_2_3"]
+    assert audit["selected_peers"] == ["DO_2_3"]
+    assert audit["candidate_peers"] == ["DO_2_2"]
+    assert audit["redundancy_status"] == "limited_single_peer"
+    assert "DO_1_1" not in audit["selected_peers"]
+    assert "DO_1_2" not in audit["selected_peers"]

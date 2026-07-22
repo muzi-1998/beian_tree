@@ -26,6 +26,7 @@ OUT = ROOT / "outputs" / "figures"
 PLOTDATA = ROOT / "outputs" / "plot_data"
 OUT.mkdir(parents=True, exist_ok=True)
 PLOTDATA.mkdir(parents=True, exist_ok=True)
+RASTER_DPI = 600
 
 plt.rcParams.update({
     "font.family": "sans-serif",
@@ -34,7 +35,7 @@ plt.rcParams.update({
     "axes.titlesize": 9.5, "axes.labelsize": 9,
     "xtick.labelsize": 8, "ytick.labelsize": 8, "legend.fontsize": 7.5,
     "legend.framealpha": 0.92, "legend.edgecolor": "0.4",
-    "figure.dpi": 150, "savefig.dpi": 600, "savefig.bbox": "tight",
+    "figure.dpi": 150, "savefig.dpi": RASTER_DPI, "savefig.bbox": "tight",
     "savefig.pad_inches": 0.04,
     "axes.linewidth": 0.8, "axes.grid": True, "grid.alpha": 0.16,
     "grid.linewidth": 0.4, "lines.linewidth": 1.0,
@@ -79,6 +80,11 @@ def save(fig, name, plot_data: dict = None):
 # Grade colormap
 grade_clrs = ["#9E1F1F", "#F46D43", "#FEE08B", "#A6D96A", "#1A9850"]
 grade_cmap = LinearSegmentedColormap.from_list("grade", grade_clrs[::-1], N=256)
+score_cmap = LinearSegmentedColormap.from_list(
+    "d1_score",
+    ["#B2182B", "#EF8A62", "#F7F7F7", "#67A9CF", "#2166AC"],
+    N=256,
+)
 
 
 # ============================================================================
@@ -91,11 +97,11 @@ sub_names = ["Q_spike\n(spike)", "Q_step\n(step)", "Q_drift\n(drift)",
 grades = ["A (≥4.5)", "B (3.5–4.5)", "C (2.5–3.5)", "D (1.5–2.5)", "F (<1.5)"]
 matrix_text = [
     ["spike rate ≤ 2%", "very rare", "rare", "occasional", "frequent",
-       "very frequent (>20%)"],
+       "very frequent\n(>20%)"],
     ["KS statistic", "near 0",        "low",        "moderate",
-       "elevated",       "high (sustained)"],
+       "elevated",       "high\n(sustained)"],
     ["PLS residual z", "|z| < 1.5",   "1.5–2.0",    "2.0–2.5",
-       "2.5–3.0",         "> 3.0 sustained"],
+       "2.5–3.0",         "> 3.0\nsustained"],
     ["RLE duration", "<15 min", "15–30 min", "30–60 min",
        "60–360 min", "≥360 min"],
     ["W1 normalised", "< 1.0",        "1.0–2.0",    "2.0–3.0",
@@ -136,7 +142,7 @@ print("[Fig2] Monthly D1 heatmap ...")
 fig, ax = plt.subplots(figsize=(7.2, 4.0))
 monthly = D1_v11.resample("ME").mean().T
 months = [t.strftime("%Y-%m") for t in monthly.columns]
-im = ax.imshow(monthly.values, cmap="RdBu_r", aspect="auto", vmin=2.0, vmax=5.0)
+im = ax.imshow(monthly.values, cmap=score_cmap, aspect="auto", vmin=3.0, vmax=5.0)
 ax.set_yticks(np.arange(len(monthly))); ax.set_yticklabels(monthly.index.tolist(),
                                                               fontsize=8.5)
 ax.set_xticks(np.arange(len(months))); ax.set_xticklabels(months, rotation=30,
@@ -145,11 +151,11 @@ for i in range(len(monthly)):
     for j in range(len(months)):
         v = monthly.values[i, j]
         if not np.isnan(v):
-            txt_clr = "white" if (v < 2.75 or v > 4.25) else "black"
+            txt_clr = "white" if (v < 3.45 or v > 4.62) else "black"
             ax.text(j, i, f"{v:.2f}", ha="center", va="center",
                       fontsize=7.5, color=txt_clr, fontweight="bold")
-cbar = plt.colorbar(im, ax=ax, fraction=0.025, pad=0.09)
-cbar.set_label(r"Mean monthly $D_1$  (2.0=poor — 5.0=excellent)", fontsize=9)
+cbar = plt.colorbar(im, ax=ax, fraction=0.028, pad=0.018)
+cbar.set_label(r"Mean monthly $D_1$  (3.0=grade boundary — 5.0=excellent)", fontsize=9)
 cbar.ax.tick_params(labelsize=7.5)
 ax.set_title("Figure 2.  Per-channel monthly $D_1$ heatmap (v1.1, DO/ORP n=14)",
              loc="left")
@@ -198,7 +204,7 @@ for i, c in enumerate(case_channels):
 # shared legend at the figure top (outside the dense panels — was overlapping
 # panel (a)'s data at lower-right)
 _h3, _l3 = axes[0, 0].get_legend_handles_labels()
-fig.legend(_h3, _l3, loc="upper center", bbox_to_anchor=(0.5, 0.935),
+fig.legend(_h3, _l3, loc="upper center", bbox_to_anchor=(0.5, 0.895),
            ncol=6, fontsize=7.2, frameon=False)
 fig.suptitle("Figure 3.  Sub-score timeseries — 4 worst + 4 best (v1.1)",
               fontsize=9.8, fontweight="bold", y=0.992)
@@ -214,11 +220,23 @@ fig, axes = plt.subplots(5, 1, figsize=(7.2, 6.7), sharex=True)
 fig.subplots_adjust(hspace=0.55)
 sub_names = ["Q_spike", "Q_step", "Q_drift", "Q_freeze", "Q_regime"]
 sub_clrs = [C["amber"], C["blue"], C["purple"], C["red"], C["green"]]
+fig4_counts = []
 for i, (sn, clr) in enumerate(zip(sub_names, sub_clrs)):
     ax = axes[i]
     data = []
     for c in SCORED:
-        v = subs_v11[c][sn].dropna().values
+        series = subs_v11[c][sn]
+        n_before = int(series.size)
+        observed = series.dropna()
+        n_after = int(observed.size)
+        fig4_counts.append({
+            "subscore": sn,
+            "sensor_id": c,
+            "n_before": n_before,
+            "n_after": n_after,
+            "excluded_count": n_before - n_after,
+        })
+        v = observed.values
         data.append(v)
     parts = ax.violinplot(data, positions=np.arange(len(SCORED)), widths=0.75,
                             showmedians=True, showextrema=False)
@@ -235,7 +253,8 @@ for i, (sn, clr) in enumerate(zip(sub_names, sub_clrs)):
         ax.set_xticklabels([])
 fig.suptitle("Figure 4.  Sub-score distribution per channel (v1.1, DO/ORP n=14)",
               fontsize=11, fontweight="bold", y=0.995)
-save(fig, "Fig4_subscore_distribution")
+save(fig, "Fig4_subscore_distribution",
+     plot_data={"observation_counts": pd.DataFrame(fig4_counts)})
 
 
 # ============================================================================
@@ -347,8 +366,8 @@ save(fig, "Fig5_mapping_curves")
 # Fig 6: Exact pre-cap score-loss attribution + severe evidence rate
 # ============================================================================
 print("[Fig6] Pre-cap score-loss attribution ...")
-fig, axes = plt.subplots(2, 1, figsize=(7.2, 5.8), gridspec_kw={"height_ratios": [1.15, 1.0]})
-fig.subplots_adjust(hspace=0.55, top=0.82, bottom=0.18, right=0.92)
+fig, axes = plt.subplots(2, 1, figsize=(7.2, 6.25), gridspec_kw={"height_ratios": [1.15, 1.0]})
+fig.subplots_adjust(hspace=0.82, top=0.82, bottom=0.16, right=0.92)
 faults = ["Q_spike", "Q_step", "Q_drift", "Q_freeze", "Q_regime"]
 fclr = {"Q_spike": C["amber"], "Q_step": C["blue"], "Q_drift": C["purple"],
         "Q_freeze": C["red"], "Q_regime": C["green"]}
@@ -389,7 +408,8 @@ for f in faults:
     ax.bar(xs, values, bottom=bottom, color=fclr[f], label=f.replace("Q_", ""),
             alpha=0.92, edgecolor="white", linewidth=0.5)
     bottom += values
-ax.set_xticks(xs); ax.set_xticklabels([])
+ax.set_xticks(xs)
+ax.set_xticklabels(SCORED, rotation=45, ha="right", fontsize=7.2)
 ax.set_ylabel("Share of pre-cap $D_1$ loss (%)", fontsize=9)
 ax.set_ylim(0, 100)
 ax.set_title("(a) Exact additive attribution of $5-D_{1,pre}$", loc="left")
@@ -437,9 +457,15 @@ fig.subplots_adjust(right=0.79, top=0.91, bottom=0.09)
 # (a) DO daily
 ax = fig.add_subplot(gs[0])
 D1_d = D1_v11.resample("1D").median()
-do_clrs = plt.cm.Blues(np.linspace(0.4, 0.95, len(DO_CH)))
-for c, clr in zip(DO_CH, do_clrs):
-    ax.plot(D1_d.index, D1_d[c].values, color=clr, lw=0.85, alpha=0.85, label=c)
+channel_clrs = [
+    C["blue"], C["orange"], C["green"], C["purple"],
+    C["teal"], C["red"], C["navy"], C["amber"],
+]
+channel_styles = ["-", "--", "-.", ":", (0, (5, 1)), (0, (3, 1, 1, 1)),
+                  (0, (1, 1)), (0, (4, 2))]
+for c, clr, ls in zip(DO_CH, channel_clrs, channel_styles):
+    ax.plot(D1_d.index, D1_d[c].values, color=clr, ls=ls,
+            lw=0.9, alpha=0.88, label=c)
 ax.axhline(3, color=C["red"], ls=":", lw=0.7)
 ax.set_ylabel("Daily $D_1$ (median)", fontsize=9.5)
 ax.set_ylim(1.5, 5.0)
@@ -450,9 +476,9 @@ ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
 
 # (b) ORP daily
 ax = fig.add_subplot(gs[1])
-orp_clrs = plt.cm.Greens(np.linspace(0.4, 0.95, len(ORP_CH)))
-for c, clr in zip(ORP_CH, orp_clrs):
-    ax.plot(D1_d.index, D1_d[c].values, color=clr, lw=0.85, alpha=0.85, label=c)
+for c, clr, ls in zip(ORP_CH, channel_clrs, channel_styles):
+    ax.plot(D1_d.index, D1_d[c].values, color=clr, ls=ls,
+            lw=0.9, alpha=0.88, label=c)
 ax.axhline(3, color=C["red"], ls=":", lw=0.7)
 ax.set_ylabel("Daily $D_1$ (median)", fontsize=9.5)
 ax.set_ylim(1.5, 5.0)
@@ -492,7 +518,7 @@ ax.legend(
      Patch(facecolor=C["amber"], alpha=0.25)],
     [r"Pre-cap $D_{1,pre}$", r"Final $D_1$", "State cap (2.5)",
      "Cap-active hours"],
-    loc="upper left", bbox_to_anchor=(0.01, 0.98), fontsize=6.7,
+    loc="lower left", bbox_to_anchor=(0.01, 0.03), ncol=2, fontsize=6.7,
     frameon=True, framealpha=0.68, facecolor="white", edgecolor="none",
     borderaxespad=0,
 )
@@ -641,7 +667,7 @@ save(fig, "Fig9_input_routing_audit",
 # ============================================================================
 print("[Fig10] Two-tier regime ...")
 fig, axes = plt.subplots(2, 1, figsize=(7.2, 4.8), sharex=True)
-fig.subplots_adjust(hspace=0.42, top=0.76, bottom=0.10)
+fig.subplots_adjust(hspace=0.48, top=0.91, bottom=0.10)
 ch = "DO_2_3"
 det_raw = S["detectors_raw"]
 w1 = det_raw["w1_normalised_hourly"][ch]
@@ -658,6 +684,12 @@ ax.set_ylabel("W1 normalised", fontsize=9.5)
 ax.set_yscale("symlog", linthresh=2)
 ax.set_ylim(*positive_data_ylim(w1.values, headroom=0.08))
 ax.set_title(f"(a)  Tier-1 W1 distance — {ch}", loc="left")
+ax.legend(
+    [line_w1, fill_w1], ["W1 normalised", "W1 > 3"],
+    loc="upper left", bbox_to_anchor=(0.01, 0.98), ncol=2,
+    fontsize=6.9, frameon=True, framealpha=0.72,
+    facecolor="white", edgecolor="none", borderaxespad=0,
+)
 
 ax = axes[1]
 line_ks, = ax.plot(ks.index, ks.values, color=C["blue"], lw=0.5, alpha=0.85,
@@ -668,6 +700,12 @@ fill_ks = ax.fill_between(ks.index, 0, ks.values, where=ks.values > 0.3,
 ax.set_ylabel("adjacent KS", fontsize=9.5)
 ax.set_ylim(*positive_data_ylim(ks.values, headroom=0.08, minimum_upper=0.5))
 ax.set_title(f"(b)  Tier-2 adjacent KS — {ch}", loc="left")
+ax.legend(
+    [line_ks, fill_ks], ["Adjacent KS", "KS > 0.3"],
+    loc="upper left", bbox_to_anchor=(0.01, 0.98), ncol=2,
+    fontsize=6.9, frameon=True, framealpha=0.72,
+    facecolor="white", edgecolor="none", borderaxespad=0,
+)
 # each panel carries its own date labels (was shared via sharex → only bottom)
 for _ax in axes:
     _ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
@@ -675,63 +713,272 @@ for _ax in axes:
 
 fig.suptitle(f"Figure 10.  Two-tier regime detector outputs — {ch} (v1.1)",
               fontsize=9.8, fontweight="bold", y=0.985)
-fig.legend([line_w1, fill_w1, line_ks, fill_ks],
-           ["W1 normalised", "W1 > 3", "Adjacent KS", "KS > 0.3"],
-           loc="upper center", bbox_to_anchor=(0.5, 0.895), ncol=4,
-           fontsize=6.9, frameon=False)
 save(fig, "Fig10_two_tier_regime")
 
 
 # ============================================================================
-# Fig 11: PLS peer audit (engineered peers)
+# Fig 11: DO_2_4 PLS peer-admission evidence chain
 # ============================================================================
-print("[Fig11] PLS peer audit ...")
-fig, axes = plt.subplots(1, 2, figsize=(7.2, 4.3),
-                         gridspec_kw={"width_ratios": [1.45, 0.9]})
-fig.subplots_adjust(wspace=0.42, top=0.84, bottom=0.25)
-peer_matrix = S["detectors_raw"]["pls_peer_matrix"].reindex(
-    index=SCORED, columns=SCORED
-).fillna(0).astype(int)
-peer_audit = S["detectors_raw"]["pls_peer_selection_audit"].reindex(SCORED)
+print("[Fig11] DO_2_4 PLS peer-admission validation ...")
+det_raw = S["detectors_raw"]
+folds = det_raw["pls_do24_fold_metrics"].copy()
+summary = det_raw["pls_do24_performance_summary"].copy()
+bootstrap = det_raw["pls_do24_bootstrap_samples"].copy()
+injection_summary = det_raw["pls_do24_injection_summary"].copy()
+injection_scenarios = det_raw["pls_do24_injection_scenarios"].copy()
+gates = det_raw["pls_do24_gate_results"].copy()
+decision = det_raw["pls_do24_decision"].copy()
+split_manifest = det_raw["pls_do24_split_manifest"].copy()
+model_definitions = det_raw["pls_do24_model_definitions"].copy()
+hourly_predictions = det_raw["pls_do24_hourly_predictions"].copy()
 
-ax = axes[0]
-peer_cmap = ListedColormap(["#F2F2F2", C["blue"], C["amber"]])
-peer_norm = BoundaryNorm([-0.5, 0.5, 1.5, 2.5], peer_cmap.N)
-ax.imshow(peer_matrix.values, cmap=peer_cmap, norm=peer_norm, aspect="auto")
-ax.set_yticks(np.arange(len(SCORED))); ax.set_yticklabels(SCORED, fontsize=7.2)
-ax.set_xticks(np.arange(len(SCORED)))
-ax.set_xticklabels(SCORED, rotation=55, ha="right", fontsize=6.8)
-ax.set_xlabel("Predictor")
-ax.set_ylabel("Target")
-ax.set_title("(a) Selected same-analyte peers", loc="left")
-ax.grid(False)
-ax.legend(handles=[Patch(facecolor=C["blue"], label="Structural core"),
-                   Patch(facecolor=C["amber"], label="CV-added peer")],
-          loc="upper center", bbox_to_anchor=(0.5, -0.25), ncol=2,
-          fontsize=6.5, frameon=False)
+candidate_ids = ["M1_1", "M1_2"]
+model_labels = {
+    "M1_1": r"$M_{1,1}$: +DO_2_2, 1 comp.",
+    "M1_2": r"$M_{1,2}$: +DO_2_2, 2 comp.",
+}
+model_colors = {"M1_1": C["blue"], "M1_2": C["purple"]}
+model_markers = {"M1_1": "o", "M1_2": "^"}
 
-ax = axes[1]
-improvement = peer_audit["cv_improvement_pct"].fillna(0.0)
-colors = [C["amber"] if str(peer_audit.at[c, "selected_noncore_peers"]).strip()
-          else "0.65" for c in SCORED]
-ax.barh(np.arange(len(SCORED)), improvement.values, color=colors, height=0.68)
-ax.axvline(2.0, color=C["red"], ls=":", lw=0.8, label="2% inclusion threshold")
-ax.set_yticks(np.arange(len(SCORED))); ax.set_yticklabels(SCORED, fontsize=7.2)
-ax.invert_yaxis()
-ax.set_xlabel("CV NRMSE gain (%)")
-ax.set_title("(b) Predictive gain", loc="left")
-improvement_upper = positive_data_ylim(
-    improvement.values, headroom=0.12, minimum_upper=2.5
-)[1]
-ax.set_xlim(0.0, improvement_upper)
-ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.25), fontsize=6.5,
-          frameon=False)
+fig = plt.figure(figsize=(7.2, 5.45))
+gs = fig.add_gridspec(
+    2, 3,
+    height_ratios=[1.12, 1.0],
+    width_ratios=[1.05, 1.0, 1.18],
+    left=0.085, right=0.985, top=0.91, bottom=0.13,
+    hspace=0.58, wspace=0.56,
+)
+ax_a = fig.add_subplot(gs[0, :2])
+ax_b = fig.add_subplot(gs[0, 2])
+ax_c = fig.add_subplot(gs[1, 0])
+ax_d = fig.add_subplot(gs[1, 1])
+ax_e = fig.add_subplot(gs[1, 2])
 
-fig.suptitle("Figure 11.  Same-analyte PLS peer selection with blocked temporal validation",
-             fontsize=9.8, fontweight="bold", y=0.98)
-save(fig, "Fig11_pls_peer_selection",
-     plot_data={"selected_peer_matrix": peer_matrix,
-                "blocked_cv_audit": peer_audit})
+# (a) All forward validation blocks.
+for model_id in candidate_ids:
+    data = folds.loc[folds.model_id == model_id].sort_values("fold_id")
+    ax_a.plot(
+        data.fold_id,
+        data.gain_pct_vs_M0,
+        color=model_colors[model_id],
+        lw=0.55,
+        alpha=0.34,
+        zorder=1,
+    )
+    ax_a.scatter(
+        data.fold_id,
+        data.gain_pct_vs_M0,
+        s=18,
+        marker=model_markers[model_id],
+        facecolor=model_colors[model_id],
+        edgecolor="white",
+        linewidth=0.35,
+        label=model_labels[model_id],
+        zorder=2,
+    )
+all_gains = folds.loc[folds.model_id.isin(candidate_ids), "gain_pct_vs_M0"]
+gain_limit = max(10.0, float(np.nanmax(np.abs(all_gains))) * 1.10)
+ax_a.axhline(0.0, color="0.25", lw=0.8, ls="--")
+ax_a.set_xlim(0.4, folds.fold_id.max() + 0.6)
+ax_a.set_ylim(-gain_limit, gain_limit)
+ax_a.set_xlabel("Forward validation block")
+ax_a.set_ylabel("NRMSE gain vs $M_0$ (%)")
+ax_a.set_title("(a)  Forward-block predictive gain", loc="left")
+ax_a.legend(loc="upper left", ncol=2, fontsize=6.6, frameon=False,
+            handletextpad=0.4, columnspacing=0.9)
+
+# (b) Median block gain, block-bootstrap interval, and untouched terminal test.
+summary_i = summary.set_index("model_id")
+y_positions = {"M1_1": 1.0, "M1_2": 0.0}
+for model_id in candidate_ids:
+    row = summary_i.loc[model_id]
+    y = y_positions[model_id]
+    ax_b.hlines(
+        y,
+        row.gain_ci95_low_pct,
+        row.gain_ci95_high_pct,
+        color=model_colors[model_id],
+        lw=1.5,
+    )
+    ax_b.scatter(
+        row.median_gain_pct,
+        y,
+        s=28,
+        marker=model_markers[model_id],
+        color=model_colors[model_id],
+        edgecolor="white",
+        linewidth=0.4,
+        zorder=3,
+    )
+    ax_b.scatter(
+        row.independent_test_gain_pct,
+        y - 0.19,
+        s=24,
+        marker="D",
+        facecolor="white",
+        edgecolor=model_colors[model_id],
+        linewidth=0.9,
+        zorder=3,
+    )
+ci_and_test = summary_i.loc[candidate_ids, [
+    "gain_ci95_low_pct", "gain_ci95_high_pct", "independent_test_gain_pct"
+]].to_numpy(dtype=float)
+b_limit = max(10.0, float(np.nanmax(np.abs(ci_and_test))) * 1.12)
+ax_b.axvline(0.0, color="0.25", lw=0.8, ls="--")
+ax_b.set_xlim(-b_limit, b_limit)
+ax_b.set_ylim(-0.48, 1.35)
+ax_b.set_yticks([0.0, 1.0])
+ax_b.set_yticklabels([r"$M_{1,2}$", r"$M_{1,1}$"])
+ax_b.set_xlabel("Gain vs $M_0$ (%)")
+ax_b.set_title("(b)  Uncertainty and hold-out", loc="left")
+ax_b.legend(
+    handles=[
+        Line2D([0], [0], marker="o", color="0.35", lw=1.2,
+               markerfacecolor="0.35", markersize=4, label="Median (95% block CI)"),
+        Line2D([0], [0], marker="D", color="none", markeredgecolor="0.35",
+               markerfacecolor="white", markersize=4, label="Terminal 42-d test"),
+    ],
+    loc="lower right", fontsize=5.9,
+    frameon=False, handletextpad=0.4,
+)
+
+# (c) Directional consistency across validation blocks.
+y = np.arange(len(candidate_ids))
+positive = summary_i.loc[candidate_ids, "positive_gain_fold_fraction"].to_numpy(dtype=float)
+ax_c.barh(
+    y,
+    positive,
+    height=0.52,
+    color=[model_colors[key] for key in candidate_ids],
+    alpha=0.82,
+)
+for yi, value in zip(y, positive):
+    ax_c.text(min(value + 0.025, 0.93), yi, f"{value:.2f}", va="center",
+              ha="left", fontsize=6.6)
+ax_c.axvline(0.60, color=C["red"], lw=0.8, ls=":")
+ax_c.set_xlim(0.0, 1.0)
+ax_c.set_yticks(y)
+ax_c.set_yticklabels([r"$M_{1,1}$", r"$M_{1,2}$"])
+ax_c.invert_yaxis()
+ax_c.set_xlabel("Positive-gain block fraction")
+ax_c.set_title("(c)  Directional consistency", loc="left")
+ax_c.text(0.60, 0.97, "0.60", transform=ax_c.get_xaxis_transform(),
+          color=C["red"], fontsize=6.2, ha="center", va="top")
+
+# (d) Development and independent-test tail error.
+for model_id in candidate_ids:
+    row = summary_i.loc[model_id]
+    yi = y_positions[model_id]
+    ax_d.plot(
+        [row.development_p90_change_pct, row.independent_test_p90_change_pct],
+        [yi, yi],
+        color=model_colors[model_id],
+        lw=0.65,
+        alpha=0.45,
+    )
+    ax_d.scatter(row.development_p90_change_pct, yi, s=24, marker="o",
+                 color=model_colors[model_id], zorder=3)
+    ax_d.scatter(row.independent_test_p90_change_pct, yi, s=23, marker="D",
+                 facecolor="white", edgecolor=model_colors[model_id],
+                 linewidth=0.9, zorder=3)
+p90_values = summary_i.loc[candidate_ids, [
+    "development_p90_change_pct", "independent_test_p90_change_pct"
+]].to_numpy(dtype=float)
+p90_low = min(-5.0, float(np.nanmin(p90_values)) - 3.0)
+p90_high = max(10.0, float(np.nanmax(p90_values)) + 3.0)
+ax_d.axvline(5.0, color=C["red"], lw=0.8, ls=":")
+ax_d.set_xlim(p90_low, p90_high)
+ax_d.set_ylim(-0.45, 1.35)
+ax_d.set_yticks([0.0, 1.0])
+ax_d.set_yticklabels([r"$M_{1,2}$", r"$M_{1,1}$"])
+ax_d.set_xlabel("P90 error change vs $M_0$ (%)")
+ax_d.set_title("(d)  Tail-error stability", loc="left")
+ax_d.legend(
+    handles=[
+        Line2D([0], [0], marker="o", color="none", markerfacecolor="0.35",
+               markersize=4, label="Development"),
+        Line2D([0], [0], marker="D", color="none", markeredgecolor="0.35",
+               markerfacecolor="white", markersize=4, label="Terminal test"),
+    ],
+    loc="lower left", ncol=1, fontsize=5.8,
+    frameon=False, columnspacing=0.7, handletextpad=0.3,
+)
+
+# (e) Material injections (2-3 sigma): target detection and false-alarm deltas.
+injection_gate_order = [
+    ("target_detection_delta", "Target drift\nΔ detection (↑)"),
+    ("direct_peer_fa_delta", "Direct peer\nΔ false alarm (↓)"),
+    ("second_peer_fa_delta", "Second peer\nΔ false alarm (↓)"),
+    ("common_process_fa_delta", "Common process\nΔ false alarm (↓)"),
+]
+gate_i = gates.set_index(["model_id", "gate"])
+e_y = np.arange(len(injection_gate_order))
+all_delta = []
+for offset, model_id in zip((-0.10, 0.10), candidate_ids):
+    values = np.array([
+        100.0 * float(gate_i.loc[(model_id, gate_name), "value"])
+        for gate_name, _ in injection_gate_order
+    ])
+    all_delta.extend(values.tolist())
+    ax_e.scatter(
+        values,
+        e_y + offset,
+        s=24,
+        marker=model_markers[model_id],
+        color=model_colors[model_id],
+        edgecolor="white",
+        linewidth=0.35,
+        label=model_labels[model_id],
+        zorder=3,
+    )
+for yi, (gate_name, _) in zip(e_y, injection_gate_order):
+    threshold = -5.0 if gate_name == "target_detection_delta" else 5.0
+    ax_e.plot([threshold, threshold], [yi - 0.34, yi + 0.34],
+              color=C["red"], lw=0.8, ls=":")
+e_limit = max(10.0, float(np.nanmax(np.abs(all_delta))) * 1.18)
+ax_e.axvline(0.0, color="0.35", lw=0.7, ls="--")
+ax_e.set_xlim(-e_limit, e_limit)
+ax_e.set_yticks(e_y)
+ax_e.set_yticklabels([label for _, label in injection_gate_order], fontsize=6.6)
+ax_e.invert_yaxis()
+ax_e.set_xlabel("Change vs $M_0$ (percentage points)")
+ax_e.set_title("(e)  Controlled injections", loc="left")
+
+for ax in (ax_a, ax_b, ax_c, ax_d, ax_e):
+    ax.tick_params(axis="both", which="both", direction="out", length=3.0,
+                   width=0.8, top=False, right=False)
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+
+final_model = str(decision.loc[0, "final_model_id"])
+fig.text(
+    0.985,
+    0.025,
+    r"Final decision: retain $M_0$ (DO_2_3, 1 component)"
+    if final_model == "M0"
+    else f"Final decision: admit {final_model}",
+    ha="right",
+    va="bottom",
+    fontsize=7.1,
+    fontweight="bold",
+    color="0.20",
+)
+save(
+    fig,
+    "Fig11_pls_peer_selection",
+    plot_data={
+        "model_definitions": model_definitions,
+        "split_manifest": split_manifest,
+        "hourly_predictions": hourly_predictions,
+        "fold_metrics": folds,
+        "performance": summary,
+        "bootstrap": bootstrap,
+        "injection_summary": injection_summary,
+        "injection_scenarios": injection_scenarios,
+        "admission_gates": gates,
+        "decision": decision,
+    },
+)
 
 print("\n[done] Updated baseline figures Fig 1-11 complete.\n")
 try:

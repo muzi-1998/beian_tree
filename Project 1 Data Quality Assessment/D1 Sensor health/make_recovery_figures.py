@@ -24,6 +24,18 @@ from publication_style import (
 
 
 configure_publication_style()
+plt.rcParams.update({
+    "font.family": "sans-serif",
+    "font.sans-serif": ["Arial", "Helvetica", "DejaVu Sans", "Liberation Sans"],
+    "font.size": 8.0,
+    "axes.titlesize": 9.2,
+    "axes.titleweight": "bold",
+    "axes.titlepad": 5.0,
+    "axes.labelsize": 8.5,
+    "xtick.labelsize": 7.5,
+    "ytick.labelsize": 7.5,
+    "legend.fontsize": 6.8,
+})
 OUT = ROOT / "outputs" / "figures"
 PLOT_DATA = ROOT / "outputs" / "plot_data"
 OUT.mkdir(parents=True, exist_ok=True)
@@ -145,7 +157,7 @@ def make_recovery_validation_figure(state: dict) -> None:
 
     fig.suptitle(
         "Figure V19. Event-level recovery performance and mechanism validation",
-        fontsize=10, fontweight="bold", y=0.995,
+        fontsize=9.8, fontweight="bold", fontfamily="Arial", y=0.995,
     )
     fig.tight_layout(rect=(0, 0, 1, 0.97), h_pad=1.5, w_pad=1.4)
     outcome_data = pd.DataFrame({
@@ -245,7 +257,7 @@ def make_recovery_case_figure(state: dict) -> None:
         ax.axvline(0, color="black", linewidth=0.6, linestyle="--", alpha=0.55)
     fig.suptitle(
         "Figure V20. Adapted recovery after a persistent regime departure",
-        fontsize=10, fontweight="bold", y=0.995,
+        fontsize=9.8, fontweight="bold", fontfamily="Arial", y=0.995,
     )
     fig.tight_layout(rect=(0, 0.05, 0.82, 0.97), h_pad=1.1)
     export = case.reset_index().rename(columns={case.index.name or "index": "timestamp"})
