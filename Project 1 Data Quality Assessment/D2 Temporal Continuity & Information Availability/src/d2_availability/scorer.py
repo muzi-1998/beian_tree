@@ -75,12 +75,20 @@ class FreezeAvailabilityScorer:
         self.b   = cfg.mapping.piecewise_breaks["Q_FA"]
         self.rule = cfg.mapping.Q_FA_rule
 
-    def score(self, st: pd.DataFrame, rl_rate: pd.Series) -> Tuple[pd.Series, pd.Series]:
+    def score(
+        self,
+        st: pd.DataFrame,
+        rl_rate: pd.Series,
+        allow_response_loss: bool = True,
+    ) -> Tuple[pd.Series, pd.Series]:
         Q_main = piecewise_score(st["info_empty_cov"], self.b["info_empty_cov"])
         Q_FA   = Q_main.copy()
         rl_aligned = rl_rate.reindex(Q_main.index).fillna(0.0)
-        downgrade = ((rl_aligned > self.rule["aggravation"]["trigger_above"]) &
-                     (Q_main <= self.rule["aggravation"]["main_threshold"]))
+        downgrade = (
+            allow_response_loss
+            & (rl_aligned > self.rule["aggravation"]["trigger_above"])
+            & (Q_main <= self.rule["aggravation"]["main_threshold"])
+        )
         Q_FA[downgrade] = (Q_main[downgrade] - self.rule["aggravation"]["downgrade_amount"]).clip(lower=1.0)
         return Q_FA, Q_main
 

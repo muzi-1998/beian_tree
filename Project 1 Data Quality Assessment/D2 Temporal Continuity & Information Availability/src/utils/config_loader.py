@@ -29,6 +29,11 @@ class SensorMeta:
     in_pool_neighbors:  List[str]
     precision:          float
     unit:               str
+    availability_mode:  str
+    process_zone:       str
+    process_floor_threshold: Optional[float]
+    response_loss_enabled: bool
+    response_loss_peers: List[str]
 
 
 @dataclass(frozen=True)
@@ -50,6 +55,7 @@ class MappingConfig:
     safety_floor:       Dict[str, float]
     imputation:         Dict[str, Any]
     freeze_detection:   Dict[str, Any]
+    process_floor_policy: Dict[str, Any]
     mapping_version:    str
 
 
@@ -71,6 +77,10 @@ class D2Config:
     def main_window(self) -> WindowSpec:
         return self.windows["main_window"]
 
+    @property
+    def freeze_window(self) -> WindowSpec:
+        return self.windows["freeze_window"]
+
 
 # ─── Loading ──────────────────────────────────────────────────────────────────
 
@@ -83,6 +93,7 @@ def load_config(config_dir: Path, version: str = "v1") -> D2Config:
 
     # SensorMeta
     sensors = {}
+    availability_defaults = sensors_yaml.get("availability_defaults", {})
     for sid, s in sensors_yaml["sensors"].items():
         sensors[sid] = SensorMeta(
             sensor_id=sid,
@@ -93,6 +104,26 @@ def load_config(config_dir: Path, version: str = "v1") -> D2Config:
             in_pool_neighbors=list(s.get("in_pool_neighbors", [])),
             precision=float(s["precision"]),
             unit=s["unit"],
+            availability_mode=s.get(
+                "availability_mode", availability_defaults.get("mode", "standard")
+            ),
+            process_zone=s.get("process_zone", "unspecified"),
+            process_floor_threshold=(
+                float(s["process_floor_threshold"])
+                if s.get("process_floor_threshold") is not None else None
+            ),
+            response_loss_enabled=bool(
+                s.get(
+                    "response_loss_enabled",
+                    availability_defaults.get("response_loss_enabled", True),
+                )
+            ),
+            response_loss_peers=list(
+                s.get(
+                    "response_loss_peers",
+                    [s["parallel_to"]] if s.get("parallel_to") else [],
+                )
+            ),
         )
 
     # WindowSpec
@@ -112,6 +143,7 @@ def load_config(config_dir: Path, version: str = "v1") -> D2Config:
         safety_floor=mapping_yaml["safety_floor"],
         imputation=mapping_yaml["imputation"],
         freeze_detection=mapping_yaml["freeze_detection"],
+        process_floor_policy=mapping_yaml["process_floor_policy"],
         mapping_version=mapping_yaml["mapping_version"],
     )
 
@@ -175,3 +207,23 @@ def _validate(cfg: D2Config) -> None:
     fd = cfg.mapping.freeze_detection
     assert fd["tau_rle_D2_min"] < fd["tau_rle_D1_min"], \
         f"D2 RLE threshold {fd['tau_rle_D2_min']} not strictly less than D1 {fd['tau_rle_D1_min']}"
+
+    # 9. Process-floor routing must be explicit and response-loss peers comparable.
+    for sid, sensor in cfg.sensors.items():
+        assert sensor.availability_mode in {"standard", "process_floor"}, \
+            f"{sid}: unsupported availability_mode={sensor.availability_mode}"
+        if sensor.availability_mode == "process_floor":
+            assert sensor.process_floor_threshold is not None and sensor.process_floor_threshold > 0, \
+                f"{sid}: process_floor_threshold must be positive"
+        if sensor.response_loss_enabled:
+            assert sensor.response_loss_peers, \
+                f"{sid}: response loss requires at least one comparable peer"
+            for peer_id in sensor.response_loss_peers:
+                assert peer_id in cfg.sensors, f"{sid}: response-loss peer {peer_id} not in sensors"
+                peer = cfg.sensors[peer_id]
+                assert peer.sensor_type == sensor.sensor_type, \
+                    f"{sid}: response-loss peer {peer_id} has incompatible sensor type"
+                assert peer.position == sensor.position, \
+                    f"{sid}: response-loss peer {peer_id} is not at the same process position"
+                assert peer.process_zone == sensor.process_zone, \
+                    f"{sid}: response-loss peer {peer_id} is not in the same process zone"

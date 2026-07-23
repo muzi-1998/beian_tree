@@ -1,7 +1,9 @@
 {
+  "generated_at": "2026-07-23T04:12:25.965271+00:00",
   "figure_dir": "D:\\004_git\\beian_tree\\Project 1 Data Quality Assessment\\D6 Parallel-redundancy Temporal Consistency\\outputs\\figures",
   "figures": 8,
   "failed": 0,
+  "all_passed": true,
   "records": [
     {
       "stem": "Fig_D1_dqr_heatmap",
@@ -9,15 +11,16 @@
       "svg": true,
       "pdf": true,
       "png_size_px": [
-        4091,
-        1386
+        4088,
+        1420
       ],
       "png_nonblank": true,
       "svg_text_elements": 24,
       "svg_arial_declared": true,
       "panel_labels": [],
       "nonconforming_bare_panel_labels": [],
-      "fresh_vs_sources": true
+      "fresh_vs_sources": true,
+      "passed": true
     },
     {
       "stem": "Fig_D2_status_barcode",
@@ -25,7 +28,7 @@
       "svg": true,
       "pdf": true,
       "png_size_px": [
-        4111,
+        4357,
         1874
       ],
       "png_nonblank": true,
@@ -36,7 +39,8 @@
         "(b)"
       ],
       "nonconforming_bare_panel_labels": [],
-      "fresh_vs_sources": true
+      "fresh_vs_sources": true,
+      "passed": true
     },
     {
       "stem": "Fig_D3_context_independence",
@@ -44,18 +48,19 @@
       "svg": true,
       "pdf": true,
       "png_size_px": [
-        4159,
-        1733
+        4210,
+        1835
       ],
       "png_nonblank": true,
-      "svg_text_elements": 40,
+      "svg_text_elements": 46,
       "svg_arial_declared": true,
       "panel_labels": [
         "(a)",
         "(b)"
       ],
       "nonconforming_bare_panel_labels": [],
-      "fresh_vs_sources": true
+      "fresh_vs_sources": true,
+      "passed": true
     },
     {
       "stem": "Fig_M1_paired_residual_consistency",
@@ -64,7 +69,7 @@
       "pdf": true,
       "png_size_px": [
         4347,
-        4175
+        4180
       ],
       "png_nonblank": true,
       "svg_text_elements": 44,
@@ -79,7 +84,8 @@
         "(g)"
       ],
       "nonconforming_bare_panel_labels": [],
-      "fresh_vs_sources": true
+      "fresh_vs_sources": true,
+      "passed": true
     },
     {
       "stem": "Fig_M2_subscore_contribution",
@@ -87,7 +93,7 @@
       "svg": true,
       "pdf": true,
       "png_size_px": [
-        4230,
+        4313,
         1511
       ],
       "png_nonblank": true,
@@ -98,7 +104,8 @@
         "(b)"
       ],
       "nonconforming_bare_panel_labels": [],
-      "fresh_vs_sources": true
+      "fresh_vs_sources": true,
+      "passed": true
     },
     {
       "stem": "Fig_M3_trend_slope_scatter",
@@ -117,7 +124,8 @@
         "(b)"
       ],
       "nonconforming_bare_panel_labels": [],
-      "fresh_vs_sources": true
+      "fresh_vs_sources": true,
+      "passed": true
     },
     {
       "stem": "Fig_V1_roc_pr",
@@ -125,7 +133,7 @@
       "svg": true,
       "pdf": true,
       "png_size_px": [
-        4239,
+        4307,
         1730
       ],
       "png_nonblank": true,
@@ -136,7 +144,8 @@
         "(b)"
       ],
       "nonconforming_bare_panel_labels": [],
-      "fresh_vs_sources": true
+      "fresh_vs_sources": true,
+      "passed": true
     },
     {
       "stem": "Fig_V2_ablation",
@@ -144,8 +153,8 @@
       "svg": true,
       "pdf": true,
       "png_size_px": [
-        4261,
-        1615
+        4269,
+        1616
       ],
       "png_nonblank": true,
       "svg_text_elements": 33,
@@ -155,7 +164,8 @@
         "(b)"
       ],
       "nonconforming_bare_panel_labels": [],
-      "fresh_vs_sources": true
+      "fresh_vs_sources": true,
+      "passed": true
     }
   ]
 }

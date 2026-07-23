@@ -7,7 +7,7 @@ B-2  D1–D2 评分时序对比图 — 双轴时序 + D1 事件窗口 + D2 veto 
   - rcParams: Arial / sans-serif, svg.fonttype='none'
   - 轴：仅左+下，无网格，legend.frameon=False
   - 颜色：PALETTE（见下）
-  - DPI: 300（PNG）+ SVG
+  - DPI: 600（PNG）+ editable SVG/PDF
   - 导出：artifacts/figures/
 """
 from __future__ import annotations
@@ -16,23 +16,32 @@ import warnings
 import numpy as np
 import pandas as pd
 import matplotlib
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import matplotlib.patches as mpatches
 from matplotlib.colors import LinearSegmentedColormap
 from pathlib import Path
-from publication_style import (PALETTE as SHARED_PALETTE,
-                               configure_publication_style, finalize_figure)
+from publication_style import (
+    PANEL_FONTSIZE,
+    PANEL_X,
+    PANEL_Y,
+    PALETTE as SHARED_PALETTE,
+    configure_publication_style,
+    finalize_figure,
+)
 
 warnings.filterwarnings("ignore")
 matplotlib.use("Agg")
 
 # ── 强制 rcParams（nature-skills 规范三行）────────────────────────────────────
-plt.rcParams["font.family"]     = "sans-serif"
-plt.rcParams["font.sans-serif"] = ["Arial", "Helvetica", "DejaVu Sans",
-                                    "Liberation Sans"]
-plt.rcParams["svg.fonttype"]    = "none"
-plt.rcParams["pdf.fonttype"]    = 42
+mpl.rcParams.update({
+    "font.family": "sans-serif",
+    "font.sans-serif": ["Arial", "Helvetica", "DejaVu Sans", "Liberation Sans"],
+    "font.size": 7,
+    "svg.fonttype": "none",
+    "pdf.fonttype": 42,
+})
 configure_publication_style()
 
 # ── PALETTE（nature-skills api.md）───────────────────────────────────────────
@@ -132,8 +141,8 @@ def apply_publication_style(ax, font_size: int = 9,
     ax.title.set_fontsize(font_size + 1)
 
 
-def add_panel_label(ax, label: str, x=-0.10, y=1.03,
-                    fontsize=11, fontweight="bold") -> None:
+def add_panel_label(ax, label: str, x=PANEL_X, y=PANEL_Y,
+                    fontsize=PANEL_FONTSIZE, fontweight="bold") -> None:
     normalized = label.strip().strip("()").lower()
     ax.text(x, y, f"({normalized})", transform=ax.transAxes,
             fontsize=fontsize, fontweight=fontweight,
@@ -228,10 +237,10 @@ def make_b1(freeze_df: pd.DataFrame, D2: dict) -> None:
         dur_data[r] = freeze_df[freeze_df["relation_to_D1"]==r]["duration_min"].tolist()
 
     # ── 布局 ─────────────────────────────────────────────────────────────────
-    fig = plt.figure(figsize=(14, 7))
+    fig = plt.figure(figsize=(7.2, 4.2))
     gs  = gridspec.GridSpec(2, 2, figure=fig,
                             width_ratios=[1.7, 1.0],
-                            hspace=0.42, wspace=0.38)
+                            hspace=0.72, wspace=0.38)
     ax_a  = fig.add_subplot(gs[:, 0])    # 全高左列
     ax_b  = fig.add_subplot(gs[0, 1])   # 右上
     ax_c  = fig.add_subplot(gs[1, 1])   # 右下
@@ -258,7 +267,7 @@ def make_b1(freeze_df: pd.DataFrame, D2: dict) -> None:
     ax_a.legend(loc="lower right", fontsize=fs-1, frameon=False,
                 ncol=1, handlelength=1.2, handletextpad=0.4)
     apply_publication_style(ax_a, font_size=fs)
-    add_panel_label(ax_a, "A", x=-0.06)
+    add_panel_label(ax_a, "A")
 
     # ── Panel B: 热力图 ───────────────────────────────────────────────────
     hm_vals = hm.values.astype(float)
@@ -292,7 +301,7 @@ def make_b1(freeze_df: pd.DataFrame, D2: dict) -> None:
     cb.set_label("Count", fontsize=fs-1)
     ax_b.spines[:].set_visible(False)
     ax_b.tick_params(length=0)
-    add_panel_label(ax_b, "B", x=-0.16)
+    add_panel_label(ax_b, "B")
 
     # ── Panel C: 事件时长箱线图 ───────────────────────────────────────────
     rel_plot = [r for r in REL_ORDER[:4] if len(dur_data[r]) > 0]
@@ -314,7 +323,7 @@ def make_b1(freeze_df: pd.DataFrame, D2: dict) -> None:
     ax_c.set_title("D2 freeze event duration\nby D1 linkage type", fontsize=fs+1)
     ax_c.set_yscale("log")
     apply_publication_style(ax_c, font_size=fs)
-    add_panel_label(ax_c, "C", x=-0.16)
+    add_panel_label(ax_c, "C")
 
     finalize(fig, "D2_Fig11_B1_event_cooccurrence")
 
@@ -337,14 +346,14 @@ def make_b2(D2: dict, D1: dict, d1_ev: pd.DataFrame) -> None:
     # 代表通道：覆盖高质量（4.9），中质量（3.5-4.5），低质量（<3）
     channels_b2 = [
         "DO_1_1",  # 健康 DO
-        "DO_1_4",  # 退化 DO（持续 freeze_severe）
-        "DO_2_4",  # 中等 DO
+        "DO_1_4",  # 后缺氧 process-floor DO
+        "DO_2_4",  # 平行后缺氧 process-floor DO
         "ORP_1_1", # 中等 ORP
         "ORP_2_1", # 低质 ORP
         "ORP_2_2", # 最低 ORP
     ]
 
-    fig, axes = plt.subplots(3, 2, figsize=(14, 10),
+    fig, axes = plt.subplots(3, 2, figsize=(7.2, 7.0),
                              sharex=False, sharey=False)
     axes_flat = axes.flatten()
     fs = 8
@@ -401,8 +410,19 @@ def make_b2(D2: dict, D1: dict, d1_ev: pd.DataFrame) -> None:
                                    (3.5,"B",PAL["gold"]),
                                    (2.5,"C",PAL["red_2"])]:
             ax.axhline(thresh, color=lc, lw=0.8, ls=":", alpha=0.7, zorder=3)
-            ax.text(t[-1], thresh+0.04, grade,
-                    color=lc, fontsize=fs-2, va="bottom", ha="right")
+            ax.text(
+                0.985, thresh + 0.04, grade,
+                transform=ax.get_yaxis_transform(),
+                color=PAL["neutral_black"], fontsize=fs - 0.5,
+                fontweight="bold", va="bottom", ha="right",
+                bbox={
+                    "boxstyle": "round,pad=0.14",
+                    "facecolor": "white",
+                    "edgecolor": lc,
+                    "linewidth": 0.45,
+                    "alpha": 0.84,
+                },
+            )
 
         ax.set_ylim(1.0, 5.1)
         ax.set_xlim(t[0], t[-1])
@@ -435,7 +455,7 @@ def make_b2(D2: dict, D1: dict, d1_ev: pd.DataFrame) -> None:
     fig.suptitle("D1 Sensor Health vs D2 Temporal Continuity — Representative Channels",
                  fontsize=fs+2, fontweight="bold", y=1.01)
 
-    finalize(fig, "D2_Fig12_B2_d1d2_timeseries", dpi=300)
+    finalize(fig, "D2_Fig12_B2_d1d2_timeseries", dpi=600)
 
 
 def _shade_spans(ax, t, flag: pd.Series,

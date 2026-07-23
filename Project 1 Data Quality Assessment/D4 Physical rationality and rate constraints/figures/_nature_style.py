@@ -21,6 +21,7 @@ plt.rcParams.update(
         "axes.labelsize": 7.5,
         "axes.titlesize": 8.0,
         "axes.titleweight": "bold",
+        "axes.titlepad": 6.0,
         "axes.linewidth": 0.8,
         "lines.linewidth": 1.0,
         "legend.fontsize": 6.5,
@@ -38,10 +39,17 @@ plt.rcParams.update(
         "figure.dpi": 150,
         "savefig.bbox": "tight",
         "savefig.pad_inches": 0.03,
+        "svg.fonttype": "none",
+        "pdf.fonttype": 42,
+        "ps.fonttype": 42,
         "axes.unicode_minus": False,
         "figure.constrained_layout.use": False,
     }
 )
+
+PANEL_X = -0.10
+PANEL_Y = 1.02
+PANEL_FONTSIZE = 9.0
 
 
 COLORS = {
@@ -69,17 +77,24 @@ ISSUE_COLORS = {
 }
 
 
-def panel_label(ax, label: str, x: float = -0.12, y: float = 1.06) -> None:
+def panel_label(ax, label: str, x: float = PANEL_X, y: float = PANEL_Y) -> None:
+    normalized = label.strip().strip("()").lower()
     ax.text(
         x,
         y,
-        label,
+        f"({normalized})",
         transform=ax.transAxes,
-        fontsize=9,
+        fontsize=PANEL_FONTSIZE,
         fontweight="bold",
-        ha="left",
+        ha="right",
         va="bottom",
         clip_on=False,
+        bbox={
+            "facecolor": "white",
+            "edgecolor": "none",
+            "alpha": 0.88,
+            "pad": 0.12,
+        },
     )
 
 

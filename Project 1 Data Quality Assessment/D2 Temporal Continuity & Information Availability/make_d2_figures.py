@@ -30,6 +30,7 @@ warnings.filterwarnings("ignore")
 import numpy as np
 import pandas as pd
 import matplotlib
+import matplotlib as mpl
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
@@ -37,15 +38,24 @@ import matplotlib.ticker as mticker
 import matplotlib.dates as mdates
 from matplotlib.gridspec import GridSpec
 from matplotlib.colors import LinearSegmentedColormap
-from publication_style import (PALETTE as SHARED_PALETTE,
-                               configure_publication_style, finalize_figure)
+from publication_style import (
+    PANEL_FONTSIZE,
+    PANEL_X,
+    PANEL_Y,
+    PALETTE as SHARED_PALETTE,
+    TITLE_PAD,
+    configure_publication_style,
+    finalize_figure,
+)
 
 # ── 强制 rcParams（nature-skills 三行必选）────────────────────────────────────
-plt.rcParams["font.family"]     = "sans-serif"
-plt.rcParams["font.sans-serif"] = ["Arial", "Helvetica", "DejaVu Sans",
-                                    "Liberation Sans"]
-plt.rcParams["svg.fonttype"]    = "none"
-plt.rcParams["pdf.fonttype"]    = 42
+mpl.rcParams.update({
+    "font.family": "sans-serif",
+    "font.sans-serif": ["Arial", "Helvetica", "DejaVu Sans", "Liberation Sans"],
+    "font.size": 7,
+    "svg.fonttype": "none",
+    "pdf.fonttype": 42,
+})
 configure_publication_style()
 
 # ── 路径 ─────────────────────────────────────────────────────────────────────
@@ -53,6 +63,8 @@ _ROOT = Path(__file__).parent
 _D1   = _ROOT.parent / "D1 Sensor health"
 FIGS  = _ROOT / "artifacts" / "figures"
 FIGS.mkdir(parents=True, exist_ok=True)
+DATA  = _ROOT / "artifacts" / "data"
+DATA.mkdir(parents=True, exist_ok=True)
 
 # ── PALETTE（nature-skills api.md 完整版）────────────────────────────────────
 PAL = {
@@ -91,8 +103,8 @@ DPI  = 600      # High-resolution review raster; SVG/PDF remain vector
 
 # ── 语义配色 ─────────────────────────────────────────────────────────────────
 C_QTI = PAL["blue_main"]
-C_QGS = PAL["teal"]
-C_QFA = PAL["improve"]
+C_QGS = PAL["orange"]
+C_QFA = PAL["violet"]
 C_DO  = PAL["blue_main"]
 C_ORP = PAL["red_strong"]
 
@@ -149,8 +161,9 @@ def apply_publication_style(ax, font_size: int = FS,
         leg.get_frame().set_visible(False)
 
 
-def add_panel_label(ax, label: str, x: float = -0.10, y: float = 1.03,
-                    fontsize: int = 11, fontweight: str = "bold") -> None:
+def add_panel_label(ax, label: str, x: float = PANEL_X, y: float = PANEL_Y,
+                    fontsize: float = PANEL_FONTSIZE,
+                    fontweight: str = "bold") -> None:
     """Add a bold lowercase panel label to an axes."""
     normalized = label.strip().strip("()").lower()
     ax.text(x, y, f"({normalized})", transform=ax.transAxes,
@@ -166,11 +179,15 @@ def luminance(hex_color: str) -> float:
     return 0.299 * r + 0.587 * g + 0.114 * b
 
 
-def save_fig(fig, name: str, pad: float = 2.0) -> None:
+def save_fig(fig, name: str, pad: float = 2.0,
+             rect: tuple[float, float, float, float] | None = None) -> None:
     """Export review PNG plus editable SVG/PDF publication masters."""
+    layout_rect = rect
     if fig._suptitle is not None:
         fig._suptitle.set_y(0.995)
-        fig.tight_layout(pad=pad, rect=(0, 0, 1, 0.97))
+        layout_rect = layout_rect or (0, 0, 1, 0.97)
+    if layout_rect is not None:
+        fig.tight_layout(pad=pad, rect=layout_rect)
     else:
         fig.tight_layout(pad=pad)
     finalize_figure(fig)
@@ -202,8 +219,10 @@ def _wide(d: dict, channels: list, col: str) -> pd.DataFrame:
 
 
 def _score_cmap() -> LinearSegmentedColormap:
-    colors = [PAL["red_strong"], PAL["red_2"], PAL["gold"],
-              PAL["green_2"],    PAL["improve"]]
+    colors = [
+        PAL["red_strong"], PAL["red_2"], PAL["neutral_light"],
+        PAL["blue_light"], PAL["blue_main"],
+    ]
     return LinearSegmentedColormap.from_list("d2_score", colors, N=256)
 
 
@@ -238,12 +257,14 @@ def fig01_overview_heatmap(state: dict):
     ax.imshow(mat, aspect="auto", cmap=cmap, vmin=1, vmax=5,
               origin="upper", interpolation="nearest")
 
-    n    = len(d2d)
-    step = max(1, n // 8)
-    tks  = list(range(0, n, step))
+    n = len(d2d)
+    periods = d2d.index.to_period("M")
+    month_starts = np.r_[0, np.flatnonzero(periods[1:] != periods[:-1]) + 1]
+    month_step = max(1, int(np.ceil(len(month_starts) / 7)))
+    tks = month_starts[::month_step]
     ax.set_xticks(tks)
-    ax.set_xticklabels(d2d.index[tks].strftime("%b %d"),
-                       rotation=30, ha="right", fontsize=TK)
+    ax.set_xticklabels(d2d.index[tks].strftime("%Y-%m"),
+                       rotation=35, ha="right", fontsize=TK)
 
     ax.set_yticks(range(len(channels)))
     ax.set_yticklabels(channels, fontsize=TK)
@@ -254,20 +275,30 @@ def fig01_overview_heatmap(state: dict):
         ax.axhline(y=y_sep, color="white", lw=1.5)
     for y_text, label in [(1.5, "DO-P1"), (5.5, "DO-P2"),
                            (9.0, "ORP-P1"), (12.0, "ORP-P2")]:
-        ax.text(n - 0.5, y_text, label, fontsize=TK - 1,
-                color="white", ha="right", va="center", weight="bold")
+        ax.text(
+            n - 1.5, y_text, label, fontsize=TK,
+            color=PAL["neutral_black"], ha="right", va="center",
+            weight="bold",
+            bbox={
+                "boxstyle": "round,pad=0.18",
+                "facecolor": "white",
+                "edgecolor": PAL["neutral_mid"],
+                "linewidth": 0.45,
+                "alpha": 0.86,
+            },
+        )
 
     # Colorbar
     sm = plt.cm.ScalarMappable(cmap=cmap,
                                 norm=plt.Normalize(vmin=1, vmax=5))
     sm.set_array([])
     cbar = fig.colorbar(sm, ax=ax, fraction=0.03, pad=0.01, aspect=30)
-    cbar.set_ticks([1.25, 2.0, 3.0, 4.0, 4.75])
-    cbar.set_ticklabels(["E", "D", "C", "B", "A"], fontsize=TK)
-    cbar.set_label("D2 Grade", fontsize=FS)
+    cbar.set_ticks([1, 2, 3, 4, 5])
+    cbar.set_ticklabels(["1", "2", "3", "4", "5"], fontsize=TK)
+    cbar.set_label("D2 score", fontsize=FS)
     cbar.ax.tick_params(length=3, width=1.0, direction="out")
     for thr in [1.5, 2.5, 3.5, 4.5]:
-        cbar.ax.axhline((thr - 1) / 4, color="white", lw=0.8)
+        cbar.ax.axhline(thr, color="white", lw=0.8)
 
     ax.spines["right"].set_visible(False)
     ax.spines["top"].set_visible(False)
@@ -279,7 +310,7 @@ def fig01_overview_heatmap(state: dict):
     ax.set_xlabel("Date", fontsize=FS)
     ax.set_ylabel("Sensor", fontsize=FS)
 
-    add_panel_label(ax, "A", x=-0.06)
+    add_panel_label(ax, "A")
     save_fig(fig, "D2_Fig01_overview_heatmap")
 
 
@@ -295,8 +326,8 @@ def fig02_subscore_violins(state: dict):
                 ("Q_GS", C_QGS, "Q$_{GS}$  (Gap Severity)"),
                 ("Q_FA", C_QFA, "Q$_{FA}$  (Freeze / Availability)")]
 
-    fig, axes = plt.subplots(1, 3, figsize=(7.2, 3.8), sharey=True)
-    fig.subplots_adjust(wspace=0.10)
+    fig, axes = plt.subplots(1, 3, figsize=(7.2, 4.25), sharey=False)
+    fig.subplots_adjust(wspace=0.24)
 
     for ax, (col, color, title), lbl in zip(axes, sub_cols, "ABC"):
         data = [subs_all[ch][col].dropna().values
@@ -337,26 +368,32 @@ def fig02_subscore_violins(state: dict):
                 color=PAL["neutral_mid"])
 
         ax.set_xticks(positions)
-        ax.set_xticklabels(channels, rotation=50, ha="right",
-                           fontsize=TK - 1.5)
+        ax.set_xticklabels(channels, rotation=90, ha="center",
+                           fontsize=TK - 1.2)
         ax.set_ylim(0.8, 5.35)
         ax.set_yticks([1, 2, 3, 4, 5])
         apply_publication_style(ax, font_size=FS)
-        ax.set_title(title, fontsize=TS - 0.5, pad=4)
-        if ax is axes[0]:
-            ax.set_ylabel("Score (1 – 5)", fontsize=FS)
-        add_panel_label(ax, lbl, x=-0.08)
+        ax.set_title(title, fontsize=TS - 0.5, pad=TITLE_PAD)
+        ax.set_ylabel("Score (1 – 5)", fontsize=FS)
+        ax.tick_params(axis="y", labelleft=True)
+        add_panel_label(ax, lbl)
 
     # Shared grade legend on last panel
     handles = [plt.Line2D([0], [0], color=GRADE_COLOR[g], lw=1.2, ls="--",
                            label=f"Grade {g}") for g in ["A", "B", "C", "D"]]
-    axes[-1].legend(handles=handles, fontsize=TK - 0.5,
-                    loc="lower right", ncol=2, handlelength=1.2,
-                    frameon=False)
+    fig.legend(
+        handles=handles, fontsize=TK - 0.5,
+        loc="upper center", bbox_to_anchor=(0.5, 0.925),
+        ncol=4, handlelength=1.2, columnspacing=1.0,
+        frameon=False,
+    )
 
     fig.suptitle("Sub-score Decomposition by Sensor Channel",
                  fontsize=TS, y=1.02)
-    save_fig(fig, "D2_Fig02_subscore_violins", pad=1.5)
+    save_fig(
+        fig, "D2_Fig02_subscore_violins", pad=1.5,
+        rect=(0, 0, 1, 0.89),
+    )
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -498,74 +535,122 @@ def fig04_gap_severity(state: dict):
 # ─────────────────────────────────────────────────────────────────────────────
 
 def fig05_freeze_availability(state: dict):
-    channels      = state["scored_channels"]
-    subs_all      = state["subs_all"]
-    freeze_events = state["freeze_events"]
+    channels = state["scored_channels"]
+    subs_all = state["subs_all"]
+    floor_chs = ["DO_1_4", "DO_2_4"]
+    standard_do = [c for c in channels if c.startswith("DO") and c not in floor_chs]
+    standard_orp = [c for c in channels if c.startswith("ORP")]
 
-    do_chs  = [c for c in channels if c.startswith("DO")]
-    orp_chs = [c for c in channels if c.startswith("ORP")]
-    do_colors  = _DO_HUE + _DO_HUE;   do_ls  = ["-"] * 4 + ["--"] * 4
-    orp_colors = _ORP_HUE + _ORP_HUE; orp_ls = ["-"] * 3 + ["--"] * 3
+    fig, axes = plt.subplots(2, 2, figsize=(7.2, 5.3))
+    ax1, ax2, ax3, ax4 = axes.ravel()
+    fig.subplots_adjust(hspace=0.48, wspace=0.34)
 
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(7.2, 4.5), sharex=True)
-    fig.subplots_adjust(hspace=0.34)
+    # (a) Long-term evidence separation for post-anoxic DO channels.
+    metrics = [
+        ("floor_occupancy", "Floor\noccupancy", PAL["blue_light"]),
+        ("resolution_limited", "Resolution\nlimited", PAL["teal"]),
+        ("sensor_freeze_cov", "Hard sensor\nfreeze", PAL["red_strong"]),
+        ("info_empty_cov", "QFA\nunavailable", PAL["orange"]),
+    ]
+    x = np.arange(len(floor_chs)); width = 0.18
+    profile_rows = []
+    for j, (metric, label, color) in enumerate(metrics):
+        vals = [float(subs_all[ch][metric].mean() * 100) for ch in floor_chs]
+        xpos = x + (j - 1.5) * width
+        ax1.bar(xpos, vals, width=width, color=color,
+                edgecolor=PAL["neutral_dark"], linewidth=0.35,
+                label=label.replace("\n", " "))
+        for xp, value in zip(xpos, vals):
+            precision = 2 if value < 1 else 1
+            ax1.text(xp, max(value + 1.2, 1.2), f"{value:.{precision}f}",
+                     ha="center", va="bottom", fontsize=TK - 1,
+                     color=PAL["neutral_dark"], rotation=90 if value < 1 else 0)
+        for ch, value in zip(floor_chs, vals):
+            profile_rows.append({"sensor_id": ch, "metric": metric, "mean_pct": value})
+    ax1.set_xticks(x)
+    ax1.set_xticklabels([c.replace("_", " ") for c in floor_chs])
+    ax1.set_ylabel("Time coverage (%)")
+    ax1.set_ylim(0, 105)
+    ax1.set_title("Post-anoxic evidence separation", pad=4)
+    ax1.legend(loc="upper right", fontsize=TK - 1, ncol=2,
+               handlelength=0.9, columnspacing=0.7)
+    apply_publication_style(ax1)
+    add_panel_label(ax1, "a", x=-0.12)
 
-    def _draw_ie(ax, chs, group, base_color, ch_colors, ch_ls, panel_lbl):
-        ie_df    = pd.DataFrame({ch: subs_all[ch]["info_empty_cov"]
-                                 for ch in chs if ch in subs_all})
-        ie_daily = ie_df.resample("D").mean() * 100
-        median_d = ie_daily.median(axis=1)
-        q25 = ie_daily.quantile(0.25, axis=1)
-        q75 = ie_daily.quantile(0.75, axis=1)
+    # (b) Floor occupancy and resolution limitation remain visible diagnostics.
+    ch_colors = {"DO_1_4": PAL["blue_main"], "DO_2_4": PAL["teal"]}
+    daily_floor = {}
+    for ch in floor_chs:
+        daily_floor[f"{ch}_floor"] = subs_all[ch]["floor_occupancy"].resample("D").mean() * 100
+        daily_floor[f"{ch}_resolution"] = subs_all[ch]["resolution_limited"].resample("D").mean() * 100
+        ax2.plot(daily_floor[f"{ch}_floor"].index,
+                 daily_floor[f"{ch}_floor"].values, color=ch_colors[ch], lw=1.0,
+                 label=f"{ch.replace('_', ' ')} floor")
+        ax2.plot(daily_floor[f"{ch}_resolution"].index,
+                 daily_floor[f"{ch}_resolution"].values, color=ch_colors[ch], lw=0.9,
+                 ls="--", label=f"{ch.replace('_', ' ')} limited")
+    ax2.set_ylabel("Daily coverage (%)")
+    ax2.set_ylim(0, 105)
+    ax2.set_title("Process floor vs limited resolution", pad=4)
+    apply_publication_style(ax2)
+    leg2 = ax2.legend(loc="lower left", fontsize=TK - 1, ncol=2,
+                      handlelength=1.4, columnspacing=0.7,
+                      frameon=True, framealpha=0.68, facecolor="white",
+                      edgecolor="none")
+    leg2.set_zorder(10)
+    add_panel_label(ax2, "b", x=-0.12)
 
-        ax.fill_between(median_d.index, q25.values, q75.values,
-                        alpha=0.20, color=base_color, label="Interquartile range")
-        ax.plot(median_d.index, median_d.values, color=base_color,
-                lw=LWM, label="Group median")
+    # (c) Only production QFA evidence can activate freeze_severe.
+    daily_qfa = {}
+    for ch in floor_chs:
+        daily_qfa[ch] = subs_all[ch]["info_empty_cov"].resample("D").mean() * 100
+        ax3.plot(daily_qfa[ch].index, daily_qfa[ch].values,
+                 color=ch_colors[ch], lw=1.0, label=ch.replace("_", " "))
+    for thr in (2.0, 8.0, 20.0):
+        ax3.axhline(thr, color=PAL["neutral_mid"], lw=0.45, ls=":", alpha=0.65)
+    ymax = max(22.0, float(pd.DataFrame(daily_qfa).quantile(0.995).max() * 1.15))
+    ax3.set_ylim(0, min(100, ymax))
+    ax3.set_ylabel("QFA unavailable (%)")
+    ax3.set_title("Hard QFA evidence (6 h window)", pad=4)
+    ax3.legend(loc="upper left", fontsize=TK - 1, ncol=2, handlelength=1.2)
+    apply_publication_style(ax3)
+    add_panel_label(ax3, "c", x=-0.12)
 
-        for thr in [2.0, 8.0, 20.0]:
-            ax.axhline(thr, color=PAL["neutral_mid"],
-                       lw=0.4, ls=":", alpha=0.5)
+    # (d) Standard channels retain the established information-empty route.
+    standard_daily = {}
+    for label, chs, color in (("Standard DO", standard_do, C_DO),
+                              ("ORP", standard_orp, C_ORP)):
+        frame = pd.DataFrame({ch: subs_all[ch]["info_empty_cov"] for ch in chs}).resample("D").mean() * 100
+        median = frame.median(axis=1)
+        q25, q75 = frame.quantile(0.25, axis=1), frame.quantile(0.75, axis=1)
+        ax4.fill_between(median.index, q25.values, q75.values, color=color, alpha=0.15)
+        ax4.plot(median.index, median.values, color=color, lw=1.0, label=label)
+        standard_daily[f"{label}_median"] = median
+        standard_daily[f"{label}_q25"] = q25
+        standard_daily[f"{label}_q75"] = q75
+    ax4.set_ylim(bottom=0)
+    ax4.set_ylabel("Info-empty (%)")
+    ax4.set_title("Standard-route channel burden", pad=4)
+    apply_publication_style(ax4)
+    ax4.legend(loc="upper left", fontsize=TK - 1, ncol=2, handlelength=1.2,
+               frameon=True, framealpha=0.68, facecolor="white",
+               edgecolor="none")
+    add_panel_label(ax4, "d", x=-0.12)
 
-        # Daily event counts preserve burden without drawing thousands of spans.
-        if len(freeze_events) > 0:
-            ch_ev = freeze_events[freeze_events["sensor_id"].isin(chs)]
-            if len(ch_ev):
-                starts = pd.to_datetime(ch_ev["start_ts"]).dt.floor("D")
-                event_days = starts.value_counts().sort_index()
-                ax_event = ax.twinx()
-                ax_event.bar(event_days.index, event_days.values, width=0.9,
-                             color=PAL["red_strong"], alpha=0.10,
-                             edgecolor="none", zorder=0)
-                ax_event.set_ylabel("Events d$^{-1}$", fontsize=TK,
-                                    color=PAL["red_strong"])
-                ax_event.tick_params(axis="y", colors=PAL["red_strong"],
-                                     labelsize=TK - 1, length=2)
-                ax_event.spines["top"].set_visible(False)
-                ax_event.spines["right"].set_color(PAL["red_strong"])
-                ax_event.set_ylim(0, max(1, event_days.quantile(0.99) * 1.25))
+    for ax in (ax2, ax3, ax4):
+        ax.xaxis.set_major_locator(mdates.MonthLocator(interval=2))
+        ax.xaxis.set_major_formatter(mdates.DateFormatter("%b"))
+        ax.set_xlabel("Date")
 
-        ax.set_ylabel("Info-empty (%)", fontsize=FS)
-        ax.set_title(f"{group} — Info-Empty Coverage (Daily Mean)",
-                     fontsize=TS, pad=4)
-        ax.set_ylim(bottom=0)
-        apply_publication_style(ax, font_size=FS)
-        add_panel_label(ax, panel_lbl, x=-0.08)
+    with pd.ExcelWriter(DATA / "D2_Fig05_source_data.xlsx", engine="openpyxl") as writer:
+        pd.DataFrame(profile_rows).to_excel(writer, sheet_name="panel_a_profile", index=False)
+        pd.DataFrame(daily_floor).to_excel(writer, sheet_name="panel_b_floor_daily")
+        pd.DataFrame(daily_qfa).to_excel(writer, sheet_name="panel_c_qfa_daily")
+        pd.DataFrame(standard_daily).to_excel(writer, sheet_name="panel_d_standard_daily")
 
-    _draw_ie(ax1, do_chs,  "DO",  C_DO,  do_colors,  do_ls,  "A")
-    _draw_ie(ax2, orp_chs, "ORP", C_ORP, orp_colors, orp_ls, "B")
-
-    ax2.xaxis.set_major_locator(mticker.MaxNLocator(8))
-    ax2.set_xlabel("Date", fontsize=FS)
-    for lbl in ax2.get_xticklabels():
-        lbl.set_rotation(30)
-        lbl.set_ha("right")
-
-    ax1.legend(fontsize=TK - 0.5, loc="upper right", frameon=False)
-
-    fig.suptitle("Freeze–Availability Events: Info-Empty Coverage",
+    fig.suptitle("Process-floor diagnostics and production availability evidence",
                  fontsize=TS, y=1.02)
-    save_fig(fig, "D2_Fig05_freeze_availability")
+    save_fig(fig, "D2_Fig05_freeze_availability", pad=1.4)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -582,11 +667,12 @@ def fig06_mapping_curves(state: dict):
         "L_max_min": ("L$_{max}$ (min)", False),
         "P95_gap_min": ("P95 gap (min)", False),
         "gap_run_count": ("Gap count", False),
-        "info_empty_cov": ("Info-empty", True),
+        "info_empty_cov": ("QFA unavailable coverage", True),
     }
     sub_color = {"Q_TI": C_QTI, "Q_GS": C_QGS, "Q_FA": C_QFA}
     metrics = []
-    for _, row in mapping.iterrows():
+    piecewise_rows = mapping[mapping["mapping_type"] == "piecewise_linear"]
+    for _, row in piecewise_rows.iterrows():
         metric = row["input_metric"]
         label, pct = labels.get(metric, (metric, False))
         breaks = [row[f"break_{i}"] for i in range(1, 5)]
@@ -724,13 +810,27 @@ def fig07_availability_profile(state: dict):
     ax2.set_xlim(0, 101)
     ax2.set_xlabel("Grade distribution (%)", fontsize=FS)
     ax2.set_title("Grade Distribution", fontsize=TS, pad=4)
-    ax2.legend(ncol=3, fontsize=TK - 1, loc="lower right",
-               handlelength=0.8, columnspacing=0.5, frameon=False)
     apply_publication_style(ax2, font_size=FS)
     add_panel_label(ax2, "B")
 
     fig.suptitle("Sensor Availability Profile", fontsize=TS, y=1.02)
-    save_fig(fig, "D2_Fig07_availability_profile")
+    handles = [
+        plt.Rectangle(
+            (0, 0), 1, 1, facecolor=GRADE_COLOR[g],
+            edgecolor=PAL["neutral_dark"], linewidth=0.3,
+            label=f"Grade {g}",
+        )
+        for g in "ABCDE"
+    ]
+    fig.legend(
+        handles=handles, ncol=5, fontsize=TK - 0.5,
+        loc="lower center", bbox_to_anchor=(0.5, 0.005),
+        handlelength=0.8, columnspacing=0.8, frameon=False,
+    )
+    save_fig(
+        fig, "D2_Fig07_availability_profile",
+        rect=(0, 0.08, 1, 0.97),
+    )
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -782,8 +882,8 @@ def fig08_d1_d2_relationship(state: dict):
             hb = ax1.hexbin(x, y, gridsize=34, extent=(1, 5, 1, 5),
                             mincnt=1, bins="log", cmap="viridis",
                             linewidths=0, rasterized=True)
-            cb = fig.colorbar(hb, ax=ax1, fraction=0.046, pad=0.03)
-            cb.set_label("log count", fontsize=TK)
+            cb = fig.colorbar(hb, ax=ax1, fraction=0.032, pad=0.018)
+            cb.set_label("Hexagon count", fontsize=TK, labelpad=2)
             cb.ax.tick_params(labelsize=TK - 1)
             rho = pd.Series(x).corr(pd.Series(y), method="spearman")
             ax1.text(0.04, 0.96, f"Spearman $\\rho$ = {rho:.2f}\n$n$ = {len(x):,}",
@@ -830,18 +930,25 @@ def fig08_d1_d2_relationship(state: dict):
                  label="D2 ORP mean")
 
     ax2.set_xlabel("Date", fontsize=FS)
-    ax2.set_ylabel("Score (1 – 5)", fontsize=FS)
+    ax2.set_ylabel("Score (1 – 5)", fontsize=FS, labelpad=8)
     ax2.set_title("D1 / D2 Daily Mean Time-Series", fontsize=TS, pad=4)
     ax2.set_ylim(0.8, 5.2)
     ax2.set_yticks([1, 2, 3, 4, 5])
     ax2.legend(fontsize=TK - 0.5, ncol=2, handlelength=1.0, frameon=False)
-    ax2.xaxis.set_major_locator(mticker.MaxNLocator(5))
+    ax2.xaxis.set_major_locator(mdates.MonthLocator(interval=2))
+    ax2.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
+    ax2.tick_params(axis="y", pad=3)
     for lbl in ax2.get_xticklabels():
         lbl.set_rotation(30)
         lbl.set_ha("right")
 
     apply_publication_style(ax1, font_size=FS)
     apply_publication_style(ax2, font_size=FS)
+    ax1.legend(
+        loc="lower left", fontsize=TK - 0.5, frameon=True,
+        facecolor="white", edgecolor="none", framealpha=0.78,
+        handlelength=1.2,
+    )
     add_panel_label(ax1, "A")
     add_panel_label(ax2, "B")
 

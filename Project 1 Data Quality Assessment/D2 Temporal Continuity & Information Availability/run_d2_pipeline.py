@@ -45,6 +45,7 @@ from src.d2_availability.scorer import (
     D2Aggregator, FreezeAvailabilityScorer, GapSeverityScorer,
     TemporalIntegrityScorer,
 )
+from src.d2_availability.process_floor import route_availability_evidence
 _d2_cfg = _load_d2_config(_ROOT / "configs", version="v1")
 
 # P2: channels sourced from d2_sensors.yaml
@@ -59,6 +60,11 @@ POOL_TOPOLOGY = {
         "type":     s.sensor_type,
         "inpool":   s.in_pool_neighbors,
         "parallel": s.parallel_to,
+        "availability_mode": s.availability_mode,
+        "process_zone": s.process_zone,
+        "process_floor_threshold": s.process_floor_threshold,
+        "response_loss_enabled": s.response_loss_enabled,
+        "response_loss_peers": s.response_loss_peers,
     }
     for sid, s in _d2_cfg.sensors.items()
     if sid in _d2_cfg.scored_channels
@@ -181,8 +187,16 @@ def load_raw_excel() -> tuple[pd.DataFrame, pd.DataFrame]:
         if absent:
             raise ValueError(f"1.1 time base is missing D2 channels: {absent}")
         df_raw = df_aln.copy()
-        hash_paths = [contract_path, raw_path, flags_path, _ROOT / "configs" / "d2_mapping.yaml",
-                      _ROOT / "configs" / "d2_windows.yaml", Path(__file__)]
+        hash_paths = [
+            contract_path, raw_path, flags_path,
+            _ROOT / "configs" / "d2_mapping.yaml",
+            _ROOT / "configs" / "d2_sensors.yaml",
+            _ROOT / "configs" / "d2_windows.yaml",
+            _ROOT / "src" / "d2_availability" / "process_floor.py",
+            _ROOT / "src" / "d2_availability" / "scorer.py",
+            _ROOT / "src" / "utils" / "config_loader.py",
+            Path(__file__),
+        ]
         CACHE_KEY = _sha256_paths(hash_paths)
         INPUT_PROVENANCE = {
             "source": "1.1_time_base_contract",
@@ -207,8 +221,15 @@ def load_raw_excel() -> tuple[pd.DataFrame, pd.DataFrame]:
                          pd.Timestamp(_d2_cfg.time_grid["expected_end"]),
                          freq=_d2_cfg.time_grid["freq"])
     df_aln = df_raw.reindex(grid)
-    CACHE_KEY = _sha256_paths(paths + [_ROOT / "configs" / "d2_mapping.yaml",
-                                      _ROOT / "configs" / "d2_windows.yaml", Path(__file__)])
+    CACHE_KEY = _sha256_paths(paths + [
+        _ROOT / "configs" / "d2_mapping.yaml",
+        _ROOT / "configs" / "d2_sensors.yaml",
+        _ROOT / "configs" / "d2_windows.yaml",
+        _ROOT / "src" / "d2_availability" / "process_floor.py",
+        _ROOT / "src" / "d2_availability" / "scorer.py",
+        _ROOT / "src" / "utils" / "config_loader.py",
+        Path(__file__),
+    ])
     INPUT_PROVENANCE = {"source": "legacy_excel_fallback", "input_hash": CACHE_KEY}
     return df_raw, df_aln
 
@@ -264,7 +285,8 @@ def compute_preprocess_flags(df_raw: pd.DataFrame, df_aln: pd.DataFrame) -> dict
         imputed_vals.loc[short_gap_flag] = candidate.loc[short_gap_flag]
         imputed_flag = short_gap_flag & imputed_vals.notna()
 
-        # ── info_empty: D2-lenient freeze detection (3 min RLE or low IQR)
+        # Route availability evidence by process semantics. Low IQR remains
+        # diagnostic on process-floor channels and cannot trigger QFA Veto.
         filled = imputed_vals.fillna(imputed_vals.ffill().bfill())  # for metrics
         prec   = ENG_DEFAULTS[f"precision_{s_type}"]
         tau_iqr = ENG_DEFAULTS[f"tau_iqr_{s_type}"]
@@ -274,18 +296,31 @@ def compute_preprocess_flags(df_raw: pd.DataFrame, df_aln: pd.DataFrame) -> dict
         diff_abs     = (filled - filled.shift(1)).abs().fillna(prec + 1)
         is_same_val  = diff_abs < prec
         rle_same     = consecutive_run_len(is_same_val)
-        rle_flag     = rle_same >= tau_rle
-
+        observed_diff = (raw_vals - raw_vals.shift(1)).abs().fillna(prec + 1)
+        same_observed = (
+            observed_diff.lt(prec)
+            & present_raw
+            & present_raw.shift(1, fill_value=False)
+        )
+        hard_rle_same = consecutive_run_len(same_observed)
         # Criterion 2: Rolling IQR (30-min window)
         q75 = filled.rolling("30min", min_periods=15).quantile(0.75)
         q25 = filled.rolling("30min", min_periods=15).quantile(0.25)
         iqr_val  = (q75 - q25).fillna(tau_iqr + 1)
-        iqr_flag = iqr_val < tau_iqr
-
-        info_empty = (rle_flag | iqr_flag) & (~long_gap_flag)  # don't double-count long gaps
-
-        # ── freeze_candidate: D1-strict (15 min RLE)
-        freeze_candidate = (rle_same >= ENG_DEFAULTS["tau_rle_D1_min"]) & (~long_gap_flag)
+        sensor_meta = _d2_cfg.sensors[ch]
+        availability = route_availability_evidence(
+            aligned_value=imputed_vals,
+            missing=missing,
+            long_gap=long_gap_flag,
+            rle_run_min=rle_same,
+            hard_rle_run_min=hard_rle_same,
+            rolling_iqr=iqr_val,
+            low_iqr_threshold=tau_iqr,
+            lenient_rle_min=tau_rle,
+            hard_rle_min=ENG_DEFAULTS["tau_rle_D1_min"],
+            availability_mode=sensor_meta.availability_mode,
+            process_floor_threshold=sensor_meta.process_floor_threshold,
+        )
 
         flags_all[ch] = pd.DataFrame({
             "present_raw":        present_raw.astype(np.int8),
@@ -295,11 +330,18 @@ def compute_preprocess_flags(df_raw: pd.DataFrame, df_aln: pd.DataFrame) -> dict
             "irregular_interval": irregular_interval.astype(np.int8),
             "imputed":            imputed_flag.astype(np.int8),
             "long_gap":           long_gap_flag.astype(np.int8),
-            "info_empty":         info_empty.astype(np.int8),
-            "freeze_candidate":   freeze_candidate.astype(np.int8),
+            # Backward-compatible alias used by event extraction.
+            "info_empty":         availability["qfa_unavailable"].astype(np.int8),
+            "qfa_unavailable":    availability["qfa_unavailable"].astype(np.int8),
+            "low_iqr_diagnostic": availability["low_iqr_diagnostic"].astype(np.int8),
+            "floor_occupancy":    availability["floor_occupancy"].astype(np.int8),
+            "resolution_limited": availability["resolution_limited"].astype(np.int8),
+            "sensor_freeze":      availability["sensor_freeze"].astype(np.int8),
+            "freeze_candidate":   availability["sensor_freeze"].astype(np.int8),
             "raw_value":          raw_vals,
             "aligned_value":      imputed_vals,
             "rle_run_min":        rle_same,
+            "hard_rle_run_min":   hard_rle_same,
             "rolling_iqr":        iqr_val,
         })
 
@@ -373,7 +415,7 @@ def build_interpolation_ledger(flags_all: dict, gap_df: pd.DataFrame) -> pd.Data
 # ─── 5. Window statistics (hourly, 24 h rolling) ─────────────────────────────
 
 def compute_window_stats(flags_all: dict) -> dict:
-    """For each channel compute hourly window statistics (24 h trailing window).
+    """Compute 24 h integrity/gap and configured 6 h QFA statistics.
 
     Returns dict[channel] = DataFrame (hourly index) with columns:
         missing_rate, duplicate_rate, out_of_order_rate, irregular_rate,
@@ -384,11 +426,13 @@ def compute_window_stats(flags_all: dict) -> dict:
         log("[5] Loading window stats from cache")
         with open(cache_path, "rb") as f: return pickle.load(f)
 
-    log("[5] Computing 24 h rolling window statistics (hourly output)...")
+    log("[5] Computing 24 h integrity/gap and 6 h QFA statistics...")
     t0 = time.time()
     stats_all = {}
     W = _d2_cfg.main_window.length
     MP = int(pd.Timedelta(W) / pd.Timedelta(_d2_cfg.time_grid["freq"]))
+    W_FA = _d2_cfg.freeze_window.length
+    MP_FA = int(pd.Timedelta(W_FA) / pd.Timedelta(_d2_cfg.time_grid["freq"]))
 
     for ch in SCORED_CHANNELS:
         fl = flags_all[ch]
@@ -398,8 +442,11 @@ def compute_window_stats(flags_all: dict) -> dict:
         dup_rate   = fl["duplicate"].rolling(W, min_periods=MP).mean()
         oor_rate   = fl["out_of_order"].rolling(W, min_periods=MP).mean()
         irr_rate   = fl["irregular_interval"].rolling(W, min_periods=MP).mean()
-        ie_cov     = fl["info_empty"].rolling(W, min_periods=MP).mean()
-        fc_cov     = fl["freeze_candidate"].rolling(W, min_periods=MP).mean()
+        ie_cov = fl["qfa_unavailable"].rolling(W_FA, min_periods=MP_FA).mean()
+        fc_cov = fl["sensor_freeze"].rolling(W_FA, min_periods=MP_FA).mean()
+        low_iqr_cov = fl["low_iqr_diagnostic"].rolling(W_FA, min_periods=MP_FA).mean()
+        floor_cov = fl["floor_occupancy"].rolling(W_FA, min_periods=MP_FA).mean()
+        resolution_cov = fl["resolution_limited"].rolling(W_FA, min_periods=MP_FA).mean()
 
         # L_max: max consecutive missing run in 24 h window
         rle_missing = consecutive_run_len(fl["missing"].astype(bool))
@@ -423,6 +470,10 @@ def compute_window_stats(flags_all: dict) -> dict:
             "irregular_rate":  irr_rate,
             "info_empty_cov":  ie_cov,
             "freeze_cand_cov": fc_cov,
+            "sensor_freeze_cov": fc_cov,
+            "low_iqr_cov":     low_iqr_cov,
+            "floor_occupancy": floor_cov,
+            "resolution_limited": resolution_cov,
             "L_max_min":       L_max_roll,
             "gap_run_count":   gap_run_cnt,
             "P95_gap_min":     p95_gap,
@@ -452,17 +503,22 @@ def compute_response_loss_tier1(flags_all: dict, calib: dict) -> dict:
         log("[6] Loading response_loss from cache")
         with open(cache_path, "rb") as f: return pickle.load(f)
 
-    log("[6] Computing Tier-1 response_loss (30-min sub-windows)...")
+    log("[6] Computing topology-qualified response_loss (30-min sub-windows)...")
     t0 = time.time()
     rl_all = {}
 
     for ch in SCORED_CHANNELS:
+        sensor_meta = _d2_cfg.sensors[ch]
+        if not sensor_meta.response_loss_enabled:
+            idx = flags_all[ch].index
+            rl_all[ch] = pd.Series(0.0, index=idx).resample("1h").last().rename(ch)
+            continue
         s_type = POOL_TOPOLOGY[ch]["type"]
         bench_var_P50 = calib["bench_var_P50"].get(ch, calib["bench_var_P50_default"].get(s_type, 0.01))
         bench_var_P05 = calib["bench_var_P05"].get(ch, calib["bench_var_P05_default"].get(s_type, 0.0005))
 
         tgt   = flags_all[ch]["aligned_value"]
-        peers = POOL_TOPOLOGY[ch]["inpool"]
+        peers = sensor_meta.response_loss_peers
         refs  = pd.concat([flags_all[p]["aligned_value"]
                            for p in peers if p in flags_all], axis=1)
 
@@ -585,11 +641,16 @@ def load_or_generate_calibration(stats_all: dict, flags_all: dict) -> dict:
 
     calib["tier_availability"] = {}
     for ch, topo in POOL_TOPOLOGY.items():
+        sensor_meta = _d2_cfg.sensors[ch]
+        tier1 = sensor_meta.response_loss_peers
         calib["tier_availability"][ch] = {
-            "tier1": topo["inpool"],
-            "tier2": [topo["parallel"]],
-            "tier3": [topo["parallel"]] + topo["inpool"],
+            "tier1": tier1 if sensor_meta.response_loss_enabled else [],
+            "tier2": [],
+            "tier3": [],
             "tier4": {"allowed": False, "reason": "QR_QIR_quality_unverified"},
+            "response_loss_enabled": sensor_meta.response_loss_enabled,
+            "availability_mode": sensor_meta.availability_mode,
+            "peer_qualification": "same_variable_same_process_position_parallel_pool",
         }
     calib["topology"] = {
         "pools": [1, 2], "has_parallel_pools": True,
@@ -645,7 +706,12 @@ def compute_subscores(stats_all: dict, rl_all: dict, calib: dict) -> dict:
 
         Q_TI = ti_scorer.score(st)
         Q_GS = gs_scorer.score(st)
-        Q_FA, Q_main = fa_scorer.score(st, rl)
+        sensor_meta = _d2_cfg.sensors[ch]
+        Q_FA, Q_main = fa_scorer.score(
+            st,
+            rl,
+            allow_response_loss=sensor_meta.response_loss_enabled,
+        )
         rl_aligned = rl.reindex(st.index).fillna(0.0)
         Q_miss = piecewise_score(st["missing_rate"], _d2_cfg.mapping.piecewise_breaks["Q_TI"]["missing_rate"])
         Q_lmax = piecewise_score(st["L_max_min"], _d2_cfg.mapping.piecewise_breaks["Q_GS"]["L_max_min"])
@@ -667,6 +733,10 @@ def compute_subscores(stats_all: dict, rl_all: dict, calib: dict) -> dict:
             "gap_run_count": st["gap_run_count"],
             "info_empty_cov": st["info_empty_cov"],
             "freeze_cand_cov": st["freeze_cand_cov"],
+            "sensor_freeze_cov": st["sensor_freeze_cov"],
+            "low_iqr_cov": st["low_iqr_cov"],
+            "floor_occupancy": st["floor_occupancy"],
+            "resolution_limited": st["resolution_limited"],
         })
 
     log("    Sub-scores computed.")
@@ -814,7 +884,8 @@ def extract_freeze_events(flags_all: dict, subs_all: dict) -> pd.DataFrame:
                     rl_rate = float(sub_win["rl_rate"].mean())         if len(sub_win) else np.nan
                     q_main  = float(sub_win["Q_main_FA"].mean())       if len(sub_win) else np.nan
                     q_final = float(sub_win["Q_FA"].mean())            if len(sub_win) else np.nan
-                    rle_max = float(fl["rle_run_min"].loc[ev_start:ts].max())
+                    rle_col = "hard_rle_run_min" if POOL_TOPOLOGY[ch]["availability_mode"] == "process_floor" else "rle_run_min"
+                    rle_max = float(fl[rle_col].loc[ev_start:ts].max())
                     d1_id, d1_ftype, rel = _link_d1(ev_start, ts, ch)
                     rows.append({
                         "event_id":               f"FAE_{ev_id:04d}",
@@ -825,7 +896,7 @@ def extract_freeze_events(flags_all: dict, subs_all: dict) -> pd.DataFrame:
                         "info_empty_coverage":    ie_cov,
                         "rle_max_min":            rle_max,
                         "response_loss_rate":     rl_rate,
-                        "response_loss_tier_used": 1,
+                        "response_loss_tier_used": 1 if POOL_TOPOLOGY[ch]["response_loss_enabled"] else 0,
                         "Q_main_before_agg":      q_main,
                         "Q_freeze_avail_final":   q_final,
                         "linked_D1_event_id":     d1_id,    # P1-C
@@ -885,6 +956,10 @@ def build_sensor_profile(all_D2: dict, subs_all: dict) -> pd.DataFrame:
             "sensor_id":              ch,
             "pool_id":                POOL_TOPOLOGY[ch]["pool"],
             "sensor_type":            POOL_TOPOLOGY[ch]["type"],
+            "process_zone":           POOL_TOPOLOGY[ch]["process_zone"],
+            "availability_mode":      POOL_TOPOLOGY[ch]["availability_mode"],
+            "process_floor_threshold": POOL_TOPOLOGY[ch]["process_floor_threshold"],
+            "response_loss_enabled":  POOL_TOPOLOGY[ch]["response_loss_enabled"],
             "mean_D2":                float(d2.mean()),
             "median_D2":              float(d2.median()),
             "p05_D2":                 float(d2.quantile(0.05)),
@@ -898,13 +973,17 @@ def build_sensor_profile(all_D2: dict, subs_all: dict) -> pd.DataFrame:
             "mean_Q_FA":              float(sub["Q_FA"].mean()),
             "mean_missing_rate":      float(sub["missing_rate"].mean()),
             "mean_info_empty_cov":    float(sub["info_empty_cov"].mean()),
+            "mean_floor_occupancy":   float(sub["floor_occupancy"].mean()),
+            "mean_resolution_limited": float(sub["resolution_limited"].mean()),
+            "mean_sensor_freeze_cov": float(sub["sensor_freeze_cov"].mean()),
+            "mean_low_iqr_cov":       float(sub["low_iqr_cov"].mean()),
             "max_L_max_min":          float(sub["L_max_min"].max()),
             "veto_rate":              float(all_D2[ch]["veto_flag"].mean()),
             "grade_A_rate":           float((all_D2[ch]["grade"] == "A").mean()),
             "grade_B_rate":           float((all_D2[ch]["grade"] == "B").mean()),
             "grade_C_rate":           float((all_D2[ch]["grade"] == "C").mean()),
             "grade_D_E_rate":         float((all_D2[ch]["grade"].isin(["D", "E"])).mean()),
-            "dominant_tier_used":     1,
+            "dominant_tier_used":     1 if POOL_TOPOLOGY[ch]["response_loss_enabled"] else 0,
             "calibration_id":         CALIBRATION_ID,
         })
     return pd.DataFrame(rows).sort_values("mean_D2", ascending=False)
@@ -943,6 +1022,34 @@ def build_mapping_params(calib: dict) -> pd.DataFrame:
             "mapping_version":    _d2_cfg.mapping.mapping_version,
             "calibration_id":     calib.get("calibration_id", CALIBRATION_ID),
             "effective_date":     datetime.now().strftime("%Y-%m-%d"),
+        })
+    floor_policy = _d2_cfg.mapping.process_floor_policy
+    for ch in SCORED_CHANNELS:
+        sensor = _d2_cfg.sensors[ch]
+        if sensor.availability_mode != "process_floor":
+            continue
+        records.append({
+            "mapping_id": f"Q_FA_{ch}_process_floor",
+            "subscore_name": "Q_FA",
+            "input_metric": "qfa_unavailable",
+            "mapping_type": "process_floor_route",
+            "break_1": None,
+            "break_2": None,
+            "break_3": None,
+            "break_4": None,
+            "score_zone_1_to_2": None,
+            "score_zone_2_to_3": None,
+            "score_zone_3_to_4": None,
+            "score_zone_4_to_5": None,
+            "calibration_source": "d2_sensors.yaml+d2_mapping.yaml",
+            "mapping_version": _d2_cfg.mapping.mapping_version,
+            "calibration_id": calib.get("calibration_id", CALIBRATION_ID),
+            "effective_date": datetime.now().strftime("%Y-%m-%d"),
+            "sensor_id": ch,
+            "qfa_window": _d2_cfg.freeze_window.length,
+            "production_evidence": ",".join(floor_policy["production_evidence"]),
+            "process_floor_threshold": sensor.process_floor_threshold,
+            "response_loss_enabled": sensor.response_loss_enabled,
         })
     return pd.DataFrame(records)
 
@@ -984,8 +1091,11 @@ def export_outputs(all_D2, subs_all, gap_df, freeze_events, ledger_df,
     log("    [OK] D2_main_scores_hourly.xlsx")
 
     # 2. D2_preprocess_flags_hourly.xlsx
-    flag_cols = ["missing_rate", "irregular_rate", "info_empty_cov",
-                 "freeze_cand_cov", "L_max_min", "gap_run_count"]
+    flag_cols = [
+        "missing_rate", "irregular_rate", "info_empty_cov",
+        "sensor_freeze_cov", "low_iqr_cov", "floor_occupancy",
+        "resolution_limited", "L_max_min", "gap_run_count",
+    ]
     flags_long = wide_to_long(subs_all, flag_cols)
     flags_long.insert(0, "sensor_id", flags_long.pop("sensor_id"))
     flags_long.to_excel(DATA / "D2_preprocess_flags_hourly.xlsx")
@@ -1051,6 +1161,11 @@ def build_audit_log(calib: dict, n_hours: int, elapsed: float, veto_rate: dict) 
         ("run_id",             RUN_ID),
         ("calibration_id",     calib.get("calibration_id", CALIBRATION_ID)),
         ("mapping_version",    _d2_cfg.mapping.mapping_version),
+        ("qfa_window",         _d2_cfg.freeze_window.length),
+        ("process_floor_channels", ",".join(
+            ch for ch in SCORED_CHANNELS
+            if _d2_cfg.sensors[ch].availability_mode == "process_floor"
+        )),
         ("input_source",       INPUT_PROVENANCE.get("source")),
         ("input_hash",         INPUT_PROVENANCE.get("input_hash")),
         ("script_sha16",       _file_sha256_16(src)),

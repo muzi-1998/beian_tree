@@ -11,6 +11,10 @@ from matplotlib.text import Text
 
 AXIS_LINEWIDTH = 0.8
 ANNOTATION_FACE_ALPHA = 0.72
+PANEL_X = -0.10
+PANEL_Y = 1.02
+PANEL_FONTSIZE = 9.0
+TITLE_PAD = 6.0
 
 # Restrained, colour-vision-safe roles shared by the active D1 figure suite.
 PALETTE = {
@@ -38,6 +42,28 @@ def _is_panel_text(ax, text) -> bool:
         return False
     x, y = text.get_position()
     return x <= 0.12 and y >= 0.90
+
+
+def _place_panel_label(ax, letter: str):
+    labels = [text for text in ax.texts if _is_panel_text(ax, text)]
+    label = labels[0] if labels else ax.text(
+        PANEL_X, PANEL_Y, "", transform=ax.transAxes, clip_on=False
+    )
+    for duplicate in labels[1:]:
+        duplicate.remove()
+    label.set_text(f"({letter.lower()})")
+    label.set_position((PANEL_X, PANEL_Y))
+    label.set_ha("right")
+    label.set_va("bottom")
+    label.set_fontfamily("Arial")
+    label.set_fontsize(PANEL_FONTSIZE)
+    label.set_fontweight("bold")
+    label.set_clip_on(False)
+    label.set_bbox({
+        "facecolor": "white", "edgecolor": "none",
+        "alpha": 0.88, "pad": 0.12,
+    })
+    return label
 
 
 def configure_publication_style() -> None:
@@ -154,35 +180,26 @@ def finalize_figure(fig, auto_panel_labels: bool = True) -> None:
 
     for ax in primary_axes:
         for location in ("left", "center", "right"):
-            title_match = _TITLE_PANEL_RE.match(ax.get_title(loc=location))
+            title = ax.get_title(loc=location)
+            title_match = _TITLE_PANEL_RE.match(title)
             if title_match:
                 letter = (title_match.group(1) or title_match.group(2)
                           or title_match.group(3)).lower()
-                ax.set_title(f"({letter}) {title_match.group(4)}", loc=location)
-        for text in ax.texts:
+                ax.set_title(title_match.group(4).strip(), loc=location, pad=TITLE_PAD)
+                _place_panel_label(ax, letter)
+            elif title:
+                ax.set_title(title, loc=location, pad=TITLE_PAD)
+        for text in list(ax.texts):
             label_match = _PANEL_RE.match(text.get_text()) if _is_panel_text(ax, text) else None
             if label_match:
-                text.set_text(f"({label_match.group(1).lower()})")
-                text.set_fontweight("bold")
-                text.set_clip_on(False)
+                _place_panel_label(ax, label_match.group(1))
 
     if auto_panel_labels and 2 <= len(primary_axes) <= 12:
         for index, ax in enumerate(primary_axes):
-            title_labeled = any(
-                _TITLE_PANEL_RE.match(ax.get_title(loc=location)) is not None
-                for location in ("left", "center", "right")
-            )
             text_labeled = any(_is_panel_text(ax, text) for text in ax.texts)
-            if title_labeled or text_labeled:
+            if text_labeled:
                 continue
-            left_title = ax.get_title(loc="left")
-            if left_title:
-                ax.set_title(f"({chr(97 + index)}) {left_title}", loc="left")
-                continue
-            ax.text(0.0, 1.02, f"({chr(97 + index)})", transform=ax.transAxes,
-                    ha="left", va="bottom", fontsize=8, fontweight="bold",
-                    fontfamily="Arial", clip_on=False,
-                    bbox={"facecolor": "white", "edgecolor": "none", "pad": 0.15})
+            _place_panel_label(ax, chr(97 + index))
     fig.canvas.draw()
 
 

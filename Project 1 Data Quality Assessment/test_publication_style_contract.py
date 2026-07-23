@@ -57,9 +57,10 @@ def test_d1_publication_contract():
         assert all(_has_tick_at(xloc, value, abs(xlim[1] - xlim[0])) for value in xlim)
         assert all(_has_tick_at(yloc, value, abs(ylim[1] - ylim[0])) for value in ylim)
         if index == 0:
-            assert ax.get_title(loc="left") == "(a) Evidence"
-        else:
-            assert "(b)" in [text.get_text() for text in ax.texts]
+            assert ax.get_title(loc="left") == "Evidence"
+        label = next(text for text in ax.texts if text.get_text() == f"({chr(97 + index)})")
+        assert label.get_position() == pytest.approx((-0.10, 1.02))
+        assert label.get_fontweight() == "bold"
     plt.close(fig)
 
 
@@ -118,8 +119,27 @@ def test_d2_panel_label_normalization():
     axes[1].text(-0.1, 1.03, "B", transform=axes[1].transAxes)
     grade = axes[1].text(0.98, 0.75, "A", transform=axes[1].transAxes)
     style.finalize_figure(fig)
-    assert axes[0].get_title(loc="left").startswith("(a) ")
-    assert not any(text.get_text() == "(a)" for text in axes[0].texts)
+    assert axes[0].get_title(loc="left") == "Evidence"
+    assert any(text.get_text() == "(a)" for text in axes[0].texts)
     assert axes[1].texts[0].get_text() == "(b)"
+    assert axes[1].texts[0].get_position() == pytest.approx((-0.10, 1.02))
     assert grade.get_text() == "A"
+    plt.close(fig)
+
+
+def test_d4_and_d6_panel_labels_share_position():
+    d4 = _load_style(
+        "D4 Physical rationality and rate constraints/figures/_nature_style.py"
+    )
+    d6 = _load_style(
+        "D6 Parallel-redundancy Temporal Consistency/src/d6/figure_style.py"
+    )
+    fig, axes = plt.subplots(1, 2)
+    d4.panel_label(axes[0], "(A)")
+    d6.panel_label(axes[1], "B")
+    for index, ax in enumerate(axes):
+        label = ax.texts[0]
+        assert label.get_text() == f"({chr(97 + index)})"
+        assert label.get_position() == pytest.approx((-0.10, 1.02))
+        assert label.get_fontweight() == "bold"
     plt.close(fig)

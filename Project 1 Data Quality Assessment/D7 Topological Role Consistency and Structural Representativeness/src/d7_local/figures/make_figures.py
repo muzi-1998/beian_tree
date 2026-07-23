@@ -42,6 +42,7 @@ class D7FigureBuilder:
                 "axes.labelsize": 8,
                 "axes.titlesize": 8.5,
                 "axes.titleweight": "bold",
+                "axes.titlepad": 6.0,
                 "axes.linewidth": 0.8,
                 "xtick.labelsize": 7,
                 "ytick.labelsize": 7,
@@ -78,15 +79,21 @@ class D7FigureBuilder:
     @staticmethod
     def _panel_label(ax: plt.Axes, label: str) -> None:
         ax.text(
-            0.0,
+            -0.10,
             1.02,
             f"({label})",
             transform=ax.transAxes,
             fontsize=9,
             fontweight="bold",
             va="bottom",
-            ha="left",
+            ha="right",
             clip_on=False,
+            bbox={
+                "facecolor": "white",
+                "edgecolor": "none",
+                "alpha": 0.88,
+                "pad": 0.12,
+            },
         )
 
     @staticmethod
@@ -97,19 +104,20 @@ class D7FigureBuilder:
         ax.tick_params(which="both", direction="in", top=True, right=True, width=0.8)
 
     def _save(self, fig: plt.Figure, stem: str) -> list[Path]:
-        outputs = []
-        for suffix, dpi in [("png", 600), ("pdf", 300), ("svg", 300)]:
-            path = self.paths.figure_root / f"{stem}.{suffix}"
-            fig.savefig(path, dpi=dpi, bbox_inches="tight", facecolor="white")
-            outputs.append(path)
+        png = self.paths.figure_root / f"{stem}.png"
+        pdf = self.paths.figure_root / f"{stem}.pdf"
+        svg = self.paths.figure_root / f"{stem}.svg"
+        fig.savefig(png, dpi=600, bbox_inches="tight", facecolor="white")
+        fig.savefig(pdf, bbox_inches="tight", facecolor="white")
+        fig.savefig(svg, bbox_inches="tight", facecolor="white")
         plt.close(fig)
-        return outputs
+        return [png, pdf, svg]
 
     def _figure_1(self) -> list[Path]:
         fig, axes = plt.subplots(
             1,
             3,
-            figsize=(7.8, 2.75),
+            figsize=(7.2, 2.75),
             constrained_layout=True,
             gridspec_kw={"width_ratios": [1.10, 1.0, 1.28]},
         )
@@ -256,7 +264,7 @@ class D7FigureBuilder:
         if not case.empty:
             dates = pd.to_datetime(case["x"])
             ax.set_xlim(dates.min(), dates.max())
-        ax.xaxis.set_major_locator(mdates.AutoDateLocator(minticks=4, maxticks=7))
+        ax.xaxis.set_major_locator(mdates.HourLocator(interval=12))
         ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d\n%H:%M"))
         ax.set_ylabel("Quality score (1-5)")
         ax.set_title("Unlabeled low-score case: decomposed spatial evidence")

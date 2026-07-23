@@ -1,7 +1,9 @@
 {
+  "generated_at": "2026-07-23T04:12:25.255791+00:00",
   "figure_dir": "D:\\004_git\\beian_tree\\Project 1 Data Quality Assessment\\D4 Physical rationality and rate constraints\\outputs\\figures",
   "figures": 7,
   "failed": 0,
+  "all_passed": true,
   "records": [
     {
       "stem": "fig1_framework_overview",
@@ -9,8 +11,8 @@
       "svg": true,
       "pdf": true,
       "png_size_px": [
-        4156,
-        2967
+        4188,
+        2928
       ],
       "png_nonblank": true,
       "svg_text_elements": 77,
@@ -22,7 +24,8 @@
         "(d)"
       ],
       "nonconforming_bare_panel_labels": [],
-      "fresh_vs_sources": true
+      "fresh_vs_sources": true,
+      "passed": true
     },
     {
       "stem": "fig2_score_landscape",
@@ -30,8 +33,8 @@
       "svg": true,
       "pdf": true,
       "png_size_px": [
-        4266,
-        3159
+        4297,
+        3118
       ],
       "png_nonblank": true,
       "svg_text_elements": 112,
@@ -43,7 +46,8 @@
         "(d)"
       ],
       "nonconforming_bare_panel_labels": [],
-      "fresh_vs_sources": true
+      "fresh_vs_sources": true,
+      "passed": true
     },
     {
       "stem": "fig3_evidence_coverage",
@@ -52,7 +56,7 @@
       "pdf": true,
       "png_size_px": [
         4268,
-        3185
+        3145
       ],
       "png_nonblank": true,
       "svg_text_elements": 96,
@@ -64,7 +68,8 @@
         "(d)"
       ],
       "nonconforming_bare_panel_labels": [],
-      "fresh_vs_sources": true
+      "fresh_vs_sources": true,
+      "passed": true
     },
     {
       "stem": "fig4_rate_constraints",
@@ -73,7 +78,7 @@
       "pdf": true,
       "png_size_px": [
         4157,
-        3185
+        3145
       ],
       "png_nonblank": true,
       "svg_text_elements": 92,
@@ -85,7 +90,8 @@
         "(d)"
       ],
       "nonconforming_bare_panel_labels": [],
-      "fresh_vs_sources": true
+      "fresh_vs_sources": true,
+      "passed": true
     },
     {
       "stem": "fig5_boundary_fixed_threshold",
@@ -106,7 +112,8 @@
         "(d)"
       ],
       "nonconforming_bare_panel_labels": [],
-      "fresh_vs_sources": true
+      "fresh_vs_sources": true,
+      "passed": true
     },
     {
       "stem": "fig6_events_profile",
@@ -127,7 +134,8 @@
         "(d)"
       ],
       "nonconforming_bare_panel_labels": [],
-      "fresh_vs_sources": true
+      "fresh_vs_sources": true,
+      "passed": true
     },
     {
       "stem": "fig7_case_studies",
@@ -135,8 +143,8 @@
       "svg": true,
       "pdf": true,
       "png_size_px": [
-        4110,
-        4046
+        4156,
+        4019
       ],
       "png_nonblank": true,
       "svg_text_elements": 103,
@@ -150,7 +158,8 @@
         "(f)"
       ],
       "nonconforming_bare_panel_labels": [],
-      "fresh_vs_sources": true
+      "fresh_vs_sources": true,
+      "passed": true
     }
   ]
 }

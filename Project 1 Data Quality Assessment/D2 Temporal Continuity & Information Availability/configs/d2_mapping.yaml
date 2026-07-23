@@ -2,7 +2,7 @@
 # 映射函数 + 子分权重 + 短长断点策略(P2 外置:替代 ENG_DEFAULTS 硬编码)
 # 各厂可有自己的初始值;运行时仍由 d2_calibration.yaml 覆盖关键阈值。
 
-mapping_version: d2_v1_p0p1
+mapping_version: d2_v1_process_floor_r1
 
 # ─── 子分到 1-5 分的分段映射(工程初始值) ───
 piecewise_breaks:
@@ -90,3 +90,11 @@ freeze_detection:
   tau_rle_D1_min:    15
   tau_iqr_DO:        0.02
   tau_iqr_ORP:       1.0
+
+process_floor_policy:
+  qfa_window: freeze_window
+  production_evidence: [missing, long_gap, sensor_freeze]
+  hard_rle_min: 15
+  low_iqr_diagnostic_only: true
+  floor_occupancy_diagnostic_only: true
+  response_loss_requires_comparable_peer: true

@@ -1,8 +1,8 @@
 {
   "schema_version": "d2-d1-linkage-manifest-v1",
-  "generated_utc": "2026-07-22T02:05:31.008765+00:00",
-  "d2_run_id": "D2V1_20260710_1733",
-  "d2_calibration_id": "NorthBank_D2_v1_20260710",
+  "generated_utc": "2026-07-22T09:15:10.108530+00:00",
+  "d2_run_id": "D2V1_20260722_1714",
+  "d2_calibration_id": "NorthBank_D2_v1_20260722",
   "d1_release_id": "D1REL-1.3.0-f6074be3751f",
   "dependencies": [
     {
@@ -18,22 +18,22 @@
     {
       "role": "D2_frozen_state",
       "path": "D2 Temporal Continuity & Information Availability/artifacts/d2_state.pkl",
-      "sha256": "412512a4c29bcee19a8971b12a8ac292cd0aa90dd334ded8d92f023759b2f01c"
+      "sha256": "58ae68e96b738bff854c987494c2c37f1db0ef11b67625771986f5c39aed0218"
     }
   ],
-  "core_score_sha256_before": "3f233f4add980824db243db71fc0c0a9844742239c378bb5ca20d97a48720df0",
-  "core_score_sha256_after": "3f233f4add980824db243db71fc0c0a9844742239c378bb5ca20d97a48720df0",
+  "core_score_sha256_before": "70a4a093f0900b090d49dbe8eda8a025e5eb840fce44a267f43636627029c08a",
+  "core_score_sha256_after": "70a4a093f0900b090d49dbe8eda8a025e5eb840fce44a267f43636627029c08a",
   "core_scores_unchanged": true,
   "event_artifact": {
     "path": "artifacts/data/D2_freeze_availability_events.xlsx",
-    "sha256": "5b73d9ab2f4bcbc4c2b128b6c76cc7c45316344ca58b13dc370b64929c050b84",
-    "rows": 15146,
+    "sha256": "b2d8aa417e548b9334c3de650a7ae2eae838f33984b4e0a892237cac58ee8f3d",
+    "rows": 9354,
     "relation_counts": {
-      "d2_only": 14727,
-      "subset": 406,
-      "overlap": 10,
+      "d2_only": 8957,
+      "subset": 387,
+      "overlap": 7,
       "superset": 3
     },
-    "linked_rows": 419
+    "linked_rows": 397
   }
 }

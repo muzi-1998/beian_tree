@@ -1,15 +1,15 @@
 {
-  "run_id": "D6V14_20260722_021007",
+  "run_id": "D6V14_20260722_091650",
   "config_version": "d6-v1.4-restored-v12-20260714",
-  "generated_utc": "2026-07-22T02:12:16.781687+00:00",
+  "generated_utc": "2026-07-22T09:19:04.540182+00:00",
   "data_span": [
     "2025-08-01 00:00:00",
     "2026-04-13 23:50:00"
   ],
   "rows": 42847,
   "pairs": 7,
-  "d2_run_id": "D2V1_20260710_1733",
-  "calibration_id": "D6CAL-V14-d21144ef1b41",
+  "d2_run_id": "D2V1_20260722_1714",
+  "calibration_id": "D6CAL-V14-598338d2c31d",
   "dependencies": [
     {
       "dependency": "residuals",
@@ -38,8 +38,8 @@
     {
       "dependency": "d2_scores",
       "path_role": "D2_main_scores_hourly.xlsx",
-      "sha256": "3f233f4add980824db243db71fc0c0a9844742239c378bb5ca20d97a48720df0",
-      "modified_utc": "2026-07-10T09:35:03.368662+00:00"
+      "sha256": "70a4a093f0900b090d49dbe8eda8a025e5eb840fce44a267f43636627029c08a",
+      "modified_utc": "2026-07-22T09:14:38.920336+00:00"
     },
     {
       "dependency": "d6_config",

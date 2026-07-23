@@ -13,9 +13,9 @@ scoring with a 7 d auxiliary window, a 3 h event threshold, and separate
 mapping is conditionally calibrated on D1/D2-qualified benchmark windows. D2
 also determines whether a D6 window is evaluable. Real D1 scores produce
 `D6_forDQR_provisional`; they do not enter the pairwise risk statistics or
-overwrite an already calculated `D6_raw`. Because D7 is not yet available,
-final `D6_forDQR` is intentionally null and every downstream result is marked
-`provisional_pending_D7`. No D7 score, state, or proxy is generated.
+overwrite an already calculated `D6_raw`. Because D7 production arbitration
+remains pending, final `D6_forDQR` is intentionally null and every downstream
+result is marked `provisional_pending_D7`. No D7 proxy is generated.
 
 The implementation and internal QA are suitable for branch review and for
 merging as a transparent provisional D6 module. It is not yet suitable for a
@@ -43,16 +43,16 @@ context, at least 24 h continuous coverage, and sufficient pair completeness.
 The v1.2 D7 spatial-anomaly exclusion cannot yet be executed and is explicitly
 recorded as pending rather than replaced with a proxy.
 
-The final benchmark contains 4,886 windows. DO has adequate regime-specific
-support: R0 = 2,305, R1 = 725, R2 = 1,006, and R3 = 448. ORP has 402 total
-windows: R0 = 58, R1 = 90, R2 = 161, and R3 = 93. Consequently, DO uses public
-variable-by-regime mappings, whereas ORP uses a documented variable-level
-public fallback. No mapping is calibrated independently for an individual
-sensor pair.
+The public calibration pools contain 4,646 DO and 312 ORP benchmark windows.
+DO has adequate regime-specific support: R0 = 2,316, R1 = 746, R2 = 1,060,
+and R3 = 524. For ORP, only R2 has adequate exact-stratum support (n = 145);
+R0 (n = 62), R1 (n = 32), and R3 (n = 73) use the documented variable-level
+fallback calibrated on all 312 ORP benchmark windows. No mapping is calibrated
+independently for an individual sensor pair.
 
 Continuous risks are mapped through public q50/q75/q90/q97.5 thresholds. Each
 output row stores mapping scope, support size, calibration quality, and a shared
-calibration identifier, `D6CAL-V14-d21144ef1b41`.
+calibration identifier, `D6CAL-V14-598338d2c31d`.
 
 ### Change-point and event rules
 
@@ -87,13 +87,13 @@ score forward. These operations never modify `D6_raw`.
 
 ## 3. Current run and result freshness
 
-- Run ID: `D6V14_20260722_021007`.
+- Run ID: `D6V14_20260722_091650`.
 - Configuration: `d6-v1.4-restored-v12-20260714`.
-- Calibration: `D6CAL-V14-d21144ef1b41`.
+- Calibration: `D6CAL-V14-598338d2c31d`.
 - Data span: 2025-08-01 00:00 to 2026-04-13 23:50.
 - Output size: 42,847 pair-windows across seven pairs.
-- D2 source run: `D2V1_20260710_1733`.
-- Overall evaluability: 79.10%.
+- D2 source run: `D2V1_20260722_1714`.
+- Overall evaluability: 88.66% (37,987/42,847 pair-windows).
 
 The run manifest records SHA-256 hashes for Section 1.1 residuals and time-base
 contract, D1 scores and regime templates, D2 scores, D6 configuration, pipeline
@@ -102,36 +102,41 @@ and code states.
 
 | Pair | Mean D6_raw | Low-score rate | Evaluable rate | Mean Q_cp | 3 h events |
 |---|---:|---:|---:|---:|---:|
-| DO11 | 3.311 | 34.5% | 97.3% | 2.772 | 126 |
-| DO12 | 3.357 | 28.0% | 98.8% | 2.624 | 135 |
-| DO13 | 3.159 | 42.5% | 98.8% | 2.764 | 164 |
-| DO14 | 3.140 | 42.4% | 23.2% | 2.426 | 40 |
-| ORP11 | 3.529 | 23.5% | 93.1% | 3.139 | 133 |
-| ORP12 | 3.206 | 42.5% | 74.9% | 3.529 | 135 |
-| ORP13 | 2.774 | 61.5% | 67.6% | 2.840 | 131 |
+| DO11 | 3.368 | 31.4% | 97.5% | 2.772 | 124 |
+| DO12 | 3.391 | 26.5% | 98.7% | 2.624 | 128 |
+| DO13 | 3.198 | 40.6% | 98.8% | 2.764 | 162 |
+| DO14 | 2.978 | 47.8% | 98.8% | 2.426 | 79 |
+| ORP11 | 3.425 | 27.7% | 92.3% | 3.139 | 136 |
+| ORP12 | 3.040 | 49.2% | 70.3% | 3.529 | 215 |
+| ORP13 | 2.650 | 67.6% | 64.2% | 2.840 | 164 |
 
-The DO14 low-score rate is conditional on evaluable windows. Its 23.2%
-evaluability is a material uncertainty and must accompany any interpretation.
-ORP13 remains the clearest persistent pair-consistency concern, but D6 alone
-cannot identify which sensor, or whether a local process asymmetry, caused it.
+The corrected process-floor route raises DO14 evaluability from 23.2% in the
+archived v1.3 comparison to 98.8% in the current restored run. This does not
+make DO14 healthy by definition: D2 now states that the observations are
+temporally available, while D6 independently finds frequent bilateral
+inconsistency (mean `D6_raw` = 2.978; low-score rate = 47.8%). This separation
+is scientifically preferable to allowing low-DO floor occupancy to mask D6
+evidence. ORP13 remains the clearest persistent pair-consistency concern, but
+D6 alone cannot identify which sensor, or whether a local process asymmetry,
+caused either pattern.
 
 ## 4. Internal validation
 
 | Scenario | Metric | Estimate | 95% CI | Criterion | Status |
 |---|---|---:|---:|---:|---|
-| Unilateral drift | ROC AUC | 0.919 | 0.888-0.949 | >= 0.70 | Pass |
-| Unilateral step | ROC AUC | 0.929 | 0.897-0.954 | >= 0.70 | Pass |
-| Unilateral freeze | ROC AUC | 0.820 | 0.783-0.870 | >= 0.70 | Pass |
-| Unilateral spike | ROC AUC | 0.586 | 0.570-0.609 | Secondary only | Expected limitation |
-| Synchronous switch | Conditional new FAR | 0.069 | 0.028-0.125 | <= 0.10 | Point estimate passes |
-| Common-mode drift | Conditional new FAR | 0.069 | 0.020-0.139 | <= 0.10 | Point estimate passes |
+| Unilateral drift | ROC AUC | 0.934 | 0.905-0.960 | >= 0.70 | Pass |
+| Unilateral step | ROC AUC | 0.936 | 0.903-0.963 | >= 0.70 | Pass |
+| Unilateral freeze | ROC AUC | 0.798 | 0.749-0.849 | >= 0.70 | Pass |
+| Unilateral spike | ROC AUC | 0.561 | 0.546-0.581 | Secondary only | Expected limitation |
+| Synchronous switch | Conditional new FAR | 0.041 | 0.000-0.095 | <= 0.10 | Pass |
+| Common-mode drift | Conditional new FAR | 0.041 | 0.000-0.095 | <= 0.10 | Pass |
 
 The synchronous tests use a paired conditional false-alarm rate among windows
 that were non-alarming before injection. This avoids confusing pre-existing D6
-events with injection-induced false alarms. Its confidence interval crosses
-0.10, so more external normal-transition examples are still required. Isolated
-spikes remain primarily a D1 responsibility and are not a required D6
-acceptance scenario.
+events with injection-induced false alarms. Both upper confidence limits now
+remain below 0.10, although external normal-transition examples are still
+required. Isolated spikes remain primarily a D1 responsibility and are not a
+required D6 acceptance scenario.
 
 These are internal chronological-holdout stress tests, not external clinical or
 plant-operation validation. They support implementation correctness and
@@ -144,26 +149,26 @@ versions and aligns scores by pair and timestamp.
 
 | Pair | Legacy v1.2 proxy | Current v1.3 | Restored v1.4 |
 |---|---:|---:|---:|
-| DO11 | 4.822 | 3.981 | 3.311 |
-| DO12 | 4.743 | 3.989 | 3.357 |
-| DO13 | 4.492 | 3.788 | 3.159 |
-| DO14 | 4.706 | 4.034 | 3.140 |
-| ORP11 | 3.828 | 3.784 | 3.529 |
-| ORP12 | 3.370 | 3.772 | 3.206 |
-| ORP13 | 2.748 | 3.874 | 2.774 |
+| DO11 | 4.822 | 3.981 | 3.368 |
+| DO12 | 4.743 | 3.989 | 3.391 |
+| DO13 | 4.492 | 3.788 | 3.198 |
+| DO14 | 4.706 | 4.034 | 2.978 |
+| ORP11 | 3.828 | 3.784 | 3.425 |
+| ORP12 | 3.370 | 3.772 | 3.040 |
+| ORP13 | 2.748 | 3.874 | 2.650 |
 
-Restored v1.4 versus current v1.3 has all-pair Pearson r = 0.714, Spearman rho
-= 0.697, mean absolute difference = 0.802, and mean signed difference
-(restored - current) = -0.691. The change is therefore scientifically material,
+Restored v1.4 versus current v1.3 has all-pair Pearson r = 0.700, Spearman rho
+= 0.688, mean absolute difference = 0.828, and mean signed difference
+(restored - current) = -0.707. The change is therefore scientifically material,
 not output noise.
 
 The most consequential case is ORP13: v1.3 pair-specific self-normalization
 raised its mean by about 1.13 points relative to the legacy result and obscured
-the persistent discrepancy. Public ORP mapping restores a mean of 2.774, close
-to the historical 2.748, without reusing the legacy proxy machinery.
+the persistent discrepancy. Public ORP mapping now yields a mean of 2.650,
+without reusing the legacy proxy machinery.
 
-Legacy versus restored agreement remains low (all-pair Pearson r = 0.333; mean
-absolute difference = 1.181). This is expected: the legacy bundle used proxy
+Legacy versus restored agreement remains low (all-pair Pearson r = 0.394; mean
+absolute difference = 1.172). This is expected: the legacy bundle used proxy
 inputs, treated most change-point scores as high, and lacked current D2
 evaluability gates. It is retained only as a historical sensitivity reference,
 not as a reproducible gold standard.
@@ -185,11 +190,14 @@ revision.
 
 1. Complete D7 and rerun the benchmark spatial-anomaly screen and final
    arbitration. Until then, do not populate or publish final `D6_forDQR`.
-2. Expand ORP high-quality benchmark support. The current n = 97 justifies the
-   documented variable fallback but not regime-specific ORP claims.
+2. Expand ORP high-quality benchmark support. The current public pool has
+   n = 312, but only R2 has adequate exact-stratum support (n = 145); the other
+   regimes remain on a documented variable-level fallback.
 3. Validate the 3 h event rule and change-point timing against independently
    labelled operational events.
-4. Treat DO14 conclusions as low-confidence because of limited evaluability.
+4. Investigate DO14 with process records and spatial evidence. Its current
+   result is no longer limited by D2 evaluability, but D6 cannot distinguish a
+   sensor problem from a real post-anoxic inter-line process difference.
 5. Keep the legacy and v1.3 bundles immutable for audit reproducibility.
 
 Recommendation: merge the restored implementation only with its provisional

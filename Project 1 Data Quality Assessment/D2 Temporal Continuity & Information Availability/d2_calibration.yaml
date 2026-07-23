@@ -1,12 +1,12 @@
-calibration_id: NorthBank_D2_v1_20260710
+calibration_id: NorthBank_D2_v1_20260722
 plant_id: NorthBank_LCH
-generated_date: '2026-07-10'
+generated_date: '2026-07-22'
 effective_period:
 - '2025-08-01'
 - '2026-04-13'
 calibration_basis: D2_internal_engineering_v1
-mapping_version: d2_v1_p0p1
-input_hash: 25d5e96846430518fe5f6400275f0b227b8f31bd5ca6ea57d4cddf8526c0c6ac
+mapping_version: d2_v1_process_floor_r1
+input_hash: 130ae2acfa72e20acb455f8117f26b2ca95c9c51db98d1bf92b4802c4b74f6f7
 benchmark_windows:
   selection_rule: not_used_for_mapping; D1 reserved for external concordance
   total_benchmark_hours: 0
@@ -123,202 +123,156 @@ bench_var:
 tier_availability:
   DO_1_1:
     tier1:
-    - DO_1_2
-    - DO_1_3
-    - DO_1_4
-    tier2:
     - DO_2_1
-    tier3:
-    - DO_2_1
-    - DO_1_2
-    - DO_1_3
-    - DO_1_4
+    tier2: []
+    tier3: []
     tier4:
       allowed: false
       reason: QR_QIR_quality_unverified
+    response_loss_enabled: true
+    availability_mode: standard
+    peer_qualification: same_variable_same_process_position_parallel_pool
   DO_1_2:
     tier1:
-    - DO_1_1
-    - DO_1_3
-    - DO_1_4
-    tier2:
     - DO_2_2
-    tier3:
-    - DO_2_2
-    - DO_1_1
-    - DO_1_3
-    - DO_1_4
+    tier2: []
+    tier3: []
     tier4:
       allowed: false
       reason: QR_QIR_quality_unverified
+    response_loss_enabled: true
+    availability_mode: standard
+    peer_qualification: same_variable_same_process_position_parallel_pool
   DO_1_3:
     tier1:
-    - DO_1_1
-    - DO_1_2
-    - DO_1_4
-    tier2:
     - DO_2_3
-    tier3:
-    - DO_2_3
-    - DO_1_1
-    - DO_1_2
-    - DO_1_4
+    tier2: []
+    tier3: []
     tier4:
       allowed: false
       reason: QR_QIR_quality_unverified
+    response_loss_enabled: true
+    availability_mode: standard
+    peer_qualification: same_variable_same_process_position_parallel_pool
   DO_1_4:
-    tier1:
-    - DO_1_1
-    - DO_1_2
-    - DO_1_3
-    tier2:
-    - DO_2_4
-    tier3:
-    - DO_2_4
-    - DO_1_1
-    - DO_1_2
-    - DO_1_3
+    tier1: []
+    tier2: []
+    tier3: []
     tier4:
       allowed: false
       reason: QR_QIR_quality_unverified
+    response_loss_enabled: false
+    availability_mode: process_floor
+    peer_qualification: same_variable_same_process_position_parallel_pool
   DO_2_1:
     tier1:
-    - DO_2_2
-    - DO_2_3
-    - DO_2_4
-    tier2:
     - DO_1_1
-    tier3:
-    - DO_1_1
-    - DO_2_2
-    - DO_2_3
-    - DO_2_4
+    tier2: []
+    tier3: []
     tier4:
       allowed: false
       reason: QR_QIR_quality_unverified
+    response_loss_enabled: true
+    availability_mode: standard
+    peer_qualification: same_variable_same_process_position_parallel_pool
   DO_2_2:
     tier1:
-    - DO_2_1
-    - DO_2_3
-    - DO_2_4
-    tier2:
     - DO_1_2
-    tier3:
-    - DO_1_2
-    - DO_2_1
-    - DO_2_3
-    - DO_2_4
+    tier2: []
+    tier3: []
     tier4:
       allowed: false
       reason: QR_QIR_quality_unverified
+    response_loss_enabled: true
+    availability_mode: standard
+    peer_qualification: same_variable_same_process_position_parallel_pool
   DO_2_3:
     tier1:
-    - DO_2_1
-    - DO_2_2
-    - DO_2_4
-    tier2:
     - DO_1_3
-    tier3:
-    - DO_1_3
-    - DO_2_1
-    - DO_2_2
-    - DO_2_4
+    tier2: []
+    tier3: []
     tier4:
       allowed: false
       reason: QR_QIR_quality_unverified
+    response_loss_enabled: true
+    availability_mode: standard
+    peer_qualification: same_variable_same_process_position_parallel_pool
   DO_2_4:
-    tier1:
-    - DO_2_1
-    - DO_2_2
-    - DO_2_3
-    tier2:
-    - DO_1_4
-    tier3:
-    - DO_1_4
-    - DO_2_1
-    - DO_2_2
-    - DO_2_3
+    tier1: []
+    tier2: []
+    tier3: []
     tier4:
       allowed: false
       reason: QR_QIR_quality_unverified
+    response_loss_enabled: false
+    availability_mode: process_floor
+    peer_qualification: same_variable_same_process_position_parallel_pool
   ORP_1_1:
     tier1:
-    - ORP_1_2
-    - ORP_1_3
-    tier2:
     - ORP_2_1
-    tier3:
-    - ORP_2_1
-    - ORP_1_2
-    - ORP_1_3
+    tier2: []
+    tier3: []
     tier4:
       allowed: false
       reason: QR_QIR_quality_unverified
+    response_loss_enabled: true
+    availability_mode: standard
+    peer_qualification: same_variable_same_process_position_parallel_pool
   ORP_1_2:
     tier1:
-    - ORP_1_1
-    - ORP_1_3
-    tier2:
     - ORP_2_2
-    tier3:
-    - ORP_2_2
-    - ORP_1_1
-    - ORP_1_3
+    tier2: []
+    tier3: []
     tier4:
       allowed: false
       reason: QR_QIR_quality_unverified
+    response_loss_enabled: true
+    availability_mode: standard
+    peer_qualification: same_variable_same_process_position_parallel_pool
   ORP_1_3:
     tier1:
-    - ORP_1_1
-    - ORP_1_2
-    tier2:
     - ORP_2_3
-    tier3:
-    - ORP_2_3
-    - ORP_1_1
-    - ORP_1_2
+    tier2: []
+    tier3: []
     tier4:
       allowed: false
       reason: QR_QIR_quality_unverified
+    response_loss_enabled: true
+    availability_mode: standard
+    peer_qualification: same_variable_same_process_position_parallel_pool
   ORP_2_1:
     tier1:
-    - ORP_2_2
-    - ORP_2_3
-    tier2:
     - ORP_1_1
-    tier3:
-    - ORP_1_1
-    - ORP_2_2
-    - ORP_2_3
+    tier2: []
+    tier3: []
     tier4:
       allowed: false
       reason: QR_QIR_quality_unverified
+    response_loss_enabled: true
+    availability_mode: standard
+    peer_qualification: same_variable_same_process_position_parallel_pool
   ORP_2_2:
     tier1:
-    - ORP_2_1
-    - ORP_2_3
-    tier2:
     - ORP_1_2
-    tier3:
-    - ORP_1_2
-    - ORP_2_1
-    - ORP_2_3
+    tier2: []
+    tier3: []
     tier4:
       allowed: false
       reason: QR_QIR_quality_unverified
+    response_loss_enabled: true
+    availability_mode: standard
+    peer_qualification: same_variable_same_process_position_parallel_pool
   ORP_2_3:
     tier1:
-    - ORP_2_1
-    - ORP_2_2
-    tier2:
     - ORP_1_3
-    tier3:
-    - ORP_1_3
-    - ORP_2_1
-    - ORP_2_2
+    tier2: []
+    tier3: []
     tier4:
       allowed: false
       reason: QR_QIR_quality_unverified
+    response_loss_enabled: true
+    availability_mode: standard
+    peer_qualification: same_variable_same_process_position_parallel_pool
 topology:
   pools:
   - 1
