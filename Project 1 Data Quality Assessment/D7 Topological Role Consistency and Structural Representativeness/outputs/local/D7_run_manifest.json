@@ -357,7 +357,7 @@
     ],
     "release_target": "research_review_branch"
   },
-  "finalized_utc": "2026-07-22T09:24:48.111895+00:00",
+  "finalized_utc": "2026-07-23T04:04:21.876666+00:00",
   "release_qa": {
     "research_release_status": "complete_with_documented_caveats",
     "production_release_status": "blocked",
@@ -460,87 +460,87 @@
     {
       "path": "outputs/D7_RELEASE_QA.json",
       "size": 13602,
-      "sha256": "bd4643d83c7adc995f443d166b7049c389811d775b9dd23f2f021e9156372353"
+      "sha256": "c093078b779e0f2570dfc7e8d69c46e6b1be4194f02f377f88f332b781db3709"
     },
     {
       "path": "outputs/figures/D7_figure_qa.json",
-      "size": 2382,
-      "sha256": "e6a4df553688a6a6c3c62afe49e80e7b4d56575913e55f548409ea06f11d3f3f"
+      "size": 2381,
+      "sha256": "25007a8e5c437cf6a1ce97dbc5d58b42add2d71190e937cde29df3cfa3c6dc77"
     },
     {
       "path": "outputs/figures/FigD7_1_framework.pdf",
-      "size": 49208,
-      "sha256": "d9a32f4c45fbc37a977d3aa6471439958b9b96dfda833847f6f873654a442521"
+      "size": 49360,
+      "sha256": "28d38d009df41c8b295fa74488fd90290a095f5b8d2494def28224171304fa6f"
     },
     {
       "path": "outputs/figures/FigD7_1_framework.png",
-      "size": 282038,
-      "sha256": "3d4abf7093191a47db0e323225200ccf9f03106afb818dade304137401ebb469"
+      "size": 276723,
+      "sha256": "b6b62dafe200e9be8de90d6f916cb70e0659ec43063979047b38d935558f35f5"
     },
     {
       "path": "outputs/figures/FigD7_1_framework.svg",
-      "size": 37998,
-      "sha256": "3ea5adbd3e99d038c5cee9205769a9667889db607329b3d207474ca7118ebc7f"
+      "size": 38538,
+      "sha256": "4bdfb2b07797bd1c80841e2a6dc8009e41b8a2e8687905dd1e36512eaa745bfd"
     },
     {
       "path": "outputs/figures/FigD7_2_spatiotemporal.pdf",
-      "size": 68792,
-      "sha256": "0c2c1f35a5c2aae8806f5e894ae7b33195c9c97a3e6e50597f0a8f67488022f0"
+      "size": 57645,
+      "sha256": "1e59e451fd53c72ee0cf850fdcca5ce1b4cca0775b44ec2a86caf6a31c5e7e15"
     },
     {
       "path": "outputs/figures/FigD7_2_spatiotemporal.png",
-      "size": 345707,
-      "sha256": "54df2039c1f7089650f77d0290fc425757a27b3fca852bcf4a65fa8e44837889"
+      "size": 346048,
+      "sha256": "65a074c6f602540b91350b99267fee96161df51cc2475fbcc22cbdb337c294e7"
     },
     {
       "path": "outputs/figures/FigD7_2_spatiotemporal.svg",
-      "size": 70324,
-      "sha256": "a21ef5ec5f69fa2830f6e45398d60123a35d67350d1e7913dafe545b8f5e6cbf"
+      "size": 60008,
+      "sha256": "bc3c07ad98e4a7889603e632bec35a61cba6a559054e821c98d70caf09fd06df"
     },
     {
       "path": "outputs/figures/FigD7_3_evidence.pdf",
-      "size": 54403,
-      "sha256": "9b44a8dbc11b1371807476058aa01ac19a0a5707ea82a93850dbaee3a128b2c9"
+      "size": 54621,
+      "sha256": "16bc271e20fd4361223d7677b458c909dc551003a39cf1bf7b9680eeed386820"
     },
     {
       "path": "outputs/figures/FigD7_3_evidence.png",
-      "size": 573661,
-      "sha256": "a2db09eaeb1480d9fb757d780c4447c44585ec534a7eba04524acd5167011179"
+      "size": 570148,
+      "sha256": "946e17bebc7716f5dce800e2d8bca417537abd98e3bc0adb1a8571359e6e6e78"
     },
     {
       "path": "outputs/figures/FigD7_3_evidence.svg",
-      "size": 55032,
-      "sha256": "0c79b045fb3e9bde63aa590ad4377075ccbe97f8bd9ffd722f39d79d0b479c6b"
+      "size": 55621,
+      "sha256": "b427b0cad92c5239a18e979ccc97ec47827f9ad71ffedff8c2bf13c2173d0b36"
     },
     {
       "path": "outputs/figures/FigD7_4_validation.pdf",
-      "size": 48000,
-      "sha256": "c0edba708a32383e91befd4c55813fba4e2dc4cdbbf4638a4ecd69dfdd7ab40d"
+      "size": 48157,
+      "sha256": "3cd5b44f2c719147a43d19656eea0145f85a3db14a0f29038e0938b546594977"
     },
     {
       "path": "outputs/figures/FigD7_4_validation.png",
-      "size": 521995,
-      "sha256": "c3488d51590533f604b71ee41918987c7c7c07604fbf190bec3c653c394db6f4"
+      "size": 520891,
+      "sha256": "2dc5dd1210cf7323017af5b8f3469aa1e26420a21a8405830c7111673a9be0de"
     },
     {
       "path": "outputs/figures/FigD7_4_validation.svg",
-      "size": 41915,
-      "sha256": "9ef811e36163ea2f00a4eee6fa97549d7cd0c11eddce9ca88f4a6b3b133ed693"
+      "size": 42706,
+      "sha256": "a2a5f071d9ec7a8f2b91160fef3e7dc5d4d65f6b1ddb11973df353896ea1ef82"
     },
     {
       "path": "outputs/figures/FigD7_5_governance.pdf",
-      "size": 52504,
-      "sha256": "da194e7c341735eec0b37c10ede80e76ec1e23af4e651b986987d1e7a13b3780"
+      "size": 52659,
+      "sha256": "deac4d89588b01514d6d3d3d50717962c352999b89ca59804211b868ae3c8ac4"
     },
     {
       "path": "outputs/figures/FigD7_5_governance.png",
-      "size": 520537,
-      "sha256": "f972c07dbc579296ad8a1c8faaadf0c67943bb380e333121fab6f37b61c66031"
+      "size": 520538,
+      "sha256": "28ab27d4343f0f6a158a360d1ceaffac4110e26d5a15771fd99492ee1f7b3498"
     },
     {
       "path": "outputs/figures/FigD7_5_governance.svg",
-      "size": 45570,
-      "sha256": "57538fa17db33a2cddc13bc5a9f910b1673f3181ce33919ca2d8a66ae38317af"
+      "size": 46326,
+      "sha256": "d1a3a5b253c49e00fac97d632590e3a49477f05db294a0fea39fe5670c428352"
     },
     {
       "path": "outputs/local/D7_ablation_redundancy.xlsx",
@@ -549,8 +549,8 @@
     },
     {
       "path": "outputs/local/D7_audit_log.xlsx",
-      "size": 84790,
-      "sha256": "1fb2c61017f90a2638871ce56ba7ba51ff8787abf224529202e0345b11336222"
+      "size": 84791,
+      "sha256": "ca5d2c91ea2f9072d9829c85534dfc0ea59ac0d88ee962a7c6b7d1c85f9867ab"
     },
     {
       "path": "outputs/local/D7_case_study_exports.xlsx",
@@ -710,17 +710,17 @@
     {
       "path": "outputs/plot_data/D7_plot_data.csv",
       "size": 5165043,
-      "sha256": "1222ce6fb9af8e7b25ac656042a3127b963182bce77172d2c0595ff885ba5ecb"
+      "sha256": "f03c0ba2b0ccab34bbfb00340bba874b567eb31f98f07157aa77c04badae2db1"
     },
     {
       "path": "outputs/plot_data/D7_plot_data.parquet",
       "size": 180365,
-      "sha256": "805142eb1fe1ced95bd7a2ae0152db33f430f5bc7e27b89c5d78c3756a689423"
+      "sha256": "df5e7d013ecf2249fac140c6cd0ab98258ffe5e4897e0823e343f8834f6807ad"
     },
     {
       "path": "outputs/plot_data/D7_plot_data_manifest.json",
       "size": 519,
-      "sha256": "e430b9fc14647fcde8cc678f4e1a717332067b9da905c812c18a8564a6487331"
+      "sha256": "57615be96f0bd1edd80accf81cdc638668eabe5ccd9adf59311b849a73191ccc"
     },
     {
       "path": "outputs/reports/D7_EXPERT_REPORT_v2.1.docx",

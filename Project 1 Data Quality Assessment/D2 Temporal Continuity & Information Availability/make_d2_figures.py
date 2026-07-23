@@ -38,8 +38,15 @@ import matplotlib.ticker as mticker
 import matplotlib.dates as mdates
 from matplotlib.gridspec import GridSpec
 from matplotlib.colors import LinearSegmentedColormap
-from publication_style import (PALETTE as SHARED_PALETTE,
-                               configure_publication_style, finalize_figure)
+from publication_style import (
+    PANEL_FONTSIZE,
+    PANEL_X,
+    PANEL_Y,
+    PALETTE as SHARED_PALETTE,
+    TITLE_PAD,
+    configure_publication_style,
+    finalize_figure,
+)
 
 # ── 强制 rcParams（nature-skills 三行必选）────────────────────────────────────
 mpl.rcParams.update({
@@ -96,8 +103,8 @@ DPI  = 600      # High-resolution review raster; SVG/PDF remain vector
 
 # ── 语义配色 ─────────────────────────────────────────────────────────────────
 C_QTI = PAL["blue_main"]
-C_QGS = PAL["teal"]
-C_QFA = PAL["improve"]
+C_QGS = PAL["orange"]
+C_QFA = PAL["violet"]
 C_DO  = PAL["blue_main"]
 C_ORP = PAL["red_strong"]
 
@@ -154,8 +161,9 @@ def apply_publication_style(ax, font_size: int = FS,
         leg.get_frame().set_visible(False)
 
 
-def add_panel_label(ax, label: str, x: float = -0.10, y: float = 1.03,
-                    fontsize: int = 11, fontweight: str = "bold") -> None:
+def add_panel_label(ax, label: str, x: float = PANEL_X, y: float = PANEL_Y,
+                    fontsize: float = PANEL_FONTSIZE,
+                    fontweight: str = "bold") -> None:
     """Add a bold lowercase panel label to an axes."""
     normalized = label.strip().strip("()").lower()
     ax.text(x, y, f"({normalized})", transform=ax.transAxes,
@@ -171,11 +179,15 @@ def luminance(hex_color: str) -> float:
     return 0.299 * r + 0.587 * g + 0.114 * b
 
 
-def save_fig(fig, name: str, pad: float = 2.0) -> None:
+def save_fig(fig, name: str, pad: float = 2.0,
+             rect: tuple[float, float, float, float] | None = None) -> None:
     """Export review PNG plus editable SVG/PDF publication masters."""
+    layout_rect = rect
     if fig._suptitle is not None:
         fig._suptitle.set_y(0.995)
-        fig.tight_layout(pad=pad, rect=(0, 0, 1, 0.97))
+        layout_rect = layout_rect or (0, 0, 1, 0.97)
+    if layout_rect is not None:
+        fig.tight_layout(pad=pad, rect=layout_rect)
     else:
         fig.tight_layout(pad=pad)
     finalize_figure(fig)
@@ -207,8 +219,10 @@ def _wide(d: dict, channels: list, col: str) -> pd.DataFrame:
 
 
 def _score_cmap() -> LinearSegmentedColormap:
-    colors = [PAL["red_strong"], PAL["red_2"], PAL["gold"],
-              PAL["green_2"],    PAL["improve"]]
+    colors = [
+        PAL["red_strong"], PAL["red_2"], PAL["neutral_light"],
+        PAL["blue_light"], PAL["blue_main"],
+    ]
     return LinearSegmentedColormap.from_list("d2_score", colors, N=256)
 
 
@@ -243,12 +257,14 @@ def fig01_overview_heatmap(state: dict):
     ax.imshow(mat, aspect="auto", cmap=cmap, vmin=1, vmax=5,
               origin="upper", interpolation="nearest")
 
-    n    = len(d2d)
-    step = max(1, n // 8)
-    tks  = list(range(0, n, step))
+    n = len(d2d)
+    periods = d2d.index.to_period("M")
+    month_starts = np.r_[0, np.flatnonzero(periods[1:] != periods[:-1]) + 1]
+    month_step = max(1, int(np.ceil(len(month_starts) / 7)))
+    tks = month_starts[::month_step]
     ax.set_xticks(tks)
-    ax.set_xticklabels(d2d.index[tks].strftime("%b %d"),
-                       rotation=30, ha="right", fontsize=TK)
+    ax.set_xticklabels(d2d.index[tks].strftime("%Y-%m"),
+                       rotation=35, ha="right", fontsize=TK)
 
     ax.set_yticks(range(len(channels)))
     ax.set_yticklabels(channels, fontsize=TK)
@@ -259,20 +275,30 @@ def fig01_overview_heatmap(state: dict):
         ax.axhline(y=y_sep, color="white", lw=1.5)
     for y_text, label in [(1.5, "DO-P1"), (5.5, "DO-P2"),
                            (9.0, "ORP-P1"), (12.0, "ORP-P2")]:
-        ax.text(n - 0.5, y_text, label, fontsize=TK - 1,
-                color="white", ha="right", va="center", weight="bold")
+        ax.text(
+            n - 1.5, y_text, label, fontsize=TK,
+            color=PAL["neutral_black"], ha="right", va="center",
+            weight="bold",
+            bbox={
+                "boxstyle": "round,pad=0.18",
+                "facecolor": "white",
+                "edgecolor": PAL["neutral_mid"],
+                "linewidth": 0.45,
+                "alpha": 0.86,
+            },
+        )
 
     # Colorbar
     sm = plt.cm.ScalarMappable(cmap=cmap,
                                 norm=plt.Normalize(vmin=1, vmax=5))
     sm.set_array([])
     cbar = fig.colorbar(sm, ax=ax, fraction=0.03, pad=0.01, aspect=30)
-    cbar.set_ticks([1.25, 2.0, 3.0, 4.0, 4.75])
-    cbar.set_ticklabels(["E", "D", "C", "B", "A"], fontsize=TK)
-    cbar.set_label("D2 Grade", fontsize=FS)
+    cbar.set_ticks([1, 2, 3, 4, 5])
+    cbar.set_ticklabels(["1", "2", "3", "4", "5"], fontsize=TK)
+    cbar.set_label("D2 score", fontsize=FS)
     cbar.ax.tick_params(length=3, width=1.0, direction="out")
     for thr in [1.5, 2.5, 3.5, 4.5]:
-        cbar.ax.axhline((thr - 1) / 4, color="white", lw=0.8)
+        cbar.ax.axhline(thr, color="white", lw=0.8)
 
     ax.spines["right"].set_visible(False)
     ax.spines["top"].set_visible(False)
@@ -284,7 +310,7 @@ def fig01_overview_heatmap(state: dict):
     ax.set_xlabel("Date", fontsize=FS)
     ax.set_ylabel("Sensor", fontsize=FS)
 
-    add_panel_label(ax, "A", x=-0.06)
+    add_panel_label(ax, "A")
     save_fig(fig, "D2_Fig01_overview_heatmap")
 
 
@@ -300,8 +326,8 @@ def fig02_subscore_violins(state: dict):
                 ("Q_GS", C_QGS, "Q$_{GS}$  (Gap Severity)"),
                 ("Q_FA", C_QFA, "Q$_{FA}$  (Freeze / Availability)")]
 
-    fig, axes = plt.subplots(1, 3, figsize=(7.2, 3.8), sharey=True)
-    fig.subplots_adjust(wspace=0.10)
+    fig, axes = plt.subplots(1, 3, figsize=(7.2, 4.25), sharey=False)
+    fig.subplots_adjust(wspace=0.24)
 
     for ax, (col, color, title), lbl in zip(axes, sub_cols, "ABC"):
         data = [subs_all[ch][col].dropna().values
@@ -342,26 +368,32 @@ def fig02_subscore_violins(state: dict):
                 color=PAL["neutral_mid"])
 
         ax.set_xticks(positions)
-        ax.set_xticklabels(channels, rotation=50, ha="right",
-                           fontsize=TK - 1.5)
+        ax.set_xticklabels(channels, rotation=90, ha="center",
+                           fontsize=TK - 1.2)
         ax.set_ylim(0.8, 5.35)
         ax.set_yticks([1, 2, 3, 4, 5])
         apply_publication_style(ax, font_size=FS)
-        ax.set_title(title, fontsize=TS - 0.5, pad=4)
-        if ax is axes[0]:
-            ax.set_ylabel("Score (1 – 5)", fontsize=FS)
-        add_panel_label(ax, lbl, x=-0.08)
+        ax.set_title(title, fontsize=TS - 0.5, pad=TITLE_PAD)
+        ax.set_ylabel("Score (1 – 5)", fontsize=FS)
+        ax.tick_params(axis="y", labelleft=True)
+        add_panel_label(ax, lbl)
 
     # Shared grade legend on last panel
     handles = [plt.Line2D([0], [0], color=GRADE_COLOR[g], lw=1.2, ls="--",
                            label=f"Grade {g}") for g in ["A", "B", "C", "D"]]
-    axes[-1].legend(handles=handles, fontsize=TK - 0.5,
-                    loc="lower right", ncol=2, handlelength=1.2,
-                    frameon=False)
+    fig.legend(
+        handles=handles, fontsize=TK - 0.5,
+        loc="upper center", bbox_to_anchor=(0.5, 0.925),
+        ncol=4, handlelength=1.2, columnspacing=1.0,
+        frameon=False,
+    )
 
     fig.suptitle("Sub-score Decomposition by Sensor Channel",
                  fontsize=TS, y=1.02)
-    save_fig(fig, "D2_Fig02_subscore_violins", pad=1.5)
+    save_fig(
+        fig, "D2_Fig02_subscore_violins", pad=1.5,
+        rect=(0, 0, 1, 0.89),
+    )
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -778,13 +810,27 @@ def fig07_availability_profile(state: dict):
     ax2.set_xlim(0, 101)
     ax2.set_xlabel("Grade distribution (%)", fontsize=FS)
     ax2.set_title("Grade Distribution", fontsize=TS, pad=4)
-    ax2.legend(ncol=3, fontsize=TK - 1, loc="lower right",
-               handlelength=0.8, columnspacing=0.5, frameon=False)
     apply_publication_style(ax2, font_size=FS)
     add_panel_label(ax2, "B")
 
     fig.suptitle("Sensor Availability Profile", fontsize=TS, y=1.02)
-    save_fig(fig, "D2_Fig07_availability_profile")
+    handles = [
+        plt.Rectangle(
+            (0, 0), 1, 1, facecolor=GRADE_COLOR[g],
+            edgecolor=PAL["neutral_dark"], linewidth=0.3,
+            label=f"Grade {g}",
+        )
+        for g in "ABCDE"
+    ]
+    fig.legend(
+        handles=handles, ncol=5, fontsize=TK - 0.5,
+        loc="lower center", bbox_to_anchor=(0.5, 0.005),
+        handlelength=0.8, columnspacing=0.8, frameon=False,
+    )
+    save_fig(
+        fig, "D2_Fig07_availability_profile",
+        rect=(0, 0.08, 1, 0.97),
+    )
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -836,8 +882,8 @@ def fig08_d1_d2_relationship(state: dict):
             hb = ax1.hexbin(x, y, gridsize=34, extent=(1, 5, 1, 5),
                             mincnt=1, bins="log", cmap="viridis",
                             linewidths=0, rasterized=True)
-            cb = fig.colorbar(hb, ax=ax1, fraction=0.046, pad=0.03)
-            cb.set_label("log count", fontsize=TK)
+            cb = fig.colorbar(hb, ax=ax1, fraction=0.032, pad=0.018)
+            cb.set_label("Hexagon count", fontsize=TK, labelpad=2)
             cb.ax.tick_params(labelsize=TK - 1)
             rho = pd.Series(x).corr(pd.Series(y), method="spearman")
             ax1.text(0.04, 0.96, f"Spearman $\\rho$ = {rho:.2f}\n$n$ = {len(x):,}",
@@ -884,18 +930,25 @@ def fig08_d1_d2_relationship(state: dict):
                  label="D2 ORP mean")
 
     ax2.set_xlabel("Date", fontsize=FS)
-    ax2.set_ylabel("Score (1 – 5)", fontsize=FS)
+    ax2.set_ylabel("Score (1 – 5)", fontsize=FS, labelpad=8)
     ax2.set_title("D1 / D2 Daily Mean Time-Series", fontsize=TS, pad=4)
     ax2.set_ylim(0.8, 5.2)
     ax2.set_yticks([1, 2, 3, 4, 5])
     ax2.legend(fontsize=TK - 0.5, ncol=2, handlelength=1.0, frameon=False)
-    ax2.xaxis.set_major_locator(mticker.MaxNLocator(5))
+    ax2.xaxis.set_major_locator(mdates.MonthLocator(interval=2))
+    ax2.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
+    ax2.tick_params(axis="y", pad=3)
     for lbl in ax2.get_xticklabels():
         lbl.set_rotation(30)
         lbl.set_ha("right")
 
     apply_publication_style(ax1, font_size=FS)
     apply_publication_style(ax2, font_size=FS)
+    ax1.legend(
+        loc="lower left", fontsize=TK - 0.5, frameon=True,
+        facecolor="white", edgecolor="none", framealpha=0.78,
+        handlelength=1.2,
+    )
     add_panel_label(ax1, "A")
     add_panel_label(ax2, "B")
 

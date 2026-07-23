@@ -72,7 +72,7 @@ for y in (0.76, 0.50, 0.24):
     ax.annotate("", xy=(0.74, 0.51), xytext=(0.63, y), arrowprops=dict(arrowstyle="->", lw=0.8))
 ax.text(0.50, 0.02, "No cross-dimension score is consumed", ha="center", color=COLORS["navy"], fontweight="bold")
 ax.set_title("Dimension-independent data flow")
-panel_label(ax, "(c)", x=-0.04)
+panel_label(ax, "(c)")
 
 ax = axes[1, 1]
 matrix = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1], [0, 0, 0]])

@@ -22,8 +22,14 @@ import matplotlib.gridspec as gridspec
 import matplotlib.patches as mpatches
 from matplotlib.colors import LinearSegmentedColormap
 from pathlib import Path
-from publication_style import (PALETTE as SHARED_PALETTE,
-                               configure_publication_style, finalize_figure)
+from publication_style import (
+    PANEL_FONTSIZE,
+    PANEL_X,
+    PANEL_Y,
+    PALETTE as SHARED_PALETTE,
+    configure_publication_style,
+    finalize_figure,
+)
 
 warnings.filterwarnings("ignore")
 matplotlib.use("Agg")
@@ -135,8 +141,8 @@ def apply_publication_style(ax, font_size: int = 9,
     ax.title.set_fontsize(font_size + 1)
 
 
-def add_panel_label(ax, label: str, x=-0.10, y=1.03,
-                    fontsize=11, fontweight="bold") -> None:
+def add_panel_label(ax, label: str, x=PANEL_X, y=PANEL_Y,
+                    fontsize=PANEL_FONTSIZE, fontweight="bold") -> None:
     normalized = label.strip().strip("()").lower()
     ax.text(x, y, f"({normalized})", transform=ax.transAxes,
             fontsize=fontsize, fontweight=fontweight,
@@ -261,7 +267,7 @@ def make_b1(freeze_df: pd.DataFrame, D2: dict) -> None:
     ax_a.legend(loc="lower right", fontsize=fs-1, frameon=False,
                 ncol=1, handlelength=1.2, handletextpad=0.4)
     apply_publication_style(ax_a, font_size=fs)
-    add_panel_label(ax_a, "A", x=-0.06)
+    add_panel_label(ax_a, "A")
 
     # ── Panel B: 热力图 ───────────────────────────────────────────────────
     hm_vals = hm.values.astype(float)
@@ -295,7 +301,7 @@ def make_b1(freeze_df: pd.DataFrame, D2: dict) -> None:
     cb.set_label("Count", fontsize=fs-1)
     ax_b.spines[:].set_visible(False)
     ax_b.tick_params(length=0)
-    add_panel_label(ax_b, "B", x=-0.16)
+    add_panel_label(ax_b, "B")
 
     # ── Panel C: 事件时长箱线图 ───────────────────────────────────────────
     rel_plot = [r for r in REL_ORDER[:4] if len(dur_data[r]) > 0]
@@ -317,7 +323,7 @@ def make_b1(freeze_df: pd.DataFrame, D2: dict) -> None:
     ax_c.set_title("D2 freeze event duration\nby D1 linkage type", fontsize=fs+1)
     ax_c.set_yscale("log")
     apply_publication_style(ax_c, font_size=fs)
-    add_panel_label(ax_c, "C", x=-0.16)
+    add_panel_label(ax_c, "C")
 
     finalize(fig, "D2_Fig11_B1_event_cooccurrence")
 
@@ -404,8 +410,19 @@ def make_b2(D2: dict, D1: dict, d1_ev: pd.DataFrame) -> None:
                                    (3.5,"B",PAL["gold"]),
                                    (2.5,"C",PAL["red_2"])]:
             ax.axhline(thresh, color=lc, lw=0.8, ls=":", alpha=0.7, zorder=3)
-            ax.text(t[-1], thresh+0.04, grade,
-                    color=lc, fontsize=fs-2, va="bottom", ha="right")
+            ax.text(
+                0.985, thresh + 0.04, grade,
+                transform=ax.get_yaxis_transform(),
+                color=PAL["neutral_black"], fontsize=fs - 0.5,
+                fontweight="bold", va="bottom", ha="right",
+                bbox={
+                    "boxstyle": "round,pad=0.14",
+                    "facecolor": "white",
+                    "edgecolor": lc,
+                    "linewidth": 0.45,
+                    "alpha": 0.84,
+                },
+            )
 
         ax.set_ylim(1.0, 5.1)
         ax.set_xlim(t[0], t[-1])
@@ -438,7 +455,7 @@ def make_b2(D2: dict, D1: dict, d1_ev: pd.DataFrame) -> None:
     fig.suptitle("D1 Sensor Health vs D2 Temporal Continuity — Representative Channels",
                  fontsize=fs+2, fontweight="bold", y=1.01)
 
-    finalize(fig, "D2_Fig12_B2_d1d2_timeseries", dpi=300)
+    finalize(fig, "D2_Fig12_B2_d1d2_timeseries", dpi=600)
 
 
 def _shade_spans(ax, t, flag: pd.Series,

@@ -73,6 +73,6 @@ for row, (case_name, case) in enumerate(cases):
     ax.set(xlabel="Quality score", xlim=(1, 5.05))
     ax.set_title("Evidence hierarchy")
     style_axis(ax, grid=True)
-    panel_label(ax, labels[row * 2 + 1], x=-0.18)
+    panel_label(ax, labels[row * 2 + 1])
 
 save_figure(fig, OUT, "fig7_case_studies")

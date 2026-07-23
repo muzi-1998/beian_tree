@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-21T17:14:47+08:00",
+  "generated_at": "2026-07-23T12:05:15+08:00",
   "figure_dir": "D:\\004_git\\beian_tree\\Project 1 Data Quality Assessment\\D1 Sensor health\\outputs\\figures",
   "figures": 20,
   "failed": 0,
@@ -67,10 +67,12 @@
       "svg_has_editable_text": true,
       "svg_arial_declared": true,
       "panel_labels": [
-        "(a)  Spike: piecewise",
-        "(d)  Freeze duration",
-        "(e)  Freeze metrics",
-        "(f)  Regime mapping"
+        "(a)",
+        "(b)",
+        "(c)",
+        "(d)",
+        "(e)",
+        "(f)"
       ],
       "fresh_vs_sources": true
     },
@@ -81,7 +83,8 @@
       "svg_has_editable_text": true,
       "svg_arial_declared": true,
       "panel_labels": [
-        "(b)  Absolute severe-evidence frequency"
+        "(a)",
+        "(b)"
       ],
       "fresh_vs_sources": true
     },
@@ -92,9 +95,9 @@
       "svg_has_editable_text": true,
       "svg_arial_declared": true,
       "panel_labels": [
-        "(a)   DO channels (n=8)",
-        "(b)   ORP channels (n=6)",
-        "(c)   ORP_1_2: state-cap mechanism behind the 2.5 platform"
+        "(a)",
+        "(b)",
+        "(c)"
       ],
       "fresh_vs_sources": true
     },
@@ -114,9 +117,9 @@
       "svg_has_editable_text": true,
       "svg_arial_declared": true,
       "panel_labels": [
-        "(a)  Routed evidence",
-        "(b)  Whitening effect",
-        "(c)  Step applicability"
+        "(a)",
+        "(b)",
+        "(c)"
       ],
       "fresh_vs_sources": true
     },
@@ -127,8 +130,8 @@
       "svg_has_editable_text": true,
       "svg_arial_declared": true,
       "panel_labels": [
-        "(a)   Tier-1 W1 distance \u2014 DO_2_3",
-        "(b)   Tier-2 adjacent KS \u2014 DO_2_3"
+        "(a)",
+        "(b)"
       ],
       "fresh_vs_sources": true
     },
@@ -139,11 +142,11 @@
       "svg_has_editable_text": true,
       "svg_arial_declared": true,
       "panel_labels": [
-        "(a)   Forward-block predictive gain",
-        "(b)   Uncertainty and hold-out",
-        "(c)   Directional consistency",
-        "(d)   Tail-error stability",
-        "(e)   Controlled injections"
+        "(a)",
+        "(b)",
+        "(c)",
+        "(d)",
+        "(e)"
       ],
       "fresh_vs_sources": true
     },
@@ -154,8 +157,8 @@
       "svg_has_editable_text": true,
       "svg_arial_declared": true,
       "panel_labels": [
-        "(a)  Production-active topology matrix",
-        "(b)  Effective model specification"
+        "(a)",
+        "(b)"
       ],
       "fresh_vs_sources": true
     },
@@ -166,10 +169,10 @@
       "svg_has_editable_text": true,
       "svg_arial_declared": true,
       "panel_labels": [
-        "(a)  Channel-level final score",
-        "(b)  Low-quality occupancy",
-        "(c)  State-machine occupancy",
-        "(d)  Temporal profile across scored channels"
+        "(a)",
+        "(b)",
+        "(c)",
+        "(d)"
       ],
       "fresh_vs_sources": true
     },
@@ -180,8 +183,10 @@
       "svg_has_editable_text": true,
       "svg_arial_declared": true,
       "panel_labels": [
-        "(a)   Sub-score timeseries with state-machine shading \u2014 DO_2_3",
-        "(c)   \u03b1-thaw schedule + recovery_streak counter"
+        "(a)",
+        "(b)",
+        "(c)",
+        "(d)"
       ],
       "fresh_vs_sources": true
     },
@@ -192,9 +197,9 @@
       "svg_has_editable_text": true,
       "svg_arial_declared": true,
       "panel_labels": [
-        "(a)   Per-channel state distribution",
-        "(b)   State-transition counts (entire 8.4 mo)",
-        "(c) Veto/state co-activation (DO_2_3)"
+        "(a)",
+        "(b)",
+        "(c)"
       ],
       "fresh_vs_sources": true
     },
@@ -205,10 +210,10 @@
       "svg_has_editable_text": true,
       "svg_arial_declared": true,
       "panel_labels": [
-        "(a)   PELT change-points + new-event-id Refractory triggers \u2014 DO_2_3",
-        "(b)   PELT CP count per scored channel",
-        "(c)   PELT CPs vs Refractory triggers (event-uniqueness filter)",
-        "(d)   Refractory trigger density timeline (all channels)"
+        "(a)",
+        "(b)",
+        "(c)",
+        "(d)"
       ],
       "fresh_vs_sources": true
     },
@@ -220,8 +225,8 @@
       "svg_arial_declared": true,
       "panel_labels": [
         "(a) Data roles in final D1 scoring",
-        "(b)   Driver-variable jump density timeline (offline annotation, NOT scored)",
-        "(c)   QR/QIR raw timelines (z-scored, 24h rolling) \u2014 for offline reference"
+        "(b)",
+        "(c)"
       ],
       "fresh_vs_sources": true
     },
@@ -232,11 +237,11 @@
       "svg_has_editable_text": true,
       "svg_arial_declared": true,
       "panel_labels": [
-        "(a)  Final score distribution",
-        "(b)  Grade composition",
-        "(c)  Dominant evidence (n=81)",
-        "(d)  State-conditioned drift evidence",
-        "(e)  Channel-level event burden"
+        "(a)",
+        "(b)",
+        "(c)",
+        "(d)",
+        "(e)"
       ],
       "fresh_vs_sources": true
     },
@@ -247,10 +252,10 @@
       "svg_has_editable_text": true,
       "svg_arial_declared": true,
       "panel_labels": [
-        "(a)  Event outcomes",
-        "(b)  Time-to-recovery",
-        "(c)  Natural-data sensitivity",
-        "(d)  Mechanism challenge pass rate"
+        "(a)",
+        "(b)",
+        "(c)",
+        "(d)"
       ],
       "fresh_vs_sources": true
     },
@@ -261,9 +266,9 @@
       "svg_has_editable_text": true,
       "svg_arial_declared": true,
       "panel_labels": [
-        "(a)  Recovery gates: DO_1_2",
-        "(b)  Independent recovery evidence",
-        "(c)  Causal state path and 24 h observation"
+        "(a)",
+        "(b)",
+        "(c)"
       ],
       "fresh_vs_sources": true
     }

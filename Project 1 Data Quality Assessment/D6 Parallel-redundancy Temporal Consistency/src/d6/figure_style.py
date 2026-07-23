@@ -7,6 +7,10 @@ import numpy as np
 
 
 AXIS_WIDTH = 0.8
+PANEL_X = -0.10
+PANEL_Y = 1.02
+PANEL_FONTSIZE = 9.0
+TITLE_PAD = 6.0
 PALETTE = {
     "blue": "#2F6F9F", "orange": "#D28B45", "green": "#4C8C5A",
     "red": "#B65C5C", "purple": "#8064A2", "gray": "#6E7478",
@@ -21,6 +25,7 @@ def configure_style() -> None:
         "font.size": 7,
         "axes.labelsize": 7,
         "axes.titlesize": 7,
+        "axes.titlepad": TITLE_PAD,
         "axes.linewidth": AXIS_WIDTH,
         "xtick.labelsize": 6.5,
         "ytick.labelsize": 6.5,
@@ -62,9 +67,13 @@ def _endpoint_ticks(ax, axis_name: str) -> None:
 
 def panel_label(ax, letter: str) -> None:
     ax.text(
-        0.0, 1.025, f"({letter.lower()})", transform=ax.transAxes,
-        ha="left", va="bottom", fontsize=8, fontweight="bold", clip_on=False,
-        bbox={"facecolor": "white", "edgecolor": "none", "pad": 0.1},
+        PANEL_X, PANEL_Y, f"({letter.lower()})", transform=ax.transAxes,
+        ha="right", va="bottom", fontsize=PANEL_FONTSIZE,
+        fontweight="bold", clip_on=False,
+        bbox={
+            "facecolor": "white", "edgecolor": "none",
+            "alpha": 0.88, "pad": 0.12,
+        },
     )
 
 
