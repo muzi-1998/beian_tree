@@ -17,6 +17,15 @@ topology metadata. It never consumes D1-D6 scores or states.
 - The current declared topology awaits field drawing, asset, coordinate, and
   dual-approval verification. Current results are therefore report-only:
   `D7_raw` is available, while `D7_total` and final D6 arbitration remain empty.
+- The Local regime model is plant-global: QR/QIR, robust pooled DO/ORP level
+  and dispersion, and cyclic time features define one shared process context.
+  Gradient, rank and leave-one-out evidence are learned and evaluated within
+  that shared regime.
+- L1 is diagnostic, L2 can support provisional reporting, and only field-
+  verified L3 evidence can enter DQR gating or Veto.
+
+See `docs/D7_FIELD_VERIFICATION_REQUIREMENTS.md` for the manual evidence and
+two-person approval gate. Statistical topology candidates cannot replace it.
 
 ## Reproduce
 

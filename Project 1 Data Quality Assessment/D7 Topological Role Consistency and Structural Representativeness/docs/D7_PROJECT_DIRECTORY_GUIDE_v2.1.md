@@ -1,6 +1,6 @@
 # D7 Project Directory Guide v2.1
 
-**Generated:** 2026-07-22 17:24 CST  
+**Generated:** 2026-07-26 10:17 CST
 **Update rule:** every computational or figure change must rerun reports and release QA.
 
 ## 1. Project layout
@@ -53,6 +53,7 @@ python scripts/run_d7_shadow_v2.py
 python scripts/make_d7_figures.py
 python scripts/build_d7_reports.py
 python scripts/check_d7_release.py
+python "../D6 Parallel-redundancy Temporal Consistency/scripts/run_d6_d7_readiness.py"
 python -m pytest tests -q
 ```
 
@@ -87,6 +88,8 @@ Use `python scripts/run_d7_release.py --include-local` after data, topology, tem
 ## 7. File ownership rules
 
 - `configs/common/topology.yaml` is the only declared production topology source; Shadow outputs never overwrite it.
+- `configs/common/field_verification_template.csv` is a blank human-input form;
+  it is not evidence until reviewer and approver fields are independently completed.
 - Parquet is authoritative for tabular data; Excel is a human-review mirror with the same semantics.
 - `D7_plot_data` is the sole manuscript-figure input; figure scripts do not recompute business metrics.
 - Reports and this guide are generated artifacts and must be refreshed on every release workflow.

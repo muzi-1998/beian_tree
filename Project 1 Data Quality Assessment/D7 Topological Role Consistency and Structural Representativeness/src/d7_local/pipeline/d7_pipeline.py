@@ -16,8 +16,8 @@ from d7_common.hashing import hash_object
 from d7_local.adapters import CanonicalObservationAdapter
 from d7_local.context import (
     ContextPosteriorModel,
+    GlobalProcessContextBuilder,
     RegimeHysteresisController,
-    TargetExcludedContextBuilder,
 )
 from d7_local.contracts import TopologyRegistry
 from d7_local.data import SnapshotBuilder
@@ -182,20 +182,30 @@ class D7Pipeline:
     def _build_regime_state(
         self, snapshots: pd.DataFrame, reference_end: pd.Timestamp, run_id: str
     ) -> tuple[pd.DataFrame, dict[str, dict[str, Any]]]:
-        builder = TargetExcludedContextBuilder(self.topology)
+        features = GlobalProcessContextBuilder(self.topology).build(snapshots)
         controller = RegimeHysteresisController(self.hysteresis_config)
+        model = ContextPosteriorModel(
+            n_regimes=int(self.config["context_regimes"]),
+            random_seed=int(self.config["random_seed"]),
+            likelihood_temperature_multiplier=float(
+                self.config["posterior_temperature_multiplier"]
+            ),
+        ).fit(features.loc[:reference_end])
+        result = model.predict(features)
+        shared_asset = {
+            "scope": "plant_global_robust_context",
+            "feature_names": features.columns.tolist(),
+            "cluster_centers": model.model.cluster_centers_.tolist(),
+            "scaler_mean": model.scaler.mean_.tolist(),
+            "scaler_scale": model.scaler.scale_.tolist(),
+            "temperature": model.temperature,
+            "likelihood_temperature_multiplier": model.likelihood_temperature_multiplier,
+            "ood_threshold": model.ood_threshold,
+        }
+        asset_hash = hash_object(shared_asset)
         frames: list[pd.DataFrame] = []
         assets: dict[str, dict[str, Any]] = {}
         for sensor in self.topology.node_ids():
-            features = builder.build(snapshots, sensor)
-            model = ContextPosteriorModel(
-                n_regimes=int(self.config["context_regimes"]),
-                random_seed=int(self.config["random_seed"]),
-                likelihood_temperature_multiplier=float(
-                    self.config["posterior_temperature_multiplier"]
-                ),
-            ).fit(features.loc[:reference_end])
-            result = model.predict(features)
             state = controller.replay(
                 snapshots.index,
                 result.probabilities,
@@ -205,18 +215,11 @@ class D7Pipeline:
                 sensor,
                 int(self.windows["snapshot_main_minutes"]),
             )
-            asset = {
+            assets[sensor] = {
+                **shared_asset,
                 "sensor_id": sensor,
-                "feature_names": features.columns.tolist(),
-                "cluster_centers": model.model.cluster_centers_.tolist(),
-                "scaler_mean": model.scaler.mean_.tolist(),
-                "scaler_scale": model.scaler.scale_.tolist(),
-                "temperature": model.temperature,
-                "likelihood_temperature_multiplier": model.likelihood_temperature_multiplier,
-                "ood_threshold": model.ood_threshold,
+                "model_asset_hash": asset_hash,
             }
-            asset_hash = hash_object(asset)
-            assets[sensor] = {**asset, "model_asset_hash": asset_hash}
             state["model_asset_ref"] = f"embedded:{asset_hash}"
             state["template_id_used"] = state["active_regime_id"].map(
                 lambda regime: f"D7-{sensor}-R{int(regime)}"
@@ -334,6 +337,13 @@ class D7Pipeline:
         output = ApplicabilityGate(
             topology_verified=self.topology.topology_verified,
             minimum_coverage=float(self.windows["minimum_window_coverage"]),
+            report_eligible_support=self.aggregation_config["support_policy"][
+                "report_eligible"
+            ],
+            gate_eligible_support=self.aggregation_config["support_policy"][
+                "gate_eligible"
+            ],
+            veto_eligible_support=self.aggregation_config["veto"]["eligible_support"],
         ).apply(output)
         q_columns = ["Q_profile", "Q_gradient", "Q_rank", "Q_rep"]
         output["dominant_evidence"] = pd.Series(None, index=output.index, dtype=object)
@@ -343,7 +353,6 @@ class D7Pipeline:
             .idxmin(axis=1)
             .str.replace("Q_", "", regex=False)
         )
-        output["limited_support"] = output["support_level"].isin(["L1", "L2"])
         output["topology_verified"] = self.topology.topology_verified
         output["topology_version"] = self.topology.metadata["topology_version"]
         output["topology_hash"] = self.topology.topology_hash
@@ -369,9 +378,12 @@ class D7Pipeline:
             "zone_id", "position_order", "pair_id", "track_id", "active_regime_id",
             "map_regime_id", "map_probability", "regime_entropy", "ood_distance",
             "regime_state", "Q_profile", "Q_gradient", "Q_rank", "Q_rep", "D7_base",
-            "D7_raw", "D7_total", "D7_forDQR", "uncertainty", "confidence", "U_regime",
+            "D7_raw", "D7_report_provisional", "D7_report", "D7_total", "D7_forDQR",
+            "uncertainty", "confidence", "U_regime",
             "U_support", "U_coverage", "U_covariance", "evaluation_status", "status_reason",
-            "support_level", "limited_support", "profile_covariance_mode", "fallback_level",
+            "support_level", "report_support_eligible", "gate_support_eligible",
+            "report_eligible", "gate_eligible", "limited_support",
+            "profile_covariance_mode", "fallback_level",
             "alpha_floor", "alpha_used", "covariance_condition_number", "dominant_evidence",
             "veto_active", "veto_reason", "veto_eligible", "event_id", "window_coverage",
             "topology_verified", "topology_version", "topology_hash", "template_id_used",
@@ -433,12 +445,19 @@ class D7Pipeline:
             keys = keys.merge(long, on=["timestamp", "sensor_id"], how="left")
         output = output.merge(keys, on=["timestamp", "sensor_id"], how="left")
         output["loo_residual"] = output["observed_window_value"] - output["loo_prediction"]
-        output["influence_score"] = np.clip(
+        output["contribution_leave_one_out"] = (
             0.70 * (5.0 - output["Q_rep"]) / 4.0
-            + 0.20 * output["energy_delta"].clip(0.0, 1.0)
-            + 0.10 * (5.0 - output["Q_gradient"]) / 4.0,
-            0.0,
-            1.0,
+        ).clip(0.0, 0.70)
+        output["contribution_graph_energy"] = (
+            0.20 * output["energy_delta"].clip(0.0, 1.0)
+        )
+        output["contribution_gradient"] = (
+            0.10 * (5.0 - output["Q_gradient"]) / 4.0
+        ).clip(0.0, 0.10)
+        output["influence_score"] = (
+            output["contribution_leave_one_out"]
+            + output["contribution_graph_energy"]
+            + output["contribution_gradient"]
         )
         output["influence_rank"] = output.groupby("timestamp")["influence_score"].rank(
             method="min", ascending=False
@@ -452,6 +471,8 @@ class D7Pipeline:
         output["stable_rank_inversion_count"] = 0
         output["neighbor_support"] = output["normalized_loo_residual"].notna().astype(int)
         output["status"] = output["evaluation_status"]
+        output["attribution_method"] = "weighted_leave_one_out_structural_gain"
+        output["shapley_status"] = "not_computed_requires_coalition_sampling"
         output["event_id"] = np.nan
         output["run_id"] = run_id
         return output.drop(columns=["Q_rep", "Q_gradient"])

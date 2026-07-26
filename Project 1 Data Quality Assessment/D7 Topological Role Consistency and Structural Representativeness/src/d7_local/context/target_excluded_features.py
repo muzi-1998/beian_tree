@@ -39,3 +39,29 @@ class TargetExcludedContextBuilder:
         if target in out.columns:
             raise RuntimeError(f"Target leakage detected in context features for {target}")
         return out
+
+
+class GlobalProcessContextBuilder:
+    """Build one robust process context shared by every D7 target."""
+
+    def __init__(self, topology: TopologyRegistry) -> None:
+        self.topology = topology
+        self.nodes = topology.nodes.set_index("sensor_id")
+
+    def build(self, snapshots: pd.DataFrame) -> pd.DataFrame:
+        out = snapshots[["QR_1", "QR_2", "QIR_1", "QIR_2"]].copy()
+        for analyte in ["DO", "ORP"]:
+            sensors = self.nodes[self.nodes["analyte"].eq(analyte)].index.tolist()
+            values = snapshots[sensors]
+            center = values.median(axis=1)
+            out[f"{analyte.lower()}_pool_median"] = center
+            out[f"{analyte.lower()}_pool_dispersion"] = values.sub(
+                center, axis=0
+            ).abs().median(axis=1)
+        hour = snapshots.index.hour + snapshots.index.minute / 60.0
+        day = snapshots.index.dayofyear
+        out["sin_hour"] = np.sin(2 * np.pi * hour / 24.0)
+        out["cos_hour"] = np.cos(2 * np.pi * hour / 24.0)
+        out["sin_year"] = np.sin(2 * np.pi * day / 365.25)
+        out["cos_year"] = np.cos(2 * np.pi * day / 365.25)
+        return out

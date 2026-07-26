@@ -1,11 +1,14 @@
 weights: {profile: 0.30, gradient: 0.25, rank: 0.15, rep: 0.30}
 lambda_blend: 0.75
 minimum_components: [profile, gradient, rep]
+support_policy:
+  report_eligible: [L2, L3]
+  gate_eligible: [L3]
 veto:
   profile_max: 2.0
   rep_max: 2.0
   persistence_hours: 6
   minimum_coverage: 0.80
   minimum_regime_confidence: 0.60
-  eligible_support: [L2, L3]
+  eligible_support: [L3]
   topology_verified: true

@@ -172,14 +172,31 @@ class D7FigureBuilder:
 
         ax = axes[2]
         gates = self._subset("FigD7_1_framework", "c").sort_values("order")
+        gate_labels = gates["x"].replace(
+            {
+                "D7_forDQR": "D7 for\nDQR",
+                "Topology approval": "Topology\napproval",
+                "Raw spatial evidence": "Raw spatial\nevidence",
+            }
+        )
         ax.barh(
-            gates["x"], np.ones(len(gates)),
+            gate_labels, np.ones(len(gates)),
             color=[PALETTE.get(group, "#9E9E9E") for group in gates["group"]],
             edgecolor="white",
         )
-        for y, annotation in zip(gates["x"], gates["annotation"]):
+        annotation_labels = {
+            "Null until all production gates pass": "Null until all\nproduction gates pass",
+            "Pending field drawing and two-person approval": "Pending field drawing\nand two-person approval",
+            "D7_raw retained when calculable": "D7 raw retained\nwhen calculable",
+        }
+        for y, annotation in zip(gate_labels, gates["annotation"]):
             ax.text(
-                0.5, y, annotation, ha="center", va="center", fontsize=6.2,
+                0.5,
+                y,
+                annotation_labels.get(annotation, annotation),
+                ha="center",
+                va="center",
+                fontsize=5.8,
                 bbox=dict(facecolor="white", edgecolor="none", alpha=0.72, pad=1.0),
             )
         ax.set_xlim(0, 1)
@@ -273,15 +290,34 @@ class D7FigureBuilder:
         self._panel_label(ax, "a")
 
         ax = fig.add_subplot(grid[1, 0])
-        ranking = self._subset("FigD7_3_evidence", "b").sort_values("value")
-        ax.barh(
-            ranking["x"].str.replace("_", "-", regex=False), ranking["value"],
-            color=[PALETTE.get(group, "#A8B0B8") for group in ranking["group"]], edgecolor="white",
-        )
+        ranking = self._subset("FigD7_3_evidence", "b").sort_values("order")
+        sensor_order = ranking.drop_duplicates("x").sort_values("order")["x"].tolist()
+        pivot = ranking.pivot_table(
+            index="x", columns="group", values="value", aggfunc="sum"
+        ).reindex(sensor_order).fillna(0.0)
+        bottom = np.zeros(len(pivot))
+        component_colors = {
+            "Leave-one-out": "#168AAD",
+            "Graph energy": "#E9C46A",
+            "Gradient": "#E76F51",
+        }
+        labels = pivot.index.to_series().str.replace("_", "-", regex=False)
+        for component in ["Leave-one-out", "Graph energy", "Gradient"]:
+            values = pivot.get(component, pd.Series(0.0, index=pivot.index)).to_numpy()
+            ax.barh(
+                labels,
+                values,
+                left=bottom,
+                color=component_colors[component],
+                label=component,
+                edgecolor="white",
+            )
+            bottom += values
         ax.set_xlim(0, 1)
         ax.set_xticks([0, 0.25, 0.50, 0.75, 1.0])
-        ax.set_xlabel("Node influence (0-1)")
-        ax.set_title("LOSO and graph-energy attribution")
+        ax.set_xlabel("Node contribution (0-1)")
+        ax.set_title("Leave-one-out structural attribution")
+        ax.legend(loc="upper right", fontsize=6.2)
         self._boxed(ax)
         self._panel_label(ax, "b")
 
@@ -312,10 +348,19 @@ class D7FigureBuilder:
                 color=[PALETTE.get(group, "#4C78A8") for group in frame["group"]],
                 edgecolor="white",
             )
-            if panel == "c":
+            if panel in {"a", "b", "c"} and frame[["value_low", "value_high"]].notna().all(axis=1).any():
                 low = frame["value"] - frame["value_low"]
                 high = frame["value_high"] - frame["value"]
-                ax.errorbar(x, frame["value"], yerr=[low, high], fmt="none", ecolor="#222222", capsize=2, lw=0.8)
+                valid = low.notna() & high.notna()
+                ax.errorbar(
+                    x[valid],
+                    frame.loc[valid, "value"],
+                    yerr=[low[valid], high[valid]],
+                    fmt="none",
+                    ecolor="#222222",
+                    capsize=2,
+                    lw=0.8,
+                )
             for i, target in enumerate(frame["target"]):
                 if np.isfinite(target):
                     ax.plot([i - 0.38, i + 0.38], [target, target], color="#222222", lw=0.8, ls="--")

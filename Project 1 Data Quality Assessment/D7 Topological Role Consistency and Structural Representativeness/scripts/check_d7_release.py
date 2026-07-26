@@ -82,7 +82,10 @@ def main() -> None:
             "passed": bool(
                 validation.loc[validation["criterion"] == "swap_Top1", "passed"].iloc[0]
             ),
-            "detail": "0.75 observed versus 0.80 target",
+            "detail": (
+                f"{validation.loc[validation['criterion'] == 'swap_Top1', 'estimate'].iloc[0]:.2f} "
+                "observed versus 0.80 target"
+            ),
         },
         {
             "check": "track_invariance",

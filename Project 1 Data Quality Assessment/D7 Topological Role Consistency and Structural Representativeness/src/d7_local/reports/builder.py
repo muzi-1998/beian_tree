@@ -94,6 +94,7 @@ class D7ReportBuilder:
         support = self.support["support_level"].value_counts()
         validation = self.validation.set_index("criterion")
         invariance = self.invariance.set_index("metric")
+        swap_top1 = validation.loc["swap_Top1"]
         return {
             "run_id": self.main["run_id"].iloc[0],
             "start": self.main["timestamp"].min(),
@@ -107,6 +108,13 @@ class D7ReportBuilder:
             "events": len(self.events),
             "status": status.to_dict(),
             "support": support.to_dict(),
+            "l1_templates": int(support.get("L1", 0)),
+            "l2_templates": int(support.get("L2", 0)),
+            "l3_templates": int(support.get("L3", 0)),
+            "provisional_report_rows": int(
+                self.main["D7_report_provisional"].notna().sum()
+            ),
+            "verified_report_rows": int(self.main["D7_report"].notna().sum()),
             "ood_rate": float(self.regime["regime_state"].eq("OODHold").mean()),
             "switches": int(self.regime["transition_id"].notna().sum()),
             "d7_total_nonnull": int(self.main["D7_total"].notna().sum()),
@@ -115,6 +123,10 @@ class D7ReportBuilder:
             "swap_auroc": float(validation.loc["swap_AUROC", "estimate"]),
             "swap_auprc": float(validation.loc["swap_AUPRC", "estimate"]),
             "swap_top1": float(validation.loc["swap_Top1", "estimate"]),
+            "swap_top1_low": float(swap_top1["ci95_low"]),
+            "swap_top1_high": float(swap_top1["ci95_high"]),
+            "swap_top1_n": int(swap_top1["n"]),
+            "swap_top1_passed": bool(swap_top1["passed"]),
             "common_far": float(validation.loc["common_mode_FAR", "estimate"]),
             "zone_far": float(validation.loc["zone_coherent_FAR", "estimate"]),
             "chatter": float(validation.loc["switch_chatter_rate", "estimate"]),
@@ -137,16 +149,16 @@ class D7ReportBuilder:
         )
         return f"""# D7 Expert Review Report v2.1
 
-**Project:** Topological Role Consistency and Structural Representativeness  
-**Run:** `{f['run_id']}`  
-**Generated:** {self.generated}  
+**Project:** Topological Role Consistency and Structural Representativeness
+**Run:** `{f['run_id']}`
+**Generated:** {self.generated}
 **Decision:** Research package complete; production DQR release blocked.
 
 ## 1. Executive verdict
 
 The D7 v2.1 research implementation is complete at the P2/V2 artifact level: Local, Sensitivity and Shadow V2 tracks, frozen templates, hourly scores, raw evidence, validation, plot data, SCI-ready figures, manifests and audit records are present. The Local Track is logically independent of D1, D2, D4 and D6 and consumes only canonical observations, exogenous hydraulic/time context and declared D7 topology.
 
-The project is **not production-ready**. The field topology, asset/serial/channel-position mapping and two-person approval remain pending; only 3 of 56 templates reach L2, while 53 remain L1; swap Top-1 is {f['swap_top1']:.2f}, below the 0.80 acceptance target. Consequently `D7_total`, `D7_forDQR` and D6 final arbitration correctly contain zero evaluable rows.
+The project is **not production-ready**. Field topology, asset/serial/channel-position mapping and two-person approval remain pending. Current support comprises {f['l1_templates']} L1, {f['l2_templates']} L2 and {f['l3_templates']} L3 templates. Swap Top-1 is {f['swap_top1']:.2f} (95% CI {f['swap_top1_low']:.2f}-{f['swap_top1_high']:.2f}, n={f['swap_top1_n']}). Consequently `D7_total`, `D7_forDQR` and D6 final arbitration correctly contain zero evaluable rows.
 
 ## 2. Scope and dimensional independence
 
@@ -154,6 +166,9 @@ The project is **not production-ready**. The field topology, asset/serial/channe
 - D1 evaluates sensor-intrinsic health and long-term regime-relative behavior; D2 evaluates continuity and information availability; D4 evaluates physical value/rate plausibility; D6 evaluates temporal synchronization between parallel counterparts.
 - Local D7 does not consume any D1-D6 score, state or event field. D1/D2/D4 are read only in the physically isolated Sensitivity Track.
 - QR/QIR are exogenous context variables only and never receive a D7 score.
+- One plant-global regime is inferred from QR/QIR, robust pooled DO/ORP level
+  and dispersion, and cyclic time features. Every sensor is then compared with
+  its role-specific template under the same active regime.
 - Observed low `D7_raw` is structural evidence, not a confirmed hardware fault.
 
 ## 3. Data and result freshness
@@ -174,13 +189,19 @@ The project is **not production-ready**. The field topology, asset/serial/channe
 
 ORP is deliberately forced to L1 `diagonal_robust_z` with `alpha=1.00`. It is never promoted automatically. L0, if encountered in a short or sparse rerun, is disabled rather than written as a low score.
 
+L1 is diagnostic only. L2 may populate `D7_report_provisional`, but cannot
+populate `D7_total` or activate Veto. Only L3 evidence with verified field
+topology may enter DQR gating. Current provisional report rows:
+{f['provisional_report_rows']:,}; field-verified report rows:
+{f['verified_report_rows']:,}.
+
 ## 5. Validation and sensitivity
 
 | Criterion | Estimate | Target | Result |
 |---|---:|---:|---|
 | Swap AUROC | {f['swap_auroc']:.3f} | >=0.90 | Pass |
 | Swap AUPRC | {f['swap_auprc']:.3f} | >=0.80 | Pass |
-| Swap Top-1 | {f['swap_top1']:.3f} | >=0.80 | **Fail** |
+| Swap Top-1 | {f['swap_top1']:.3f} [{f['swap_top1_low']:.3f}, {f['swap_top1_high']:.3f}], n={f['swap_top1_n']} | >=0.80 | {'Pass' if f['swap_top1_passed'] else '**Fail**'} |
 | Common-mode FAR | {f['common_far']:.3f} | <=0.10 | Pass |
 | Zone-coherent FAR | {f['zone_far']:.3f} | <=0.10 | Pass |
 | Switch chatter rate | {f['chatter']:.3f} | <=0.05 | Pass |
@@ -200,13 +221,13 @@ Validation uses observed test-period spatial windows with frozen templates. Same
 
 ## 7. Figure review
 
-Five multi-panel figure groups are available as SVG, PDF and 600 dpi PNG, backed by `D7_plot_data.parquet/.csv`. All use Arial, 0.8 pt boxed axes, inward ticks, `(a)/(b)/(c)` panel labels, endpoint-aware scales and transparent label backgrounds where annotations cover data. Automated counterpart/font/pixel QA passed: {f['figure_qa']}.
+Five multi-panel figure groups are available as SVG, PDF and 600 dpi PNG, backed by `D7_plot_data.parquet/.csv`. All use Arial, 0.8 pt boxed axes, inward ticks, `(a)/(b)/(c)` panel labels, endpoint-aware scales and transparent label backgrounds where annotations cover data. Figure D7-3 decomposes weighted leave-one-out structural attribution; it does not claim Shapley values. Automated counterpart/font/pixel QA passed: {f['figure_qa']}.
 
 ## 8. Critical limitations
 
 1. Topology and asset identity are declared but not field-verified or dual-approved.
-2. Effective independent support is inadequate for production gating in 53/56 templates; ORP remains intentionally L1.
-3. Swap Top-1 localization is 0.75 versus the 0.80 target.
+2. Effective independent support remains inadequate for production gating: L1={f['l1_templates']}, L2={f['l2_templates']}, L3={f['l3_templates']}; ORP remains intentionally L1.
+3. Swap Top-1 localization is {f['swap_top1']:.3f} (95% CI {f['swap_top1_low']:.3f}-{f['swap_top1_high']:.3f}) versus the 0.80 target.
 4. The {f['events']} candidate event windows have no external truth labels; event counts must not be reported as confirmed sensor faults.
 5. Regime transition FAR and topology candidate recall are not estimable without external regime/topology truth.
 6. `D7_raw` calibration is suitable for comparative research evidence, but operational event thresholds require labeled prospective confirmation.
@@ -221,6 +242,10 @@ The branch may be reviewed and merged as a **research implementation with explic
 4. Improve and revalidate node localization to Top-1 >=0.80 on blocked holdouts.
 5. Add field-confirmed swap/maintenance/topology cases and prospective event labels.
 6. Only then set topology status to verified, rerun the full release workflow and consider `D7_total`/D6 final arbitration.
+
+The required human evidence and role-separated approval procedure are specified
+in `docs/D7_FIELD_VERIFICATION_REQUIREMENTS.md`. These inputs cannot be
+generated from statistical similarity.
 """
 
     def _guide_markdown(self) -> str:
@@ -235,7 +260,7 @@ The branch may be reviewed and merged as a **research implementation with explic
         output_table = "\n".join(f"| `{path}` | {role} |" for path, role in output_rows)
         return f"""# D7 Project Directory Guide v2.1
 
-**Generated:** {self.generated}  
+**Generated:** {self.generated}
 **Update rule:** every computational or figure change must rerun reports and release QA.
 
 ## 1. Project layout
@@ -283,6 +308,7 @@ python scripts/run_d7_shadow_v2.py
 python scripts/make_d7_figures.py
 python scripts/build_d7_reports.py
 python scripts/check_d7_release.py
+python "../D6 Parallel-redundancy Temporal Consistency/scripts/run_d6_d7_readiness.py"
 python -m pytest tests -q
 ```
 
@@ -317,6 +343,8 @@ Use `python scripts/run_d7_release.py --include-local` after data, topology, tem
 ## 7. File ownership rules
 
 - `configs/common/topology.yaml` is the only declared production topology source; Shadow outputs never overwrite it.
+- `configs/common/field_verification_template.csv` is a blank human-input form;
+  it is not evidence until reviewer and approver fields are independently completed.
 - Parquet is authoritative for tabular data; Excel is a human-review mirror with the same semantics.
 - `D7_plot_data` is the sole manuscript-figure input; figure scripts do not recompute business metrics.
 - Reports and this guide are generated artifacts and must be refreshed on every release workflow.
@@ -340,11 +368,11 @@ Current release classification: **research review complete, production blocked**
 
 ## Figure D7-3. Evidence decomposition and node attribution
 
-(a) Four spatial quality components and `D7_raw` around an unlabeled persistent low-score window. The case is evidence for review, not a confirmed fault. (b) LOSO/graph-energy node influence at the case center. (c) Distribution of report-only zone-consensus labels supplied to the D6 interface; non-evaluable status prevents final arbitration.
+(a) Four spatial quality components and `D7_raw` around an unlabeled persistent low-score window. The case is evidence for review, not a confirmed fault. (b) Weighted leave-one-out structural contribution decomposed into reconstruction, graph-energy and gradient terms at the case center; this is not a Shapley estimate. (c) Distribution of report-only zone-consensus labels supplied to the D6 interface; non-evaluable status prevents final arbitration.
 
 ## Figure D7-4. Frozen-template validation and track invariance
 
-(a) Release criteria for same-line position swaps, negative controls and regime chatter; dashed segments denote targets. (b) Top-1 localization by injected D7-relevant scenario. (c) False alarm rates and empirical ranges for orthogonality controls. (d) Local-Sensitivity invariance metrics. Swap AUROC/AUPRC and negative controls pass, whereas Top-1 remains below 0.80.
+(a) Release criteria for same-line position swaps, negative controls and regime chatter; dashed segments denote targets and error bars show 95% intervals where estimable. (b) Top-1 localization by injected D7-relevant scenario with Wilson 95% intervals. (c) False alarm rates and empirical 95% ranges for orthogonality controls. (d) Local-Sensitivity invariance metrics. Positive injection results are synthetic observed-window validation, not field truth.
 
 ## Figure D7-5. Support, regime, topology and release governance
 
@@ -426,7 +454,7 @@ Current release classification: **research review complete, production blocked**
         )
         self._warning(
             doc,
-            f"Production release is blocked: topology/asset identity is unverified, 53 of 56 templates remain L1, and swap Top-1 is {f['swap_top1']:.2f} versus the 0.80 target. D7_total, D7_forDQR and D6 final arbitration therefore remain empty.",
+            f"Production release is blocked: topology/asset identity is unverified; support is L1={f['l1_templates']}, L2={f['l2_templates']}, L3={f['l3_templates']}; swap Top-1 is {f['swap_top1']:.2f} (95% CI {f['swap_top1_low']:.2f}-{f['swap_top1_high']:.2f}, n={f['swap_top1_n']}). D7_total, D7_forDQR and D6 final arbitration therefore remain empty.",
         )
         self._heading(doc, "2. Scope and dimensional independence", 1)
         for item in [
@@ -512,8 +540,8 @@ Current release classification: **research review complete, production blocked**
         self._heading(doc, "8. Critical limitations", 1)
         for item in [
             "Field topology and asset identity are not verified or dual-approved.",
-            "Effective support is inadequate for production gating in 53 of 56 templates.",
-            f"Swap Top-1 is {f['swap_top1']:.2f}, below the 0.80 target.",
+            f"Effective support is L1={f['l1_templates']}, L2={f['l2_templates']}, L3={f['l3_templates']}; only verified L3 may gate.",
+            f"Swap Top-1 is {f['swap_top1']:.2f} (95% CI {f['swap_top1_low']:.2f}-{f['swap_top1_high']:.2f}) versus the 0.80 target.",
             f"The {f['events']} candidate events lack external truth and cannot be called confirmed faults.",
             "Regime transition FAR and topology candidate recall require external truth.",
         ]:

@@ -256,20 +256,29 @@ class D7PlotDataBuilder:
             "influence_score", ascending=False
         )
         for order, record in enumerate(ranking.itertuples(index=False)):
-            self._add(
-                rows,
-                figure_id="FigD7_3_evidence",
-                panel="b",
-                record_type="influence_rank",
-                x=record.sensor_id,
-                x_numeric=order,
-                y="influence_score",
-                value=float(record.influence_score),
-                group="target" if record.sensor_id == event["sensor_id"] else "other",
-                sensor_id=record.sensor_id,
-                event_id=event["event_id"],
-                order=order,
-            )
+            for component, label in [
+                ("contribution_leave_one_out", "Leave-one-out"),
+                ("contribution_graph_energy", "Graph energy"),
+                ("contribution_gradient", "Gradient"),
+            ]:
+                self._add(
+                    rows,
+                    figure_id="FigD7_3_evidence",
+                    panel="b",
+                    record_type="influence_component",
+                    x=record.sensor_id,
+                    x_numeric=order,
+                    y="influence_score",
+                    value=float(getattr(record, component)),
+                    group=label,
+                    sensor_id=record.sensor_id,
+                    context=(
+                        "target" if record.sensor_id == event["sensor_id"] else "other"
+                    ),
+                    event_id=event["event_id"],
+                    annotation=record.attribution_method,
+                    order=order,
+                )
         labels = self.consensus["zone_consensus_label"].value_counts(normalize=True)
         for order, (label, value) in enumerate(labels.items()):
             self._add(
@@ -305,9 +314,11 @@ class D7PlotDataBuilder:
                 x_numeric=order,
                 y="estimate",
                 value=float(record.estimate),
+                value_low=float(record.ci95_low) if np.isfinite(record.ci95_low) else np.nan,
+                value_high=float(record.ci95_high) if np.isfinite(record.ci95_high) else np.nan,
                 target=float(record.target),
                 group="pass" if record.passed else "fail",
-                annotation=f"target {record.operator} {record.target:.2f}",
+                annotation=f"target {record.operator} {record.target:.2f}; n={record.n:g}",
                 order=order,
             )
         for order, record in enumerate(top1.itertuples(index=False)):
@@ -320,8 +331,11 @@ class D7PlotDataBuilder:
                 x_numeric=order,
                 y="Top-1",
                 value=float(record.estimate),
+                value_low=float(record.ci95_low),
+                value_high=float(record.ci95_high),
                 target=0.80,
                 group="pass" if record.estimate >= 0.80 else "fail",
+                annotation=f"n={record.n:g}; {record.ci_method}",
                 order=order,
             )
         for order, record in enumerate(negative.itertuples(index=False)):
@@ -416,10 +430,19 @@ class D7PlotDataBuilder:
             self.paths.local_output_root / "D7_validation_results.xlsx",
             sheet_name="acceptance",
         )
+        top1_row = validation.loc[validation["criterion"].eq("swap_Top1")].iloc[0]
         gates = [
             ("Track isolation", 1.0, "Local consumes no D1-D6 scores"),
             ("Swap AUROC/AUPRC", float(validation.iloc[:2]["passed"].all()), "synthetic observed-window test"),
-            ("Top-1", float(validation.loc[validation["criterion"] == "swap_Top1", "passed"].iloc[0]), "0.75 observed vs 0.80 target"),
+            (
+                "Top-1",
+                float(top1_row["passed"]),
+                (
+                    f"{top1_row['estimate']:.2f} "
+                    f"[{top1_row['ci95_low']:.2f}, {top1_row['ci95_high']:.2f}] "
+                    "vs 0.80"
+                ),
+            ),
             ("Topology approval", float(self.topology["verification_status"] == "verified"), "field verification pending"),
             ("DQR release", 0.0, "production gate remains closed"),
         ]

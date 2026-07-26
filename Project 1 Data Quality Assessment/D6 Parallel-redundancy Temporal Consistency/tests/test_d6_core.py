@@ -5,6 +5,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import numpy as np
 
 
 D6_ROOT = Path(__file__).resolve().parents[1]
@@ -114,3 +115,37 @@ def test_d1_fuse_preserves_raw_and_neutralizes_unreliable_reference():
         "valid_pair", "reference_unreliable", "target_suspect", "bilateral_unreliable"
     ]
     assert score.tolist() == [2.0, 3.0, 2.0, 3.0]
+from d6.integration import build_d6_d7_readiness
+
+
+def test_d7_readiness_is_hierarchical_and_does_not_finalize_scores() -> None:
+    d6 = pd.DataFrame(
+        {
+            "timestamp": pd.to_datetime(["2025-08-01 00:00"]),
+            "pair_id": ["PAIR_DO11"],
+            "D6_raw": [4.2],
+            "D6_after_D1": [4.0],
+            "D6_forDQR": [np.nan],
+        }
+    )
+    d7 = pd.DataFrame(
+        {
+            "timestamp": pd.to_datetime(["2025-08-01 00:00"]),
+            "pair_id": ["PAIR_DO11"],
+            "zone_consensus_label": ["not_evaluable"],
+            "zone_consensus_strength": [np.nan],
+            "d7_evaluable": [False],
+            "support_level": ["L2"],
+            "limited_support": [True],
+            "topology_hash": ["hash"],
+            "template_version": ["candidate"],
+            "d7_run_id": ["run"],
+            "interface_version": ["d7-d6-v2.1"],
+            "track_id": ["d7_local"],
+        }
+    )
+    output = build_d6_d7_readiness(d6, d7)
+    assert output.loc[0, "integration_status"] == "pending_D7_topology_or_support"
+    assert not output.loc[0, "finalization_allowed"]
+    assert np.isnan(output.loc[0, "D6_forDQR_candidate"])
+    assert output.loc[0, "D6_raw"] == d6.loc[0, "D6_raw"]

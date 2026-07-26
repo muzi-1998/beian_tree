@@ -1,7 +1,7 @@
 {
   "track_id": "sensitivity",
   "production_write_permission": false,
-  "generated_utc": "2026-07-22T09:23:49.222472+00:00",
+  "generated_utc": "2026-07-26T02:09:02.030645+00:00",
   "d1_release_id": "D1REL-1.3.0-f6074be3751f",
   "consumed_sources": [
     "D1 Sensor health/outputs/data/D1_main_scores_min.xlsx",
@@ -28,7 +28,7 @@
     {
       "role": "D7_local_evidence",
       "path": "D7 Topological Role Consistency and Structural Representativeness/outputs/local/D7_spatial_evidence.parquet",
-      "sha256": "b0035a5ff086111cc5d18c78e1ea383a4aa71bb395b4a0487048293dd9b83eb4"
+      "sha256": "47293c469e0a8899fd6a0a726762c5df940af2d8e0bd8b8cc9609760836a1b21"
     }
   ],
   "forbidden_outputs": [
@@ -42,25 +42,25 @@
   "invariance": [
     {
       "metric": "IE_track",
-      "estimate": 0.043321287066881924,
+      "estimate": 0.048170689663585606,
       "criterion": "<=0.20",
       "passed": true
     },
     {
       "metric": "event_jaccard",
-      "estimate": 0.8389483742925048,
+      "estimate": 0.8251274138495348,
       "criterion": ">=0.80",
       "passed": true
     },
     {
       "metric": "culprit_spearman",
-      "estimate": 0.9791724436804865,
+      "estimate": 0.9619507138943536,
       "criterion": ">=0.80",
       "passed": true
     },
     {
       "metric": "FAR_delta",
-      "estimate": -0.004124947116062594,
+      "estimate": -0.01158745828044938,
       "criterion": "report",
       "passed": true
     }

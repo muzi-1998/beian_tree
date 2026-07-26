@@ -20,7 +20,7 @@ from d7_local.templates import SpatialTemplate
 
 
 class D7ValidationRunner:
-    def __init__(self, n_trials_per_scenario: int = 20, random_seed: int = 42) -> None:
+    def __init__(self, n_trials_per_scenario: int = 60, random_seed: int = 42) -> None:
         self.paths = resolve_paths()
         self.n_trials = int(n_trials_per_scenario)
         self.rng = np.random.default_rng(random_seed)
@@ -42,10 +42,8 @@ class D7ValidationRunner:
         baseline_scores: list[float] = []
         positive_scores: list[float] = []
         for scenario in scenarios:
-            for trial_no in range(self.n_trials):
-                target = self.rng.choice(self.topology.node_ids())
-                start = self.rng.choice(test_starts)
-                start = pd.Timestamp(start)
+            schedule = self._trial_schedule(test_starts)
+            for trial_no, (target, start) in enumerate(schedule):
                 frame = snapshots.loc[start : start + pd.Timedelta(hours=23, minutes=50)].copy()
                 state_window = state[state["timestamp"].isin(frame.index)]
                 baseline, baseline_localization = self._window_stat(
@@ -71,6 +69,7 @@ class D7ValidationRunner:
                         "intensity": severity,
                         "duration_h": 24,
                         "target_sensor": target,
+                        "target_analyte": target.split("_", 1)[0],
                         "donor_sensor": donor,
                         "affected_sensors": json.dumps(affected),
                         "start_ts": start,
@@ -179,6 +178,36 @@ class D7ValidationRunner:
         start = reference_end.ceil("D") + pd.Timedelta(days=7)
         end = snapshots.index.max() - pd.Timedelta(days=2)
         return pd.date_range(start, end, freq="24h")
+
+    def _trial_schedule(
+        self, test_starts: pd.DatetimeIndex
+    ) -> list[tuple[str, pd.Timestamp]]:
+        nodes = self.topology.nodes
+        targets = {
+            analyte: nodes.loc[nodes["analyte"].eq(analyte), "sensor_id"].tolist()
+            for analyte in ["DO", "ORP"]
+        }
+        by_month = {
+            str(month): pd.DatetimeIndex(values)
+            for month, values in pd.Series(test_starts, index=test_starts).groupby(
+                test_starts.to_period("M")
+            )
+        }
+        months = sorted(by_month)
+        schedule: list[tuple[str, pd.Timestamp]] = []
+        within_month: dict[str, int] = {month: 0 for month in months}
+        analytes = ["DO", "ORP"]
+        analyte_counts = {analyte: 0 for analyte in analytes}
+        for trial_no in range(self.n_trials):
+            analyte = analytes[trial_no % len(analytes)]
+            target = targets[analyte][analyte_counts[analyte] % len(targets[analyte])]
+            analyte_counts[analyte] += 1
+            month = months[trial_no % len(months)]
+            candidates = by_month[month]
+            start = pd.Timestamp(candidates[within_month[month] % len(candidates)])
+            within_month[month] += 1
+            schedule.append((target, start))
+        return schedule
 
     def _inject(
         self,
@@ -357,7 +386,16 @@ class D7ValidationRunner:
             ("AUPRC", average_precision_score(y, score)),
             ("Top1", trials["top1_hit"].mean()),
         ]:
-            low, high = self._bootstrap_metric(metric, trials, baseline, positive)
+            if metric == "Top1":
+                low, high = self._wilson_interval(
+                    int(trials["top1_hit"].sum()), len(trials)
+                )
+                ci_method = "Wilson_95pct"
+            else:
+                low, high = self._bootstrap_metric(
+                    metric, trials, baseline, positive
+                )
+                ci_method = "paired_trial_bootstrap_500"
             rows.append(
                 {
                     "scenario": "all_positive_injections",
@@ -367,6 +405,8 @@ class D7ValidationRunner:
                     "ci95_high": high,
                     "threshold": threshold,
                     "n": len(trials),
+                    "analysis_unit": "injected_24h_window",
+                    "ci_method": ci_method,
                 }
             )
         for scenario, frame in negative.groupby("scenario"):
@@ -380,6 +420,8 @@ class D7ValidationRunner:
                     "ci95_high": float(np.quantile(values, 0.975)),
                     "threshold": threshold,
                     "n": len(values),
+                    "analysis_unit": "negative_control_24h_window",
+                    "ci_method": "empirical_trial_quantiles",
                 }
             )
         for scenario, frame in trials.groupby("scenario"):
@@ -390,32 +432,65 @@ class D7ValidationRunner:
                 ("AUPRC", average_precision_score(scenario_y, scenario_score)),
                 ("Top1", frame["top1_hit"].mean()),
             ]:
+                if metric == "Top1":
+                    low, high = self._wilson_interval(
+                        int(frame["top1_hit"].sum()), len(frame)
+                    )
+                    ci_method = "Wilson_95pct"
+                else:
+                    low, high = self._bootstrap_metric(
+                        metric,
+                        frame,
+                        frame["baseline_statistic"].tolist(),
+                        frame["injected_statistic"].tolist(),
+                    )
+                    ci_method = "paired_trial_bootstrap_500"
                 rows.append(
                     {
                         "scenario": scenario,
                         "metric": metric,
                         "estimate": estimate,
-                        "ci95_low": np.nan,
-                        "ci95_high": np.nan,
+                        "ci95_low": low,
+                        "ci95_high": high,
                         "threshold": threshold,
                         "n": len(frame),
+                        "analysis_unit": "injected_24h_window",
+                        "ci_method": ci_method,
                     }
                 )
-            for analyte, analyte_frame in frame.groupby(
-                frame["target_sensor"].str.split("_").str[0]
-            ):
+            for analyte, analyte_frame in frame.groupby("target_analyte"):
+                low, high = self._wilson_interval(
+                    int(analyte_frame["top1_hit"].sum()), len(analyte_frame)
+                )
                 rows.append(
                     {
                         "scenario": f"{scenario}_{analyte}",
                         "metric": "Top1",
                         "estimate": analyte_frame["top1_hit"].mean(),
-                        "ci95_low": np.nan,
-                        "ci95_high": np.nan,
+                        "ci95_low": low,
+                        "ci95_high": high,
                         "threshold": threshold,
                         "n": len(analyte_frame),
+                        "analysis_unit": "injected_24h_window",
+                        "ci_method": "Wilson_95pct",
                     }
                 )
         return pd.DataFrame(rows)
+
+    @staticmethod
+    def _wilson_interval(successes: int, n: int) -> tuple[float, float]:
+        if n <= 0:
+            return float("nan"), float("nan")
+        z = 1.959963984540054
+        proportion = successes / n
+        denominator = 1.0 + z**2 / n
+        center = (proportion + z**2 / (2.0 * n)) / denominator
+        half_width = (
+            z
+            * np.sqrt(proportion * (1.0 - proportion) / n + z**2 / (4.0 * n**2))
+            / denominator
+        )
+        return max(0.0, center - half_width), min(1.0, center + half_width)
 
     def _bootstrap_metric(
         self,
@@ -516,6 +591,24 @@ class D7ValidationRunner:
         ]
         rows = []
         for criterion, estimate, target, operator in criteria:
+            metric_name = {
+                "swap_AUROC": "AUROC",
+                "swap_AUPRC": "AUPRC",
+                "swap_Top1": "Top1",
+                "common_mode_FAR": "FAR",
+                "zone_coherent_FAR": "FAR",
+            }.get(criterion)
+            scenario_name = {
+                "swap_AUROC": "channel_swap",
+                "swap_AUPRC": "channel_swap",
+                "swap_Top1": "channel_swap",
+                "common_mode_FAR": "common_mode",
+                "zone_coherent_FAR": "zone_coherent",
+            }.get(criterion)
+            metric_row = metrics[
+                metrics["scenario"].eq(scenario_name)
+                & metrics["metric"].eq(metric_name)
+            ]
             passed = bool(estimate >= target) if operator == ">=" else bool(estimate <= target)
             rows.append(
                 {
@@ -524,6 +617,17 @@ class D7ValidationRunner:
                     "target": target,
                     "operator": operator,
                     "passed": passed,
+                    "ci95_low": (
+                        float(metric_row["ci95_low"].iloc[0])
+                        if not metric_row.empty
+                        else np.nan
+                    ),
+                    "ci95_high": (
+                        float(metric_row["ci95_high"].iloc[0])
+                        if not metric_row.empty
+                        else np.nan
+                    ),
+                    "n": int(metric_row["n"].iloc[0]) if not metric_row.empty else np.nan,
                     "caveat": (
                         "synthetic_observed_window_validation"
                         if criterion.startswith("swap_")
@@ -538,6 +642,9 @@ class D7ValidationRunner:
                 "target": np.nan,
                 "operator": "manual",
                 "passed": False,
+                "ci95_low": np.nan,
+                "ci95_high": np.nan,
+                "n": np.nan,
                 "caveat": "blocked_by_unverified_topology_asset_mapping_and_limited_support",
             }
         )

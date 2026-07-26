@@ -10,11 +10,11 @@
 
 ## Figure D7-3. Evidence decomposition and node attribution
 
-(a) Four spatial quality components and `D7_raw` around an unlabeled persistent low-score window. The case is evidence for review, not a confirmed fault. (b) LOSO/graph-energy node influence at the case center. (c) Distribution of report-only zone-consensus labels supplied to the D6 interface; non-evaluable status prevents final arbitration.
+(a) Four spatial quality components and `D7_raw` around an unlabeled persistent low-score window. The case is evidence for review, not a confirmed fault. (b) Weighted leave-one-out structural contribution decomposed into reconstruction, graph-energy and gradient terms at the case center; this is not a Shapley estimate. (c) Distribution of report-only zone-consensus labels supplied to the D6 interface; non-evaluable status prevents final arbitration.
 
 ## Figure D7-4. Frozen-template validation and track invariance
 
-(a) Release criteria for same-line position swaps, negative controls and regime chatter; dashed segments denote targets. (b) Top-1 localization by injected D7-relevant scenario. (c) False alarm rates and empirical ranges for orthogonality controls. (d) Local-Sensitivity invariance metrics. Swap AUROC/AUPRC and negative controls pass, whereas Top-1 remains below 0.80.
+(a) Release criteria for same-line position swaps, negative controls and regime chatter; dashed segments denote targets and error bars show 95% intervals where estimable. (b) Top-1 localization by injected D7-relevant scenario with Wilson 95% intervals. (c) False alarm rates and empirical 95% ranges for orthogonality controls. (d) Local-Sensitivity invariance metrics. Positive injection results are synthetic observed-window validation, not field truth.
 
 ## Figure D7-5. Support, regime, topology and release governance
 
