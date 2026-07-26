@@ -107,11 +107,19 @@ class D7FigureBuilder:
         png = self.paths.figure_root / f"{stem}.png"
         pdf = self.paths.figure_root / f"{stem}.pdf"
         svg = self.paths.figure_root / f"{stem}.svg"
+        tiff = self.paths.figure_root / f"{stem}.tiff"
         fig.savefig(png, dpi=600, bbox_inches="tight", facecolor="white")
         fig.savefig(pdf, bbox_inches="tight", facecolor="white")
         fig.savefig(svg, bbox_inches="tight", facecolor="white")
+        fig.savefig(
+            tiff,
+            dpi=600,
+            bbox_inches="tight",
+            facecolor="white",
+            pil_kwargs={"compression": "tiff_lzw"},
+        )
         plt.close(fig)
-        return [png, pdf, svg]
+        return [png, pdf, svg, tiff]
 
     def _figure_1(self) -> list[Path]:
         fig, axes = plt.subplots(
@@ -149,11 +157,11 @@ class D7FigureBuilder:
                 fontsize=6.0,
                 bbox=dict(facecolor="white", edgecolor="none", alpha=0.68, pad=0.5),
             )
-        ax.set(xlim=(-0.48, 6.48), ylim=(-0.35, 1.35), xlabel="Declared process position", ylabel="Parallel line")
+        ax.set(xlim=(-0.48, 6.48), ylim=(-0.35, 1.35), xlabel="Ordinal process position", ylabel="Parallel line")
         ax.set_xticks(np.arange(0, 7, 1))
         ax.set_yticks([0, 1], ["Line 1", "Line 2"])
         ax.legend(loc="upper center", ncol=2, bbox_to_anchor=(0.5, 1.16))
-        ax.set_title("Declared topology")
+        ax.set_title("Author-confirmed topology")
         self._boxed(ax)
         self._panel_label(ax, "a")
 
@@ -175,7 +183,8 @@ class D7FigureBuilder:
         gate_labels = gates["x"].replace(
             {
                 "D7_forDQR": "D7 for\nDQR",
-                "Topology approval": "Topology\napproval",
+                "Research topology": "Research\ntopology",
+                "Production approval": "Production\napproval",
                 "Raw spatial evidence": "Raw spatial\nevidence",
             }
         )
@@ -186,7 +195,8 @@ class D7FigureBuilder:
         )
         annotation_labels = {
             "Null until all production gates pass": "Null until all\nproduction gates pass",
-            "Pending field drawing and two-person approval": "Pending field drawing\nand two-person approval",
+            "Author-confirmed and inventory-reconciled": "Author-confirmed and\ninventory-reconciled",
+            "Documentary audit and dual approval pending": "Documentary audit and\ndual approval pending",
             "D7_raw retained when calculable": "D7 raw retained\nwhen calculable",
         }
         for y, annotation in zip(gate_labels, gates["annotation"]):
@@ -228,7 +238,12 @@ class D7FigureBuilder:
 
         ax = fig.add_subplot(grid[1, 0])
         distribution = self._subset("FigD7_2_spatiotemporal", "b")
-        data = [distribution.loc[distribution["group"] == analyte, "value"].dropna() for analyte in ["DO", "ORP"]]
+        data = []
+        for analyte in ["DO", "ORP"]:
+            values = distribution.loc[
+                distribution["group"] == analyte, "value"
+            ].to_numpy(dtype=float)
+            data.append(values[np.isfinite(values)])
         box = ax.boxplot(data, positions=[0, 1], widths=0.52, patch_artist=True, showfliers=False)
         for patch, analyte in zip(box["boxes"], ["DO", "ORP"]):
             patch.set_facecolor(PALETTE[analyte])
@@ -421,9 +436,36 @@ class D7FigureBuilder:
 
         ax = axes[1, 1]
         gates = self._subset("FigD7_5_governance", "d").sort_values("order")
-        ax.barh(gates["x"], np.ones(len(gates)), color=[PALETTE.get(group, "#9E9E9E") for group in gates["group"]], edgecolor="white")
-        for y, annotation in zip(gates["x"], gates["annotation"]):
-            ax.text(0.5, y, annotation, ha="center", va="center", fontsize=6.1, bbox=dict(facecolor="white", edgecolor="none", alpha=0.72, pad=1.0))
+        gate_labels = gates["x"].replace(
+            {
+                "Swap AUROC/AUPRC": "Swap AUROC/\nAUPRC",
+                "Research topology": "Research\ntopology",
+                "Production approval": "Production\napproval",
+            }
+        )
+        ax.barh(
+            gate_labels,
+            np.ones(len(gates)),
+            color=[PALETTE.get(group, "#9E9E9E") for group in gates["group"]],
+            edgecolor="white",
+        )
+        annotation_labels = {
+            "Local consumes no D1-D6 scores": "Local consumes no\nD1-D6 scores",
+            "synthetic observed-window test": "Synthetic observed-\nwindow test",
+            "author-confirmed and inventory-reconciled": "Author-confirmed and\ninventory-reconciled",
+            "documentary audit and dual approval pending": "Documentary audit and\ndual approval pending",
+            "production gate remains closed": "Production gate\nremains closed",
+        }
+        for y, annotation in zip(gate_labels, gates["annotation"]):
+            ax.text(
+                0.5,
+                y,
+                annotation_labels.get(annotation, annotation),
+                ha="center",
+                va="center",
+                fontsize=5.5,
+                bbox=dict(facecolor="white", edgecolor="none", alpha=0.72, pad=0.8),
+            )
         ax.set_xlim(0, 1)
         ax.set_xticks([0, 1], ["Blocked", "Passed"])
         ax.set_title("Release decision matrix")

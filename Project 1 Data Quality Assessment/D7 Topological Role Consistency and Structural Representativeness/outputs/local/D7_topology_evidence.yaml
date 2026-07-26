@@ -1,0 +1,52 @@
+schema_version: d7-topology-evidence-v1
+evidence_version: d7-topology-evidence-20260726
+research_confirmation:
+  status: author_confirmed
+  confirmed_at: '2026-07-26T00:00:00+08:00'
+  source: author_domain_confirmation
+  scope:
+    process_line: true
+    process_zone: true
+    longitudinal_order: true
+    scada_to_physical_point_one_to_one: true
+    no_probe_or_channel_change_during_study: true
+instrument_inventory:
+  source_id: provided_instrument_installation_register
+  source_sha256: 2085f4de640aa0231f95e3abe370dec6d1da9c3daf064e6f05042e344ca58ea9
+  source_last_modified_local: '2026-03-16T11:29:30+08:00'
+  inspected_sheet: Sheet1
+  biological_pool:
+    DO:
+      listed_count: 8
+      active_count: 8
+      brand: E+H
+      range: 0-20 mg/L
+      signal: 4-20 mA
+    ORP:
+      listed_count: 6
+      active_count: 6
+      brand: E+H
+      range: -1500 to 1500 mV
+      signal: 4-20 mA
+  reconciliation:
+    d7_do_node_count: 8
+    d7_orp_node_count: 6
+    status: analyte_count_reconciled
+  limitations:
+    - no_per_instrument_asset_or_device_code
+    - no_serial_number
+    - no_explicit_line_zone_order_or_scada_mapping
+    - no_maintenance_or_replacement_history
+research_use:
+  status: eligible_for_ordinal_topology_reporting
+  rationale:
+    - ordinal_model_requires_confirmed_line_zone_order_and_channel_identity
+    - inventory_reconciles_instrument_type_count_status_range_and_signal
+    - exact_survey_coordinates_asset_ids_and_serials_are_not_model_inputs
+production_governance:
+  status: pending_documentary_audit_and_dual_approval
+  required_before_d7_total:
+    - controlled_drawing_or_equivalent_documentary_audit
+    - asset_and_serial_identity_where_available
+    - maintenance_replacement_and_remapping_records
+    - independent_reviewer_and_approver

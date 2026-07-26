@@ -14,17 +14,22 @@ topology metadata. It never consumes D1-D6 scores or states.
   temporal-distribution scoring.
 - Sensitivity outputs are physically separated and cannot create production
   scores or the D6 interface.
-- The current declared topology awaits field drawing, asset, coordinate, and
-  dual-approval verification. Current results are therefore report-only:
-  `D7_raw` is available, while `D7_total` and final D6 arbitration remain empty.
+- Process line, pool zone, longitudinal order, SCADA-to-physical-point identity
+  and no study-period probe/channel change are author-confirmed. A provided
+  installation register reconciles eight active DO and six active ORP
+  instruments. Eligible L2 windows may therefore populate paper-facing
+  `D7_report`.
+- Maintenance provenance, production documentary audit and dual approval remain
+  pending. `D7_total`, Veto, `D7_forDQR` and final D6 arbitration remain empty.
 - The Local regime model is plant-global: QR/QIR, robust pooled DO/ORP level
   and dispersion, and cyclic time features define one shared process context.
   Gradient, rank and leave-one-out evidence are learned and evaluated within
   that shared regime.
-- L1 is diagnostic, L2 can support provisional reporting, and only field-
-  verified L3 evidence can enter DQR gating or Veto.
+- L1 is diagnostic, L2 can support research reporting, and only
+  production-approved L3 evidence can enter DQR gating or Veto.
 
-See `docs/D7_FIELD_VERIFICATION_REQUIREMENTS.md` for the manual evidence and
+See `configs/common/topology_evidence.yaml` for the research evidence ledger and
+`docs/D7_FIELD_VERIFICATION_REQUIREMENTS.md` for the production documentary and
 two-person approval gate. Statistical topology candidates cannot replace it.
 
 ## Reproduce

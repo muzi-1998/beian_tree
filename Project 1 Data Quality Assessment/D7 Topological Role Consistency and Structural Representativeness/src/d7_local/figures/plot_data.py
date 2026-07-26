@@ -144,7 +144,8 @@ class D7PlotDataBuilder:
             )
         facts = [
             ("Raw spatial evidence", 1.0, "D7_raw retained when calculable"),
-            ("Topology approval", 0.0, "Pending field drawing and two-person approval"),
+            ("Research topology", 1.0, "Author-confirmed and inventory-reconciled"),
+            ("Production approval", 0.0, "Documentary audit and dual approval pending"),
             ("D7_forDQR", 0.0, "Null until all production gates pass"),
         ]
         for order, (label, value, annotation) in enumerate(facts):
@@ -443,7 +444,16 @@ class D7PlotDataBuilder:
                     "vs 0.80"
                 ),
             ),
-            ("Topology approval", float(self.topology["verification_status"] == "verified"), "field verification pending"),
+            (
+                "Research topology",
+                float(self.topology["research_confirmation_status"] == "author_confirmed"),
+                "author-confirmed and inventory-reconciled",
+            ),
+            (
+                "Production approval",
+                float(self.topology["production_approval_status"] == "approved"),
+                "documentary audit and dual approval pending",
+            ),
             ("DQR release", 0.0, "production gate remains closed"),
         ]
         for order, (gate, value, annotation) in enumerate(gates):

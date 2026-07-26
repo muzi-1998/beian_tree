@@ -1,6 +1,6 @@
 # D7 Project Directory Guide v2.1
 
-**Generated:** 2026-07-26 10:17 CST
+**Generated:** 2026-07-26 11:38 CST
 **Update rule:** every computational or figure change must rerun reports and release QA.
 
 ## 1. Project layout
@@ -8,7 +8,7 @@
 ```text
 D7 Topological Role Consistency and Structural Representativeness/
 |-- configs/
-|   |-- common/          # paths, sensors, topology and interface schemas
+|   |-- common/          # paths, sensors, topology evidence and interface schemas
 |   |-- local/           # production-isolated D7 Local policies
 |   |-- sensitivity/     # upstream-filter sensitivity only
 |   `-- shadow_v2/       # graph/topology research only
@@ -27,7 +27,7 @@ D7 Topological Role Consistency and Structural Representativeness/
 
 | Track | Allowed inputs | Forbidden outputs |
 |---|---|---|
-| `d7_local` | Canonical 1-min observations/flags, QR/QIR context, declared topology, frozen D7 assets | Reading D1-D6 score/state/event inputs |
+| `d7_local` | Canonical 1-min observations/flags, QR/QIR context, research topology/evidence, frozen D7 assets | Reading D1-D6 score/state/event inputs |
 | `sensitivity` | Frozen Local evidence plus D1/D2/D4 read-only filters | `D7_forDQR`, zone consensus, active templates, D6 arbitration |
 | `shadow_v2` | Canonical observations and declared topology | Automatic topology update, Veto, Local score mutation |
 
@@ -39,7 +39,7 @@ D7 Topological Role Consistency and Structural Representativeness/
 | `outputs/sensitivity` | D1/D2/D4-filtered shadow reference sensitivity; no production writes |
 | `outputs/shadow_v2` | Graph/topology research candidates with production impact fixed to none |
 | `outputs/plot_data` | Frozen long-table data used by every manuscript figure |
-| `outputs/figures` | SVG/PDF/600 dpi PNG figures and figure QA |
+| `outputs/figures` | SVG/PDF/600 dpi PNG/TIFF figures and figure QA |
 | `outputs/reports` | Expert report, directory guide and figure captions |
 
 ## 4. Core entry points
@@ -72,9 +72,9 @@ Use `python scripts/run_d7_release.py --include-local` after data, topology, tem
 
 ## 6. Production activation checklist
 
-- [ ] Field drawing ID is real and versioned.
-- [ ] All asset IDs, serial numbers and channel tags are verified.
-- [ ] Coordinates are surveyed or approved, not schematic placeholders.
+- [ ] Controlled drawing or equivalent documentary evidence is versioned.
+- [ ] Asset/serial identity and maintenance history are reconciled where available.
+- [ ] Ordinal positions are independently audited; exact coordinates are required only if used by a future metric.
 - [ ] Reviewer and approver are two identified independent people.
 - [ ] Topology validity interval covers the evaluated data.
 - [ ] All topology-bound template hashes are regenerated.
@@ -87,7 +87,9 @@ Use `python scripts/run_d7_release.py --include-local` after data, topology, tem
 
 ## 7. File ownership rules
 
-- `configs/common/topology.yaml` is the only declared production topology source; Shadow outputs never overwrite it.
+- `configs/common/topology.yaml` is the declared topology contract and
+  `configs/common/topology_evidence.yaml` is its research evidence ledger;
+  Shadow outputs never overwrite either file.
 - `configs/common/field_verification_template.csv` is a blank human-input form;
   it is not evidence until reviewer and approver fields are independently completed.
 - Parquet is authoritative for tabular data; Excel is a human-review mirror with the same semantics.
@@ -97,4 +99,4 @@ Use `python scripts/run_d7_release.py --include-local` after data, topology, tem
 
 ## 8. Current branch gate
 
-Current release classification: **research review complete, production blocked**. The immediate blockers are field topology/asset verification, effective support and Top-1 localization.
+Current release classification: **research review complete, production blocked**. The immediate blockers are production documentary approval, maintenance provenance, effective support and Top-1 localization.

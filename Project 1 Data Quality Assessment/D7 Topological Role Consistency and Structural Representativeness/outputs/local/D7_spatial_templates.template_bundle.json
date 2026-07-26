@@ -1,7 +1,7 @@
 [
   {
     "template_id": "D7-ORP_1_1-R0",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "ORP_1_1",
     "analyte": "ORP",
     "zone_id": "anaerobic",
@@ -257,13 +257,13 @@
     },
     "fallback_level": "variable_public",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "abdea51b860497fc1b65b8107202a33c5eb4b613dfb71dc4bc9253e7c41cf23e"
+    "template_hash": "fb18033ca8cdf4f7c4ce5868487a5eb3a254953d1f99bf31afd1b627e6c22fca"
   },
   {
     "template_id": "D7-ORP_1_1-R1",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "ORP_1_1",
     "analyte": "ORP",
     "zone_id": "anaerobic",
@@ -519,13 +519,13 @@
     },
     "fallback_level": "variable_public",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "9b64efc6f0dd32bc67a239eadf99ce765fd105a1787ad70df698a2d9c7634b96"
+    "template_hash": "99a601c6fa39787ce6068570a6b6a2ac383f5e60884715586d3ba9fb2628b8eb"
   },
   {
     "template_id": "D7-ORP_1_1-R2",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "ORP_1_1",
     "analyte": "ORP",
     "zone_id": "anaerobic",
@@ -781,13 +781,13 @@
     },
     "fallback_level": "variable_public",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "a4aaba002ac82a08dda34dba7ad4e4f9dc9719448181db8832de39d05ea5ee22"
+    "template_hash": "233e0282d4bc56c54a79999c161bba4e4555df12fd55d015407c4bc8f2cd700a"
   },
   {
     "template_id": "D7-ORP_1_1-R3",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "ORP_1_1",
     "analyte": "ORP",
     "zone_id": "anaerobic",
@@ -1043,13 +1043,13 @@
     },
     "fallback_level": "variable_public",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "abd1e4cde2783685a74e7c221178b6478293e37ed48758c416f3cbc504c19296"
+    "template_hash": "7a7a4ccdab3382cedb22e8417cf9c580a6ccbf028d7b09e6411eb4bab9eb00ea"
   },
   {
     "template_id": "D7-ORP_1_2-R0",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "ORP_1_2",
     "analyte": "ORP",
     "zone_id": "pre_anoxic",
@@ -1307,13 +1307,13 @@
     },
     "fallback_level": "variable_public",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "85bca70fde6b2e1d654d87d2ae97b54812b3bb28d37339d208a812bfd6f29c2d"
+    "template_hash": "39136504a94344514b5408a778a6c7117e04a9860ab6651949484ca4e5a1e050"
   },
   {
     "template_id": "D7-ORP_1_2-R1",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "ORP_1_2",
     "analyte": "ORP",
     "zone_id": "pre_anoxic",
@@ -1571,13 +1571,13 @@
     },
     "fallback_level": "variable_public",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "4ef037901c0e763323e341ffb6e9f58d2450465d7f120798609ed300cc6e38cd"
+    "template_hash": "0d7a828cb28b3084b58b7beb4172531faf3f9060047c1d3c5f51f361cc936c08"
   },
   {
     "template_id": "D7-ORP_1_2-R2",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "ORP_1_2",
     "analyte": "ORP",
     "zone_id": "pre_anoxic",
@@ -1835,13 +1835,13 @@
     },
     "fallback_level": "variable_public",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "68781020732c583eee92cf61f32f95b45db7eeefafc5a0e63955bb1d1acaa43f"
+    "template_hash": "2c179a7a209d939fa83a9f1539be9b499c7b2acc62a1b4e92bb9a837878b14a0"
   },
   {
     "template_id": "D7-ORP_1_2-R3",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "ORP_1_2",
     "analyte": "ORP",
     "zone_id": "pre_anoxic",
@@ -2099,13 +2099,13 @@
     },
     "fallback_level": "variable_public",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "5579197096f667e86500c1b654693513af672f096cd8755535d88ebf2751d9cf"
+    "template_hash": "4965d322313426ff447710cccea20e6ecbd65ebcd972cfb4b42ef81e8d7c47a4"
   },
   {
     "template_id": "D7-ORP_1_3-R0",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "ORP_1_3",
     "analyte": "ORP",
     "zone_id": "pre_anoxic",
@@ -2361,13 +2361,13 @@
     },
     "fallback_level": "variable_public",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "1c31a0e46fc9ded7f2002a45fefb02020badecd80cdad6328c97f65f4488febe"
+    "template_hash": "354a6a72da76e35140d483ba5ab800a19e6d0ddaffde742d8359527196ab6a07"
   },
   {
     "template_id": "D7-ORP_1_3-R1",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "ORP_1_3",
     "analyte": "ORP",
     "zone_id": "pre_anoxic",
@@ -2623,13 +2623,13 @@
     },
     "fallback_level": "variable_public",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "0521c690ccc42e977d420c4fa4f20d1fb750179d6cf31452df4d7b85019e74a5"
+    "template_hash": "ada0e0882c629a46aa36e1af3e24574ec6c645fdbeacf5ec512573e6e5c6d1c1"
   },
   {
     "template_id": "D7-ORP_1_3-R2",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "ORP_1_3",
     "analyte": "ORP",
     "zone_id": "pre_anoxic",
@@ -2885,13 +2885,13 @@
     },
     "fallback_level": "variable_public",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "7f0a8af032795d53422a456427a61b6fc6b4e8c04a784ffa163e4a81c16f940d"
+    "template_hash": "1e5b165d4a1ac82af9c944c46392e3a2da20d131bf6b4d5e4253bbd42b572701"
   },
   {
     "template_id": "D7-ORP_1_3-R3",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "ORP_1_3",
     "analyte": "ORP",
     "zone_id": "pre_anoxic",
@@ -3147,13 +3147,13 @@
     },
     "fallback_level": "variable_public",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "192e2e3acc2cb7f14771418553f29f5470c80d7e76298c386ccf116cefa9b878"
+    "template_hash": "24ed9a2da8ce1b3e0cc94020d5191293e5db03f1673a2a125940a2414218dd90"
   },
   {
     "template_id": "D7-DO_1_1-R0",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "DO_1_1",
     "analyte": "DO",
     "zone_id": "aerobic",
@@ -3549,13 +3549,13 @@
     },
     "fallback_level": "variable_regime_zone",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "a1c7b40a3132bae1fe439735761785a3d781c4984759cdce66634cc2cedc86c6"
+    "template_hash": "64f83acef787ec08ccb0cbccc697f645037798eb344163f59a815809b4c4178b"
   },
   {
     "template_id": "D7-DO_1_1-R1",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "DO_1_1",
     "analyte": "DO",
     "zone_id": "aerobic",
@@ -3951,13 +3951,13 @@
     },
     "fallback_level": "variable_regime_zone",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "7b99b164f3ef6b07c79aeb92ad07985807e687e4fed0b5134a233f3d49a75475"
+    "template_hash": "aee70aa245242683ef06189f792d87a9cd9baa28e3bbdd771d7b401fb15faa69"
   },
   {
     "template_id": "D7-DO_1_1-R2",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "DO_1_1",
     "analyte": "DO",
     "zone_id": "aerobic",
@@ -4353,13 +4353,13 @@
     },
     "fallback_level": "variable_regime_zone",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "1b2cb7dcdfb2637934e1963c48f936bb597aa6ffd1260145c9aaae5556c97d22"
+    "template_hash": "9488fdc873b3854237d5b986f7cef348786cb0f19037adbdaa20d52a4ed34438"
   },
   {
     "template_id": "D7-DO_1_1-R3",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "DO_1_1",
     "analyte": "DO",
     "zone_id": "aerobic",
@@ -4755,13 +4755,13 @@
     },
     "fallback_level": "variable_regime_zone",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "6e29ae2c103d43c43a5d3c04fdf0922c82db479d85bb75779e1162912a599314"
+    "template_hash": "bcc260c9a15ad9ddbbc522fc78377ccd0242c33b99a4c7a278867203919f80e3"
   },
   {
     "template_id": "D7-DO_1_2-R0",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "DO_1_2",
     "analyte": "DO",
     "zone_id": "aerobic",
@@ -5159,13 +5159,13 @@
     },
     "fallback_level": "variable_regime_zone",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "6011c4062b63c4fe6b193578d871299751d206923a96a85cd1da9298e753d52f"
+    "template_hash": "829d0231af279ec1db0ec81aee60669fab9a0aedd3c69f47260a9dcfa9181b1b"
   },
   {
     "template_id": "D7-DO_1_2-R1",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "DO_1_2",
     "analyte": "DO",
     "zone_id": "aerobic",
@@ -5563,13 +5563,13 @@
     },
     "fallback_level": "variable_regime_zone",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "124cfb18585941ef92e2001815553f7a971580a657f673d1a5582bc7a61eb0ac"
+    "template_hash": "9966ace0861eeeea114a8ca967654d05a05432c6dfb9db408de6f9614d143507"
   },
   {
     "template_id": "D7-DO_1_2-R2",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "DO_1_2",
     "analyte": "DO",
     "zone_id": "aerobic",
@@ -5967,13 +5967,13 @@
     },
     "fallback_level": "variable_regime_zone",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "163795178cb2ff51ce61ddc80b82e54e3402a0b2bb8e99fe2ade3f23df774ac2"
+    "template_hash": "4fa1ec62249883946aaae9be4747536b5857519f0beb13e00a6ad097b8195885"
   },
   {
     "template_id": "D7-DO_1_2-R3",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "DO_1_2",
     "analyte": "DO",
     "zone_id": "aerobic",
@@ -6371,13 +6371,13 @@
     },
     "fallback_level": "variable_regime_zone",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "e9690c753833b658d92c1d1fa7b906dc3597d30c2dfb2dfa650b94eb349ca09a"
+    "template_hash": "8157ecdddd343e461804600a940cdc2bebcf18128bef489db2ef696abc3e1407"
   },
   {
     "template_id": "D7-DO_1_3-R0",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "DO_1_3",
     "analyte": "DO",
     "zone_id": "aerobic",
@@ -6775,13 +6775,13 @@
     },
     "fallback_level": "variable_regime_zone",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "3e2ccd21062857aeb76fc468daf0e779f5b839da3fca7a760c444d714687b567"
+    "template_hash": "4237d5e306978d51585b94871e5b48389ecf672cb634b6b3be192f137a258149"
   },
   {
     "template_id": "D7-DO_1_3-R1",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "DO_1_3",
     "analyte": "DO",
     "zone_id": "aerobic",
@@ -7179,13 +7179,13 @@
     },
     "fallback_level": "variable_regime_zone",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "cc30ef322555343c07e03ebbae65fa1aff449c7cf32dc6429960014478228e00"
+    "template_hash": "321e27592b4d08ba633f919bae89262c00dd55b36a25e32a97f446cb5474d3e2"
   },
   {
     "template_id": "D7-DO_1_3-R2",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "DO_1_3",
     "analyte": "DO",
     "zone_id": "aerobic",
@@ -7583,13 +7583,13 @@
     },
     "fallback_level": "variable_regime_zone",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "1969ab355c6fb71ecae7af47809ec461e801d4aaf7c0cd9e1f4042d6fe01612c"
+    "template_hash": "f971e80d093526f764fc19b5f8c8eefae36151e6aa33782dae638350b6f4311f"
   },
   {
     "template_id": "D7-DO_1_3-R3",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "DO_1_3",
     "analyte": "DO",
     "zone_id": "aerobic",
@@ -7987,13 +7987,13 @@
     },
     "fallback_level": "variable_regime_zone",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "40d2dc4419104e2565f907677701af5d7520b3c1a66785887c2e8af250182fa9"
+    "template_hash": "00d6a8e94c9c1e232b297664f959a05169bb582fbddabea3e20abfc363bde052"
   },
   {
     "template_id": "D7-DO_1_4-R0",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "DO_1_4",
     "analyte": "DO",
     "zone_id": "post_anoxic",
@@ -8389,13 +8389,13 @@
     },
     "fallback_level": "variable_regime_zone",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "dd39d1c8e6ced0f9e58e8aa923803d356b6e61f3ca84af6e50d26e883ca3ec9b"
+    "template_hash": "56df21f55bf4411fcf8f27fa9658ad0685a438037ae26f0e77734c4074b25869"
   },
   {
     "template_id": "D7-DO_1_4-R1",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "DO_1_4",
     "analyte": "DO",
     "zone_id": "post_anoxic",
@@ -8791,13 +8791,13 @@
     },
     "fallback_level": "variable_regime_zone",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "13258aa831b746f55061aa4eb3753a9fce1281b5758506b8ddef633b6548a604"
+    "template_hash": "161d1b696a0865225712573fbae143ba66cb811c0143f2494b6cdcd9d4a43251"
   },
   {
     "template_id": "D7-DO_1_4-R2",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "DO_1_4",
     "analyte": "DO",
     "zone_id": "post_anoxic",
@@ -9193,13 +9193,13 @@
     },
     "fallback_level": "variable_regime_zone",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "ffd319fa76b84e7f36ef4ee99cb269065801e7fa2d07296cb1e91ec11da558f1"
+    "template_hash": "891817e5fc3e71aa5b47fb190cdb908134f1cf95071a21f23dc65c244dcf2e96"
   },
   {
     "template_id": "D7-DO_1_4-R3",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "DO_1_4",
     "analyte": "DO",
     "zone_id": "post_anoxic",
@@ -9595,13 +9595,13 @@
     },
     "fallback_level": "variable_regime_zone",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "d92b1d085d188c63ef369f7fa10d8e8c9dadf3aedd9cba2ec974b87be598e180"
+    "template_hash": "f18516ddacae40d3ad4e97a389dfdd42ce5be74376388b18e318a6aafdcab176"
   },
   {
     "template_id": "D7-ORP_2_1-R0",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "ORP_2_1",
     "analyte": "ORP",
     "zone_id": "anaerobic",
@@ -9857,13 +9857,13 @@
     },
     "fallback_level": "variable_public",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "df8a0c217aea977b0555b4909474f4fa2f0dfa283b4f1a65c06ddf0196307603"
+    "template_hash": "f13479c8dc2eec2b8b266550016a0e7a90fb216b71d5f32f9ead9ee7b0c8cdd1"
   },
   {
     "template_id": "D7-ORP_2_1-R1",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "ORP_2_1",
     "analyte": "ORP",
     "zone_id": "anaerobic",
@@ -10119,13 +10119,13 @@
     },
     "fallback_level": "variable_public",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "96db0c05a31ae679fb9cc31d6375480d7871372310485112b460d1b78abd1bdd"
+    "template_hash": "65839e77ed4d021683e4177a86cc182a1c4bf9b96601939f4c234386d339645c"
   },
   {
     "template_id": "D7-ORP_2_1-R2",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "ORP_2_1",
     "analyte": "ORP",
     "zone_id": "anaerobic",
@@ -10381,13 +10381,13 @@
     },
     "fallback_level": "variable_public",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "d8239f5a040230f2ec62f86d4f278f1a0b53bd3e6ee19247cb3ce81ca0cecfa9"
+    "template_hash": "9901b40e666825933ea61244eb9bd49709836d5d644345a48bc9efdf7d3fa939"
   },
   {
     "template_id": "D7-ORP_2_1-R3",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "ORP_2_1",
     "analyte": "ORP",
     "zone_id": "anaerobic",
@@ -10643,13 +10643,13 @@
     },
     "fallback_level": "variable_public",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "c9e0ddfec15ea306ff8a0ec9f0d9d317702e058c2975decc9ccb80056c0b91ac"
+    "template_hash": "6fef5d8d19e086068fc5c449a93b4834610b7b5e5fd5b0af00ad5943c6427410"
   },
   {
     "template_id": "D7-ORP_2_2-R0",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "ORP_2_2",
     "analyte": "ORP",
     "zone_id": "pre_anoxic",
@@ -10907,13 +10907,13 @@
     },
     "fallback_level": "variable_public",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "b42595202775a483e0df29700df80c3d0594123a83f82c9e4b3bc264a4d731db"
+    "template_hash": "cd79ce9cd9df7fbcefad18925f85e6507fce5f7ccd069c9688eb4d8822d3c95f"
   },
   {
     "template_id": "D7-ORP_2_2-R1",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "ORP_2_2",
     "analyte": "ORP",
     "zone_id": "pre_anoxic",
@@ -11171,13 +11171,13 @@
     },
     "fallback_level": "variable_public",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "611cdc6f5c2c529f47111fa485beef424a19945a248c89ee6c2b1149793772d8"
+    "template_hash": "d86bc56e94534e48668af3cb0ec805129294594ce114b6d96a7baba24167dd44"
   },
   {
     "template_id": "D7-ORP_2_2-R2",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "ORP_2_2",
     "analyte": "ORP",
     "zone_id": "pre_anoxic",
@@ -11435,13 +11435,13 @@
     },
     "fallback_level": "variable_public",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "e97aa17dca31d425dd6cc128e4ae325662e30c5ef5f9d5668c68574c0be664dd"
+    "template_hash": "d1bfae7c3733da72a8120e67e407593fa1250e052c21e542e66f1789cb8ed517"
   },
   {
     "template_id": "D7-ORP_2_2-R3",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "ORP_2_2",
     "analyte": "ORP",
     "zone_id": "pre_anoxic",
@@ -11699,13 +11699,13 @@
     },
     "fallback_level": "variable_public",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "800b8e419d82c4e372175cc47758af4f5630e6e08d962de42cc4877fca49ef4b"
+    "template_hash": "9e3a73a24e178c77c032945f49a0766baa2746676e66868212c4fbc96696c691"
   },
   {
     "template_id": "D7-ORP_2_3-R0",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "ORP_2_3",
     "analyte": "ORP",
     "zone_id": "pre_anoxic",
@@ -11961,13 +11961,13 @@
     },
     "fallback_level": "variable_public",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "870358381bdf47ff43dd3a083a7aded2102a76889deceec7eda6325d956bab05"
+    "template_hash": "247a585480e9c4a9bd426926a11915280e5d73c3055fb00611bc3dc5252908fb"
   },
   {
     "template_id": "D7-ORP_2_3-R1",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "ORP_2_3",
     "analyte": "ORP",
     "zone_id": "pre_anoxic",
@@ -12223,13 +12223,13 @@
     },
     "fallback_level": "variable_public",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "077e24c4f3998c11242b903f7f738c61dd3c35d4cb63d03de6282e2d1e552fdc"
+    "template_hash": "aaf398b0f00cef86e214954bca9ac8cf56464ee3c067da8e044891cb43ea0b1b"
   },
   {
     "template_id": "D7-ORP_2_3-R2",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "ORP_2_3",
     "analyte": "ORP",
     "zone_id": "pre_anoxic",
@@ -12485,13 +12485,13 @@
     },
     "fallback_level": "variable_public",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "8c86377f230bbc03cc633a880e2ddcca1f0d420cc1baf71aa79c10606f498090"
+    "template_hash": "5a1094b09f1132b73eae3d47472cdf4b27f20425dda238aef61fc8f272eb0136"
   },
   {
     "template_id": "D7-ORP_2_3-R3",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "ORP_2_3",
     "analyte": "ORP",
     "zone_id": "pre_anoxic",
@@ -12747,13 +12747,13 @@
     },
     "fallback_level": "variable_public",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "3fa6a6c0a62c9258fdff0b7c9b537ebe9900615e9519a45c47e1679ece730121"
+    "template_hash": "4bf6a5b5ae7d6ebda328336e6adc20e333ee780287b36c32f1d7822c4c64aadb"
   },
   {
     "template_id": "D7-DO_2_1-R0",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "DO_2_1",
     "analyte": "DO",
     "zone_id": "aerobic",
@@ -13149,13 +13149,13 @@
     },
     "fallback_level": "variable_regime_zone",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "4bc6542d1b858b7b02ffd2de9c9a39800521da76f371befe76bc2ffe9adca1f1"
+    "template_hash": "9ef217056ec569d206c11317f32d4c1f84c8f83ee2b82328a9e376547dfed732"
   },
   {
     "template_id": "D7-DO_2_1-R1",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "DO_2_1",
     "analyte": "DO",
     "zone_id": "aerobic",
@@ -13551,13 +13551,13 @@
     },
     "fallback_level": "variable_regime_zone",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "bd043a83fd2c9dbf5daefadf3cc3ddc1104fc324ee1cc86046fd6bd526c5cad2"
+    "template_hash": "89e67ee33ea2e745f4bad9f7229ae395893ae0d7eb8616b57bffa65fb3c88404"
   },
   {
     "template_id": "D7-DO_2_1-R2",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "DO_2_1",
     "analyte": "DO",
     "zone_id": "aerobic",
@@ -13953,13 +13953,13 @@
     },
     "fallback_level": "variable_regime_zone",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "cfcbb9b966946cf0ebb84026f5a63067aa825fad21a06b3fee5181826eeecaea"
+    "template_hash": "32ce5f36b60865c7630dfd31156777d72abb7b89cf5c939434a30858d355dd49"
   },
   {
     "template_id": "D7-DO_2_1-R3",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "DO_2_1",
     "analyte": "DO",
     "zone_id": "aerobic",
@@ -14355,13 +14355,13 @@
     },
     "fallback_level": "variable_regime_zone",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "2d878ae07974d7ddd24ad471032afbff948ff1c2d0e8adb7d823f76ec994c08a"
+    "template_hash": "332f728f1af5a7ff9082613756745d42770ab601d96f853ea38aa3d8c58906f6"
   },
   {
     "template_id": "D7-DO_2_2-R0",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "DO_2_2",
     "analyte": "DO",
     "zone_id": "aerobic",
@@ -14759,13 +14759,13 @@
     },
     "fallback_level": "variable_regime_zone",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "081bc6424789048c5419204f00ebefaa6208c5e6f414bd97d35967303b64f5a4"
+    "template_hash": "a26f613e61dd2acb13fb8c0f5ebcb27b7e29aa1680b751fa7b739da8e9477ec9"
   },
   {
     "template_id": "D7-DO_2_2-R1",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "DO_2_2",
     "analyte": "DO",
     "zone_id": "aerobic",
@@ -15163,13 +15163,13 @@
     },
     "fallback_level": "variable_regime_zone",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "e77060b66d0da803fa7d452a88c2e0e5b1f334eab04e090adefde2ade337088a"
+    "template_hash": "fff62704786eef9f34876d78659741638c716b729fd4b5a02ff673fdc4784db7"
   },
   {
     "template_id": "D7-DO_2_2-R2",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "DO_2_2",
     "analyte": "DO",
     "zone_id": "aerobic",
@@ -15567,13 +15567,13 @@
     },
     "fallback_level": "variable_regime_zone",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "f8edf396b6f2d1fde9340c5235c9d49c675232129ed1cf1584c5515f044fef22"
+    "template_hash": "68f3cd49f5365c88dd17354375fcee551a149d2bf3c73527e30822401a1e006b"
   },
   {
     "template_id": "D7-DO_2_2-R3",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "DO_2_2",
     "analyte": "DO",
     "zone_id": "aerobic",
@@ -15971,13 +15971,13 @@
     },
     "fallback_level": "variable_regime_zone",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "aac17d433c6f51db20bdeda90d29506107ff5fe2e2456f9f66fb71d94c2df73d"
+    "template_hash": "14b4d256e1f636e4a32f333ff0fc6a59c30c4879648f3bb5fc9ecb68fe85160a"
   },
   {
     "template_id": "D7-DO_2_3-R0",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "DO_2_3",
     "analyte": "DO",
     "zone_id": "aerobic",
@@ -16375,13 +16375,13 @@
     },
     "fallback_level": "variable_regime_zone",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "b02883873ddd8c1ba2459a858d3fd6b2ae2df9f85aaa995ca65302a121478983"
+    "template_hash": "5842363d33687a7147f6ae2c2a5046eed28113cec18e1bd1db6bf429500b3f98"
   },
   {
     "template_id": "D7-DO_2_3-R1",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "DO_2_3",
     "analyte": "DO",
     "zone_id": "aerobic",
@@ -16779,13 +16779,13 @@
     },
     "fallback_level": "variable_regime_zone",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "b4353e9414b8576c6879fe7aa9837a6f1ae7d34ba479cc257978670914ee0edf"
+    "template_hash": "4e9f4af725dfc1d12a943b06dc4346b422a7d5f926c3e05305c439f264dd8397"
   },
   {
     "template_id": "D7-DO_2_3-R2",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "DO_2_3",
     "analyte": "DO",
     "zone_id": "aerobic",
@@ -17183,13 +17183,13 @@
     },
     "fallback_level": "variable_regime_zone",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "e786415cb5a4b671544fa40eefc2d7252a735a420bde231672491eccf9770dd5"
+    "template_hash": "45bc9fcd3bc1d8aef32fd7751c5d7093a575acefbb9289a250e6cb7c27e8dc39"
   },
   {
     "template_id": "D7-DO_2_3-R3",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "DO_2_3",
     "analyte": "DO",
     "zone_id": "aerobic",
@@ -17587,13 +17587,13 @@
     },
     "fallback_level": "variable_regime_zone",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "d32344028752583836e3b8e57b5fc127761258d11e379f8e189e6c407b020c46"
+    "template_hash": "2f0b301eb2ce02958724e2378da6f392be301e78219d6bd52ccc546ad7e2794e"
   },
   {
     "template_id": "D7-DO_2_4-R0",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "DO_2_4",
     "analyte": "DO",
     "zone_id": "post_anoxic",
@@ -17989,13 +17989,13 @@
     },
     "fallback_level": "variable_regime_zone",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "f2ac0564122329d4f0705fe6f06d9f84ebc2244d7f660f49d1e8276225396ed8"
+    "template_hash": "f8dcd87fa42461a4cc31fb29ce4fbd8acbe71534738fe7a34c88faa39230d083"
   },
   {
     "template_id": "D7-DO_2_4-R1",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "DO_2_4",
     "analyte": "DO",
     "zone_id": "post_anoxic",
@@ -18391,13 +18391,13 @@
     },
     "fallback_level": "variable_regime_zone",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "af8b26bf3b3847a8513a9bb4110230120cceb36ee344ab43d995964a73b3f1c8"
+    "template_hash": "c4aa8d985537012cd1e649aa42eb5810bdcf46c7bde03e3618b9b1386e1a184e"
   },
   {
     "template_id": "D7-DO_2_4-R2",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "DO_2_4",
     "analyte": "DO",
     "zone_id": "post_anoxic",
@@ -18793,13 +18793,13 @@
     },
     "fallback_level": "variable_regime_zone",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "f7f66637c8c890085cae4ad6a0d95058e58bc6f7099c28db3d9f0f97ee64d09e"
+    "template_hash": "9f26a19359e6bd6b599fc45c81254429b1350d64446b4a6727757d29e52d4239"
   },
   {
     "template_id": "D7-DO_2_4-R3",
-    "template_version": "d7-local-template-v2.1.1-global-regime-candidate",
+    "template_version": "d7-local-template-v2.1.2-author-confirmed-regime-candidate",
     "target_sensor": "DO_2_4",
     "analyte": "DO",
     "zone_id": "post_anoxic",
@@ -19195,8 +19195,8 @@
     },
     "fallback_level": "variable_regime_zone",
     "lifecycle_state": "candidate",
-    "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+    "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
     "track_id": "d7_local",
-    "template_hash": "e7833baa17184252541f3af028c2b0b7dfac7f887557d32a45e5197064bc6ee3"
+    "template_hash": "626e40697aba5705ce619a5a16d74ab21a377bd55ffe7c43291a283d63e11a49"
   }
 ]

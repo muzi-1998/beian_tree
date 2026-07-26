@@ -114,7 +114,13 @@ class D7ReportBuilder:
             "provisional_report_rows": int(
                 self.main["D7_report_provisional"].notna().sum()
             ),
-            "verified_report_rows": int(self.main["D7_report"].notna().sum()),
+            "research_report_rows": int(self.main["D7_report"].notna().sum()),
+            "research_topology_confirmed": bool(
+                self.main["research_topology_confirmed"].all()
+            ),
+            "production_topology_verified": bool(
+                self.main["production_topology_verified"].all()
+            ),
             "ood_rate": float(self.regime["regime_state"].eq("OODHold").mean()),
             "switches": int(self.regime["transition_id"].notna().sum()),
             "d7_total_nonnull": int(self.main["D7_total"].notna().sum()),
@@ -158,7 +164,7 @@ class D7ReportBuilder:
 
 The D7 v2.1 research implementation is complete at the P2/V2 artifact level: Local, Sensitivity and Shadow V2 tracks, frozen templates, hourly scores, raw evidence, validation, plot data, SCI-ready figures, manifests and audit records are present. The Local Track is logically independent of D1, D2, D4 and D6 and consumes only canonical observations, exogenous hydraulic/time context and declared D7 topology.
 
-The project is **not production-ready**. Field topology, asset/serial/channel-position mapping and two-person approval remain pending. Current support comprises {f['l1_templates']} L1, {f['l2_templates']} L2 and {f['l3_templates']} L3 templates. Swap Top-1 is {f['swap_top1']:.2f} (95% CI {f['swap_top1_low']:.2f}-{f['swap_top1_high']:.2f}, n={f['swap_top1_n']}). Consequently `D7_total`, `D7_forDQR` and D6 final arbitration correctly contain zero evaluable rows.
+The ordinal research topology is confirmed: process line, pool zone, longitudinal order, SCADA-to-physical-point identity and the absence of study-period probe/channel changes are author-confirmed; the provided installation register independently reconciles eight active DO and six active ORP instruments. This is sufficient for research reporting because exact coordinates, asset IDs and serial numbers are not inputs to the ordinal D7 model. The project is **not production-ready** because maintenance provenance, documentary audit and two-person approval remain pending. Current support comprises {f['l1_templates']} L1, {f['l2_templates']} L2 and {f['l3_templates']} L3 templates. Swap Top-1 is {f['swap_top1']:.2f} (95% CI {f['swap_top1_low']:.2f}-{f['swap_top1_high']:.2f}, n={f['swap_top1_n']}). Consequently `D7_total`, `D7_forDQR` and D6 final arbitration correctly contain zero evaluable rows.
 
 ## 2. Scope and dimensional independence
 
@@ -189,11 +195,12 @@ The project is **not production-ready**. Field topology, asset/serial/channel-po
 
 ORP is deliberately forced to L1 `diagonal_robust_z` with `alpha=1.00`. It is never promoted automatically. L0, if encountered in a short or sparse rerun, is disabled rather than written as a low score.
 
-L1 is diagnostic only. L2 may populate `D7_report_provisional`, but cannot
-populate `D7_total` or activate Veto. Only L3 evidence with verified field
+L1 is diagnostic only. With the research topology confirmed, L2 may populate
+both `D7_report_provisional` and the paper-facing `D7_report`, but cannot
+populate `D7_total` or activate Veto. Only L3 evidence with production-approved
 topology may enter DQR gating. Current provisional report rows:
-{f['provisional_report_rows']:,}; field-verified report rows:
-{f['verified_report_rows']:,}.
+{f['provisional_report_rows']:,}; research report rows:
+{f['research_report_rows']:,}.
 
 ## 5. Validation and sensitivity
 
@@ -221,11 +228,11 @@ Validation uses observed test-period spatial windows with frozen templates. Same
 
 ## 7. Figure review
 
-Five multi-panel figure groups are available as SVG, PDF and 600 dpi PNG, backed by `D7_plot_data.parquet/.csv`. All use Arial, 0.8 pt boxed axes, inward ticks, `(a)/(b)/(c)` panel labels, endpoint-aware scales and transparent label backgrounds where annotations cover data. Figure D7-3 decomposes weighted leave-one-out structural attribution; it does not claim Shapley values. Automated counterpart/font/pixel QA passed: {f['figure_qa']}.
+Five multi-panel figure groups are available as SVG, PDF, 600 dpi PNG and LZW-compressed 600 dpi TIFF, backed by `D7_plot_data.parquet/.csv`. All use Arial, 0.8 pt boxed axes, inward ticks, `(a)/(b)/(c)` panel labels, endpoint-aware scales and transparent label backgrounds where annotations cover data. Figure D7-3 decomposes weighted leave-one-out structural attribution; it does not claim Shapley values. Automated counterpart/font/pixel QA passed: {f['figure_qa']}.
 
 ## 8. Critical limitations
 
-1. Topology and asset identity are declared but not field-verified or dual-approved.
+1. Research topology is author-confirmed and inventory-reconciled, but production documentary audit, maintenance provenance and dual approval remain incomplete.
 2. Effective independent support remains inadequate for production gating: L1={f['l1_templates']}, L2={f['l2_templates']}, L3={f['l3_templates']}; ORP remains intentionally L1.
 3. Swap Top-1 localization is {f['swap_top1']:.3f} (95% CI {f['swap_top1_low']:.3f}-{f['swap_top1_high']:.3f}) versus the 0.80 target.
 4. The {f['events']} candidate event windows have no external truth labels; event counts must not be reported as confirmed sensor faults.
@@ -236,8 +243,8 @@ Five multi-panel figure groups are available as SVG, PDF and 600 dpi PNG, backed
 
 The branch may be reviewed and merged as a **research implementation with explicit production gates**. It must not be activated in WW-DQS/DQR arbitration yet.
 
-1. Verify the process drawing, coordinates, asset IDs, serial numbers and channel-position mapping in the field.
-2. Obtain independent reviewer and approver signatures; update `topology.yaml` and regenerate all topology-bound templates.
+1. Obtain maintenance, replacement and remapping records for the study interval and reconcile exceptions against the confirmed channel-position mapping.
+2. Complete the production documentary audit and obtain independent reviewer and approver signatures; then update `topology.yaml` and regenerate all topology-bound templates.
 3. Accumulate qualified multi-season effective blocks and pass ORP/DO support exit criteria.
 4. Improve and revalidate node localization to Top-1 >=0.80 on blocked holdouts.
 5. Add field-confirmed swap/maintenance/topology cases and prospective event labels.
@@ -254,7 +261,7 @@ generated from statistical similarity.
             ("outputs/sensitivity", "D1/D2/D4-filtered shadow reference sensitivity; no production writes"),
             ("outputs/shadow_v2", "Graph/topology research candidates with production impact fixed to none"),
             ("outputs/plot_data", "Frozen long-table data used by every manuscript figure"),
-            ("outputs/figures", "SVG/PDF/600 dpi PNG figures and figure QA"),
+            ("outputs/figures", "SVG/PDF/600 dpi PNG/TIFF figures and figure QA"),
             ("outputs/reports", "Expert report, directory guide and figure captions"),
         ]
         output_table = "\n".join(f"| `{path}` | {role} |" for path, role in output_rows)
@@ -268,7 +275,7 @@ generated from statistical similarity.
 ```text
 D7 Topological Role Consistency and Structural Representativeness/
 |-- configs/
-|   |-- common/          # paths, sensors, topology and interface schemas
+|   |-- common/          # paths, sensors, topology evidence and interface schemas
 |   |-- local/           # production-isolated D7 Local policies
 |   |-- sensitivity/     # upstream-filter sensitivity only
 |   `-- shadow_v2/       # graph/topology research only
@@ -287,7 +294,7 @@ D7 Topological Role Consistency and Structural Representativeness/
 
 | Track | Allowed inputs | Forbidden outputs |
 |---|---|---|
-| `d7_local` | Canonical 1-min observations/flags, QR/QIR context, declared topology, frozen D7 assets | Reading D1-D6 score/state/event inputs |
+| `d7_local` | Canonical 1-min observations/flags, QR/QIR context, research topology/evidence, frozen D7 assets | Reading D1-D6 score/state/event inputs |
 | `sensitivity` | Frozen Local evidence plus D1/D2/D4 read-only filters | `D7_forDQR`, zone consensus, active templates, D6 arbitration |
 | `shadow_v2` | Canonical observations and declared topology | Automatic topology update, Veto, Local score mutation |
 
@@ -327,9 +334,9 @@ Use `python scripts/run_d7_release.py --include-local` after data, topology, tem
 
 ## 6. Production activation checklist
 
-- [ ] Field drawing ID is real and versioned.
-- [ ] All asset IDs, serial numbers and channel tags are verified.
-- [ ] Coordinates are surveyed or approved, not schematic placeholders.
+- [ ] Controlled drawing or equivalent documentary evidence is versioned.
+- [ ] Asset/serial identity and maintenance history are reconciled where available.
+- [ ] Ordinal positions are independently audited; exact coordinates are required only if used by a future metric.
 - [ ] Reviewer and approver are two identified independent people.
 - [ ] Topology validity interval covers the evaluated data.
 - [ ] All topology-bound template hashes are regenerated.
@@ -342,7 +349,9 @@ Use `python scripts/run_d7_release.py --include-local` after data, topology, tem
 
 ## 7. File ownership rules
 
-- `configs/common/topology.yaml` is the only declared production topology source; Shadow outputs never overwrite it.
+- `configs/common/topology.yaml` is the declared topology contract and
+  `configs/common/topology_evidence.yaml` is its research evidence ledger;
+  Shadow outputs never overwrite either file.
 - `configs/common/field_verification_template.csv` is a blank human-input form;
   it is not evidence until reviewer and approver fields are independently completed.
 - Parquet is authoritative for tabular data; Excel is a human-review mirror with the same semantics.
@@ -352,15 +361,15 @@ Use `python scripts/run_d7_release.py --include-local` after data, topology, tem
 
 ## 8. Current branch gate
 
-Current release classification: **research review complete, production blocked**. The immediate blockers are field topology/asset verification, effective support and Top-1 localization.
+Current release classification: **research review complete, production blocked**. The immediate blockers are production documentary approval, maintenance provenance, effective support and Top-1 localization.
 """
 
     def _captions_markdown(self) -> str:
         return """# D7 Figure Captions v2.1
 
-## Figure D7-1. Declared topology, applicability and scientific boundary
+## Figure D7-1. Author-confirmed topology, applicability and scientific boundary
 
-(a) Declared longitudinal DO/ORP topology for two parallel process lines. Coordinates are schematic and pending field verification. (b) Local Track applicability states across hourly sensor windows. (c) Availability of raw spatial evidence versus blocked topology approval and DQR release. `D7_raw` is retained when calculable, whereas `D7_forDQR` remains null until all gates pass.
+(a) Author-confirmed longitudinal DO/ORP topology for two parallel process lines; coordinates are schematic encodings of ordinal position, not surveyed distances. (b) Local Track applicability states across hourly sensor windows. (c) Research-topology availability versus pending production approval and DQR release. `D7_report` is retained for eligible research windows, whereas `D7_forDQR` remains null until all production gates pass.
 
 ## Figure D7-2. Spatiotemporal score structure and effective template support
 
@@ -454,7 +463,7 @@ Current release classification: **research review complete, production blocked**
         )
         self._warning(
             doc,
-            f"Production release is blocked: topology/asset identity is unverified; support is L1={f['l1_templates']}, L2={f['l2_templates']}, L3={f['l3_templates']}; swap Top-1 is {f['swap_top1']:.2f} (95% CI {f['swap_top1_low']:.2f}-{f['swap_top1_high']:.2f}, n={f['swap_top1_n']}). D7_total, D7_forDQR and D6 final arbitration therefore remain empty.",
+            f"Research topology is author-confirmed and reconciled to an installation register. Production release remains blocked by documentary approval, maintenance provenance and support/localization gates: L1={f['l1_templates']}, L2={f['l2_templates']}, L3={f['l3_templates']}; swap Top-1 is {f['swap_top1']:.2f} (95% CI {f['swap_top1_low']:.2f}-{f['swap_top1_high']:.2f}, n={f['swap_top1_n']}). D7_total, D7_forDQR and D6 final arbitration therefore remain empty.",
         )
         self._heading(doc, "2. Scope and dimensional independence", 1)
         for item in [
@@ -513,13 +522,13 @@ Current release classification: **research review complete, production blocked**
             doc,
             f"The declared registry contains 14 nodes, 10 longitudinal edges and seven peer pairs. {f['topology_alerts']} finite candidate mappings exceed the report-only review threshold. They cannot mutate production topology or activate Veto.",
         )
-        self._bullet(doc, "Topology drawing, coordinates, asset IDs, serial numbers and two-person approval remain pending.")
+        self._bullet(doc, "Ordinal research topology is confirmed; maintenance provenance, production documentary audit and two-person approval remain pending.")
         self._bullet(doc, "D7-to-D6 zone consensus is present but every row is non-evaluable for final arbitration.")
         self._bullet(doc, "D6 protected columns remain unchanged because no D6 write path exists.")
         doc.add_page_break()
         self._heading(doc, "7. SCI figure review", 1)
         captions = [
-            "Figure D7-1 | Declared topology, applicability and release boundary.",
+            "Figure D7-1 | Author-confirmed topology, applicability and release boundary.",
             "Figure D7-2 | Spatiotemporal D7 structure and effective support.",
             "Figure D7-3 | Evidence decomposition, node influence and zone consensus.",
             "Figure D7-4 | Validation and Local-Sensitivity invariance.",
@@ -539,8 +548,8 @@ Current release classification: **research review complete, production blocked**
             self._format_runs(cap, size=8.5, color=MUTED, italic=True)
         self._heading(doc, "8. Critical limitations", 1)
         for item in [
-            "Field topology and asset identity are not verified or dual-approved.",
-            f"Effective support is L1={f['l1_templates']}, L2={f['l2_templates']}, L3={f['l3_templates']}; only verified L3 may gate.",
+            "Research topology is confirmed, but production documentary evidence and maintenance provenance are not dual-approved.",
+            f"Effective support is L1={f['l1_templates']}, L2={f['l2_templates']}, L3={f['l3_templates']}; only production-approved L3 may gate.",
             f"Swap Top-1 is {f['swap_top1']:.2f} (95% CI {f['swap_top1_low']:.2f}-{f['swap_top1_high']:.2f}) versus the 0.80 target.",
             f"The {f['events']} candidate events lack external truth and cannot be called confirmed faults.",
             "Regime transition FAR and topology candidate recall require external truth.",
@@ -552,7 +561,7 @@ Current release classification: **research review complete, production blocked**
             "The branch is suitable for expert review and merge as a research implementation with explicit production gates. It is not suitable for activation in WW-DQS/DQR arbitration.",
         )
         for item in [
-            "Complete field mapping and obtain two independent approvals.",
+            "Complete the maintenance/documentary audit and obtain two independent approvals.",
             "Regenerate all topology-bound templates and hashes.",
             "Accumulate qualified multi-season effective blocks and pass support exit criteria.",
             "Raise blocked-holdout Top-1 to at least 0.80 without weakening negative-control FAR.",
@@ -584,7 +593,7 @@ Current release classification: **research review complete, production blocked**
             doc,
             ["Track", "Allowed inputs", "Forbidden behavior"],
             [
-                ["d7_local", "Canonical observations/flags, QR/QIR context, declared topology", "Read D1-D6 scores/states/events"],
+                ["d7_local", "Canonical observations/flags, QR/QIR context, topology/evidence", "Read D1-D6 scores/states/events"],
                 ["sensitivity", "Frozen Local evidence plus D1/D2/D4 read-only filters", "Write D7_forDQR, zone consensus or D6"],
                 ["shadow_v2", "Canonical observations and declared topology", "Auto-update topology or production scores"],
             ],
@@ -599,7 +608,7 @@ Current release classification: **research review complete, production blocked**
                 ["outputs/sensitivity", "Shadow reference/mapping sensitivity only"],
                 ["outputs/shadow_v2", "No-production-impact graph/topology research"],
                 ["outputs/plot_data", "Frozen long-table source for all figures"],
-                ["outputs/figures", "SVG/PDF/600 dpi PNG plus QA"],
+                ["outputs/figures", "SVG/PDF/600 dpi PNG/TIFF plus QA"],
                 ["outputs/reports", "Generated expert report, guide and captions"],
             ],
             [1.75, 4.75],
@@ -639,8 +648,8 @@ Current release classification: **research review complete, production blocked**
         self._heading(doc, "6. Production activation checklist", 1)
         for item in [
             "Real process drawing ID and validity interval recorded",
-            "Asset IDs, serial numbers, channel tags and positions field-verified",
-            "Coordinates surveyed or explicitly approved",
+            "Asset/serial identity and maintenance history reconciled where available",
+            "Ordinal positions independently audited; coordinates approved only if later used quantitatively",
             "Independent reviewer and approver recorded",
             "Topology-bound templates and hashes regenerated",
             "Support tiers and ORP exit criteria passed",

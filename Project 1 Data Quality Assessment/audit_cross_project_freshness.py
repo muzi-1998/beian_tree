@@ -29,6 +29,7 @@ D7_LOCAL_CORE_FILES = (
     "D7_spatial_templates.template_bundle.json",
     "D7_topology_registry.json",
     "D7_topology_registry.yaml",
+    "D7_topology_evidence.yaml",
 )
 FIGURE_FORMATS = (".png", ".svg", ".pdf")
 FIGURE_PROJECTS = {

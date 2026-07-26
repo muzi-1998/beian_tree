@@ -1,8 +1,8 @@
 # D7 Figure Captions v2.1
 
-## Figure D7-1. Declared topology, applicability and scientific boundary
+## Figure D7-1. Author-confirmed topology, applicability and scientific boundary
 
-(a) Declared longitudinal DO/ORP topology for two parallel process lines. Coordinates are schematic and pending field verification. (b) Local Track applicability states across hourly sensor windows. (c) Availability of raw spatial evidence versus blocked topology approval and DQR release. `D7_raw` is retained when calculable, whereas `D7_forDQR` remains null until all gates pass.
+(a) Author-confirmed longitudinal DO/ORP topology for two parallel process lines; coordinates are schematic encodings of ordinal position, not surveyed distances. (b) Local Track applicability states across hourly sensor windows. (c) Research-topology availability versus pending production approval and DQR release. `D7_report` is retained for eligible research windows, whereas `D7_forDQR` remains null until all production gates pass.
 
 ## Figure D7-2. Spatiotemporal score structure and effective template support
 

@@ -48,7 +48,17 @@ def main() -> None:
             "detail": "Local consumes no D1-D6 scores",
         },
         {
-            "check": "unverified_topology_blocks_total",
+            "check": "research_topology_supports_report",
+            "passed": bool(
+                main_scores["research_topology_confirmed"].all()
+                and main_scores["D7_report"].notna().sum()
+                == main_scores["D7_report_provisional"].notna().sum()
+                and main_scores["D7_report"].notna().any()
+            ),
+            "detail": "author-confirmed ordinal topology enables D7_report",
+        },
+        {
+            "check": "unapproved_production_topology_blocks_total",
             "passed": bool(
                 main_scores["D7_total"].isna().all()
                 and main_scores["D7_forDQR"].isna().all()
@@ -112,7 +122,8 @@ def main() -> None:
         )
     failures = [row["check"] for row in checks if not row["passed"]]
     production_blockers = [
-        "field_topology_and_asset_mapping_unverified",
+        "production_documentary_audit_and_dual_approval_pending",
+        "maintenance_records_unavailable",
         "effective_support_insufficient_for_gating",
         "swap_Top1_below_0.80",
         "external_event_and_topology_truth_unavailable",

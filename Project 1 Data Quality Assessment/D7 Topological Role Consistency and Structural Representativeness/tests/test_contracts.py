@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import shutil
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import yaml
 
 from d7_common.config import D7_ROOT, resolve_paths
 from d7_local.context import GlobalProcessContextBuilder, TargetExcludedContextBuilder
@@ -21,7 +23,46 @@ def test_declared_topology_contract() -> None:
     assert len(registry.nodes) == 14
     assert len(registry.edges) == 10
     assert len(registry.twin_pairs) == 7
+    assert registry.research_topology_confirmed
     assert not registry.topology_verified
+    reconciliation = registry.evidence["instrument_inventory"]["reconciliation"]
+    assert reconciliation["d7_do_node_count"] == 8
+    assert reconciliation["d7_orp_node_count"] == 6
+
+
+def test_production_verification_requires_independent_documentary_approval(
+    tmp_path: Path,
+) -> None:
+    config_root = tmp_path / "common"
+    shutil.copytree(D7_ROOT / "configs" / "common", config_root)
+    topology_path = config_root / "topology.yaml"
+    evidence_path = config_root / "topology_evidence.yaml"
+    topology_config = yaml.safe_load(topology_path.read_text(encoding="utf-8"))
+    evidence_config = yaml.safe_load(evidence_path.read_text(encoding="utf-8"))
+    topology_config.update(
+        {
+            "verification_status": "verified",
+            "production_approval_status": "approved",
+            "source_drawing_id": "CONTROLLED-RECORD-001",
+            "reviewer": "reviewer_a",
+            "approver": "reviewer_a",
+            "maintenance_record_status": "reviewed_or_exception_approved",
+        }
+    )
+    evidence_config["production_governance"]["status"] = "approved"
+    topology_path.write_text(
+        yaml.safe_dump(topology_config, sort_keys=False), encoding="utf-8"
+    )
+    evidence_path.write_text(
+        yaml.safe_dump(evidence_config, sort_keys=False), encoding="utf-8"
+    )
+    assert not TopologyRegistry.load(config_root).topology_verified
+
+    topology_config["approver"] = "approver_b"
+    topology_path.write_text(
+        yaml.safe_dump(topology_config, sort_keys=False), encoding="utf-8"
+    )
+    assert TopologyRegistry.load(config_root).topology_verified
 
 
 def test_target_excluded_context_has_no_target() -> None:
@@ -46,7 +87,7 @@ def test_global_context_is_shared_and_robust_to_one_extreme_sensor() -> None:
     assert perturbed.loc[index[0], "do_pool_median"] == 1.0
 
 
-def test_unverified_topology_blocks_total() -> None:
+def test_research_topology_enables_report_but_blocks_total() -> None:
     frame = pd.DataFrame(
         {
             "Q_profile": [4.0],
@@ -59,12 +100,35 @@ def test_unverified_topology_blocks_total() -> None:
             "support_level": ["L3"],
         }
     )
-    output = ApplicabilityGate(topology_verified=False).apply(frame)
+    output = ApplicabilityGate(
+        research_topology_confirmed=True, topology_verified=False
+    ).apply(frame)
     assert output.loc[0, "evaluation_status"] == "report_only"
     assert np.isnan(output.loc[0, "D7_total"])
     assert np.isnan(output.loc[0, "D7_forDQR"])
     assert output.loc[0, "D7_report_provisional"] == 4.0
+    assert output.loc[0, "D7_report"] == 4.0
+
+
+def test_unconfirmed_research_topology_blocks_report() -> None:
+    frame = pd.DataFrame(
+        {
+            "Q_profile": [4.0],
+            "Q_gradient": [4.0],
+            "Q_rank": [4.0],
+            "Q_rep": [4.0],
+            "D7_raw": [4.0],
+            "window_coverage": [1.0],
+            "regime_state": ["Locked"],
+            "support_level": ["L3"],
+        }
+    )
+    output = ApplicabilityGate(
+        research_topology_confirmed=False, topology_verified=False
+    ).apply(frame)
+    assert output.loc[0, "D7_report_provisional"] == 4.0
     assert np.isnan(output.loc[0, "D7_report"])
+    assert not output.loc[0, "report_eligible"]
 
 
 def test_support_tiers_separate_reporting_from_dqr_gating() -> None:
@@ -80,7 +144,9 @@ def test_support_tiers_separate_reporting_from_dqr_gating() -> None:
             "support_level": ["L1", "L2", "L3"],
         }
     )
-    output = ApplicabilityGate(topology_verified=True).apply(frame)
+    output = ApplicabilityGate(
+        research_topology_confirmed=True, topology_verified=True
+    ).apply(frame)
     assert output.loc[0, "evaluation_status"] == "limited_support"
     assert np.isnan(output.loc[0, "D7_report_provisional"])
     assert output.loc[1, "evaluation_status"] == "report_only"
@@ -105,6 +171,8 @@ def test_local_outputs_respect_gating_and_orp_policy() -> None:
     assert not main.duplicated(["timestamp", "sensor_id"]).any()
     assert main["D7_total"].isna().all()
     assert main["D7_forDQR"].isna().all()
+    assert main["D7_report"].notna().sum() == main["D7_report_provisional"].notna().sum()
+    assert main["D7_report"].notna().any()
     assert not main["upstream_score_consumed"].any()
     orp = support[support["analyte"] == "ORP"]
     assert (orp["support_level"] == "L1").all()

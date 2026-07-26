@@ -92,6 +92,8 @@ def build_zone_consensus(
                     "limited_support": bool(
                         target_score["limited_support"] or reference_score["limited_support"]
                     ),
+                    "research_topology_confirmed": topology.research_topology_confirmed,
+                    "production_topology_verified": topology.topology_verified,
                     "topology_hash": topology.topology_hash,
                     "template_version": template_version,
                     "mapping_version": mapping_version,

@@ -568,8 +568,11 @@ class D7ValidationRunner:
             [
                 {"test": "node_edge_peer_integrity", "estimate": 1.0, "passed": True,
                  "note": "14 nodes, 10 declared longitudinal edges, seven peer pairs"},
+                {"test": "research_topology_evidence_complete", "estimate": 1.0,
+                 "passed": self.topology.research_topology_confirmed,
+                 "note": "author-confirmed line, zone, order and SCADA identity; instrument counts reconciled"},
                 {"test": "pending_approval_blocks_total", "estimate": 1.0, "passed": not self.topology.topology_verified,
-                 "note": "D7_total remains null until field drawing and two-person approval"},
+                 "note": "D7_total remains null until documentary audit, support and dual approval"},
                 {"test": "candidate_swap_recall", "estimate": np.nan, "passed": False,
                  "note": "not estimable without field-confirmed topology perturbations"},
                 {"test": "false_topology_alert_count", "estimate": int(drift["alert_level"].ne("none").sum()), "passed": True,
@@ -645,7 +648,7 @@ class D7ValidationRunner:
                 "ci95_low": np.nan,
                 "ci95_high": np.nan,
                 "n": np.nan,
-                "caveat": "blocked_by_unverified_topology_asset_mapping_and_limited_support",
+                "caveat": "blocked_by_production_documentary_approval_and_limited_support",
             }
         )
         return pd.DataFrame(rows)
@@ -705,9 +708,9 @@ class D7ValidationRunner:
         )
         failure = pd.DataFrame(
             [{
-                "failure_case": "topology_not_field_verified",
+                "failure_case": "production_topology_not_dual_approved",
                 "impact": "D7_total_and_D7_forDQR_null",
-                "mitigation": "verify drawing asset serial channel position and obtain two approvals",
+                "mitigation": "audit documentary evidence and maintenance history, then obtain two approvals",
             }, {
                 "failure_case": "limited_effective_support",
                 "impact": "most templates cannot gate or veto",

@@ -1,29 +1,50 @@
-# D7 Field Verification and Approval Requirements
+# D7 Research Topology Evidence and Production Approval Requirements
 
 ## Decision
 
-Field topology, asset identity, channel mapping and dual approval require human
-intervention. Statistical similarity, graph learning or channel-swap injection
-may prioritize records for review, but none of them can replace field evidence
-or approval.
+The current research topology is supported by two complementary sources:
 
-Until this gate is complete:
+- author confirmation of process line, pool zone, longitudinal order,
+  SCADA-to-physical-point one-to-one mapping and no study-period probe/channel
+  change;
+- an installation register that reconciles eight active DO and six active ORP
+  instruments, including analyte, status, brand, range and 4-20 mA signal.
 
-- `D7_raw` and `D7_report_provisional` may be used as research evidence;
+This evidence is sufficient for the current ordinal-topology research model.
+Exact surveyed coordinates, asset IDs and serial numbers are not model inputs.
+They must not be invented from time-series data.
+
+Until production documentary audit and dual approval are complete:
+
+- `D7_raw`, `D7_report_provisional` and eligible `D7_report` rows may be used as
+  research evidence;
 - L1 is diagnostic only and L2 is report-only;
 - `D7_total`, `D7_forDQR`, Veto and D6 final arbitration remain disabled;
 - topology-drift candidates remain hypotheses and cannot modify the registry.
 
-## Required evidence
+## Research evidence status
 
-1. Controlled process drawing or as-built P&ID identifier, revision and validity
-   interval.
-2. For every channel: sensor ID, asset ID, serial number, PLC/SCADA tag,
-   analyte, process line, zone, longitudinal order, installation depth or
-   coordinate, and evidence source.
-3. Confirmation of every longitudinal edge and parallel matched-position pair.
+The machine-readable evidence ledger is
+`configs/common/topology_evidence.yaml`. The source installation register is
+not copied into the repository; its checksum, inspected scope and limitations
+are recorded in the ledger.
+
+Maintenance records are currently unavailable. This is a provenance limitation
+for retrospective interpretation, not an absolute blocker for ordinal research
+scoring, because the author confirms no replacement or remapping during the
+study.
+
+## Required before production activation
+
+1. Controlled process drawing or equivalent documentary identifier, revision
+   and validity interval.
+2. Independent audit of every channel's analyte, line, zone, longitudinal order
+   and SCADA mapping; asset/serial identity should be added where available.
+3. Independent confirmation of every longitudinal edge and parallel
+   matched-position pair.
 4. Calibration, replacement, relocation, maintenance and channel-remapping
-   records covering the study interval.
+   records covering the study interval, or a documented exception if records
+   cannot be recovered.
 5. Field-confirmed channel swaps or role changes, if any, with event start/end
    and adjudicated truth label.
 6. A reviewer and an approver who are different identifiable people, with
@@ -31,22 +52,26 @@ Until this gate is complete:
 
 ## Minimum workflow
 
-1. The preparer enters evidence without changing model outputs.
-2. The reviewer compares drawing, SCADA configuration and field asset identity.
+1. The preparer reconciles documentary evidence without changing model outputs.
+2. The reviewer compares the controlled record, SCADA configuration and known
+   asset identity.
 3. The approver independently checks exceptions and accepts or rejects the
    topology version.
-4. Only an approved version is copied into `configs/common/sensors.yaml` and
-   `configs/common/topology.yaml`.
+4. Only an approved production version changes
+   `production_approval_status` to `approved` and `verification_status` to
+   `verified`.
 5. All topology-bound regimes, templates, validation, figures, reports and
    manifests are regenerated.
 
 ## Evidence that remains unavailable
 
-When field access is unavailable, leave the current
-`PENDING_FIELD_VERIFICATION` values unchanged. Do not infer serial numbers,
-coordinates, signatures or approval status from time-series data.
+When documentary or field evidence is unavailable, keep the explicit
+`NOT_AVAILABLE_IN_PROVIDED_REGISTER` and `PENDING_PRODUCTION_APPROVAL` values.
+Do not infer serial numbers, coordinates, signatures or approval status from
+time-series data.
 
 The blank intake template is
 `configs/common/field_verification_template.csv`. It is an author-input
 artifact and is not consumed by the production pipeline until formally
-approved.
+approved. Statistical topology candidates may prioritize review but cannot
+replace production approval.

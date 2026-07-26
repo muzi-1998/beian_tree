@@ -1,7 +1,23 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
-  "required": ["schema_version", "topology_version", "source_drawing_id", "reviewer", "approver", "valid_from", "valid_to", "verification_status", "edges", "twin_pairs"],
+  "required": [
+    "schema_version",
+    "topology_version",
+    "source_drawing_id",
+    "reviewer",
+    "approver",
+    "valid_from",
+    "valid_to",
+    "verification_status",
+    "research_confirmation_status",
+    "research_confirmed_at",
+    "research_evidence_version",
+    "production_approval_status",
+    "maintenance_record_status",
+    "edges",
+    "twin_pairs"
+  ],
   "properties": {
     "schema_version": {"type": "string"},
     "topology_version": {"type": "string"},
@@ -11,6 +27,11 @@
     "valid_from": {"type": "string"},
     "valid_to": {"type": "string"},
     "verification_status": {"type": "string"},
+    "research_confirmation_status": {"enum": ["pending", "author_confirmed"]},
+    "research_confirmed_at": {"type": "string"},
+    "research_evidence_version": {"type": "string"},
+    "production_approval_status": {"enum": ["pending_documentary_audit_and_dual_approval", "approved"]},
+    "maintenance_record_status": {"type": "string"},
     "edges": {"type": "array", "minItems": 1},
     "twin_pairs": {"type": "array", "minItems": 7, "maxItems": 7}
   }

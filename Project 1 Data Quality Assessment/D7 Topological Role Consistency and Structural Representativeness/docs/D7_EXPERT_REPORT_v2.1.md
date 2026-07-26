@@ -1,15 +1,15 @@
 # D7 Expert Review Report v2.1
 
 **Project:** Topological Role Consistency and Structural Representativeness
-**Run:** `D7-LOCAL-20260726T020233Z`
-**Generated:** 2026-07-26 10:17 CST
+**Run:** `D7-LOCAL-20260726T032027Z`
+**Generated:** 2026-07-26 11:38 CST
 **Decision:** Research package complete; production DQR release blocked.
 
 ## 1. Executive verdict
 
 The D7 v2.1 research implementation is complete at the P2/V2 artifact level: Local, Sensitivity and Shadow V2 tracks, frozen templates, hourly scores, raw evidence, validation, plot data, SCI-ready figures, manifests and audit records are present. The Local Track is logically independent of D1, D2, D4 and D6 and consumes only canonical observations, exogenous hydraulic/time context and declared D7 topology.
 
-The project is **not production-ready**. Field topology, asset/serial/channel-position mapping and two-person approval remain pending. Current support comprises 48 L1, 8 L2 and 0 L3 templates. Swap Top-1 is 0.70 (95% CI 0.57-0.80, n=60). Consequently `D7_total`, `D7_forDQR` and D6 final arbitration correctly contain zero evaluable rows.
+The ordinal research topology is confirmed: process line, pool zone, longitudinal order, SCADA-to-physical-point identity and the absence of study-period probe/channel changes are author-confirmed; the provided installation register independently reconciles eight active DO and six active ORP instruments. This is sufficient for research reporting because exact coordinates, asset IDs and serial numbers are not inputs to the ordinal D7 model. The project is **not production-ready** because maintenance provenance, documentary audit and two-person approval remain pending. Current support comprises 48 L1, 8 L2 and 0 L3 templates. Swap Top-1 is 0.70 (95% CI 0.57-0.80, n=60). Consequently `D7_total`, `D7_forDQR` and D6 final arbitration correctly contain zero evaluable rows.
 
 ## 2. Scope and dimensional independence
 
@@ -44,11 +44,12 @@ The project is **not production-ready**. Field topology, asset/serial/channel-po
 
 ORP is deliberately forced to L1 `diagonal_robust_z` with `alpha=1.00`. It is never promoted automatically. L0, if encountered in a short or sparse rerun, is disabled rather than written as a low score.
 
-L1 is diagnostic only. L2 may populate `D7_report_provisional`, but cannot
-populate `D7_total` or activate Veto. Only L3 evidence with verified field
+L1 is diagnostic only. With the research topology confirmed, L2 may populate
+both `D7_report_provisional` and the paper-facing `D7_report`, but cannot
+populate `D7_total` or activate Veto. Only L3 evidence with production-approved
 topology may enter DQR gating. Current provisional report rows:
-6,080; field-verified report rows:
-0.
+6,080; research report rows:
+6,080.
 
 ## 5. Validation and sensitivity
 
@@ -76,11 +77,11 @@ Validation uses observed test-period spatial windows with frozen templates. Same
 
 ## 7. Figure review
 
-Five multi-panel figure groups are available as SVG, PDF and 600 dpi PNG, backed by `D7_plot_data.parquet/.csv`. All use Arial, 0.8 pt boxed axes, inward ticks, `(a)/(b)/(c)` panel labels, endpoint-aware scales and transparent label backgrounds where annotations cover data. Figure D7-3 decomposes weighted leave-one-out structural attribution; it does not claim Shapley values. Automated counterpart/font/pixel QA passed: True.
+Five multi-panel figure groups are available as SVG, PDF, 600 dpi PNG and LZW-compressed 600 dpi TIFF, backed by `D7_plot_data.parquet/.csv`. All use Arial, 0.8 pt boxed axes, inward ticks, `(a)/(b)/(c)` panel labels, endpoint-aware scales and transparent label backgrounds where annotations cover data. Figure D7-3 decomposes weighted leave-one-out structural attribution; it does not claim Shapley values. Automated counterpart/font/pixel QA passed: True.
 
 ## 8. Critical limitations
 
-1. Topology and asset identity are declared but not field-verified or dual-approved.
+1. Research topology is author-confirmed and inventory-reconciled, but production documentary audit, maintenance provenance and dual approval remain incomplete.
 2. Effective independent support remains inadequate for production gating: L1=48, L2=8, L3=0; ORP remains intentionally L1.
 3. Swap Top-1 localization is 0.700 (95% CI 0.575-0.801) versus the 0.80 target.
 4. The 529 candidate event windows have no external truth labels; event counts must not be reported as confirmed sensor faults.
@@ -91,8 +92,8 @@ Five multi-panel figure groups are available as SVG, PDF and 600 dpi PNG, backed
 
 The branch may be reviewed and merged as a **research implementation with explicit production gates**. It must not be activated in WW-DQS/DQR arbitration yet.
 
-1. Verify the process drawing, coordinates, asset IDs, serial numbers and channel-position mapping in the field.
-2. Obtain independent reviewer and approver signatures; update `topology.yaml` and regenerate all topology-bound templates.
+1. Obtain maintenance, replacement and remapping records for the study interval and reconcile exceptions against the confirmed channel-position mapping.
+2. Complete the production documentary audit and obtain independent reviewer and approver signatures; then update `topology.yaml` and regenerate all topology-bound templates.
 3. Accumulate qualified multi-season effective blocks and pass ORP/DO support exit criteria.
 4. Improve and revalidate node localization to Top-1 >=0.80 on blocked holdouts.
 5. Add field-confirmed swap/maintenance/topology cases and prospective event labels.

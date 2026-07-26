@@ -1,7 +1,7 @@
 {
   "track_id": "sensitivity",
   "production_write_permission": false,
-  "generated_utc": "2026-07-26T02:09:02.030645+00:00",
+  "generated_utc": "2026-07-26T03:26:42.785551+00:00",
   "d1_release_id": "D1REL-1.3.0-f6074be3751f",
   "consumed_sources": [
     "D1 Sensor health/outputs/data/D1_main_scores_min.xlsx",
@@ -28,7 +28,7 @@
     {
       "role": "D7_local_evidence",
       "path": "D7 Topological Role Consistency and Structural Representativeness/outputs/local/D7_spatial_evidence.parquet",
-      "sha256": "47293c469e0a8899fd6a0a726762c5df940af2d8e0bd8b8cc9609760836a1b21"
+      "sha256": "3968cc173be4d88b0048114f7b5a861c7b3da14428b697aa9ee6f695917407bb"
     }
   ],
   "forbidden_outputs": [

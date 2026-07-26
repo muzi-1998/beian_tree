@@ -335,6 +335,7 @@ class D7Pipeline:
         output["regime_entropy"] = output["normalized_entropy"]
         output = UncertaintyEngine().apply(output)
         output = ApplicabilityGate(
+            research_topology_confirmed=self.topology.research_topology_confirmed,
             topology_verified=self.topology.topology_verified,
             minimum_coverage=float(self.windows["minimum_window_coverage"]),
             report_eligible_support=self.aggregation_config["support_policy"][
@@ -353,6 +354,8 @@ class D7Pipeline:
             .idxmin(axis=1)
             .str.replace("Q_", "", regex=False)
         )
+        output["research_topology_confirmed"] = self.topology.research_topology_confirmed
+        output["production_topology_verified"] = self.topology.topology_verified
         output["topology_verified"] = self.topology.topology_verified
         output["topology_version"] = self.topology.metadata["topology_version"]
         output["topology_hash"] = self.topology.topology_hash
@@ -386,6 +389,7 @@ class D7Pipeline:
             "profile_covariance_mode", "fallback_level",
             "alpha_floor", "alpha_used", "covariance_condition_number", "dominant_evidence",
             "veto_active", "veto_reason", "veto_eligible", "event_id", "window_coverage",
+            "research_topology_confirmed", "production_topology_verified",
             "topology_verified", "topology_version", "topology_hash", "template_id_used",
             "template_hash", "template_version", "mapping_version", "mapping_hash",
             "regime_model_version", "regime_model_hash", "run_id", "config_version",
@@ -419,6 +423,8 @@ class D7Pipeline:
         output["IE_track"] = np.nan
         output["event_jaccard"] = np.nan
         output["culprit_spearman"] = np.nan
+        output["research_topology_confirmed"] = self.topology.research_topology_confirmed
+        output["production_topology_verified"] = self.topology.topology_verified
         output["topology_verified"] = self.topology.topology_verified
         output["open_topology_alerts"] = np.nan
         return output
@@ -518,7 +524,8 @@ class D7Pipeline:
         daily["track_id"] = "d7_local"
         daily["start"] = daily["date"]
         daily["end"] = daily["date"] + pd.Timedelta(days=1)
-        daily["topology_valid"] = self.topology.topology_verified
+        daily["topology_valid"] = self.topology.research_topology_confirmed
+        daily["production_topology_verified"] = self.topology.topology_verified
         daily["maintenance_excluded"] = False
         daily["robust_iteration"] = 1
         daily["retained"] = daily["coverage"].ge(0.80) & daily["leverage"].le(0.75)
@@ -681,7 +688,11 @@ class D7Pipeline:
                 "reviewer": self.topology.metadata["reviewer"],
                 "approver": self.topology.metadata["approver"],
                 "verification_status": self.topology.metadata["verification_status"],
-                "old_template_compatibility": "not_applicable_initial_candidate",
+                "research_topology_confirmed": self.topology.research_topology_confirmed,
+                "production_topology_verified": self.topology.topology_verified,
+                "research_evidence_version": self.topology.metadata["research_evidence_version"],
+                "production_approval_status": self.topology.metadata["production_approval_status"],
+                "old_template_compatibility": "superseded_by_author_confirmed_evidence_hash",
             }]
         )
         schema_qa = pd.DataFrame(self._schema_checks(main, regime, support))
@@ -694,14 +705,14 @@ class D7Pipeline:
                 "D6_after_D1_max_abs_diff": 0.0,
                 "D6_forDQR_provisional_max_abs_diff": 0.0,
                 "finalized_rows": 0,
-                "status": "pending_D6_handshake_topology_unverified",
+                "status": "pending_D6_handshake_production_approval_or_support",
             }]
         )
         publication_qa = pd.DataFrame(
             [{
                 "check": "core_local_bundle",
                 "status": "pass_with_production_gate",
-                "reason": "topology_and_asset_mapping_pending_field_verification",
+                "reason": "research_topology_confirmed_production_governance_pending",
                 "release_decision": "research_only",
             }]
         )
@@ -736,6 +747,7 @@ class D7Pipeline:
             self.topology,
             self.common_root / "topology.yaml",
             self.common_root / "topology.schema.json",
+            self.common_root / "topology_evidence.yaml",
         )
         self.exporter.copy_interface_schema(self.common_root / "d6_interface.schema.json")
         self.exporter.write_workbook(
@@ -844,6 +856,8 @@ class D7Pipeline:
             methods={
                 "topology_version": self.topology.metadata["topology_version"],
                 "topology_hash": self.topology.topology_hash,
+                "research_topology_confirmed": self.topology.research_topology_confirmed,
+                "production_topology_verified": self.topology.topology_verified,
                 "topology_verified": self.topology.topology_verified,
                 "template_version": self.config["template_version"],
                 "regime_model_version": self.config["regime_model_version"],
@@ -855,16 +869,18 @@ class D7Pipeline:
             scientific_boundaries=[
                 "D7_raw measures spatial role consistency and structural representativeness, not sensor health, temporal availability, physical rate plausibility, or D6 temporal synchronization.",
                 "ORP remains L1 limited support with diagonal robust Z and alpha=1.00 until all exit criteria and manual approval pass.",
-                "Declared topology and asset-channel-position mapping await field drawing verification and two-person approval.",
-                "D7_total and D7_forDQR are null while the topology contract is unverified; no D6 final arbitration is produced.",
+                "Line, process zone, longitudinal order and SCADA-to-physical-point identity are author-confirmed and reconciled against an instrument register for research reporting.",
+                "Exact survey coordinates, asset/serial identity, maintenance records and dual approval are not required by the ordinal research model but remain production-governance requirements.",
+                "D7_total and D7_forDQR are null while production topology approval or L3 support is unavailable; no D6 final arbitration is produced.",
                 "Observed low D7_raw windows are unlabeled structural evidence, not confirmed faults.",
             ],
             acceptance={
                 "acceptance_status": acceptance_status,
                 "failed_contracts": [],
                 "limitations": [
-                    "topology_pending_field_verification",
-                    "asset_and_serial_mapping_pending",
+                    "production_documentary_audit_and_dual_approval_pending",
+                    "maintenance_records_unavailable",
+                    "asset_and_serial_identity_unavailable",
                     "ORP_forced_initial_limited_support",
                     "external_fault_labels_unavailable",
                     "sensitivity_and_injection_validation_pending",
@@ -879,6 +895,7 @@ class D7Pipeline:
             ("canonical_flags", self.paths.canonical_flags),
             ("time_base_contract", self.paths.time_base_contract),
             ("declared_topology", self.common_root / "topology.yaml"),
+            ("topology_evidence", self.common_root / "topology_evidence.yaml"),
             ("sensor_registry", self.common_root / "sensors.yaml"),
         ]
         return [

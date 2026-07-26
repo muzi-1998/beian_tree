@@ -19,7 +19,10 @@ def run_figure_qa() -> dict[str, object]:
         (4, "validation"), (5, "governance"),
     ]]
     for stem in stems:
-        counterparts = [paths.figure_root / f"{stem}.{suffix}" for suffix in ["png", "pdf", "svg"]]
+        counterparts = [
+            paths.figure_root / f"{stem}.{suffix}"
+            for suffix in ["png", "pdf", "svg", "tiff"]
+        ]
         for path in counterparts:
             if not path.exists() or path.stat().st_size == 0:
                 failures.append(f"missing_or_empty:{path.name}")
@@ -46,6 +49,7 @@ def run_figure_qa() -> dict[str, object]:
                 "png_sha256": sha256_file(counterparts[0]),
                 "pdf_sha256": sha256_file(counterparts[1]),
                 "svg_sha256": sha256_file(counterparts[2]),
+                "tiff_sha256": sha256_file(counterparts[3]),
             }
         )
     plot_manifest = paths.plot_data_root / "D7_plot_data_manifest.json"
@@ -56,7 +60,7 @@ def run_figure_qa() -> dict[str, object]:
         "failures": failures,
         "figures": records,
         "checked_contracts": [
-            "PNG/PDF/SVG counterparts",
+            "PNG/PDF/SVG/TIFF counterparts",
             "600 dpi raster dimensions",
             "nonblank raster content",
             "Arial SVG font reference",

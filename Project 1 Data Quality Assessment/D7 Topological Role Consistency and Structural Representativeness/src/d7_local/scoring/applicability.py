@@ -8,6 +8,7 @@ class ApplicabilityGate:
     def __init__(
         self,
         *,
+        research_topology_confirmed: bool,
         topology_verified: bool,
         minimum_coverage: float = 0.80,
         report_only_coverage: float = 0.60,
@@ -15,6 +16,7 @@ class ApplicabilityGate:
         gate_eligible_support: tuple[str, ...] | list[str] = ("L3",),
         veto_eligible_support: tuple[str, ...] | list[str] = ("L3",),
     ) -> None:
+        self.research_topology_confirmed = bool(research_topology_confirmed)
         self.topology_verified = bool(topology_verified)
         self.minimum_coverage = float(minimum_coverage)
         self.report_only_coverage = float(report_only_coverage)
@@ -46,7 +48,11 @@ class ApplicabilityGate:
         if not self.topology_verified:
             topology_mask = ~(missing | low_coverage | ood | ~report_support)
             status[topology_mask] = "report_only"
-            reason[topology_mask] = "topology_pending_field_verification"
+            reason[topology_mask] = (
+                "research_topology_confirmed_production_approval_pending"
+                if self.research_topology_confirmed
+                else "research_topology_confirmation_pending"
+            )
         status[ood] = "out_of_template"
         reason[ood] = "context_posterior_or_ood_gate_failed"
         status[missing | low_coverage] = "not_evaluable"
@@ -64,13 +70,12 @@ class ApplicabilityGate:
         )
         output["report_support_eligible"] = report_support
         output["gate_support_eligible"] = gate_support
-        output["report_eligible"] = report_ready
+        research_report_ready = report_ready & self.research_topology_confirmed
+        output["report_eligible"] = research_report_ready
         output["gate_eligible"] = gate_ready
         output["limited_support"] = limited
         output["D7_report_provisional"] = output["D7_raw"].where(report_ready)
-        output["D7_report"] = (
-            output["D7_report_provisional"] if self.topology_verified else np.nan
-        )
+        output["D7_report"] = output["D7_raw"].where(research_report_ready)
         output["D7_total"] = output["D7_raw"].where(output["evaluation_status"].eq("evaluable"))
         output["D7_forDQR"] = output["D7_total"]
         output["veto_eligible"] = (
