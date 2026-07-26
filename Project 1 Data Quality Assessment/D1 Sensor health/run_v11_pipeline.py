@@ -12,7 +12,7 @@ Pipeline:
     [1] PELT batch on hourly residuals (DO/ORP only) → emit event_id candidates
     [2] Build event_id timeline per channel
     [3] Run the causal six-state recovery machine per channel
-    [4] Multi-regime clustering → D7 templates (NOT D1 scoring)
+    [4] Multi-regime clustering → D5 templates (NOT D1 scoring)
     [5] QR/QIR side-output annotations (offline, NOT scoring)
     [6] Re-aggregate D1 with signal-only Veto-3
     [7] Persist all artefacts
@@ -265,8 +265,8 @@ def main():
     for s_name, cnt in state_dist.items():
         log(f"      {s_name:20s}: {cnt:7d} ({100*cnt/total_h:5.2f}%)")
 
-    # ── 4. Multi-regime clustering (D7 templates only)
-    log("[4] Multi-regime clustering (k=4) — D7 templates, NOT D1 scoring ...")
+    # ── 4. Multi-regime clustering (D5 templates only)
+    log("[4] Multi-regime clustering (k=4) — D5 templates, NOT D1 scoring ...")
     t = time.time()
     recovery_episodes = build_episode_table(transitions_all, state_log_dict)
     recovery_summary = build_recovery_summary(recovery_episodes, state_log_dict)

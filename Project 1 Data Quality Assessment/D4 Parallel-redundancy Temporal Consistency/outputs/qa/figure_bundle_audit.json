@@ -1,0 +1,171 @@
+{
+  "generated_at": "2026-07-26T11:30:11.498471+00:00",
+  "figure_dir": "D:\\004_git\\beian_tree\\Project 1 Data Quality Assessment\\D4 Parallel-redundancy Temporal Consistency\\outputs\\figures",
+  "figures": 8,
+  "failed": 0,
+  "all_passed": true,
+  "records": [
+    {
+      "stem": "FigD4_1_paired_residual_consistency",
+      "png": true,
+      "svg": true,
+      "pdf": true,
+      "png_size_px": [
+        4347,
+        4180
+      ],
+      "png_nonblank": true,
+      "svg_text_elements": 44,
+      "svg_arial_declared": true,
+      "panel_labels": [
+        "(a)",
+        "(b)",
+        "(c)",
+        "(d)",
+        "(e)",
+        "(f)",
+        "(g)"
+      ],
+      "nonconforming_bare_panel_labels": [],
+      "fresh_vs_sources": true,
+      "passed": true
+    },
+    {
+      "stem": "FigD4_2_subscore_contribution",
+      "png": true,
+      "svg": true,
+      "pdf": true,
+      "png_size_px": [
+        4313,
+        1511
+      ],
+      "png_nonblank": true,
+      "svg_text_elements": 38,
+      "svg_arial_declared": true,
+      "panel_labels": [
+        "(a)",
+        "(b)"
+      ],
+      "nonconforming_bare_panel_labels": [],
+      "fresh_vs_sources": true,
+      "passed": true
+    },
+    {
+      "stem": "FigD4_3_trend_slope_scatter",
+      "png": true,
+      "svg": true,
+      "pdf": true,
+      "png_size_px": [
+        4397,
+        1852
+      ],
+      "png_nonblank": true,
+      "svg_text_elements": 40,
+      "svg_arial_declared": true,
+      "panel_labels": [
+        "(a)",
+        "(b)"
+      ],
+      "nonconforming_bare_panel_labels": [],
+      "fresh_vs_sources": true,
+      "passed": true
+    },
+    {
+      "stem": "FigD4_4_raw_score_heatmap",
+      "png": true,
+      "svg": true,
+      "pdf": true,
+      "png_size_px": [
+        4087,
+        1420
+      ],
+      "png_nonblank": true,
+      "svg_text_elements": 24,
+      "svg_arial_declared": true,
+      "panel_labels": [],
+      "nonconforming_bare_panel_labels": [],
+      "fresh_vs_sources": true,
+      "passed": true
+    },
+    {
+      "stem": "FigD4_5_status_evaluability",
+      "png": true,
+      "svg": true,
+      "pdf": true,
+      "png_size_px": [
+        4357,
+        1874
+      ],
+      "png_nonblank": true,
+      "svg_text_elements": 34,
+      "svg_arial_declared": true,
+      "panel_labels": [
+        "(a)",
+        "(b)"
+      ],
+      "nonconforming_bare_panel_labels": [],
+      "fresh_vs_sources": true,
+      "passed": true
+    },
+    {
+      "stem": "FigD4_6_context_independence",
+      "png": true,
+      "svg": true,
+      "pdf": true,
+      "png_size_px": [
+        4210,
+        1835
+      ],
+      "png_nonblank": true,
+      "svg_text_elements": 46,
+      "svg_arial_declared": true,
+      "panel_labels": [
+        "(a)",
+        "(b)"
+      ],
+      "nonconforming_bare_panel_labels": [],
+      "fresh_vs_sources": true,
+      "passed": true
+    },
+    {
+      "stem": "FigD4_7_validation_roc_pr",
+      "png": true,
+      "svg": true,
+      "pdf": true,
+      "png_size_px": [
+        4307,
+        1730
+      ],
+      "png_nonblank": true,
+      "svg_text_elements": 39,
+      "svg_arial_declared": true,
+      "panel_labels": [
+        "(a)",
+        "(b)"
+      ],
+      "nonconforming_bare_panel_labels": [],
+      "fresh_vs_sources": true,
+      "passed": true
+    },
+    {
+      "stem": "FigD4_8_validation_ablation",
+      "png": true,
+      "svg": true,
+      "pdf": true,
+      "png_size_px": [
+        4269,
+        1616
+      ],
+      "png_nonblank": true,
+      "svg_text_elements": 33,
+      "svg_arial_declared": true,
+      "panel_labels": [
+        "(a)",
+        "(b)"
+      ],
+      "nonconforming_bare_panel_labels": [],
+      "fresh_vs_sources": true,
+      "passed": true
+    }
+  ]
+}

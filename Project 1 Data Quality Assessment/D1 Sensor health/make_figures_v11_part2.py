@@ -1,7 +1,7 @@
 """Generate current-result D1 validation figures V17-V18.
 
 The former V16 fixed-k regime clustering panel is intentionally excluded from
-the formal D1 bundle. It was an unvalidated D7 exploratory construct rather
+the formal D1 bundle. It was an unvalidated D5 exploratory construct rather
 than a D1 sensor-health result.
 """
 from __future__ import annotations
@@ -108,7 +108,7 @@ ax.text(6.0, 3.95, "SUPPORT DATA", ha="center", va="center",
         fontsize=10.5, fontweight="bold", color=C["amber"])
 ax.text(6.0, 2.55,
         "QR: 2 channels\nQIR: 2 channels\n\n"
-        "Offline D5/D7 context\n(n = 4)",
+        "Offline D5/D5 context\n(n = 4)",
         ha="center", va="center", fontsize=8.0)
 
 b3 = Rectangle((8.3, 1.3), 3.4, 3.0, facecolor="#EDEDED", edgecolor=C["gray"],
@@ -194,7 +194,7 @@ def grade_dist(arr):
 
 grade_labels = ["A (>=4.5)", "B (3.5-4.5)", "C (2.5-3.5)",
                 "D (1.5-2.5)", "F (<1.5)"]
-grade_colors = ["#1A9850", "#A6D96A", "#FEE08B", "#F46D43", "#9E1F1F"]
+grade_colors = ["#1A9850", "#A6D96A", "#FEE08B", "#F46D33", "#9E1F1F"]
 grade_pct = np.asarray(grade_dist(final_flat)) * 100
 
 qdrift_rows = []

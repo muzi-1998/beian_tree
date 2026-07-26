@@ -31,7 +31,7 @@ route; this is a semantic correction, not a global relaxation of D2 Veto.
 - On standard routes, response-loss peers are restricted to the same variable
   and process position in the parallel treatment line. The former fallback to
   different positions within the same line has been removed.
-- D1 linkage release: `D1REL-1.3.0-f6074be3751f`. The refreshed event table has
+- D1 linkage release: `D1REL-1.3.0-cb06fed4b63a`. The refreshed event table has
   9,354 rows: 8,957 D2-only, 387 subset, 7 overlap and 3 superset relations.
   Linked fraction is 397/9,354 (4.24%) and is descriptive only.
 - D2 core-score SHA-256 remained

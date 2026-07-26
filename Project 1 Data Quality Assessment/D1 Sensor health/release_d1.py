@@ -99,8 +99,11 @@ def main() -> Path:
         "artifacts": artifacts,
         "downstream_contract": {
             "D2": "diagnostic event linkage only; D2 core score is immutable",
-            "D6": "benchmark admission and provisional bilateral D1 fuse",
-            "D7": "read-only sensitivity-track filter; D7 Local is isolated",
+            "D4": (
+                "benchmark admission and interpretation-only bilateral "
+                "sensitivity; D4_raw is protected"
+            ),
+            "D5": "read-only sensitivity-track filter; D5 Local is isolated",
         },
         "immutability_rule": (
             "Consumers must match artifact SHA-256 values exactly or rerun from this release. "

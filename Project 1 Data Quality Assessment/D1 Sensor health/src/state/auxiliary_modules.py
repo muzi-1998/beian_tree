@@ -3,7 +3,7 @@
 Contents:
     1. binseg_l2 + PELTBatchCalibrator   — batch CP detection (fast)
     2. build_regime_features + cluster_regimes + build_regime_templates
-       — for D5/D7, NOT for D1 scoring
+       — for D5/D5, NOT for D1 scoring
     3. compute_qr_qir_side_outputs — driver annotations (offline only,
        per QR_QIR 修订 §七)
 """
@@ -101,11 +101,11 @@ class PELTBatchCalibrator:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 2. Multi-regime clustering — for D7 templates only (NOT D1 scoring)
+# 2. Multi-regime clustering — for D5 templates only (NOT D1 scoring)
 # ─────────────────────────────────────────────────────────────────────────────
 def build_regime_features(df_h: pd.DataFrame, window_h: int = 24) -> pd.DataFrame:
     """Per-hour rolling features. Uses ALL available channels (DO/ORP/QR/QIR)
-    because the regime clustering itself is just for D7 template, NOT D1 main link.
+    because the regime clustering itself is just for D5 template, NOT D1 main link.
     """
     feats = {}
     for c in df_h.columns:

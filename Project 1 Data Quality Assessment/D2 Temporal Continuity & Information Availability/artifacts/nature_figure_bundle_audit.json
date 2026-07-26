@@ -1,0 +1,273 @@
+{
+  "figure_dir": "D:\\004_git\\beian_tree\\Project 1 Data Quality Assessment\\D2 Temporal Continuity & Information Availability\\artifacts\\figures",
+  "figures": 12,
+  "failed": 0,
+  "records": [
+    {
+      "stem": "D2_Fig01_overview_heatmap",
+      "png": true,
+      "svg": true,
+      "pdf": true,
+      "png_size_px": [
+        4217,
+        2165
+      ],
+      "png_nonblank": true,
+      "svg_text_elements": 33,
+      "svg_arial_declared": true,
+      "panel_labels": [
+        "(a)"
+      ],
+      "nonconforming_bare_panel_labels": [],
+      "fresh_vs_sources": true
+    },
+    {
+      "stem": "D2_Fig02_subscore_violins",
+      "png": true,
+      "svg": true,
+      "pdf": true,
+      "png_size_px": [
+        4281,
+        2570
+      ],
+      "png_nonblank": true,
+      "svg_text_elements": 77,
+      "svg_arial_declared": true,
+      "panel_labels": [
+        "(a)",
+        "(b)",
+        "(c)"
+      ],
+      "nonconforming_bare_panel_labels": [],
+      "fresh_vs_sources": true
+    },
+    {
+      "stem": "D2_Fig03_missing_rate_timeline",
+      "png": true,
+      "svg": true,
+      "pdf": true,
+      "png_size_px": [
+        4297,
+        2692
+      ],
+      "png_nonblank": true,
+      "svg_text_elements": 47,
+      "svg_arial_declared": true,
+      "panel_labels": [
+        "(a)",
+        "(b)"
+      ],
+      "nonconforming_bare_panel_labels": [],
+      "fresh_vs_sources": true
+    },
+    {
+      "stem": "D2_Fig04_gap_severity",
+      "png": true,
+      "svg": true,
+      "pdf": true,
+      "png_size_px": [
+        3723,
+        2491
+      ],
+      "png_nonblank": true,
+      "svg_text_elements": 37,
+      "svg_arial_declared": true,
+      "panel_labels": [
+        "(a)",
+        "(b)"
+      ],
+      "nonconforming_bare_panel_labels": [],
+      "fresh_vs_sources": true
+    },
+    {
+      "stem": "D2_Fig05_freeze_availability",
+      "png": true,
+      "svg": true,
+      "pdf": true,
+      "png_size_px": [
+        4283,
+        3204
+      ],
+      "png_nonblank": true,
+      "svg_text_elements": 81,
+      "svg_arial_declared": true,
+      "panel_labels": [
+        "(a)",
+        "(b)",
+        "(c)",
+        "(d)"
+      ],
+      "nonconforming_bare_panel_labels": [],
+      "fresh_vs_sources": true
+    },
+    {
+      "stem": "D2_Fig06_mapping_curves",
+      "png": true,
+      "svg": true,
+      "pdf": true,
+      "png_size_px": [
+        4269,
+        4036
+      ],
+      "png_nonblank": true,
+      "svg_text_elements": 121,
+      "svg_arial_declared": true,
+      "panel_labels": [
+        "(a)",
+        "(b)",
+        "(c)",
+        "(d)",
+        "(e)",
+        "(f)",
+        "(g)",
+        "(h)"
+      ],
+      "nonconforming_bare_panel_labels": [],
+      "fresh_vs_sources": true
+    },
+    {
+      "stem": "D2_Fig07_availability_profile",
+      "png": true,
+      "svg": true,
+      "pdf": true,
+      "png_size_px": [
+        4205,
+        3062
+      ],
+      "png_nonblank": true,
+      "svg_text_elements": 65,
+      "svg_arial_declared": true,
+      "panel_labels": [
+        "(a)",
+        "(b)"
+      ],
+      "nonconforming_bare_panel_labels": [],
+      "fresh_vs_sources": true
+    },
+    {
+      "stem": "D2_Fig08_d1_d2_relationship",
+      "png": true,
+      "svg": true,
+      "pdf": true,
+      "png_size_px": [
+        3694,
+        2449
+      ],
+      "png_nonblank": true,
+      "svg_text_elements": 42,
+      "svg_arial_declared": true,
+      "panel_labels": [
+        "(a)",
+        "(b)"
+      ],
+      "nonconforming_bare_panel_labels": [],
+      "fresh_vs_sources": true
+    },
+    {
+      "stem": "D2_Fig09_veto_analysis",
+      "png": true,
+      "svg": true,
+      "pdf": true,
+      "png_size_px": [
+        4057,
+        2653
+      ],
+      "png_nonblank": true,
+      "svg_text_elements": 61,
+      "svg_arial_declared": true,
+      "panel_labels": [
+        "(a)",
+        "(b)",
+        "(c)"
+      ],
+      "nonconforming_bare_panel_labels": [
+        "L"
+      ],
+      "fresh_vs_sources": true
+    },
+    {
+      "stem": "D2_Fig10_calibration_summary",
+      "png": true,
+      "svg": true,
+      "pdf": true,
+      "png_size_px": [
+        4185,
+        3021
+      ],
+      "png_nonblank": true,
+      "svg_text_elements": 120,
+      "svg_arial_declared": true,
+      "panel_labels": [
+        "(a)",
+        "(b)",
+        "(c)",
+        "(d)",
+        "(e)"
+      ],
+      "nonconforming_bare_panel_labels": [],
+      "fresh_vs_sources": true
+    },
+    {
+      "stem": "D2_Fig11_B1_event_cooccurrence",
+      "png": true,
+      "svg": true,
+      "pdf": true,
+      "png_size_px": [
+        4008,
+        2512
+      ],
+      "png_nonblank": true,
+      "svg_text_elements": 77,
+      "svg_arial_declared": true,
+      "panel_labels": [
+        "(a)",
+        "(b)",
+        "(c)"
+      ],
+      "nonconforming_bare_panel_labels": [],
+      "fresh_vs_sources": true
+    },
+    {
+      "stem": "D2_Fig12_B2_d1d2_timeseries",
+      "png": true,
+      "svg": true,
+      "pdf": true,
+      "png_size_px": [
+        4291,
+        4412
+      ],
+      "png_nonblank": true,
+      "svg_text_elements": 95,
+      "svg_arial_declared": true,
+      "panel_labels": [
+        "(a)",
+        "(b)",
+        "(c)",
+        "(d)",
+        "(e)",
+        "(f)"
+      ],
+      "nonconforming_bare_panel_labels": [
+        "A",
+        "B",
+        "C",
+        "A",
+        "B",
+        "C",
+        "A",
+        "B",
+        "C",
+        "A",
+        "B",
+        "C",
+        "A",
+        "B",
+        "C",
+        "A",
+        "B",
+        "C"
+      ],
+      "fresh_vs_sources": true
+    }
+  ]
+}

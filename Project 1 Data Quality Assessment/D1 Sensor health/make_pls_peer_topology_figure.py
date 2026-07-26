@@ -244,7 +244,7 @@ def make_figure(state: dict, tables: dict[str, pd.DataFrame]):
     for row_index, channel in enumerate(channels):
         model = model_summary.loc[channel]
         is_limited = model["redundancy_status"] == "limited_single_peer"
-        background = "#FFF4D6" if is_limited else ("#F6F8FA" if row_index % 2 else "white")
+        background = "#FFF4D4" if is_limited else ("#F6F8FA" if row_index % 2 else "white")
         ax_models.add_patch(
             Rectangle((0, row_index - 0.47), 1, 0.94, facecolor=background,
                       edgecolor="none", zorder=0)

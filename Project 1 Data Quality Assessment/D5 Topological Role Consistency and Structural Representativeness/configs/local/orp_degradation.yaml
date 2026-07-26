@@ -1,0 +1,25 @@
+policy_version: d5-orp-policy-v2.2
+support_thresholds: {L3: 60, L2: 40, L1: 20}
+force_diagonal_robust_model: true
+L3_mode: full_shrinkage
+L2_mode: pooled_shrinkage
+L1_mode: diagonal_robust_z
+L0_mode: disabled
+alpha_floor_l2: 0.50
+alpha_floor_low_neff: 0.75
+alpha_l1: 1.00
+condition_number_max: 1000.0
+minimum_eigen_ratio: 0.001
+exit_criteria:
+  n_effective: 60
+  distinct_months: 3
+  bootstrap_stability: 0.85
+  holdout_count: 3
+  far_max: 0.10
+  swap_auroc_min: 0.90
+  top1_min: 0.80
+  ie_track_max: 0.20
+  event_jaccard_min: 0.80
+  culprit_spearman_min: 0.80
+  manual_approval_required_for_research_score: false
+  manual_approval_required_for_deployment: true

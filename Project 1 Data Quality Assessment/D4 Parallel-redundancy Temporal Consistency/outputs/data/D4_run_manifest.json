@@ -1,0 +1,65 @@
+{
+  "run_id": "D4V14_20260726_100717",
+  "config_version": "d4-v1.4-canonical-d4-20260726",
+  "generated_utc": "2026-07-26T10:09:22.520041+00:00",
+  "data_span": [
+    "2025-08-01 00:00:00",
+    "2026-04-13 23:50:00"
+  ],
+  "rows": 42847,
+  "pairs": 7,
+  "d2_run_id": "D2V1_20260722_1714",
+  "calibration_id": "D4CAL-V14-7a16d7f511d3",
+  "dependencies": [
+    {
+      "dependency": "residuals",
+      "path_role": "residual_min.parquet",
+      "sha256": "62857e27b4b81b3829e2891c7b9ac350c9b14984ccea6033dc2e87afc7e795c8",
+      "modified_utc": "2026-07-10T09:14:57.320849+00:00"
+    },
+    {
+      "dependency": "time_base_contract",
+      "path_role": "time_base_contract.json",
+      "sha256": "f6296408c722c479074a49a77dacc25c5cde15ac80d15ef40a9ab0b3cf856269",
+      "modified_utc": "2026-07-10T09:12:59.533264+00:00"
+    },
+    {
+      "dependency": "d1_scores",
+      "path_role": "D1_main_scores_min.xlsx",
+      "sha256": "83207ca6f818dd309fe36cdb3adfdc9e569ea540fbca5c4acc0e45e8a321923c",
+      "modified_utc": "2026-07-26T10:03:42.151123+00:00"
+    },
+    {
+      "dependency": "regime_templates",
+      "path_role": "D1_regime_templates.xlsx",
+      "sha256": "3dcbb33f64e2b3ece25d6dddd57421cf2d2651e6324f5cd26e1b191fa6aab169",
+      "modified_utc": "2026-07-26T10:03:50.930617+00:00"
+    },
+    {
+      "dependency": "d2_scores",
+      "path_role": "D2_main_scores_hourly.xlsx",
+      "sha256": "70a4a093f0900b090d49dbe8eda8a025e5eb840fce44a267f43636627029c08a",
+      "modified_utc": "2026-07-22T09:14:38.920336+00:00"
+    },
+    {
+      "dependency": "d4_config",
+      "path_role": "d4.yaml",
+      "sha256": "00722ca5647d83d906091cecba1bf6904ae93871102766d556416226153c73d7",
+      "modified_utc": "2026-07-26T09:43:55.829080+00:00"
+    },
+    {
+      "dependency": "d4_pipeline_code",
+      "path_role": "pipeline.py",
+      "sha256": "f6b9f6de7d5159494bd45de3a04f3a57537869e4d2c70a0af8192fba77a0e58e",
+      "modified_utc": "2026-07-26T09:51:14.227894+00:00"
+    },
+    {
+      "dependency": "d4_scoring_code",
+      "path_role": "scoring.py",
+      "sha256": "ddef43ff2e7d872c5c7a30e6485e7b856d058a96b800854fe40ac815a5b48120",
+      "modified_utc": "2026-07-26T08:43:40.442735+00:00"
+    }
+  ],
+  "scientific_boundary": "D4_raw is the independent numeric dimension. D2 gates observability; D1 is interpretation-only; the separate D5 report/gate interface cannot rewrite D4_raw.",
+  "benchmark_status": "core_complete_external_D5_gate_separate"
+}

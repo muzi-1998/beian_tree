@@ -1,0 +1,20 @@
+{
+  "generated_utc": "2026-07-26T11:10:50.013530+00:00",
+  "d4_input": "D4 Parallel-redundancy Temporal Consistency\\outputs\\data\\D4_main_scores.xlsx",
+  "d4_sha256": "b153f56cf488e482084373ecad98c1aa9c9097c6c65bc0d32888c6398a60caf2",
+  "d5_input": "D5 Topological Role Consistency and Structural Representativeness\\outputs\\local\\D5_gate_interface.parquet",
+  "d5_sha256": "51c9562e1a803efcdf280d46251b2b88007e26e99072a8e7e9b0f8f5df107f3c",
+  "rows": 42847,
+  "d5_gate_ready_rows": 0,
+  "finalized_rows": 37987,
+  "gate_applicable_rows": 0,
+  "process_guard_rows": 0,
+  "sensor_veto_rows": 0,
+  "max_abs_numeric_adjustment": 0.0,
+  "final_output": "D4 Parallel-redundancy Temporal Consistency\\outputs\\integration\\D4_D5_final_arbitration.parquet",
+  "report": "D4 Parallel-redundancy Temporal Consistency\\outputs\\integration\\D4_D5_FINAL_ARBITRATION_REPORT.md",
+  "report_sha256": "198e0847b659c4d588efd40b749e4be648c48403c499d74636a31002da26f07f",
+  "numeric_source": "D4_raw",
+  "d1_role": "interpretation_only",
+  "status": "final_independent_D4_with_dual_D5_interfaces"
+}

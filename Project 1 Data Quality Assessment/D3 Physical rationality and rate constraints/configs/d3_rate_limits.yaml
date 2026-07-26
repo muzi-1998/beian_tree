@@ -1,0 +1,22 @@
+# d3_rate_limits.yaml
+# Rate limits per sensor type; method config for dx_dt_robust
+
+rate_estimator:
+  method: "theil_sen"
+  smooth_window: 5
+  hampel_window: 7
+  hampel_n_sigmas: 3.0
+
+rate_limits:
+  DO:
+    rate_soft: 0.15
+    rate_hard: 0.50
+    unit: "mg/L/min"
+    min_duration_min: 1
+  ORP:
+    rate_soft: 8.0
+    rate_hard: 25.0
+    unit: "mV/min"
+    min_duration_min: 1
+
+version: "v2.2.0"

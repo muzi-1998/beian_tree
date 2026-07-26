@@ -1,0 +1,22 @@
+{
+  "policy_version": "d5-admission-v2.3",
+  "scientific_score_released": true,
+  "process_guard_validated": true,
+  "sensor_localization_validated": false,
+  "detection_checks": {
+    "swap_AUROC": true,
+    "swap_AUPRC": true,
+    "common_mode_FAR": true,
+    "zone_coherent_FAR": true,
+    "switch_chatter_rate": true
+  },
+  "swap_top1": 0.7,
+  "l3_templates": 3,
+  "family_l3_templates": 8,
+  "node_validated_l3_templates": 3,
+  "d5_total_rows": 39648,
+  "d5_report_rows": 39648,
+  "process_guard_rows": 0,
+  "sensor_veto_rows": 0,
+  "deployment_release": false
+}
