@@ -1,0 +1,108 @@
+# D7 Expert Review Report v2.3
+
+**Project:** Topological Role Consistency and Structural Representativeness
+**Run:** `D7-LOCAL-20260726T074210Z`
+**Generated:** 2026-07-26 16:13 CST
+**Decision:** Scientific D7 score released for final subscore aggregation; automated deployment remains gated.
+
+## 1. Executive verdict
+
+The D7 v2.3 implementation is complete as a regime-conditioned ordinal spatial-structure assessment. Local, Sensitivity and Shadow V2 tracks, frozen templates, hourly scores, validation-graded admission, dual report/gate interfaces, plot data, SCI-ready figures, manifests and audit records are present. The Local Track remains logically independent of D1, D2, D4 and D6 and consumes only canonical observations, exogenous hydraulic/time context and declared D7 topology.
+
+The ordinal research topology is confirmed: process line, pool zone, longitudinal order, SCADA-to-physical-point identity and the absence of study-period probe/channel changes are author-confirmed; the installation register independently reconciles eight active DO and six active ORP instruments. Exact coordinates, asset IDs and maintenance records are not model inputs and therefore do not suppress retrospective scientific scores. They remain deployment-governance limitations. Family-level support identifies 8 L3 candidates, but node-specific blocked validation retains only 3 final L3 templates; the current effective distribution is L1=14, L2=39 and L3=3. `D7_report_score` contains 39,648 rows. Swap Top-1 is 0.70 (95% CI 0.57-0.80, n=60), so node-specific hard Veto remains disabled without blocking the score.
+
+## 2. Scope and dimensional independence
+
+- D7 asks whether a DO/ORP observation still behaves like its declared spatial position and represents its process zone.
+- D1 evaluates sensor-intrinsic health and long-term regime-relative behavior; D2 evaluates continuity and information availability; D4 evaluates physical value/rate plausibility; D6 evaluates temporal synchronization between parallel counterparts.
+- Local D7 does not consume any D1-D6 score, state or event field. D1/D2/D4 are read only in the physically isolated Sensitivity Track.
+- QR/QIR are exogenous context variables only and never receive a D7 score.
+- One plant-global regime is inferred from QR/QIR, robust pooled DO/ORP level
+  and dispersion, and cyclic time features. Every sensor is then compared with
+  its role-specific template under the same active regime.
+- Observed low `D7_raw` is structural evidence, not a confirmed hardware fault.
+
+## 3. Data and result freshness
+
+- Hourly sensor windows: 86,016, spanning 2025-08-01 00:00:00 to 2026-04-13 23:00:00.
+- Calculable `D7_raw`: 85,092; mean 3.097, median 3.114, p05 1.345.
+- Raw low-score fraction (`D7_raw < 3`): 46.0%; candidate persistent events: 529.
+- Full 10-min regime-state trajectory retained; OOD hold rate: 15.5%; confirmed switches: 1246.
+- Result provenance is bound to canonical input hashes, topology hash, template/mapping/regime versions and code commit in `D7_run_manifest.json`.
+- Sensitivity inputs are bound to frozen D1 release `D1REL-1.3.0-f6074be3751f` and exact D2/D4/Local artifact hashes in `D7_sensitivity_manifest.json`.
+- The isolated Sensitivity Track remains `pending_not_produced` by design; it cannot write either authoritative report scores or gate decisions.
+
+## 4. Applicability and support
+
+- `evaluable`: 39,648 (46.1%)
+- `limited_support`: 32,102 (37.3%)
+- `out_of_template`: 13,342 (15.5%)
+- `not_evaluable`: 924 (1.1%)
+
+- `L2`: 39 templates
+- `L1`: 14 templates
+- `L3`: 3 templates
+
+ORP uses a conservative `diagonal_robust_z` model with `alpha=1.00`, but model complexity is separated from evidence maturity. Family support is shared once by analyte, regime and model family without multiplying the effective sample by the number of sensors. Every target-specific reconstruction then undergoes its own coverage, residual-scale bootstrap and leave-one-month-out FAR validation. Final support is the lower of family and node maturity. L2 evidence remains valid for scientific scoring but is not described as action-grade or cross-month deployment validated. L0 remains disabled rather than being written as a low score.
+
+L1 is diagnostic only. L2 and L3 may populate `D7_total` and the sensor-hour
+`D7_report_interface` under the confirmed ordinal topology. Only final L3
+nodes may enter the pair-hour `D7_gate_interface`. Process coherence is an
+attribution Guard rather than a Veto; only validated sensor-identity evidence
+may activate hard Veto. Deployment approval is reported separately and does
+not alter the retrospective score. Current provisional report rows:
+39,648; research report rows:
+39,648.
+
+## 5. Validation and sensitivity
+
+| Criterion | Estimate | Target | Result |
+|---|---:|---:|---|
+| Swap AUROC | 0.912 | >=0.90 | Pass |
+| Swap AUPRC | 0.870 | >=0.80 | Pass |
+| Swap Top-1 | 0.700 [0.575, 0.801], n=60 | >=0.80 | **Fail** |
+| Common-mode FAR | 0.046 | <=0.10 | Pass |
+| Zone-coherent FAR | 0.057 | <=0.10 | Pass |
+| Switch chatter rate | 0.000 | <=0.05 | Pass |
+| IE_track | 0.048 | <=0.20 | Pass |
+| Event Jaccard | 0.825 | >=0.80 | Pass |
+| Culprit Spearman rho | 0.962 | >=0.80 | Pass |
+
+Validation uses observed test-period spatial windows with frozen templates. Same-line, same-analyte position swaps are positive controls. Freeze, temporal ramps, common-mode and zone-coherent changes, DO4 floor behavior and dropout are negative/orthogonality controls. The swap detection metrics pass, but localization remains below the release criterion and must not be hidden by threshold tuning.
+
+## 6. Topology and D6 interface
+
+- Declared topology contains 14 DO/ORP nodes, 10 longitudinal edges and seven parallel peer pairs.
+- 5 finite candidate mappings exceed the report-only topology drift review threshold. These are hypotheses for field review, not automatic topology updates.
+- Shadow V2 has `production_impact=none`; it cannot mutate `topology.yaml`, active templates, `D7_total` or Veto.
+- `D7_total` and report-interface rows: 39648; D7 pair-interface evaluable rows: 19824.
+- Process-coherence Guard is active for 0 pair-hours; sensor-specific hard Veto is active for 0 pair-hours.
+- The final D6 numeric source is `D6_raw`. D1 is interpretation-only, while D7 supplies report context, attribution Guard and validated sensor-identity decisions.
+
+## 7. Figure review
+
+Five multi-panel figure groups are available as SVG, PDF, 600 dpi PNG and LZW-compressed 600 dpi TIFF, backed by `D7_plot_data.parquet/.csv`. All use Arial, 0.8 pt boxed axes, inward ticks, unified panel labels, endpoint-aware scales and transparent label backgrounds where annotations cover data. Figure D7-3 decomposes weighted leave-one-out structural attribution and does not claim exact Shapley values. Figure D7-5 is now the integration evidence figure: it shows family-to-node support attrition, node validation metrics, dual-interface coverage and the zero-adjustment D6 independence audit. Automated counterpart/font/pixel QA passed: True.
+
+## 8. Critical limitations
+
+1. Research topology is author-confirmed and inventory-reconciled, but production documentary audit, maintenance provenance and dual approval remain incomplete.
+2. Family-level L3 support does not imply node-level action validity: 8 family-L3 candidates reduce to 3 final node-L3 templates after blocked validation.
+3. Swap Top-1 localization is 0.700 (95% CI 0.575-0.801) versus the 0.80 target.
+4. The 529 candidate event windows have no external truth labels; event counts must not be reported as confirmed sensor faults.
+5. Regime transition FAR and topology candidate recall are not estimable without external regime/topology truth.
+6. `D7_raw` calibration is suitable for comparative research evidence, but operational event thresholds require labeled prospective confirmation.
+
+## 9. Release decision and next actions
+
+The branch may enter final WW-DQS subscore aggregation as a **scientific implementation with claim-specific action gates**. Automated control deployment remains outside the present evidence scope.
+
+1. Use `D7_report_score` only where report eligibility is explicit; renormalize missing dimensions rather than substituting a low score.
+2. Use the separate gate interface only for final L3 nodes and treat process coherence as an attribution Guard, never as Veto.
+3. Keep sensor-specific hard Veto disabled until blocked localization reaches Top-1 >=0.80.
+4. Complete D6-D7 conditional dependence and ablation analysis before fixing final WW-DQS weights.
+5. Add field-confirmed topology and event cases as external validation when they become available.
+6. Complete documentary audit and dual approval before any automated plant-control deployment.
+
+The deployment evidence and role-separated approval procedure remain specified
+in `docs/D7_FIELD_VERIFICATION_REQUIREMENTS.md`; they are not prerequisites for
+retrospective scientific aggregation.

@@ -7,10 +7,23 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = ROOT.parent
+D6_ROOT = PROJECT_ROOT / "D6 Parallel-redundancy Temporal Consistency"
 
 
 def run(script: str) -> None:
     subprocess.run([sys.executable, str(ROOT / "scripts" / script)], cwd=ROOT, check=True)
+
+
+def run_d6_readiness() -> None:
+    subprocess.run(
+        [
+            sys.executable,
+            str(D6_ROOT / "scripts" / "run_d6_d7_readiness.py"),
+        ],
+        cwd=D6_ROOT,
+        check=True,
+    )
 
 
 if __name__ == "__main__":
@@ -25,6 +38,10 @@ if __name__ == "__main__":
         "finalize_d7_admission.py",
         "run_d7_topology_review.py",
         "run_d7_shadow_v2.py",
+    ]:
+        run(script)
+    run_d6_readiness()
+    for script in [
         "make_d7_figures.py",
         "build_d7_reports.py",
         "check_d7_release.py",

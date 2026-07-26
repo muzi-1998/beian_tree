@@ -23,6 +23,12 @@ def main() -> None:
     main_scores = pd.read_parquet(paths.local_output_root / "D7_main_scores_hourly.parquet")
     support = pd.read_parquet(paths.local_output_root / "D7_support_assessment.parquet")
     consensus = pd.read_parquet(paths.local_output_root / "D7_zone_consensus.parquet")
+    report_interface = pd.read_parquet(
+        paths.local_output_root / "D7_report_interface.parquet"
+    )
+    gate_interface = pd.read_parquet(
+        paths.local_output_root / "D7_gate_interface.parquet"
+    )
     validation = pd.read_excel(
         paths.local_output_root / "D7_validation_results.xlsx", sheet_name="acceptance"
     )
@@ -105,12 +111,60 @@ def main() -> None:
             "check": "scientific_score_independent_of_deployment_approval",
             "passed": bool(
                 main_scores["D7_total"].notna().any()
-                and main_scores["D7_forDQR"].notna().sum()
-                == main_scores["D7_total"].notna().sum()
+                and main_scores["D7_report_score"].equals(
+                    main_scores["D7_total"]
+                )
                 and consensus["d7_evaluable"].any()
                 and not main_scores["deployment_approved"].any()
             ),
             "detail": "research score released while automated deployment remains blocked",
+        },
+        {
+            "check": "family_support_requires_node_validation",
+            "passed": bool(
+                (
+                    support.loc[
+                        support["support_level"].eq("L3"),
+                        "family_support_level",
+                    ]
+                    == "L3"
+                ).all()
+                and support.loc[
+                    support["support_level"].eq("L3"),
+                    "node_validation_passed",
+                ].all()
+                and (
+                    support["family_support_level"].eq("L3").sum()
+                    >= support["support_level"].eq("L3").sum()
+                )
+            ),
+            "detail": "family evidence is shared once; node validation limits final L3",
+        },
+        {
+            "check": "dual_interface_contract",
+            "passed": bool(
+                not report_interface.duplicated(
+                    ["timestamp", "sensor_id"]
+                ).any()
+                and not gate_interface.duplicated(
+                    ["timestamp", "pair_id"]
+                ).any()
+                and "D7_forDQR" not in report_interface
+                and "D7_forDQR" not in gate_interface
+            ),
+            "detail": "sensor-hour score report and pair-hour decision gate are separate",
+        },
+        {
+            "check": "process_guard_is_not_veto",
+            "passed": bool(
+                gate_interface["veto_active"].equals(
+                    gate_interface["sensor_identity_veto_active"]
+                )
+                and gate_interface["attribution_suppressed"].equals(
+                    gate_interface["process_coherence_guard_active"]
+                )
+            ),
+            "detail": "process coherence suppresses attribution only",
         },
         {
             "check": "orp_validation_graded_diagonal_model",
@@ -139,7 +193,7 @@ def main() -> None:
                 top1_passed == sensor_veto_released
                 and (
                     top1_passed
-                    or not consensus["sensor_veto_active"].any()
+                    or not consensus["sensor_identity_veto_active"].any()
                 )
             ),
             "detail": (

@@ -1,7 +1,7 @@
 {
-  "policy_version": "d7-admission-v2.2",
+  "policy_version": "d7-admission-v2.3",
   "scientific_score_released": true,
-  "protective_veto_validated": true,
+  "process_guard_validated": true,
   "sensor_localization_validated": false,
   "detection_checks": {
     "swap_AUROC": true,
@@ -11,10 +11,12 @@
     "switch_chatter_rate": true
   },
   "swap_top1": 0.7,
-  "l3_templates": 8,
+  "l3_templates": 3,
+  "family_l3_templates": 8,
+  "node_validated_l3_templates": 3,
   "d7_total_rows": 39648,
-  "d7_fordqr_rows": 39648,
-  "protective_veto_rows": 66,
+  "d7_report_rows": 39648,
+  "process_guard_rows": 0,
   "sensor_veto_rows": 0,
   "deployment_release": false
 }

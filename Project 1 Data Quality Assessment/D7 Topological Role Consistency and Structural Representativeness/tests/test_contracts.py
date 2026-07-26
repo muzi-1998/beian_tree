@@ -106,7 +106,7 @@ def test_research_topology_enables_scientific_score_without_deployment() -> None
     ).apply(frame)
     assert output.loc[0, "evaluation_status"] == "evaluable"
     assert output.loc[0, "D7_total"] == 4.0
-    assert output.loc[0, "D7_forDQR"] == 4.0
+    assert output.loc[0, "D7_report_score"] == 4.0
     assert output.loc[0, "D7_report_provisional"] == 4.0
     assert output.loc[0, "D7_report"] == 4.0
     assert not output.loc[0, "deployment_approved"]
@@ -177,7 +177,23 @@ def test_l3_support_is_validation_graded_not_covariance_graded() -> None:
                     "min_distinct_months": 2,
                 },
                 "L1": {"min_effective_blocks": 20},
-            }
+            },
+            "node_validation": {
+                "L3": {
+                    "min_effective_blocks": 30,
+                    "min_distinct_months": 3,
+                    "min_reference_coverage": 0.80,
+                    "min_bootstrap_stability": 0.80,
+                    "min_blocked_holdouts": 3,
+                    "max_holdout_far": 0.15,
+                },
+                "L2": {
+                    "min_effective_blocks": 20,
+                    "min_distinct_months": 2,
+                    "min_reference_coverage": 0.60,
+                },
+                "L1": {"min_effective_blocks": 10},
+            },
         }
     )
     assert (
@@ -200,6 +216,20 @@ def test_l3_support_is_validation_graded_not_covariance_graded() -> None:
         )
         == "L2"
     )
+    assert (
+        policy.minimum_tier(
+            "L3",
+            policy.resolve_node(
+                25,
+                3,
+                reference_coverage=0.95,
+                bootstrap_stability=0.90,
+                holdout_count=3,
+                holdout_far=0.05,
+            ),
+        )
+        == "L2"
+    )
 
 
 def test_wilson_interval_contains_observed_proportion() -> None:
@@ -212,9 +242,18 @@ def test_local_outputs_respect_claim_specific_admission() -> None:
     paths = resolve_paths()
     main = pd.read_parquet(paths.local_output_root / "D7_main_scores_hourly.parquet")
     support = pd.read_parquet(paths.local_output_root / "D7_support_assessment.parquet")
+    report = pd.read_parquet(paths.local_output_root / "D7_report_interface.parquet")
+    gate = pd.read_parquet(paths.local_output_root / "D7_gate_interface.parquet")
     assert not main.duplicated(["timestamp", "sensor_id"]).any()
     assert main["D7_total"].notna().any()
-    assert main["D7_forDQR"].notna().sum() == main["D7_total"].notna().sum()
+    assert main["D7_report_score"].equals(main["D7_total"])
+    assert "D7_forDQR" not in main
+    assert not report.duplicated(["timestamp", "sensor_id"]).any()
+    assert not gate.duplicated(["timestamp", "pair_id"]).any()
+    assert gate["veto_active"].equals(gate["sensor_identity_veto_active"])
+    assert gate["attribution_suppressed"].equals(
+        gate["process_coherence_guard_active"]
+    )
     assert main["D7_report"].notna().sum() == main["D7_report_provisional"].notna().sum()
     assert main["D7_report"].notna().any()
     assert not main["upstream_score_consumed"].any()
@@ -223,6 +262,9 @@ def test_local_outputs_respect_claim_specific_admission() -> None:
     assert orp["support_level"].isin(["L2", "L3"]).any()
     assert (orp["profile_covariance_mode"] == "diagonal_robust_z").all()
     assert np.isclose(orp["alpha_used"], 1.0).all()
+    l3 = support[support["support_level"].eq("L3")]
+    assert l3["family_support_level"].eq("L3").all()
+    assert l3["node_validation_passed"].all()
 
 
 def test_sensitivity_source_does_not_import_local() -> None:

@@ -23,7 +23,12 @@ from d7_local.contracts import TopologyRegistry
 from d7_local.data import SnapshotBuilder
 from d7_local.evidence import SpatialEvidenceEngine
 from d7_local.events import build_events, build_zone_consensus
-from d7_local.outputs import D7OutputExporter, build_manifest
+from d7_local.outputs import (
+    D7OutputExporter,
+    build_gate_interface,
+    build_manifest,
+    build_report_interface,
+)
 from d7_local.outputs.manifest import sha256_file
 from d7_local.scoring import ApplicabilityGate, ScoreMapper, UncertaintyEngine, aggregate_scores
 from d7_local.templates import ORPDegradationPolicy, SpatialTemplateBuilder
@@ -40,7 +45,7 @@ class D7RunResult:
 
 
 class D7Pipeline:
-    """Batch implementation of the D7 v2.2 Local Track contract."""
+    """Batch implementation of the D7 v2.3 Local Track contract."""
 
     def __init__(self, *, max_input_rows: int | None = None) -> None:
         self.paths = resolve_paths()
@@ -119,7 +124,7 @@ class D7Pipeline:
             interface_version=self.config["interface_version"],
             template_version=self.config["template_version"],
             mapping_version=self.config["mapping_version"],
-            veto_config=self.aggregation_config["veto"],
+            decision_config=self.aggregation_config["decision"],
         )
         events = build_events(
             main,
@@ -346,9 +351,6 @@ class D7Pipeline:
             score_eligible_support=self.aggregation_config["support_policy"][
                 "score_eligible"
             ],
-            dqr_eligible_support=self.aggregation_config["support_policy"][
-                "dqr_eligible"
-            ],
             action_eligible_support=self.aggregation_config["support_policy"][
                 "action_eligible"
             ],
@@ -387,15 +389,27 @@ class D7Pipeline:
             "zone_id", "position_order", "pair_id", "track_id", "active_regime_id",
             "map_regime_id", "map_probability", "regime_entropy", "ood_distance",
             "regime_state", "Q_profile", "Q_gradient", "Q_rank", "Q_rep", "D7_base",
-            "D7_raw", "D7_report_provisional", "D7_report", "D7_total", "D7_forDQR",
+            "D7_raw", "D7_report_provisional", "D7_report", "D7_total",
+            "D7_report_score",
             "uncertainty", "confidence", "U_regime",
             "U_support", "U_coverage", "U_covariance", "evaluation_status", "status_reason",
             "support_level", "report_support_eligible", "score_support_eligible",
             "gate_support_eligible", "report_eligible", "score_eligible",
             "gate_eligible", "action_eligible_candidate", "limited_support",
+            "family_support_id", "model_family_id", "family_support_level",
+            "family_n_effective", "family_distinct_months",
+            "family_bootstrap_stability", "family_holdout_count",
+            "family_holdout_far", "node_support_level",
+            "node_validation_passed", "node_n_effective",
+            "node_distinct_months", "node_reference_coverage",
+            "node_bootstrap_stability", "node_holdout_count",
+            "node_holdout_far", "family_exit_failed_reasons",
+            "node_exit_failed_reasons",
             "profile_covariance_mode", "fallback_level",
             "alpha_floor", "alpha_used", "covariance_condition_number", "dominant_evidence",
-            "veto_active", "veto_reason", "veto_eligible", "event_id", "window_coverage",
+            "process_coherence_guard_active", "attribution_suppressed",
+            "sensor_identity_veto_active", "veto_active", "veto_reason",
+            "veto_eligible", "event_id", "window_coverage",
             "research_topology_confirmed", "production_topology_verified",
             "deployment_approved",
             "topology_verified", "topology_version", "topology_hash", "template_id_used",
@@ -748,6 +762,16 @@ class D7Pipeline:
         self.exporter.write_dual("D7_support_assessment", artifacts["support"], "support")
         self.exporter.write_dual("D7_sensor_influence", artifacts["influence"], "influence")
         self.exporter.write_dual("D7_zone_consensus", artifacts["consensus"], "zone_consensus")
+        self.exporter.write_dual(
+            "D7_report_interface",
+            build_report_interface(artifacts["main"]),
+            "report_interface",
+        )
+        self.exporter.write_dual(
+            "D7_gate_interface",
+            build_gate_interface(artifacts["consensus"]),
+            "gate_interface",
+        )
         self.exporter.write_dual("D7_event_windows", artifacts["events"], "events")
         self.exporter.write_dual("D7_reference_window_library", artifacts["reference_library"], "reference")
         self.exporter.write_dual("D7_topology_drift_alerts", artifacts["drift"], "drift_alerts")
@@ -761,7 +785,10 @@ class D7Pipeline:
             self.common_root / "topology.schema.json",
             self.common_root / "topology_evidence.yaml",
         )
-        self.exporter.copy_interface_schema(self.common_root / "d6_interface.schema.json")
+        self.exporter.copy_interface_schemas(
+            self.common_root / "d7_report_interface.schema.json",
+            self.common_root / "d7_gate_interface.schema.json",
+        )
         self.exporter.write_workbook(
             "D7_sensor_profile_summary", {"sensor_profile": artifacts["sensor_summary"]}
         )
@@ -883,8 +910,9 @@ class D7Pipeline:
                 "ORP uses diagonal robust Z with alpha=1.00 because of its evidence geometry; model form and evidence-support tier are assessed independently.",
                 "Line, process zone, longitudinal order and SCADA-to-physical-point identity are author-confirmed and reconciled against an instrument register for research reporting.",
                 "Exact survey coordinates, asset/serial identity, maintenance records and dual approval are not required by the ordinal research model but remain production-governance requirements.",
-                "L2/L3 evidence can populate retrospective D7_total and D7_forDQR; L3 plus claim-specific validation is required for automated action.",
-                "D6 final numeric scoring is non-destructive and independent of D7 deployment approval; D7 contributes applicability, attribution and claim-specific protection rather than numerical rewriting.",
+                "L2/L3 evidence can populate the retrospective D7 report interface; only family-L3 templates that pass node validation may enter the gate interface.",
+                "Process-coherence evidence is an attribution guard, not a Veto; only validated sensor-identity evidence may activate Veto.",
+                "D6 final numeric scoring uses D6_raw; D1 and D7 contribute interpretation, attribution and action governance without numerical rewriting.",
                 "Observed low D7_raw windows are unlabeled structural evidence, not confirmed faults.",
             ],
             acceptance={
@@ -938,9 +966,8 @@ class D7Pipeline:
              "passed": bool(
                  main.loc[main["score_eligible"], "D7_total"].notna().all()
                  and main.loc[~main["score_eligible"], "D7_total"].isna().all()
-                 and main.loc[main["gate_eligible"], "D7_forDQR"].notna().all()
-                 and main.loc[~main["gate_eligible"], "D7_forDQR"].isna().all()
-             )},
+                 and main["D7_report_score"].equals(main["D7_total"])
+              )},
             {"artifact": "D7_regime_state", "check": "primary_key_unique",
              "passed": not regime.duplicated(["timestamp", "sensor_id"]).any()},
             {"artifact": "D7_support_assessment", "check": "ORP_supported_diagonal_alpha1",

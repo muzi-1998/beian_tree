@@ -14,7 +14,6 @@ class ApplicabilityGate:
         report_only_coverage: float = 0.60,
         report_eligible_support: tuple[str, ...] | list[str] = ("L2", "L3"),
         score_eligible_support: tuple[str, ...] | list[str] = ("L2", "L3"),
-        dqr_eligible_support: tuple[str, ...] | list[str] = ("L2", "L3"),
         action_eligible_support: tuple[str, ...] | list[str] = ("L3",),
     ) -> None:
         self.research_topology_confirmed = bool(research_topology_confirmed)
@@ -23,7 +22,6 @@ class ApplicabilityGate:
         self.report_only_coverage = float(report_only_coverage)
         self.report_eligible_support = tuple(report_eligible_support)
         self.score_eligible_support = tuple(score_eligible_support)
-        self.dqr_eligible_support = tuple(dqr_eligible_support)
         self.action_eligible_support = tuple(action_eligible_support)
 
     def apply(self, frame: pd.DataFrame) -> pd.DataFrame:
@@ -39,7 +37,6 @@ class ApplicabilityGate:
         ood = output["regime_state"].eq("OODHold")
         report_support = output["support_level"].isin(self.report_eligible_support)
         score_support = output["support_level"].isin(self.score_eligible_support)
-        dqr_support = output["support_level"].isin(self.dqr_eligible_support)
         action_support = output["support_level"].isin(self.action_eligible_support)
         limited = ~score_support
         status[report_coverage] = "report_only"
@@ -77,28 +74,24 @@ class ApplicabilityGate:
             & ~ood
             & self.research_topology_confirmed
         )
-        dqr_ready = (
-            dqr_support
-            & output["window_coverage"].ge(self.minimum_coverage)
-            & ~missing
-            & ~ood
-            & self.research_topology_confirmed
-        )
         output["report_support_eligible"] = report_support
         output["score_support_eligible"] = score_support
-        output["gate_support_eligible"] = dqr_support
+        output["gate_support_eligible"] = action_support
         research_report_ready = report_ready & self.research_topology_confirmed
         output["report_eligible"] = research_report_ready
         output["score_eligible"] = score_ready
-        output["gate_eligible"] = dqr_ready
+        output["gate_eligible"] = action_support & score_ready
         output["action_eligible_candidate"] = action_support & score_ready
         output["limited_support"] = limited
         output["D7_report_provisional"] = output["D7_raw"].where(report_ready)
         output["D7_report"] = output["D7_raw"].where(research_report_ready)
         output["D7_total"] = output["D7_raw"].where(score_ready)
-        output["D7_forDQR"] = output["D7_raw"].where(dqr_ready)
+        output["D7_report_score"] = output["D7_total"]
         output["deployment_approved"] = self.deployment_approved
         output["veto_eligible"] = False
         output["veto_active"] = False
         output["veto_reason"] = "pending_claim_specific_validation"
+        output["process_coherence_guard_active"] = False
+        output["attribution_suppressed"] = False
+        output["sensor_identity_veto_active"] = False
         return output

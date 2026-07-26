@@ -138,7 +138,7 @@ class D7OutputExporter:
                 {
                     "version": next(iter(templates.values())).template_version,
                     "parent": "none",
-                    "change_reason": "v2.2_validation_graded_candidate_build",
+                    "change_reason": "v2.3_family_support_and_node_validation",
                     "validator": "automated_contract_qa",
                     "approver": "PENDING_PRODUCTION_APPROVAL",
                     "state": "scientific_validation_candidate_deployment_pending",
@@ -278,10 +278,16 @@ class D7OutputExporter:
         )
         return [workbook, yaml_target, json_target, schema_target, evidence_target]
 
-    def copy_interface_schema(self, schema_path: Path) -> Path:
-        target = self.output_root / "D7_d6_interface.schema.json"
-        shutil.copy2(schema_path, target)
-        return target
+    def copy_interface_schemas(
+        self, report_schema_path: Path, gate_schema_path: Path
+    ) -> list[Path]:
+        targets = [
+            self.output_root / "D7_report_interface.schema.json",
+            self.output_root / "D7_gate_interface.schema.json",
+        ]
+        shutil.copy2(report_schema_path, targets[0])
+        shutil.copy2(gate_schema_path, targets[1])
+        return targets
 
 
 def records_to_frame(records: Iterable[Any]) -> pd.DataFrame:

@@ -18,7 +18,7 @@ topology metadata. It never consumes D1-D6 scores or states.
   and no study-period probe/channel change are author-confirmed. A provided
   installation register reconciles eight active DO and six active ORP
   instruments. Eligible L2/L3 windows may therefore populate `D7_report`,
-  `D7_total` and `D7_forDQR`.
+  `D7_total` and the sensor-hour `D7_report_interface`.
 - Maintenance provenance, production documentary audit and dual approval remain
   pending. These items limit automated deployment and confirmatory
   maintenance-cause claims; they do not suppress retrospective scientific
@@ -27,13 +27,16 @@ topology metadata. It never consumes D1-D6 scores or states.
   and dispersion, and cyclic time features define one shared process context.
   Gradient, rank and leave-one-out evidence are learned and evaluated within
   that shared regime.
-- L1 is diagnostic; L2 supports scientific scoring; L3 supports process-level
-  protection after detection and negative-control validation. Sensor-specific
-  hard Veto additionally requires localization validation. Automated deployment
-  remains separately approval-gated.
-- D6 finalizes non-destructively from `D6_after_D1`. D7 contributes score
-  applicability, process protection and causal attribution without rewriting
-  the D6 numeric score.
+- Family-level samples may support an analyte-regime-model family, but every
+  node still requires its own blocked-temporal validation. L1 is diagnostic;
+  L2 supports scientific scoring; only final node L3 can enter the pair-hour
+  action gate.
+- The process-coherence mechanism is an attribution Guard, not a Veto.
+  Sensor-specific hard Veto additionally requires localization validation.
+  Automated deployment remains separately approval-gated.
+- D7 exports separate report and gate interfaces. D6 finalizes
+  non-destructively from `D6_raw`; D1 and D7 provide interpretation and action
+  governance without rewriting the D6 numeric score.
 
 See `configs/common/topology_evidence.yaml` for the research evidence ledger and
 `docs/D7_FIELD_VERIFICATION_REQUIREMENTS.md` for the production documentary and

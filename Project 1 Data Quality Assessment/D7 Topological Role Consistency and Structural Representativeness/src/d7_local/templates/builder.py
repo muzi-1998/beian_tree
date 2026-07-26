@@ -140,28 +140,32 @@ class SpatialTemplateBuilder:
             raise ValueError(f"Insufficient D7-local reference snapshots for {target}/R{regime}")
         center, scale = robust_center_scale(complete.to_numpy())
         standardized = (complete.to_numpy() - center) / scale
-        support = EffectiveBlockEstimator().estimate(complete.index)
-        support_diagnostics = self._support_diagnostics(
+        family_support = EffectiveBlockEstimator().estimate(complete.index)
+        family_diagnostics = self._support_diagnostics(
             complete,
             analyte=analyte,
             regime=regime,
             fallback_level=fallback_level,
         )
-        nominal_level = self.support_policy.resolve(
-            int(support["n_effective"]),
-            int(support["distinct_months"]),
+        family_support_level = self.support_policy.resolve(
+            int(family_support["n_effective"]),
+            int(family_support["distinct_months"]),
             bootstrap_stability=float(
-                support_diagnostics["bootstrap_stability"]
+                family_diagnostics["bootstrap_stability"]
             ),
-            holdout_count=int(support_diagnostics["holdout_count"]),
-            holdout_far=float(support_diagnostics["holdout_far"]),
+            holdout_count=int(family_diagnostics["holdout_count"]),
+            holdout_far=float(family_diagnostics["holdout_far"]),
         )
         if analyte == "ORP":
-            covariance_mode, alpha_floor = self.orp_policy.resolve_mode(nominal_level)
-            support_level = nominal_level
+            covariance_mode, alpha_floor = self.orp_policy.resolve_mode(
+                family_support_level
+            )
         else:
-            support_level = nominal_level
-            covariance_mode = "full_shrinkage" if support_level in {"L2", "L3"} else "diagonal_robust_z"
+            covariance_mode = (
+                "full_shrinkage"
+                if family_support_level in {"L2", "L3"}
+                else "diagonal_robust_z"
+            )
             alpha_floor = 0.0 if covariance_mode == "full_shrinkage" else 1.0
         fit = fit_shrinkage_covariance(
             standardized,
@@ -179,26 +183,93 @@ class SpatialTemplateBuilder:
         ridge = Ridge(alpha=1.0).fit(model_frame[neighbors], model_frame[target])
         residual = model_frame[target].to_numpy() - ridge.predict(model_frame[neighbors])
         residual_scale = max(float(mad_scale(residual)), 1e-6)
+        node_support = EffectiveBlockEstimator().estimate(model_frame.index)
+        node_diagnostics = self._node_support_diagnostics(
+            model_frame,
+            target=target,
+            neighbors=neighbors,
+            expected_rows=len(frame),
+        )
+        node_support_level = self.support_policy.resolve_node(
+            int(node_support["n_effective"]),
+            int(node_support["distinct_months"]),
+            reference_coverage=float(node_diagnostics["node_reference_coverage"]),
+            bootstrap_stability=float(
+                node_diagnostics["node_bootstrap_stability"]
+            ),
+            holdout_count=int(node_diagnostics["node_holdout_count"]),
+            holdout_far=float(node_diagnostics["node_holdout_far"]),
+        )
+        support_level = self.support_policy.minimum_tier(
+            family_support_level, node_support_level
+        )
+        family_support_id = (
+            f"D7-{analyte}-R{regime}-{covariance_mode}-{fallback_level}"
+        )
+        support = {
+            **family_support,
+            **family_diagnostics,
+            "family_support_id": family_support_id,
+            "model_family_id": f"D7-{analyte}-R{regime}-{covariance_mode}",
+            "family_support_level": family_support_level,
+            "family_n_effective": int(family_support["n_effective"]),
+            "family_distinct_months": int(
+                family_support["distinct_months"]
+            ),
+            "family_bootstrap_stability": float(
+                family_diagnostics["bootstrap_stability"]
+            ),
+            "family_holdout_count": int(
+                family_diagnostics["holdout_count"]
+            ),
+            "family_holdout_far": float(
+                family_diagnostics["holdout_far"]
+            ),
+            "node_support_level": node_support_level,
+            "node_n_effective": int(node_support["n_effective"]),
+            "node_distinct_months": int(node_support["distinct_months"]),
+            **node_diagnostics,
+        }
         support.update(
             {
-                "model_family_id": f"D7-{analyte}-R{regime}",
                 "support_level": support_level,
-                **support_diagnostics,
-                "FAR": support_diagnostics["holdout_far"],
+                "FAR": family_diagnostics["holdout_far"],
                 "score_eligible": support_level in {"L2", "L3"},
-                "action_eligible_candidate": support_level == "L3",
+                "node_validation_passed": (
+                    family_support_level == "L3"
+                    and node_support_level == "L3"
+                ),
+                "action_eligible_candidate": (
+                    family_support_level == "L3"
+                    and node_support_level == "L3"
+                ),
                 "limited_support_exit_status": {
-                    "L3": "statistical_action_candidate",
+                    "L3": "family_and_node_action_candidate",
                     "L2": "scientific_score_ready",
                     "L1": "diagnostic_only",
                     "L0": "disabled",
                 }[support_level],
-                "exit_failed_reasons": self._exit_failed_reasons(
-                    support_level, support, support_diagnostics
+                "family_exit_failed_reasons": self._family_exit_failed_reasons(
+                    family_support_level,
+                    family_support,
+                    family_diagnostics,
+                ),
+                "node_exit_failed_reasons": self._node_exit_failed_reasons(
+                    node_support_level,
+                    node_support,
+                    node_diagnostics,
                 ),
                 "veto_eligible": False,
             }
         )
+        support["exit_failed_reasons"] = "|".join(
+            reason
+            for reason in [
+                support["family_exit_failed_reasons"],
+                support["node_exit_failed_reasons"],
+            ]
+            if reason != "none"
+        ) or "none"
         template = SpatialTemplate(
             template_id=f"D7-{target}-R{regime}",
             template_version=self.template_version,
@@ -300,7 +371,83 @@ class SpatialTemplateBuilder:
         self._support_diagnostics_cache[cache_key] = diagnostics
         return diagnostics.copy()
 
-    def _exit_failed_reasons(
+    def _node_support_diagnostics(
+        self,
+        model_frame: pd.DataFrame,
+        *,
+        target: str,
+        neighbors: list[str],
+        expected_rows: int,
+    ) -> dict[str, Any]:
+        daily = model_frame.resample("1D").median().dropna()
+        base_model = Ridge(alpha=1.0).fit(daily[neighbors], daily[target])
+        base_residual = (
+            daily[target].to_numpy()
+            - base_model.predict(daily[neighbors])
+        )
+        base_scale = max(float(mad_scale(base_residual)), 1e-6)
+        rng = np.random.default_rng(
+            int(self.bootstrap_config["random_seed"])
+            + sum(ord(character) for character in target)
+        )
+        stability: list[float] = []
+        for _ in range(int(self.bootstrap_config["repetitions"])):
+            sampled = daily.iloc[
+                rng.integers(0, len(daily), size=len(daily))
+            ]
+            model = Ridge(alpha=1.0).fit(
+                sampled[neighbors], sampled[target]
+            )
+            residual = (
+                sampled[target].to_numpy()
+                - model.predict(sampled[neighbors])
+            )
+            scale = max(float(mad_scale(residual)), 1e-6)
+            stability.append(min(scale / base_scale, base_scale / scale))
+
+        months = pd.PeriodIndex(daily.index, freq="M")
+        false_alarms = 0
+        holdout_rows = 0
+        valid_holdouts = 0
+        for month in months.unique():
+            train = daily.loc[months != month]
+            test = daily.loc[months == month]
+            if len(train) < 20 or test.empty:
+                continue
+            model = Ridge(alpha=1.0).fit(train[neighbors], train[target])
+            train_residual = np.abs(
+                train[target].to_numpy()
+                - model.predict(train[neighbors])
+            )
+            scale = max(float(mad_scale(train_residual)), 1e-6)
+            train_z = train_residual / scale
+            test_z = np.abs(
+                test[target].to_numpy()
+                - model.predict(test[neighbors])
+            ) / scale
+            threshold = float(np.quantile(train_z, 0.95))
+            false_alarms += int((test_z > threshold).sum())
+            holdout_rows += int(len(test_z))
+            valid_holdouts += 1
+        return {
+            "node_reference_coverage": float(
+                len(model_frame) / max(expected_rows, 1)
+            ),
+            "node_bootstrap_stability": float(np.median(stability)),
+            "node_holdout_count": valid_holdouts,
+            "node_holdout_rows": holdout_rows,
+            "node_holdout_far": (
+                float(false_alarms / holdout_rows)
+                if holdout_rows
+                else 1.0
+            ),
+            "node_validation_unit": "nonoverlap_calendar_day",
+            "node_validation_method": (
+                "daily_block_residual_bootstrap_and_leave_one_month_out"
+            ),
+        }
+
+    def _family_exit_failed_reasons(
         self,
         support_level: str,
         support: dict[str, Any],
@@ -323,6 +470,38 @@ class SpatialTemplateBuilder:
         if float(diagnostics["holdout_far"]) > float(l3["max_holdout_far"]):
             reasons.append("holdout_far")
         return "|".join(reasons) if reasons else "score_only_below_action_grade"
+
+    def _node_exit_failed_reasons(
+        self,
+        support_level: str,
+        support: dict[str, Any],
+        diagnostics: dict[str, Any],
+    ) -> str:
+        if support_level == "L3":
+            return "none"
+        reasons: list[str] = []
+        l3 = self.support_policy.node_thresholds["L3"]
+        if int(support["n_effective"]) < int(l3["min_effective_blocks"]):
+            reasons.append("node_effective_blocks")
+        if int(support["distinct_months"]) < int(l3["min_distinct_months"]):
+            reasons.append("node_distinct_months")
+        if float(diagnostics["node_reference_coverage"]) < float(
+            l3["min_reference_coverage"]
+        ):
+            reasons.append("node_reference_coverage")
+        if float(diagnostics["node_bootstrap_stability"]) < float(
+            l3["min_bootstrap_stability"]
+        ):
+            reasons.append("node_bootstrap_stability")
+        if int(diagnostics["node_holdout_count"]) < int(
+            l3["min_blocked_holdouts"]
+        ):
+            reasons.append("node_blocked_holdouts")
+        if float(diagnostics["node_holdout_far"]) > float(
+            l3["max_holdout_far"]
+        ):
+            reasons.append("node_holdout_far")
+        return "|".join(reasons) if reasons else "node_score_only"
 
     def _edge_templates(self, frame: pd.DataFrame, analyte: str) -> list[dict[str, Any]]:
         rows: list[dict[str, Any]] = []

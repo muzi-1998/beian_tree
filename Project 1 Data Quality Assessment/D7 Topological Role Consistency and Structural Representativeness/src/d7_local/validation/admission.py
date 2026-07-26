@@ -8,7 +8,11 @@ import numpy as np
 import pandas as pd
 
 from d7_common.config import D7_ROOT, load_yaml, resolve_paths
-from d7_local.outputs.exporter import D7OutputExporter
+from d7_local.outputs import (
+    D7OutputExporter,
+    build_gate_interface,
+    build_report_interface,
+)
 from d7_local.outputs.manifest import sha256_file
 
 
@@ -60,31 +64,37 @@ def _refresh_manifest(
         support["support_level"].value_counts().to_dict()
     )
     manifest["scale"]["d7_total_rows"] = int(main["D7_total"].notna().sum())
-    manifest["scale"]["d7_fordqr_rows"] = int(main["D7_forDQR"].notna().sum())
+    manifest["scale"]["d7_report_rows"] = int(
+        main["D7_report_score"].notna().sum()
+    )
     manifest["scale"]["d7_interface_evaluable_rows"] = int(
         consensus["d7_evaluable"].sum()
     )
-    manifest["scale"]["protective_veto_rows"] = int(
-        consensus["protective_veto_active"].sum()
+    manifest["scale"]["process_guard_rows"] = int(
+        consensus["process_coherence_guard_active"].sum()
     )
     manifest["scale"]["sensor_veto_rows"] = int(
-        consensus["sensor_veto_active"].sum()
+        consensus["sensor_identity_veto_active"].sum()
     )
-    manifest["methods"]["admission_policy"] = "d7-v2.2-claim-specific"
+    manifest["methods"]["admission_policy"] = (
+        "d7-v2.3-family-node-dual-interface"
+    )
     manifest["methods"]["scientific_score_released"] = decision[
         "scientific_score_released"
     ]
-    manifest["methods"]["protective_veto_validated"] = decision[
-        "protective_veto_validated"
+    manifest["methods"]["process_guard_validated"] = decision[
+        "process_guard_validated"
     ]
     manifest["methods"]["sensor_localization_validated"] = decision[
         "sensor_localization_validated"
     ]
     manifest["acceptance"] = {
         **manifest.get("acceptance", {}),
-        "acceptance_status": "scientific_score_released_node_veto_gated",
+        "acceptance_status": (
+            "scientific_report_released_guard_and_node_veto_gated"
+        ),
         "d7_total_released": decision["scientific_score_released"],
-        "protective_veto_released": decision["protective_veto_validated"],
+        "process_guard_released": decision["process_guard_validated"],
         "sensor_veto_released": decision["sensor_localization_validated"],
         "deployment_release": False,
     }
@@ -95,8 +105,9 @@ def _refresh_manifest(
     ]
     manifest["scientific_boundaries"].extend(
         [
-            "D7_total and D7_forDQR are scientific scores under author-confirmed ordinal topology; deployment approval is recorded separately.",
-            "Process-coherence protection may be released after detection and negative-control validation; sensor-specific hard Veto additionally requires localization validation.",
+            "D7_report_score is the retrospective scientific interface under author-confirmed ordinal topology; deployment approval is recorded separately.",
+            "The D7 gate interface contains action and attribution states only and does not replace any D6 numeric score.",
+            "Process coherence is an attribution guard, not a Veto; sensor-specific hard Veto additionally requires localization validation.",
             "Maintenance provenance and dual approval constrain automated deployment, not retrospective scientific aggregation.",
         ]
     )
@@ -131,12 +142,12 @@ def finalize_d7_admission() -> dict[str, Any]:
     paths = resolve_paths()
     output_root = paths.local_output_root
     config = load_yaml(D7_ROOT / "configs" / "local" / "aggregation.yaml")
-    veto_config = config["veto"]
+    decision_config = config["decision"]
 
     acceptance = pd.read_excel(
         output_root / "D7_validation_results.xlsx", sheet_name="acceptance"
     )
-    thresholds = veto_config["detection_validation"]
+    thresholds = decision_config["detection_validation"]
     detection_checks = {
         "swap_AUROC": _metric(acceptance, "swap_AUROC")
         >= float(thresholds["swap_auroc_min"]),
@@ -149,13 +160,13 @@ def finalize_d7_admission() -> dict[str, Any]:
         "switch_chatter_rate": _metric(acceptance, "switch_chatter_rate")
         <= float(thresholds["switch_chatter_max"]),
     }
-    protective_veto_validated = all(detection_checks.values())
+    process_guard_validated = all(detection_checks.values())
     top1 = _metric(acceptance, "swap_Top1")
     sensor_localization_validated = (
-        protective_veto_validated
+        process_guard_validated
         and top1
         >= float(
-            veto_config["localization_validation"]["swap_top1_min"]
+            decision_config["localization_validation"]["swap_top1_min"]
         )
     )
 
@@ -168,36 +179,36 @@ def finalize_d7_admission() -> dict[str, Any]:
     support["claim_validation_status"] = np.select(
         [
             support["support_level"].eq("L3")
-            & protective_veto_validated,
+            & support["node_validation_passed"]
+            & process_guard_validated,
             support["support_level"].eq("L2"),
         ],
         [
-            "action_grade_process_protection",
+            "action_grade_process_guard",
             "scientific_score_grade",
         ],
         default="diagnostic_grade",
     )
-    support["protective_veto_eligible"] = (
+    support["process_guard_eligible"] = (
         support["support_level"].eq("L3")
-        & protective_veto_validated
+        & support["node_validation_passed"]
+        & process_guard_validated
     )
     support["sensor_veto_eligible"] = (
         support["support_level"].eq("L3")
+        & support["node_validation_passed"]
         & sensor_localization_validated
     )
-    support["veto_eligible"] = (
-        support["protective_veto_eligible"]
-        | support["sensor_veto_eligible"]
-    )
+    support["veto_eligible"] = support["sensor_veto_eligible"]
     support["limited_support_exit_status"] = np.select(
         [
             support["sensor_veto_eligible"],
-            support["protective_veto_eligible"],
+            support["process_guard_eligible"],
             support["score_eligible"],
         ],
         [
             "sensor_action_admitted",
-            "process_protection_admitted",
+            "process_guard_admitted",
             "scientific_score_admitted",
         ],
         default="diagnostic_only",
@@ -206,12 +217,12 @@ def finalize_d7_admission() -> dict[str, Any]:
     exporter.write_dual("D7_support_assessment", support, "support")
 
     consensus = pd.read_parquet(output_root / "D7_zone_consensus.parquet")
-    consensus["detection_validation_passed"] = protective_veto_validated
+    consensus["detection_validation_passed"] = process_guard_validated
     consensus["localization_validation_passed"] = (
         sensor_localization_validated
     )
     consensus["d7_action_ready"] = (
-        consensus["d7_action_candidate"] & protective_veto_validated
+        consensus["d7_action_candidate"] & process_guard_validated
     )
     consensus["sensor_veto_role"] = np.select(
         [
@@ -225,16 +236,19 @@ def finalize_d7_admission() -> dict[str, Any]:
         ["target", "reference"],
         default="none",
     )
-    persistence = int(veto_config["persistence_hours"])
-    consensus["protective_veto_active"] = (
+    persistence = int(decision_config["persistence_hours"])
+    consensus["process_coherence_guard_active"] = (
         _persistent_mask(
             consensus,
-            "protective_veto_candidate",
+            "process_guard_candidate",
             persistence_hours=persistence,
         )
-        & protective_veto_validated
+        & process_guard_validated
     )
-    consensus["sensor_veto_active"] = (
+    consensus["attribution_suppressed"] = consensus[
+        "process_coherence_guard_active"
+    ]
+    consensus["sensor_identity_veto_active"] = (
         _persistent_mask(
             consensus,
             "sensor_veto_candidate",
@@ -243,20 +257,17 @@ def finalize_d7_admission() -> dict[str, Any]:
         )
         & sensor_localization_validated
     )
-    consensus["veto_active"] = (
-        consensus["protective_veto_active"]
-        | consensus["sensor_veto_active"]
-    )
-    consensus["veto_type"] = np.select(
+    consensus["veto_active"] = consensus["sensor_identity_veto_active"]
+    consensus["decision_type"] = np.select(
         [
-            consensus["sensor_veto_active"],
-            consensus["protective_veto_active"],
+            consensus["sensor_identity_veto_active"],
+            consensus["process_coherence_guard_active"],
             consensus["sensor_veto_candidate"]
             & ~sensor_localization_validated,
         ],
         [
             "sensor_identity_veto",
-            "process_coherence_protection",
+            "process_coherence_guard",
             "sensor_localization_evidence_only",
         ],
         default="not_triggered",
@@ -268,21 +279,21 @@ def finalize_d7_admission() -> dict[str, Any]:
         [
             "template_id",
             "claim_validation_status",
-            "protective_veto_eligible",
+            "process_guard_eligible",
             "sensor_veto_eligible",
         ]
     ].rename(columns={"template_id": "template_id_used"})
     main = main.drop(
         columns=[
             "claim_validation_status",
-            "protective_veto_eligible",
+            "process_guard_eligible",
             "sensor_veto_eligible",
         ],
         errors="ignore",
     ).merge(support_columns, on="template_id_used", how="left")
     main["validation_grade"] = np.where(
-        protective_veto_validated,
-        "V2_detection_and_process_protection",
+        process_guard_validated,
+        "V3_detection_and_process_guard",
         "V1_scientific_score_only",
     )
     consensus_columns = consensus[
@@ -291,47 +302,46 @@ def finalize_d7_admission() -> dict[str, Any]:
             "pair_id",
             "target_sensor_id",
             "reference_sensor_id",
-            "protective_veto_active",
-            "sensor_veto_active",
+            "process_coherence_guard_active",
+            "attribution_suppressed",
+            "sensor_identity_veto_active",
             "sensor_veto_role",
-            "veto_type",
+            "decision_type",
         ]
     ]
     main = main.drop(
-        columns=["protective_veto_active", "sensor_veto_active"],
+        columns=[
+            "process_coherence_guard_active",
+            "attribution_suppressed",
+            "sensor_identity_veto_active",
+        ],
         errors="ignore",
     ).merge(consensus_columns, on=["timestamp", "pair_id"], how="left")
     target_match = main["sensor_id"].eq(main["target_sensor_id"])
     reference_match = main["sensor_id"].eq(main["reference_sensor_id"])
-    sensor_applies = main["sensor_veto_active"].fillna(False) & (
+    sensor_applies = main["sensor_identity_veto_active"].fillna(False) & (
         (main["sensor_veto_role"].eq("target") & target_match)
         | (
             main["sensor_veto_role"].eq("reference")
             & reference_match
         )
     )
-    main["protective_veto_active"] = main[
-        "protective_veto_active"
+    main["process_coherence_guard_active"] = main[
+        "process_coherence_guard_active"
     ].fillna(False)
-    main["sensor_veto_active"] = sensor_applies
-    main["veto_active"] = (
-        main["protective_veto_active"] | main["sensor_veto_active"]
-    )
-    main["veto_eligible"] = (
-        main["protective_veto_eligible"].fillna(False)
-        | main["sensor_veto_eligible"].fillna(False)
-    )
+    main["attribution_suppressed"] = main[
+        "attribution_suppressed"
+    ].fillna(False)
+    main["sensor_identity_veto_active"] = sensor_applies
+    main["veto_active"] = main["sensor_identity_veto_active"]
+    main["veto_eligible"] = main["sensor_veto_eligible"].fillna(False)
     main["veto_reason"] = np.select(
         [
-            main["sensor_veto_active"],
-            main["protective_veto_active"],
+            main["sensor_identity_veto_active"],
             main["sensor_veto_eligible"].fillna(False),
-            main["protective_veto_eligible"].fillna(False),
         ],
         [
             "persistent_sensor_identity_loss",
-            "persistent_process_coherence_protection",
-            "eligible_not_triggered",
             "eligible_not_triggered",
         ],
         default="claim_specific_validation_or_support_not_met",
@@ -341,21 +351,39 @@ def finalize_d7_admission() -> dict[str, Any]:
         errors="ignore",
     )
     exporter.write_dual("D7_main_scores_hourly", main, "main_scores")
+    exporter.write_dual(
+        "D7_report_interface",
+        build_report_interface(main),
+        "report_interface",
+    )
+    exporter.write_dual(
+        "D7_gate_interface",
+        build_gate_interface(consensus),
+        "gate_interface",
+    )
 
     decision = {
-        "policy_version": "d7-admission-v2.2",
+        "policy_version": "d7-admission-v2.3",
         "scientific_score_released": bool(main["D7_total"].notna().any()),
-        "protective_veto_validated": protective_veto_validated,
+        "process_guard_validated": process_guard_validated,
         "sensor_localization_validated": sensor_localization_validated,
         "detection_checks": detection_checks,
         "swap_top1": top1,
         "l3_templates": int(support["support_level"].eq("L3").sum()),
-        "d7_total_rows": int(main["D7_total"].notna().sum()),
-        "d7_fordqr_rows": int(main["D7_forDQR"].notna().sum()),
-        "protective_veto_rows": int(
-            consensus["protective_veto_active"].sum()
+        "family_l3_templates": int(
+            support["family_support_level"].eq("L3").sum()
         ),
-        "sensor_veto_rows": int(consensus["sensor_veto_active"].sum()),
+        "node_validated_l3_templates": int(
+            support["node_validation_passed"].sum()
+        ),
+        "d7_total_rows": int(main["D7_total"].notna().sum()),
+        "d7_report_rows": int(main["D7_report_score"].notna().sum()),
+        "process_guard_rows": int(
+            consensus["process_coherence_guard_active"].sum()
+        ),
+        "sensor_veto_rows": int(
+            consensus["sensor_identity_veto_active"].sum()
+        ),
         "deployment_release": False,
     }
     (output_root / "D7_admission_decision.json").write_text(

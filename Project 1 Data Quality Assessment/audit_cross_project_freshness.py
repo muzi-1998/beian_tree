@@ -20,8 +20,11 @@ ROOT = Path(__file__).resolve().parent
 OUTPUT = ROOT / "cross_project_qa" / "cross_project_freshness_audit.json"
 D7_LOCAL_CORE_FILES = (
     "D7_main_scores_hourly.parquet",
+    "D7_report_interface.parquet",
+    "D7_gate_interface.parquet",
     "D7_spatial_evidence.parquet",
     "D7_sensor_influence.parquet",
+    "D7_support_assessment.parquet",
     "D7_regime_state.parquet",
     "D7_reference_window_library.parquet",
     "D7_event_windows.parquet",
@@ -450,12 +453,65 @@ def main() -> int:
         checks,
         "D7_sensitivity:no_production_write",
         d7_manifest.get("production_write_permission") is False
-        and d7_manifest.get("D7_forDQR_status") == "pending_not_produced"
+        and d7_manifest.get("authoritative_interface_status")
+        == "pending_not_produced"
         and d7_manifest.get("local_imported") is False,
-        d7_manifest.get("D7_forDQR_status"),
+        d7_manifest.get("authoritative_interface_status"),
     )
 
-    local_hash = d7_local_core_sha256(d7_root / "outputs" / "local")
+    d7_local_output = d7_root / "outputs" / "local"
+    report_interface = pd.read_parquet(
+        d7_local_output / "D7_report_interface.parquet"
+    )
+    gate_interface = pd.read_parquet(
+        d7_local_output / "D7_gate_interface.parquet"
+    )
+    report_unique = not report_interface.duplicated(
+        ["timestamp", "sensor_id"]
+    ).any()
+    gate_unique = not gate_interface.duplicated(
+        ["timestamp", "pair_id"]
+    ).any()
+    record(
+        checks,
+        "D7_local:dual_interface_contract",
+        report_unique
+        and gate_unique
+        and "D7_forDQR" not in report_interface
+        and "D7_forDQR" not in gate_interface,
+        {
+            "report_rows": len(report_interface),
+            "gate_rows": len(gate_interface),
+            "report_unique_sensor_hour": report_unique,
+            "gate_unique_pair_hour": gate_unique,
+        },
+    )
+    veto_identity = gate_interface["veto_active"].fillna(False).equals(
+        gate_interface["sensor_identity_veto_active"].fillna(False)
+    )
+    record(
+        checks,
+        "D7_local:guard_is_not_veto",
+        veto_identity
+        and gate_interface["attribution_suppressed"].fillna(False).equals(
+            gate_interface["process_coherence_guard_active"].fillna(False)
+        ),
+        {
+            "veto_equals_sensor_identity": veto_identity,
+            "process_guard_rows": int(
+                gate_interface[
+                    "process_coherence_guard_active"
+                ].fillna(False).sum()
+            ),
+            "sensor_veto_rows": int(
+                gate_interface["sensor_identity_veto_active"]
+                .fillna(False)
+                .sum()
+            ),
+        },
+    )
+
+    local_hash = d7_local_core_sha256(d7_local_output)
     record(
         checks,
         "D7_local:unchanged",
@@ -488,7 +544,7 @@ def main() -> int:
     )
 
     result = {
-        "schema_version": "cross-project-freshness-v2",
+        "schema_version": "cross-project-freshness-v3",
         "generated_utc": datetime.now(timezone.utc).isoformat(),
         "d1_release_id": d1_release["release_id"],
         "checks": checks,

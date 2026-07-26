@@ -553,7 +553,11 @@ class D7ValidationRunner:
         )
         return support[
             [
-                "template_id", "analyte", "n_effective", "support_level",
+                "template_id", "analyte", "family_support_id",
+                "family_support_level", "node_support_level",
+                "node_validation_passed", "support_level", "n_effective",
+                "node_n_effective", "node_reference_coverage",
+                "node_bootstrap_stability", "node_holdout_far",
                 "profile_covariance_mode", "alpha_floor", "alpha_used",
                 "covariance_condition_number", "limited_support_exit_status",
                 "exit_failed_reasons", "veto_eligible",
@@ -745,7 +749,7 @@ class D7ValidationRunner:
             )
         d6 = pd.DataFrame(
             [{
-                "interface_version": "d7-d6-v2.2",
+                "interface_version": "d7-d6-v2.3",
                 "D6_raw_max_abs_diff": 0.0,
                 "D6_after_D1_max_abs_diff": 0.0,
                 "D6_forDQR_provisional_max_abs_diff": 0.0,
@@ -765,7 +769,7 @@ class D7ValidationRunner:
             }, {
                 "failure_case": "node_localization_below_target",
                 "impact": "sensor-specific hard Veto disabled",
-                "mitigation": "retain process-coherence protection and report node attribution as evidence only",
+                "mitigation": "retain the process-coherence attribution guard and report node attribution as evidence only",
             }]
         )
         return {

@@ -41,6 +41,12 @@ class D7ReportBuilder:
         self.consensus = pd.read_parquet(
             self.paths.local_output_root / "D7_zone_consensus.parquet"
         )
+        self.report_interface = pd.read_parquet(
+            self.paths.local_output_root / "D7_report_interface.parquet"
+        )
+        self.gate_interface = pd.read_parquet(
+            self.paths.local_output_root / "D7_gate_interface.parquet"
+        )
         self.regime = pd.read_parquet(
             self.paths.local_output_root / "D7_regime_state.parquet"
         )
@@ -75,17 +81,17 @@ class D7ReportBuilder:
         release_index_md = self._release_index_markdown()
         outputs = []
         for name, content in [
-            ("D7_EXPERT_REPORT_v2.2.md", report_md),
-            ("D7_PROJECT_DIRECTORY_GUIDE_v2.2.md", guide_md),
-            ("D7_FIGURE_CAPTIONS_v2.2.md", captions_md),
+            ("D7_EXPERT_REPORT_v2.3.md", report_md),
+            ("D7_PROJECT_DIRECTORY_GUIDE_v2.3.md", guide_md),
+            ("D7_FIGURE_CAPTIONS_v2.3.md", captions_md),
             ("D7_CURRENT_RELEASE.md", release_index_md),
         ]:
             path = self.paths.report_root / name
             path.write_text(content, encoding="utf-8")
             outputs.append(path)
             (self.docs_root / name).write_text(content, encoding="utf-8")
-        expert_docx = self.paths.report_root / "D7_EXPERT_REPORT_v2.2.docx"
-        guide_docx = self.paths.report_root / "D7_PROJECT_DIRECTORY_GUIDE_v2.2.docx"
+        expert_docx = self.paths.report_root / "D7_EXPERT_REPORT_v2.3.docx"
+        guide_docx = self.paths.report_root / "D7_PROJECT_DIRECTORY_GUIDE_v2.3.docx"
         self._build_expert_docx(expert_docx)
         self._build_guide_docx(guide_docx)
         outputs.extend([expert_docx, guide_docx])
@@ -94,24 +100,24 @@ class D7ReportBuilder:
     def _release_index_markdown(self) -> str:
         return f"""# D7 Current Release
 
-Current release: **D7 v2.2**
+Current release: **D7 v2.3**
 
 Generated: {self.generated}
 
 - Scientific status: ready for final subscore aggregation with explicit
   eligibility.
-- Process protection: released after detection and negative-control
-  validation.
+- Process-coherence Guard: attribution-only and released only after detection
+  and negative-control validation.
 - Sensor-specific hard Veto: not released because swap Top-1 remains below the
   prespecified 0.80 threshold.
 - Automated deployment: blocked pending documentary audit, maintenance
   provenance and dual approval.
-- Current report: `D7_EXPERT_REPORT_v2.2.md` / `.docx`.
-- Current directory guide: `D7_PROJECT_DIRECTORY_GUIDE_v2.2.md` / `.docx`.
-- Current figure captions: `D7_FIGURE_CAPTIONS_v2.2.md`.
+- Current report: `D7_EXPERT_REPORT_v2.3.md` / `.docx`.
+- Current directory guide: `D7_PROJECT_DIRECTORY_GUIDE_v2.3.md` / `.docx`.
+- Current figure captions: `D7_FIGURE_CAPTIONS_v2.3.md`.
 
-Files labelled v2.1 are retained only as immutable release history and must not
-be used as the current scientific result.
+Files labelled v2.1 or v2.2 are retained only as immutable release history and
+must not be used as the current scientific result.
 """
 
     def _facts(self) -> dict[str, Any]:
@@ -136,6 +142,12 @@ be used as the current scientific result.
             "l1_templates": int(support.get("L1", 0)),
             "l2_templates": int(support.get("L2", 0)),
             "l3_templates": int(support.get("L3", 0)),
+            "family_l3_templates": int(
+                self.support["family_support_level"].eq("L3").sum()
+            ),
+            "node_validated_l3_templates": int(
+                self.support["node_validation_passed"].sum()
+            ),
             "l2_holdout_far_max": float(
                 self.support.loc[
                     self.support["support_level"].eq("L2"), "holdout_far"
@@ -159,13 +171,15 @@ be used as the current scientific result.
             "ood_rate": float(self.regime["regime_state"].eq("OODHold").mean()),
             "switches": int(self.regime["transition_id"].notna().sum()),
             "d7_total_nonnull": int(self.main["D7_total"].notna().sum()),
-            "d7_fordqr_nonnull": int(self.main["D7_forDQR"].notna().sum()),
+            "d7_report_nonnull": int(
+                self.main["D7_report_score"].notna().sum()
+            ),
             "d6_evaluable": int(self.consensus["d7_evaluable"].sum()),
-            "protective_veto_rows": int(
-                self.consensus["protective_veto_active"].sum()
+            "process_guard_rows": int(
+                self.consensus["process_coherence_guard_active"].sum()
             ),
             "sensor_veto_rows": int(
-                self.consensus["sensor_veto_active"].sum()
+                self.consensus["sensor_identity_veto_active"].sum()
             ),
             "topology_alerts": int(self.drift["alert_level"].eq("review").sum()),
             "swap_auroc": float(validation.loc["swap_AUROC", "estimate"]),
@@ -182,7 +196,9 @@ be used as the current scientific result.
             "jaccard": float(invariance.loc["event_jaccard", "estimate"]),
             "rho": float(invariance.loc["culprit_spearman", "estimate"]),
             "d1_release_id": self.sensitivity_manifest["d1_release_id"],
-            "sensitivity_write_status": self.sensitivity_manifest["D7_forDQR_status"],
+            "sensitivity_write_status": self.sensitivity_manifest[
+                "authoritative_interface_status"
+            ],
             "figure_qa": bool(self.figure_qa["passed"]),
         }
 
@@ -195,7 +211,7 @@ be used as the current scientific result.
         support_lines = "\n".join(
             f"- `{level}`: {count} templates" for level, count in f["support"].items()
         )
-        return f"""# D7 Expert Review Report v2.2
+        return f"""# D7 Expert Review Report v2.3
 
 **Project:** Topological Role Consistency and Structural Representativeness
 **Run:** `{f['run_id']}`
@@ -204,9 +220,9 @@ be used as the current scientific result.
 
 ## 1. Executive verdict
 
-The D7 v2.2 implementation is complete as a regime-conditioned ordinal spatial-structure assessment. Local, Sensitivity and Shadow V2 tracks, frozen templates, hourly scores, validation-graded admission, plot data, SCI-ready figures, manifests and audit records are present. The Local Track remains logically independent of D1, D2, D4 and D6 and consumes only canonical observations, exogenous hydraulic/time context and declared D7 topology.
+The D7 v2.3 implementation is complete as a regime-conditioned ordinal spatial-structure assessment. Local, Sensitivity and Shadow V2 tracks, frozen templates, hourly scores, validation-graded admission, dual report/gate interfaces, plot data, SCI-ready figures, manifests and audit records are present. The Local Track remains logically independent of D1, D2, D4 and D6 and consumes only canonical observations, exogenous hydraulic/time context and declared D7 topology.
 
-The ordinal research topology is confirmed: process line, pool zone, longitudinal order, SCADA-to-physical-point identity and the absence of study-period probe/channel changes are author-confirmed; the installation register independently reconciles eight active DO and six active ORP instruments. Exact coordinates, asset IDs and maintenance records are not model inputs and therefore do not suppress retrospective scientific scores. They remain deployment-governance limitations. Current support comprises {f['l1_templates']} L1, {f['l2_templates']} L2 and {f['l3_templates']} L3 templates. `D7_total` contains {f['d7_total_nonnull']:,} rows and `D7_forDQR` contains {f['d7_fordqr_nonnull']:,} rows. Swap Top-1 is {f['swap_top1']:.2f} (95% CI {f['swap_top1_low']:.2f}-{f['swap_top1_high']:.2f}, n={f['swap_top1_n']}), so node-specific hard Veto remains disabled without blocking the score.
+The ordinal research topology is confirmed: process line, pool zone, longitudinal order, SCADA-to-physical-point identity and the absence of study-period probe/channel changes are author-confirmed; the installation register independently reconciles eight active DO and six active ORP instruments. Exact coordinates, asset IDs and maintenance records are not model inputs and therefore do not suppress retrospective scientific scores. They remain deployment-governance limitations. Family-level support identifies {f['family_l3_templates']} L3 candidates, but node-specific blocked validation retains only {f['node_validated_l3_templates']} final L3 templates; the current effective distribution is L1={f['l1_templates']}, L2={f['l2_templates']} and L3={f['l3_templates']}. `D7_report_score` contains {f['d7_report_nonnull']:,} rows. Swap Top-1 is {f['swap_top1']:.2f} (95% CI {f['swap_top1_low']:.2f}-{f['swap_top1_high']:.2f}, n={f['swap_top1_n']}), so node-specific hard Veto remains disabled without blocking the score.
 
 ## 2. Scope and dimensional independence
 
@@ -227,7 +243,7 @@ The ordinal research topology is confirmed: process line, pool zone, longitudina
 - Full 10-min regime-state trajectory retained; OOD hold rate: {f['ood_rate']:.1%}; confirmed switches: {f['switches']}.
 - Result provenance is bound to canonical input hashes, topology hash, template/mapping/regime versions and code commit in `D7_run_manifest.json`.
 - Sensitivity inputs are bound to frozen D1 release `{f['d1_release_id']}` and exact D2/D4/Local artifact hashes in `D7_sensitivity_manifest.json`.
-- The isolated Sensitivity Track remains `{f['sensitivity_write_status']}` by design; authoritative `D7_forDQR` is produced only by Local admission.
+- The isolated Sensitivity Track remains `{f['sensitivity_write_status']}` by design; it cannot write either authoritative report scores or gate decisions.
 
 ## 4. Applicability and support
 
@@ -235,12 +251,14 @@ The ordinal research topology is confirmed: process line, pool zone, longitudina
 
 {support_lines}
 
-ORP uses a conservative `diagonal_robust_z` model with `alpha=1.00`, but model complexity is separated from evidence maturity. L2 requires sufficient effective blocks and month coverage and is admitted for scientific scoring with explicit support metadata; its maximum leave-one-month-out profile FAR is {f['l2_holdout_far_max']:.3f}. L3 additionally requires daily-block bootstrap stability, at least three blocked monthly holdouts and holdout FAR <=0.10; the observed L3 maximum is {f['l3_holdout_far_max']:.3f}. Thus L2 evidence is not described as action-grade or cross-month deployment validated. L0 remains disabled rather than being written as a low score.
+ORP uses a conservative `diagonal_robust_z` model with `alpha=1.00`, but model complexity is separated from evidence maturity. Family support is shared once by analyte, regime and model family without multiplying the effective sample by the number of sensors. Every target-specific reconstruction then undergoes its own coverage, residual-scale bootstrap and leave-one-month-out FAR validation. Final support is the lower of family and node maturity. L2 evidence remains valid for scientific scoring but is not described as action-grade or cross-month deployment validated. L0 remains disabled rather than being written as a low score.
 
-L1 is diagnostic only. L2 and L3 may populate `D7_total` and `D7_forDQR` under
-the confirmed ordinal topology. Only validation-graded L3 may activate
-claim-specific Veto. Deployment approval is reported separately and does not
-alter the retrospective score. Current provisional report rows:
+L1 is diagnostic only. L2 and L3 may populate `D7_total` and the sensor-hour
+`D7_report_interface` under the confirmed ordinal topology. Only final L3
+nodes may enter the pair-hour `D7_gate_interface`. Process coherence is an
+attribution Guard rather than a Veto; only validated sensor-identity evidence
+may activate hard Veto. Deployment approval is reported separately and does
+not alter the retrospective score. Current provisional report rows:
 {f['provisional_report_rows']:,}; research report rows:
 {f['research_report_rows']:,}.
 
@@ -265,18 +283,18 @@ Validation uses observed test-period spatial windows with frozen templates. Same
 - Declared topology contains 14 DO/ORP nodes, 10 longitudinal edges and seven parallel peer pairs.
 - {f['topology_alerts']} finite candidate mappings exceed the report-only topology drift review threshold. These are hypotheses for field review, not automatic topology updates.
 - Shadow V2 has `production_impact=none`; it cannot mutate `topology.yaml`, active templates, `D7_total` or Veto.
-- `D7_total` non-null rows: {f['d7_total_nonnull']}; `D7_forDQR` rows: {f['d7_fordqr_nonnull']}; D6 interface evaluable rows: {f['d6_evaluable']}.
-- Process-coherence protection is active for {f['protective_veto_rows']} pair-hours; sensor-specific hard Veto is active for {f['sensor_veto_rows']} pair-hours.
-- D6 `D6_raw` and `D6_after_D1` remain unchanged. D7 changes only gate applicability and causal attribution in the separate final-arbitration artifact.
+- `D7_total` and report-interface rows: {f['d7_report_nonnull']}; D7 pair-interface evaluable rows: {f['d6_evaluable']}.
+- Process-coherence Guard is active for {f['process_guard_rows']} pair-hours; sensor-specific hard Veto is active for {f['sensor_veto_rows']} pair-hours.
+- The final D6 numeric source is `D6_raw`. D1 is interpretation-only, while D7 supplies report context, attribution Guard and validated sensor-identity decisions.
 
 ## 7. Figure review
 
-Five multi-panel figure groups are available as SVG, PDF, 600 dpi PNG and LZW-compressed 600 dpi TIFF, backed by `D7_plot_data.parquet/.csv`. All use Arial, 0.8 pt boxed axes, inward ticks, `(a)/(b)/(c)` panel labels, endpoint-aware scales and transparent label backgrounds where annotations cover data. Figure D7-3 decomposes weighted leave-one-out structural attribution; it does not claim Shapley values. Automated counterpart/font/pixel QA passed: {f['figure_qa']}.
+Five multi-panel figure groups are available as SVG, PDF, 600 dpi PNG and LZW-compressed 600 dpi TIFF, backed by `D7_plot_data.parquet/.csv`. All use Arial, 0.8 pt boxed axes, inward ticks, unified panel labels, endpoint-aware scales and transparent label backgrounds where annotations cover data. Figure D7-3 decomposes weighted leave-one-out structural attribution and does not claim exact Shapley values. Figure D7-5 is now the integration evidence figure: it shows family-to-node support attrition, node validation metrics, dual-interface coverage and the zero-adjustment D6 independence audit. Automated counterpart/font/pixel QA passed: {f['figure_qa']}.
 
 ## 8. Critical limitations
 
 1. Research topology is author-confirmed and inventory-reconciled, but production documentary audit, maintenance provenance and dual approval remain incomplete.
-2. Effective support is validation graded: L1={f['l1_templates']}, L2={f['l2_templates']}, L3={f['l3_templates']}; L1 regimes remain diagnostic and unavailable for action.
+2. Family-level L3 support does not imply node-level action validity: {f['family_l3_templates']} family-L3 candidates reduce to {f['node_validated_l3_templates']} final node-L3 templates after blocked validation.
 3. Swap Top-1 localization is {f['swap_top1']:.3f} (95% CI {f['swap_top1_low']:.3f}-{f['swap_top1_high']:.3f}) versus the 0.80 target.
 4. The {f['events']} candidate event windows have no external truth labels; event counts must not be reported as confirmed sensor faults.
 5. Regime transition FAR and topology candidate recall are not estimable without external regime/topology truth.
@@ -286,8 +304,8 @@ Five multi-panel figure groups are available as SVG, PDF, 600 dpi PNG and LZW-co
 
 The branch may enter final WW-DQS subscore aggregation as a **scientific implementation with claim-specific action gates**. Automated control deployment remains outside the present evidence scope.
 
-1. Use `D7_total` and `D7_forDQR` only where score eligibility is explicit; renormalize missing dimensions rather than substituting a low score.
-2. Use process-coherence protection only for persistent validation-graded L3 evidence.
+1. Use `D7_report_score` only where report eligibility is explicit; renormalize missing dimensions rather than substituting a low score.
+2. Use the separate gate interface only for final L3 nodes and treat process coherence as an attribution Guard, never as Veto.
 3. Keep sensor-specific hard Veto disabled until blocked localization reaches Top-1 >=0.80.
 4. Complete D6-D7 conditional dependence and ablation analysis before fixing final WW-DQS weights.
 5. Add field-confirmed topology and event cases as external validation when they become available.
@@ -308,7 +326,7 @@ retrospective scientific aggregation.
             ("outputs/reports", "Expert report, directory guide and figure captions"),
         ]
         output_table = "\n".join(f"| `{path}` | {role} |" for path, role in output_rows)
-        return f"""# D7 Project Directory Guide v2.2
+        return f"""# D7 Project Directory Guide v2.3
 
 **Generated:** {self.generated}
 **Update rule:** every computational or figure change must rerun reports and release QA.
@@ -338,7 +356,7 @@ D7 Topological Role Consistency and Structural Representativeness/
 | Track | Allowed inputs | Forbidden outputs |
 |---|---|---|
 | `d7_local` | Canonical 1-min observations/flags, QR/QIR context, research topology/evidence, frozen D7 assets | Reading D1-D6 score/state/event inputs |
-| `sensitivity` | Frozen Local evidence plus D1/D2/D4 read-only filters | `D7_forDQR`, zone consensus, active templates, D6 arbitration |
+| `sensitivity` | Frozen Local evidence plus D1/D2/D4 read-only filters | Authoritative report/gate interfaces, active templates, D6 arbitration |
 | `shadow_v2` | Canonical observations and declared topology | Automatic topology update, Veto, Local score mutation |
 
 ## 3. Output roots
@@ -399,6 +417,7 @@ Use `python scripts/run_d7_release.py --include-local` after data, topology, tem
   it is not evidence until reviewer and approver fields are independently completed.
 - Parquet is authoritative for tabular data; Excel is a human-review mirror with the same semantics.
 - `D7_plot_data` is the sole manuscript-figure input; figure scripts do not recompute business metrics.
+- `D7_report_interface` is the sensor-hour scientific score contract; `D7_gate_interface` is the pair-hour decision and attribution contract.
 - Reports and this guide are generated artifacts and must be refreshed on every release workflow.
 - Missing/limited/OOD evidence is represented by status plus `NaN`, never by a fabricated low score.
 
@@ -408,11 +427,11 @@ Current release classification: **scientific score ready for final subscore aggr
 """
 
     def _captions_markdown(self) -> str:
-        return """# D7 Figure Captions v2.2
+        return """# D7 Figure Captions v2.3
 
 ## Figure D7-1. Author-confirmed topology, applicability and scientific boundary
 
-(a) Author-confirmed longitudinal DO/ORP topology for two parallel process lines; coordinates are schematic encodings of ordinal position, not surveyed distances. (b) Local Track applicability states across hourly sensor windows. (c) Claim-specific release matrix separating scientific score availability, process-coherence protection, node-specific hard Veto and deployment approval.
+(a) Author-confirmed longitudinal DO/ORP topology for two parallel process lines; coordinates are schematic encodings of ordinal position, not surveyed distances. (b) Local Track applicability states across hourly sensor windows. (c) Claim-specific release matrix separating the scientific report interface, process-coherence attribution Guard, node-specific hard Veto and deployment approval.
 
 ## Figure D7-2. Spatiotemporal score structure and effective template support
 
@@ -426,9 +445,9 @@ Current release classification: **scientific score ready for final subscore aggr
 
 (a) Release criteria for same-line position swaps, negative controls and regime chatter; dashed segments denote targets and error bars show 95% intervals where estimable. (b) Top-1 localization by injected D7-relevant scenario with Wilson 95% intervals. (c) False alarm rates and empirical 95% ranges for orthogonality controls. (d) Local-Sensitivity invariance metrics. Positive injection results are synthetic observed-window validation, not field truth.
 
-## Figure D7-5. Support, regime, topology and release governance
+## Figure D7-5. Hierarchical admission and dimension-independent integration
 
-(a) Support-tier distribution. (b) MAP-Hysteresis state occupancy. (c) Highest finite candidate-vs-declared topology likelihood ratios; candidates cannot alter declared topology. (d) Claim-specific release matrix distinguishing score, process protection, sensor Veto and deployment.
+(a) Family-level and final node-level support counts, showing that shared sample support does not automatically upgrade every node. (b) Node bootstrap stability and blocked-temporal holdout FAR for family-L3 candidates; dashed lines show prespecified node thresholds. (c) Coverage of the sensor-hour report interface and pair-hour gate states, including attribution Guard and sensor Veto. (d) D6 independence audit comparing the final D6 score with its sole numeric source, `D6_raw`; the identity line represents zero cross-dimensional adjustment.
 """
 
     def _new_document(self, title: str, subtitle: str, status: str) -> Document:
@@ -440,7 +459,7 @@ Current release classification: **scientific score ready for final subscore aggr
         section.right_margin = Inches(0.82)
         self._configure_styles(document)
         header = section.header.paragraphs[0]
-        header.text = "D7 v2.2 | Project 1 Data Quality Assessment"
+        header.text = "D7 v2.3 | Project 1 Data Quality Assessment"
         header.alignment = WD_ALIGN_PARAGRAPH.RIGHT
         self._format_runs(header, size=8, color=MUTED)
         footer = section.footer.paragraphs[0]
@@ -499,17 +518,17 @@ Current release classification: **scientific score ready for final subscore aggr
         f = self._facts()
         doc = self._new_document(
             "D7 Expert Review Report",
-            "Regime-conditioned Ordinal Spatial Structure and Representativeness | v2.2",
+            "Regime-conditioned Ordinal Spatial Structure and Representativeness | v2.3",
             "Scientific score released; claim-specific action gates retained",
         )
         self._heading(doc, "1. Executive verdict", 1)
         self._paragraph(
             doc,
-            "D7 v2.2 is complete as a regime-conditioned ordinal spatial-structure assessment. Local, Sensitivity and Shadow V2 tracks, frozen assets, validation-graded admission, figures, reports and audit records are present and reproducible.",
+            "D7 v2.3 is complete as a regime-conditioned ordinal spatial-structure assessment with family-to-node support validation and separate scientific report and decision-gate interfaces.",
         )
         self._warning(
             doc,
-            f"Ordinal topology is author-confirmed and inventory-reconciled. Scientific scoring is independent of deployment approval: L1={f['l1_templates']}, L2={f['l2_templates']}, L3={f['l3_templates']}; D7_total={f['d7_total_nonnull']:,} rows and D7_forDQR={f['d7_fordqr_nonnull']:,} rows. Swap Top-1 is {f['swap_top1']:.2f} (95% CI {f['swap_top1_low']:.2f}-{f['swap_top1_high']:.2f}, n={f['swap_top1_n']}), so node-specific hard Veto remains disabled.",
+            f"Ordinal topology is author-confirmed and inventory-reconciled. Shared family support yields {f['family_l3_templates']} L3 candidates, while node validation retains {f['node_validated_l3_templates']} final L3 templates. D7_report_score contains {f['d7_report_nonnull']:,} rows. Swap Top-1 is {f['swap_top1']:.2f} (95% CI {f['swap_top1_low']:.2f}-{f['swap_top1_high']:.2f}, n={f['swap_top1_n']}), so node-specific hard Veto remains disabled.",
         )
         self._heading(doc, "2. Scope and dimensional independence", 1)
         for item in [
@@ -523,7 +542,7 @@ Current release classification: **scientific score ready for final subscore aggr
         self._heading(doc, "3. Current data and outputs", 1)
         self._paragraph(
             doc,
-            f"Sensitivity provenance is bound to frozen D1 release {f['d1_release_id']} and exact D2/D4/Local artifact hashes. The Sensitivity Track remains {f['sensitivity_write_status']} and cannot write authoritative scores; Local admission supplies D7_forDQR.",
+            f"Sensitivity provenance is bound to frozen D1 release {f['d1_release_id']} and exact D2/D4/Local artifact hashes. The Sensitivity Track remains {f['sensitivity_write_status']} and cannot write authoritative report or gate outputs.",
         )
         self._table(
             doc,
@@ -584,8 +603,8 @@ Current release classification: **scientific score ready for final subscore aggr
         )
         self._bullet(doc, "Ordinal research topology is confirmed; maintenance provenance, production documentary audit and two-person approval remain pending.")
         self._bullet(doc, f"D7-to-D6 zone consensus contains {f['d6_evaluable']:,} evaluable rows.")
-        self._bullet(doc, f"Process protection is active for {f['protective_veto_rows']:,} pair-hours; sensor-specific hard Veto is active for {f['sensor_veto_rows']:,}.")
-        self._bullet(doc, "D6_raw and D6_after_D1 remain unchanged; a separate artifact records final non-destructive arbitration.")
+        self._bullet(doc, f"Process-coherence Guard is active for {f['process_guard_rows']:,} pair-hours; sensor-specific hard Veto is active for {f['sensor_veto_rows']:,}.")
+        self._bullet(doc, "D6_raw is the sole D6 numeric source; D1 and D7 contribute interpretation and action governance only.")
         doc.add_page_break()
         self._heading(doc, "7. SCI figure review", 1)
         captions = [
@@ -623,7 +642,7 @@ Current release classification: **scientific score ready for final subscore aggr
         )
         for item in [
             "Use score-eligible D7 rows with confidence-aware missing-dimension renormalization.",
-            "Use process-coherence protection only for persistent validation-graded L3 evidence.",
+            "Use process-coherence Guard only for persistent final-L3 evidence and never report it as Veto.",
             "Raise blocked-holdout Top-1 to at least 0.80 without weakening negative-control FAR.",
             "Complete D6-D7 overlap and ablation analysis before freezing WW-DQS weights.",
             "Obtain documentary approval before automated deployment.",
@@ -634,7 +653,7 @@ Current release classification: **scientific score ready for final subscore aggr
     def _build_guide_docx(self, path: Path) -> None:
         doc = self._new_document(
             "D7 Project Directory Guide",
-            "Python structure, artifact ownership and release workflow | v2.2",
+            "Python structure, artifact ownership and release workflow | v2.3",
             "Operational reference; regenerate on every project update",
         )
         self._heading(doc, "1. Directory map", 1)
@@ -655,7 +674,7 @@ Current release classification: **scientific score ready for final subscore aggr
             ["Track", "Allowed inputs", "Forbidden behavior"],
             [
                 ["d7_local", "Canonical observations/flags, QR/QIR context, topology/evidence", "Read D1-D6 scores/states/events"],
-                ["sensitivity", "Frozen Local evidence plus D1/D2/D4 read-only filters", "Write D7_forDQR, zone consensus or D6"],
+                ["sensitivity", "Frozen Local evidence plus D1/D2/D4 read-only filters", "Write report/gate interfaces, zone consensus or D6"],
                 ["shadow_v2", "Canonical observations and declared topology", "Auto-update topology or production scores"],
             ],
             [1.2, 2.65, 2.65],

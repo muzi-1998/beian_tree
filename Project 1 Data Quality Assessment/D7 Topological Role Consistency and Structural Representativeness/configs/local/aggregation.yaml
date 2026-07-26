@@ -4,7 +4,6 @@ minimum_components: [profile, gradient, rep]
 support_policy:
   report_eligible: [L2, L3]
   score_eligible: [L2, L3]
-  dqr_eligible: [L2, L3]
   action_eligible: [L3]
   thresholds:
     L3:
@@ -18,17 +17,31 @@ support_policy:
       min_distinct_months: 2
     L1:
       min_effective_blocks: 20
+  node_validation:
+    L3:
+      min_effective_blocks: 30
+      min_distinct_months: 3
+      min_reference_coverage: 0.80
+      min_bootstrap_stability: 0.80
+      min_blocked_holdouts: 3
+      max_holdout_far: 0.15
+    L2:
+      min_effective_blocks: 20
+      min_distinct_months: 2
+      min_reference_coverage: 0.60
+    L1:
+      min_effective_blocks: 10
   bootstrap:
     repetitions: 200
     random_seed: 42
-veto:
+decision:
   profile_max: 2.0
   rep_max: 2.0
   persistence_hours: 6
   minimum_coverage: 0.80
   minimum_regime_confidence: 0.60
   eligible_support: [L3]
-  protective_strength_min: 0.70
+  process_guard_strength_min: 0.70
   sensor_strength_min: 0.80
   detection_validation:
     swap_auroc_min: 0.90

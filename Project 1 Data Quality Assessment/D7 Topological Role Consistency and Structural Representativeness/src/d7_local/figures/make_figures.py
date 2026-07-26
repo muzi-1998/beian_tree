@@ -168,8 +168,11 @@ class D7FigureBuilder:
         ax = axes[1]
         status = self._subset("FigD7_1_framework", "b").sort_values("value")
         colors = [PALETTE.get("blocked" if value > 0 else "pass", "#6C757D") for value in status["value"]]
-        ax.barh(status["x"], status["value"], color=colors, edgecolor="white")
-        for y, value, annotation in zip(status["x"], status["value"], status["annotation"]):
+        status_labels = status["x"].str.replace("_", " ", regex=False)
+        ax.barh(status_labels, status["value"], color=colors, edgecolor="white")
+        for y, value, annotation in zip(
+            status_labels, status["value"], status["annotation"]
+        ):
             ax.text(value + 0.012, y, annotation, va="center", fontsize=6.5)
         ax.set_xlim(0, max(1.0, status["value"].max() * 1.18))
         ax.set_xticks([0, 0.25, 0.50, 0.75, 1.0])
@@ -182,11 +185,11 @@ class D7FigureBuilder:
         gates = self._subset("FigD7_1_framework", "c").sort_values("order")
         gate_labels = gates["x"].replace(
             {
-                "D7_forDQR": "D7 for\nDQR",
                 "Raw evidence": "Raw\nevidence",
-                "Scientific score": "Scientific\nscore",
-                "Process protection": "Process\nprotection",
-                "Sensor hard Veto": "Sensor hard\nVeto",
+                "Report interface": "Report\ninterface",
+                "Pair action gate": "Pair action\ngate",
+                "Process Guard claim": "Process Guard\nclaim",
+                "Sensor Veto claim": "Sensor Veto\nclaim",
             }
         )
         ax.barh(
@@ -195,10 +198,10 @@ class D7FigureBuilder:
             edgecolor="white",
         )
         annotation_labels = {
-            "L2/L3 evidence admitted independently of deployment": "L2/L3 evidence; independent\nof deployment approval",
-            "Released for non-destructive subscore aggregation": "Released for non-destructive\nsubscore aggregation",
-            "Detection and negative-control validation": "Detection and negative-\ncontrol validation",
-            "Requires Top-1 localization validation": "Requires Top-1\nlocalization validation",
+            "Scientific score is independent of action admission": "Scientific score independent\nof action admission",
+            "Requires both nodes to pass final L3 validation": "Requires both nodes to pass\nfinal L3 validation",
+            "Validated attribution suppression, not a Veto": "Validated attribution suppression;\nnot a Veto",
+            "Requires validated sensor-identity localization": "Requires validated\nsensor-identity localization",
             "Documentary audit and dual approval pending": "Documentary audit and\ndual approval pending",
             "D7_raw retained when calculable": "D7 raw retained\nwhen calculable",
         }
@@ -214,7 +217,7 @@ class D7FigureBuilder:
             )
         ax.set_xlim(0, 1)
         ax.set_xticks([0, 1], ["Blocked", "Available"])
-        ax.set_title("Boundary and release gates")
+        ax.set_title("Boundary and action readiness")
         self._boxed(ax)
         self._panel_label(ax, "c")
         return self._save(fig, "FigD7_1_framework")
@@ -391,6 +394,9 @@ class D7FigureBuilder:
             ax.set_xticks(x, frame["x"].str.replace("_", " ", regex=False), rotation=28, ha="right")
             ax.set_ylim(0, 1.05)
             ax.set_yticks([0, 0.25, 0.50, 0.75, 1.0])
+            if panel == "c":
+                ax.set_ylim(0, 0.25)
+                ax.set_yticks([0, 0.05, 0.10, 0.15, 0.20, 0.25])
             ax.set_ylabel(ylabel)
             ax.set_title(title)
             self._boxed(ax)
@@ -398,93 +404,237 @@ class D7FigureBuilder:
         return self._save(fig, "FigD7_4_validation")
 
     def _figure_5(self) -> list[Path]:
-        fig, axes = plt.subplots(2, 2, figsize=(7.2, 5.5), constrained_layout=True)
+        fig, axes = plt.subplots(2, 2, figsize=(7.2, 5.4), constrained_layout=True)
         ax = axes[0, 0]
         support = self._subset("FigD7_5_governance", "a")
         analytes = ["DO", "ORP"]
-        bottom = np.zeros(2)
-        for level in ["L3", "L2", "L1", "L0"]:
-            values = [support.loc[(support["x"] == analyte) & (support["group"] == level), "value"].sum() for analyte in analytes]
-            if sum(values) == 0:
-                continue
-            ax.bar(analytes, values, bottom=bottom, color=PALETTE[level], label=level, edgecolor="white")
-            bottom += values
+        sources = ["Family support", "Validated node"]
+        x = np.arange(len(analytes), dtype=float)
+        width = 0.32
+        max_total = 0.0
+        for source_index, source in enumerate(sources):
+            bottom = np.zeros(len(analytes))
+            offset = (source_index - 0.5) * width
+            for level in ["L1", "L2", "L3"]:
+                values = np.asarray(
+                    [
+                        support.loc[
+                            (support["x"] == analyte)
+                            & (support["y"] == source)
+                            & (support["group"] == level),
+                            "value",
+                        ].sum()
+                        for analyte in analytes
+                    ],
+                    dtype=float,
+                )
+                ax.bar(
+                    x + offset,
+                    values,
+                    width=width,
+                    bottom=bottom,
+                    color=PALETTE[level],
+                    label=level if source_index == 0 else None,
+                    edgecolor="white",
+                )
+                bottom += values
+            max_total = max(max_total, float(bottom.max()))
+            for xpos, total in zip(x + offset, bottom):
+                ax.text(
+                    xpos,
+                    total + 0.8,
+                    f"{int(total)}",
+                    ha="center",
+                    va="bottom",
+                    fontsize=6.3,
+                )
+        ax.set_xticks(x, analytes)
         ax.set_ylabel("Template count")
-        ax.set_ylim(0, max(bottom) * 1.42)
-        ax.set_title("Support governance")
+        ax.set_ylim(0, max_total * 1.32)
+        ax.set_title("Shared-family support and node admission")
         ax.legend(
+            title="Final tier",
             ncol=3,
             loc="upper center",
-            bbox_to_anchor=(0.5, 1.0),
-            borderaxespad=0.2,
+            bbox_to_anchor=(0.5, 1.01),
+            borderaxespad=0.1,
+        )
+        ax.text(
+            0.02,
+            0.98,
+            "Left: family\nRight: node",
+            transform=ax.transAxes,
+            ha="left",
+            va="top",
+            fontsize=6.2,
+            bbox=dict(facecolor="white", edgecolor="none", alpha=0.82, pad=1.0),
         )
         self._boxed(ax)
         self._panel_label(ax, "a")
 
         ax = axes[0, 1]
-        states = self._subset("FigD7_5_governance", "b").sort_values("value")
-        state_labels = states["x"].replace(
-            {"OODHold": "OOD hold", "SwitchCandidate": "Switch candidate", "ActiveNew": "Active new"}
+        node = self._subset("FigD7_5_governance", "b").sort_values(
+            ["order", "group"]
         )
-        ax.barh(state_labels, states["value"], color="#4C78A8", edgecolor="white")
-        for y, annotation, value in zip(state_labels, states["annotation"], states["value"]):
-            ax.text(value + 0.012, y, annotation, va="center", fontsize=6.5)
-        ax.set_xlim(0, 1)
-        ax.set_xticks([0, 0.25, 0.50, 0.75, 1.0])
-        ax.set_xlabel("Fraction of 10-min target states")
-        ax.set_title("MAP-Hysteresis occupancy")
+        sensor_order = (
+            node[["x", "order"]]
+            .drop_duplicates()
+            .sort_values("order")["x"]
+            .tolist()
+        )
+        positions = {sensor: index for index, sensor in enumerate(sensor_order)}
+        metric_styles = {
+            "Bootstrap stability": ("o", "#168AAD"),
+            "Holdout FAR": ("s", "#D1495B"),
+        }
+        for metric, (marker, color) in metric_styles.items():
+            frame = node[node["group"] == metric]
+            ax.scatter(
+                [positions[sensor] for sensor in frame["x"]],
+                frame["value"],
+                s=26,
+                marker=marker,
+                color=color,
+                edgecolor="white",
+                linewidth=0.5,
+                label=metric,
+                zorder=3,
+            )
+        ax.axhline(
+            0.80,
+            color="#168AAD",
+            lw=0.8,
+            ls="--",
+            label="Stability threshold",
+        )
+        ax.axhline(
+            0.15,
+            color="#D1495B",
+            lw=0.8,
+            ls=":",
+            label="FAR threshold",
+        )
+        ax.set_xticks(
+            np.arange(len(sensor_order)),
+            [sensor.replace("_", "-") for sensor in sensor_order],
+            rotation=40,
+            ha="right",
+        )
+        final_l3 = set(node.loc[node["context"] == "L3", "x"])
+        for tick, sensor in zip(ax.get_xticklabels(), sensor_order):
+            if sensor in final_l3:
+                tick.set_fontweight("bold")
+                tick.set_color(PALETTE["L3"])
+        ax.set_ylim(0, 1.02)
+        ax.set_yticks([0, 0.25, 0.50, 0.75, 1.0])
+        ax.set_ylabel("Validation statistic")
+        ax.set_title("Node-specific validation within family L3")
+        ax.legend(
+            ncol=2,
+            loc="center",
+            bbox_to_anchor=(0.60, 0.54),
+            fontsize=5.8,
+            columnspacing=0.8,
+            handletextpad=0.4,
+        )
         self._boxed(ax)
         self._panel_label(ax, "b")
 
         ax = axes[1, 0]
-        drift = self._subset("FigD7_5_governance", "c").sort_values("value")
-        ax.barh(drift["x"].str.replace("_", "-", regex=False), drift["value"], color=["#D1495B" if group == "review" else "#A8B0B8" for group in drift["group"]], edgecolor="white")
-        ax.axvline(0.35, color="#222222", lw=0.8, ls="--")
-        if not drift.empty:
-            low = min(0.0, float(drift["value"].min()) * 1.05)
-            high = max(0.40, float(drift["value"].max()) * 1.15)
-            ax.set_xlim(low, high)
-        ax.set_xlabel("Candidate vs declared log-likelihood ratio")
-        ax.set_title("Report-only topology drift screen")
+        interfaces = self._subset("FigD7_5_governance", "c").sort_values(
+            "order", ascending=False
+        )
+        interface_colors = {
+            "report": "#168AAD",
+            "gate": "#E9C46A",
+            "guard": "#2A9D8F",
+            "veto": "#D1495B",
+        }
+        labels = interfaces["x"].str.replace(" active", "", regex=False)
+        ax.barh(
+            labels,
+            interfaces["value"],
+            color=[
+                interface_colors.get(group, "#A8B0B8")
+                for group in interfaces["group"]
+            ],
+            edgecolor="white",
+        )
+        ax.scatter(
+            interfaces["value"],
+            labels,
+            s=20,
+            color=[
+                interface_colors.get(group, "#A8B0B8")
+                for group in interfaces["group"]
+            ],
+            edgecolor="white",
+            linewidth=0.5,
+            zorder=3,
+        )
+        for label, value, annotation in zip(
+            labels, interfaces["value"], interfaces["annotation"]
+        ):
+            ax.text(
+                max(float(value) + 0.018, 0.025),
+                label,
+                annotation,
+                va="center",
+                fontsize=6.2,
+            )
+        ax.set_xlim(-0.03, 1.05)
+        ax.set_xticks([0, 0.25, 0.50, 0.75, 1.0])
+        ax.set_xlabel("Fraction of interface rows")
+        ax.set_title("Report and action-interface coverage")
         self._boxed(ax)
         self._panel_label(ax, "c")
 
         ax = axes[1, 1]
-        gates = self._subset("FigD7_5_governance", "d").sort_values("order")
-        gate_labels = gates["x"].replace(
-            {
-                "Scientific score": "Scientific\nscore",
-                "Process protection": "Process\nprotection",
-                "Sensor hard Veto": "Sensor hard\nVeto",
-                "D7_forDQR": "D7 for\nDQR",
-            }
+        identity = self._subset("FigD7_5_governance", "d")
+        low = float(
+            min(identity["x_numeric"].min(), identity["value"].min())
         )
-        ax.barh(
-            gate_labels,
-            np.ones(len(gates)),
-            color=[PALETTE.get(group, "#9E9E9E") for group in gates["group"]],
-            edgecolor="white",
+        high = float(
+            max(identity["x_numeric"].max(), identity["value"].max())
         )
-        annotation_labels = {
-            "Local consumes no D1-D6 scores": "Local consumes no\nD1-D6 scores",
-            "L2/L3 retrospective score admitted": "L2/L3 retrospective\nscore admitted",
-            "Detection and negative controls passed": "Detection and negative\ncontrols passed",
-            "Non-destructive aggregation released": "Non-destructive\naggregation released",
-            "Documentary audit and dual approval pending": "Documentary audit and\ndual approval pending",
-        }
-        for y, annotation in zip(gate_labels, gates["annotation"]):
-            ax.text(
-                0.5,
-                y,
-                annotation_labels.get(annotation, annotation),
-                ha="center",
-                va="center",
-                fontsize=5.5,
-                bbox=dict(facecolor="white", edgecolor="none", alpha=0.72, pad=0.8),
-            )
-        ax.set_xlim(0, 1)
-        ax.set_xticks([0, 1], ["Blocked", "Passed"])
-        ax.set_title("Release decision matrix")
+        margin = max((high - low) * 0.04, 0.05)
+        ax.scatter(
+            identity["x_numeric"],
+            identity["value"],
+            s=3,
+            color="#168AAD",
+            alpha=0.12,
+            linewidth=0,
+            rasterized=True,
+        )
+        ax.plot(
+            [low - margin, high + margin],
+            [low - margin, high + margin],
+            color="#222222",
+            lw=0.9,
+            ls="--",
+            label="Identity",
+        )
+        ax.set_xlim(low - margin, high + margin)
+        ax.set_ylim(low - margin, high + margin)
+        ax.set_aspect("equal", adjustable="box")
+        ax.set_xlabel("D6 raw")
+        ax.set_ylabel("D6 final for DQR")
+        audit_note = identity.loc[
+            identity["annotation"].astype(str).ne(""), "annotation"
+        ].iloc[0]
+        ax.text(
+            0.04,
+            0.94,
+            audit_note.replace("delta", r"$\Delta$"),
+            transform=ax.transAxes,
+            ha="left",
+            va="top",
+            fontsize=6.5,
+            bbox=dict(facecolor="white", edgecolor="none", alpha=0.82, pad=1.2),
+        )
+        ax.set_title("D6 numeric independence audit")
+        ax.legend(loc="lower right")
         self._boxed(ax)
         self._panel_label(ax, "d")
         return self._save(fig, "FigD7_5_governance")

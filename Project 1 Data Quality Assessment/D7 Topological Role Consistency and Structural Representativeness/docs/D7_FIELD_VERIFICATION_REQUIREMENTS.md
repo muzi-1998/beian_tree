@@ -19,12 +19,14 @@ Under the current author-confirmed research topology:
 - `D7_raw`, `D7_report_provisional` and eligible `D7_report` rows may be used as
   research evidence;
 - L1 remains diagnostic, while validation-qualified L2/L3 evidence may populate
-  `D7_total` and `D7_forDQR`;
-- L3 process-level protection requires detection and negative-control
-  validation; sensor-specific hard Veto additionally requires localization
-  validation;
+  `D7_total` and the report interface;
+- family-level L3 support never upgrades a node automatically; each node must
+  pass its own blocked-temporal validation before entering the gate interface;
+- the process-coherence Guard requires detection and negative-control
+  validation and suppresses sensor-fault attribution without acting as a Veto;
+  sensor-specific hard Veto additionally requires localization validation;
 - D6 final arbitration remains numerically non-destructive and can proceed from
-  `D6_after_D1`; D7 supplies applicability and attribution fields;
+  `D6_raw`; D1 and D7 supply interpretation and action-governance fields;
 - topology-drift candidates remain hypotheses and cannot modify the registry.
 
 Until production documentary audit and dual approval are complete, automated

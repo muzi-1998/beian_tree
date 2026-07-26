@@ -199,8 +199,13 @@ class D7SensitivityPipeline:
                 }
                 for role, path in dependency_paths.items()
             ],
-            "forbidden_outputs": ["D7_forDQR", "D7_zone_consensus", "D6_arbitration"],
-            "D7_forDQR_status": "pending_not_produced",
+            "forbidden_outputs": [
+                "D7_report_interface",
+                "D7_gate_interface",
+                "D7_zone_consensus",
+                "D6_arbitration",
+            ],
+            "authoritative_interface_status": "pending_not_produced",
             "local_imported": False,
             "rows": len(shadow),
             "invariance": invariance.to_dict("records"),
