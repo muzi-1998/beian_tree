@@ -394,17 +394,41 @@ def main() -> int:
     d6_scores = pd.read_excel(
         d6_root / "outputs" / "data" / "D6_main_scores.xlsx",
         sheet_name="main_scores",
-        usecols=["D6_forDQR", "D6_forDQR_is_final", "D6_forDQR_status"],
+        usecols=["timestamp", "pair_id", "D6_raw", "D6_after_D1"],
     )
-    status_counts = d6_scores["D6_forDQR_status"].astype(str).value_counts().to_dict()
-    allowed_pending_statuses = {"pending_D7_arbitration", "not_evaluable_or_D1_missing"}
-    pending = (
-        d6_scores["D6_forDQR"].isna().all()
-        and not d6_scores["D6_forDQR_is_final"].fillna(False).astype(bool).any()
-        and set(status_counts).issubset(allowed_pending_statuses)
-        and status_counts.get("pending_D7_arbitration", 0) > 0
+    d6_final = pd.read_parquet(
+        d6_root
+        / "outputs"
+        / "integration"
+        / "D6_D7_final_arbitration.parquet"
     )
-    record(checks, "D6:D7_arbitration_pending", pending, status_counts)
+    protected_equal = (
+        d6_scores[["D6_raw", "D6_after_D1"]]
+        .reset_index(drop=True)
+        .equals(
+            d6_final[["D6_raw", "D6_after_D1"]].reset_index(drop=True)
+        )
+    )
+    finalization_valid = (
+        protected_equal
+        and d6_final["finalization_allowed"].any()
+        and d6_final.loc[
+            d6_final["finalization_allowed"], "D6_forDQR"
+        ].notna().all()
+        and np.isclose(
+            d6_final["D6_numeric_adjustment"].dropna(), 0.0
+        ).all()
+    )
+    record(
+        checks,
+        "D6:D7_non_destructive_final_arbitration",
+        finalization_valid,
+        {
+            "finalized_rows": int(d6_final["finalization_allowed"].sum()),
+            "gate_applicable_rows": int(d6_final["D6_gate_applicable"].sum()),
+            "protected_equal": protected_equal,
+        },
+    )
 
     d7_root = ROOT / "D7 Topological Role Consistency and Structural Representativeness"
     d7_manifest = load_json(d7_root / "outputs" / "sensitivity" / "D7_sensitivity_manifest.json")

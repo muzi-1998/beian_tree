@@ -60,11 +60,16 @@ class SpatialTemplateBuilder:
         topology: TopologyRegistry,
         template_version: str,
         orp_policy: ORPDegradationPolicy,
+        support_config: dict[str, Any],
     ) -> None:
         self.topology = topology
         self.template_version = template_version
         self.orp_policy = orp_policy
-        self.support_policy = SupportPolicy()
+        self.support_policy = SupportPolicy(support_config)
+        self.bootstrap_config = support_config["bootstrap"]
+        self._support_diagnostics_cache: dict[
+            tuple[str, int, str], dict[str, Any]
+        ] = {}
         self.nodes = topology.nodes.set_index("sensor_id")
 
     def build(
@@ -108,7 +113,8 @@ class SpatialTemplateBuilder:
                         "alpha_used": template.alpha_used,
                         "covariance_condition_number": template.condition_number,
                         "min_eigen_ratio": template.minimum_eigen_ratio,
-                        "limited_support": template.support["support_level"] in {"L1", "L2"},
+                        "limited_support": template.support["support_level"] in {"L0", "L1"},
+                        "action_limited": template.support["support_level"] != "L3",
                         "limited_support_exit_status": template.support["limited_support_exit_status"],
                         "veto_eligible": template.support["veto_eligible"],
                         "template_hash": template.template_hash,
@@ -135,12 +141,24 @@ class SpatialTemplateBuilder:
         center, scale = robust_center_scale(complete.to_numpy())
         standardized = (complete.to_numpy() - center) / scale
         support = EffectiveBlockEstimator().estimate(complete.index)
+        support_diagnostics = self._support_diagnostics(
+            complete,
+            analyte=analyte,
+            regime=regime,
+            fallback_level=fallback_level,
+        )
         nominal_level = self.support_policy.resolve(
-            int(support["n_effective"]), int(support["distinct_months"])
+            int(support["n_effective"]),
+            int(support["distinct_months"]),
+            bootstrap_stability=float(
+                support_diagnostics["bootstrap_stability"]
+            ),
+            holdout_count=int(support_diagnostics["holdout_count"]),
+            holdout_far=float(support_diagnostics["holdout_far"]),
         )
         if analyte == "ORP":
             covariance_mode, alpha_floor = self.orp_policy.resolve_mode(nominal_level)
-            support_level = "L1" if covariance_mode == "diagonal_robust_z" else nominal_level
+            support_level = nominal_level
         else:
             support_level = nominal_level
             covariance_mode = "full_shrinkage" if support_level in {"L2", "L3"} else "diagonal_robust_z"
@@ -154,7 +172,6 @@ class SpatialTemplateBuilder:
         if fit.condition_number > 1000.0 or fit.minimum_eigen_ratio < 0.001:
             fit = fit_shrinkage_covariance(standardized, diagonal_only=True, alpha_floor=1.0)
             covariance_mode = "diagonal_robust_z"
-            support_level = "L1"
         edge_templates = self._edge_templates(complete, analyte)
         rank_templates = self._rank_templates(complete, analyte, scale, sensor_order)
         neighbors = self._neighbors(target, analyte)
@@ -164,13 +181,22 @@ class SpatialTemplateBuilder:
         residual_scale = max(float(mad_scale(residual)), 1e-6)
         support.update(
             {
+                "model_family_id": f"D7-{analyte}-R{regime}",
                 "support_level": support_level,
-                "bootstrap_stability": np.nan,
-                "limited_support_exit_status": "not_eligible" if analyte == "ORP" else "candidate",
-                "exit_failed_reasons": "manual_approval_and_external_validation_pending",
-                "veto_eligible": bool(
-                    support_level in {"L2", "L3"} and self.topology.topology_verified
+                **support_diagnostics,
+                "FAR": support_diagnostics["holdout_far"],
+                "score_eligible": support_level in {"L2", "L3"},
+                "action_eligible_candidate": support_level == "L3",
+                "limited_support_exit_status": {
+                    "L3": "statistical_action_candidate",
+                    "L2": "scientific_score_ready",
+                    "L1": "diagnostic_only",
+                    "L0": "disabled",
+                }[support_level],
+                "exit_failed_reasons": self._exit_failed_reasons(
+                    support_level, support, support_diagnostics
                 ),
+                "veto_eligible": False,
             }
         )
         template = SpatialTemplate(
@@ -205,6 +231,98 @@ class SpatialTemplateBuilder:
         )
         template.finalize_hash()
         return template
+
+    def _support_diagnostics(
+        self,
+        complete: pd.DataFrame,
+        *,
+        analyte: str,
+        regime: int,
+        fallback_level: str,
+    ) -> dict[str, Any]:
+        cache_key = (analyte, regime, fallback_level)
+        cached = self._support_diagnostics_cache.get(cache_key)
+        if cached is not None:
+            return cached.copy()
+
+        daily = complete.resample("1D").median().dropna()
+        base_center, base_scale = robust_center_scale(daily.to_numpy())
+        rng = np.random.default_rng(int(self.bootstrap_config["random_seed"]))
+        stability: list[float] = []
+        repetitions = int(self.bootstrap_config["repetitions"])
+        for _ in range(repetitions):
+            sampled = daily.iloc[
+                rng.integers(0, len(daily), size=len(daily))
+            ]
+            sampled_center, _ = robust_center_scale(sampled.to_numpy())
+            standardized_shift = np.abs(
+                (sampled_center - base_center) / np.maximum(base_scale, 1e-6)
+            )
+            stability.append(float(np.exp(-np.median(standardized_shift))))
+
+        months = pd.PeriodIndex(daily.index, freq="M")
+        false_alarms = 0
+        holdout_rows = 0
+        valid_holdouts = 0
+        for month in months.unique():
+            train = daily.loc[months != month]
+            test = daily.loc[months == month]
+            if len(train) < 20 or test.empty:
+                continue
+            train_center, train_scale = robust_center_scale(train.to_numpy())
+            train_z = (
+                train.to_numpy() - train_center
+            ) / np.maximum(train_scale, 1e-6)
+            test_z = (
+                test.to_numpy() - train_center
+            ) / np.maximum(train_scale, 1e-6)
+            train_risk = np.sqrt(np.mean(np.square(train_z), axis=1))
+            test_risk = np.sqrt(np.mean(np.square(test_z), axis=1))
+            threshold = float(np.quantile(train_risk, 0.95))
+            false_alarms += int((test_risk > threshold).sum())
+            holdout_rows += int(len(test_risk))
+            valid_holdouts += 1
+
+        diagnostics = {
+            "bootstrap_stability": float(np.median(stability)),
+            "holdout_count": valid_holdouts,
+            "holdout_rows": holdout_rows,
+            "holdout_far": (
+                float(false_alarms / holdout_rows)
+                if holdout_rows
+                else 1.0
+            ),
+            "support_validation_unit": "nonoverlap_calendar_day",
+            "support_validation_method": (
+                "daily_block_bootstrap_and_leave_one_month_out_robust_profile"
+            ),
+        }
+        self._support_diagnostics_cache[cache_key] = diagnostics
+        return diagnostics.copy()
+
+    def _exit_failed_reasons(
+        self,
+        support_level: str,
+        support: dict[str, Any],
+        diagnostics: dict[str, Any],
+    ) -> str:
+        if support_level == "L3":
+            return "none"
+        reasons: list[str] = []
+        l3 = self.support_policy.thresholds["L3"]
+        if int(support["n_effective"]) < int(l3["min_effective_blocks"]):
+            reasons.append("effective_blocks")
+        if int(support["distinct_months"]) < int(l3["min_distinct_months"]):
+            reasons.append("distinct_months")
+        if float(diagnostics["bootstrap_stability"]) < float(
+            l3["min_bootstrap_stability"]
+        ):
+            reasons.append("bootstrap_stability")
+        if int(diagnostics["holdout_count"]) < int(l3["min_blocked_holdouts"]):
+            reasons.append("blocked_holdouts")
+        if float(diagnostics["holdout_far"]) > float(l3["max_holdout_far"]):
+            reasons.append("holdout_far")
+        return "|".join(reasons) if reasons else "score_only_below_action_grade"
 
     def _edge_templates(self, frame: pd.DataFrame, analyte: str) -> list[dict[str, Any]]:
         rows: list[dict[str, Any]] = []

@@ -14,13 +14,23 @@ This evidence is sufficient for the current ordinal-topology research model.
 Exact surveyed coordinates, asset IDs and serial numbers are not model inputs.
 They must not be invented from time-series data.
 
-Until production documentary audit and dual approval are complete:
+Under the current author-confirmed research topology:
 
 - `D7_raw`, `D7_report_provisional` and eligible `D7_report` rows may be used as
   research evidence;
-- L1 is diagnostic only and L2 is report-only;
-- `D7_total`, `D7_forDQR`, Veto and D6 final arbitration remain disabled;
+- L1 remains diagnostic, while validation-qualified L2/L3 evidence may populate
+  `D7_total` and `D7_forDQR`;
+- L3 process-level protection requires detection and negative-control
+  validation; sensor-specific hard Veto additionally requires localization
+  validation;
+- D6 final arbitration remains numerically non-destructive and can proceed from
+  `D6_after_D1`; D7 supplies applicability and attribution fields;
 - topology-drift candidates remain hypotheses and cannot modify the registry.
+
+Until production documentary audit and dual approval are complete, automated
+registry mutation, unattended control action and confirmatory maintenance-cause
+claims remain disabled. This deployment boundary is recorded separately from
+scientific score readiness.
 
 ## Research evidence status
 

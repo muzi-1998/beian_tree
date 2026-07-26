@@ -17,16 +17,23 @@ topology metadata. It never consumes D1-D6 scores or states.
 - Process line, pool zone, longitudinal order, SCADA-to-physical-point identity
   and no study-period probe/channel change are author-confirmed. A provided
   installation register reconciles eight active DO and six active ORP
-  instruments. Eligible L2 windows may therefore populate paper-facing
-  `D7_report`.
+  instruments. Eligible L2/L3 windows may therefore populate `D7_report`,
+  `D7_total` and `D7_forDQR`.
 - Maintenance provenance, production documentary audit and dual approval remain
-  pending. `D7_total`, Veto, `D7_forDQR` and final D6 arbitration remain empty.
+  pending. These items limit automated deployment and confirmatory
+  maintenance-cause claims; they do not suppress retrospective scientific
+  scores.
 - The Local regime model is plant-global: QR/QIR, robust pooled DO/ORP level
   and dispersion, and cyclic time features define one shared process context.
   Gradient, rank and leave-one-out evidence are learned and evaluated within
   that shared regime.
-- L1 is diagnostic, L2 can support research reporting, and only
-  production-approved L3 evidence can enter DQR gating or Veto.
+- L1 is diagnostic; L2 supports scientific scoring; L3 supports process-level
+  protection after detection and negative-control validation. Sensor-specific
+  hard Veto additionally requires localization validation. Automated deployment
+  remains separately approval-gated.
+- D6 finalizes non-destructively from `D6_after_D1`. D7 contributes score
+  applicability, process protection and causal attribution without rewriting
+  the D6 numeric score.
 
 See `configs/common/topology_evidence.yaml` for the research evidence ledger and
 `docs/D7_FIELD_VERIFICATION_REQUIREMENTS.md` for the production documentary and
@@ -34,15 +41,10 @@ two-person approval gate. Statistical topology candidates cannot replace it.
 
 ## Reproduce
 
-Run from `Project 1 Data Quality Assessment`:
+Run the complete release from `Project 1 Data Quality Assessment`:
 
 ```powershell
-python ".\D7 Topological Role Consistency and Structural Representativeness\scripts\run_d7_local.py"
-python ".\D7 Topological Role Consistency and Structural Representativeness\scripts\run_d7_sensitivity.py"
-python ".\D7 Topological Role Consistency and Structural Representativeness\scripts\run_d7_validation.py"
-python ".\D7 Topological Role Consistency and Structural Representativeness\scripts\make_d7_figures.py"
-python ".\D7 Topological Role Consistency and Structural Representativeness\scripts\build_d7_reports.py"
-python ".\D7 Topological Role Consistency and Structural Representativeness\scripts\check_d7_release.py"
+python ".\D7 Topological Role Consistency and Structural Representativeness\scripts\run_d7_release.py"
 python -m pytest ".\D7 Topological Role Consistency and Structural Representativeness\tests" -q
 ```
 

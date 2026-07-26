@@ -125,9 +125,9 @@ class D7FigureBuilder:
         fig, axes = plt.subplots(
             1,
             3,
-            figsize=(7.2, 2.75),
+            figsize=(7.2, 3.05),
             constrained_layout=True,
-            gridspec_kw={"width_ratios": [1.10, 1.0, 1.28]},
+            gridspec_kw={"width_ratios": [1.08, 0.94, 1.46]},
         )
         ax = axes[0]
         edges = self._subset("FigD7_1_framework", "a")
@@ -183,9 +183,10 @@ class D7FigureBuilder:
         gate_labels = gates["x"].replace(
             {
                 "D7_forDQR": "D7 for\nDQR",
-                "Research topology": "Research\ntopology",
-                "Production approval": "Production\napproval",
-                "Raw spatial evidence": "Raw spatial\nevidence",
+                "Raw evidence": "Raw\nevidence",
+                "Scientific score": "Scientific\nscore",
+                "Process protection": "Process\nprotection",
+                "Sensor hard Veto": "Sensor hard\nVeto",
             }
         )
         ax.barh(
@@ -194,8 +195,10 @@ class D7FigureBuilder:
             edgecolor="white",
         )
         annotation_labels = {
-            "Null until all production gates pass": "Null until all\nproduction gates pass",
-            "Author-confirmed and inventory-reconciled": "Author-confirmed and\ninventory-reconciled",
+            "L2/L3 evidence admitted independently of deployment": "L2/L3 evidence; independent\nof deployment approval",
+            "Released for non-destructive subscore aggregation": "Released for non-destructive\nsubscore aggregation",
+            "Detection and negative-control validation": "Detection and negative-\ncontrol validation",
+            "Requires Top-1 localization validation": "Requires Top-1\nlocalization validation",
             "Documentary audit and dual approval pending": "Documentary audit and\ndual approval pending",
             "D7_raw retained when calculable": "D7 raw retained\nwhen calculable",
         }
@@ -270,10 +273,16 @@ class D7FigureBuilder:
                 continue
             ax.bar(analytes, values, bottom=bottom, label=level, color=PALETTE[level], edgecolor="white")
             bottom += np.asarray(values)
-        ax.set_ylim(0, max(bottom) * 1.18)
+        ax.set_ylim(0, max(bottom) * 1.42)
         ax.set_ylabel("Number of regime templates")
         ax.set_title("Effective support tier")
-        ax.legend(title="Support", ncol=3, loc="upper center")
+        ax.legend(
+            title="Support",
+            ncol=3,
+            loc="upper center",
+            bbox_to_anchor=(0.5, 1.0),
+            borderaxespad=0.2,
+        )
         self._boxed(ax)
         self._panel_label(ax, "c")
         return self._save(fig, "FigD7_2_spatiotemporal")
@@ -401,8 +410,14 @@ class D7FigureBuilder:
             ax.bar(analytes, values, bottom=bottom, color=PALETTE[level], label=level, edgecolor="white")
             bottom += values
         ax.set_ylabel("Template count")
+        ax.set_ylim(0, max(bottom) * 1.42)
         ax.set_title("Support governance")
-        ax.legend(ncol=3, loc="upper center")
+        ax.legend(
+            ncol=3,
+            loc="upper center",
+            bbox_to_anchor=(0.5, 1.0),
+            borderaxespad=0.2,
+        )
         self._boxed(ax)
         self._panel_label(ax, "a")
 
@@ -438,9 +453,10 @@ class D7FigureBuilder:
         gates = self._subset("FigD7_5_governance", "d").sort_values("order")
         gate_labels = gates["x"].replace(
             {
-                "Swap AUROC/AUPRC": "Swap AUROC/\nAUPRC",
-                "Research topology": "Research\ntopology",
-                "Production approval": "Production\napproval",
+                "Scientific score": "Scientific\nscore",
+                "Process protection": "Process\nprotection",
+                "Sensor hard Veto": "Sensor hard\nVeto",
+                "D7_forDQR": "D7 for\nDQR",
             }
         )
         ax.barh(
@@ -451,10 +467,10 @@ class D7FigureBuilder:
         )
         annotation_labels = {
             "Local consumes no D1-D6 scores": "Local consumes no\nD1-D6 scores",
-            "synthetic observed-window test": "Synthetic observed-\nwindow test",
-            "author-confirmed and inventory-reconciled": "Author-confirmed and\ninventory-reconciled",
-            "documentary audit and dual approval pending": "Documentary audit and\ndual approval pending",
-            "production gate remains closed": "Production gate\nremains closed",
+            "L2/L3 retrospective score admitted": "L2/L3 retrospective\nscore admitted",
+            "Detection and negative controls passed": "Detection and negative\ncontrols passed",
+            "Non-destructive aggregation released": "Non-destructive\naggregation released",
+            "Documentary audit and dual approval pending": "Documentary audit and\ndual approval pending",
         }
         for y, annotation in zip(gate_labels, gates["annotation"]):
             ax.text(

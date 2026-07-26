@@ -1,6 +1,6 @@
 {
   "schema_version": "cross-project-freshness-v2",
-  "generated_utc": "2026-07-26T03:42:22.827929+00:00",
+  "generated_utc": "2026-07-26T05:28:39.681262+00:00",
   "d1_release_id": "D1REL-1.3.0-f6074be3751f",
   "checks": [
     {
@@ -39,11 +39,12 @@
       "detail": "7dba5c980a567645fff62ba3b46369ce2187498ee2e45e5abf4f25b0c6052d53"
     },
     {
-      "check": "D6:D7_arbitration_pending",
+      "check": "D6:D7_non_destructive_final_arbitration",
       "passed": true,
       "detail": {
-        "pending_D7_arbitration": 37975,
-        "not_evaluable_or_D1_missing": 4872
+        "finalized_rows": 37975,
+        "gate_applicable_rows": 18310,
+        "protected_equal": true
       }
     },
     {
@@ -69,7 +70,7 @@
     {
       "check": "D7_sensitivity:D7_local_evidence",
       "passed": true,
-      "detail": "3968cc173be4d88b0048114f7b5a861c7b3da14428b697aa9ee6f695917407bb"
+      "detail": "328cbbfaf2e66d0ab412f0478724bb46c87861810d6907b0dba0a51470e76f9a"
     },
     {
       "check": "D7_sensitivity:no_production_write",
@@ -80,8 +81,8 @@
       "check": "D7_local:unchanged",
       "passed": true,
       "detail": {
-        "expected": "b3a8ea3ee1aadd13f3911551ef04ac5e0c67e6a088ee36a831f065aff60233ac",
-        "actual": "b3a8ea3ee1aadd13f3911551ef04ac5e0c67e6a088ee36a831f065aff60233ac"
+        "expected": "f0adda63c8a84997582c6c520497160b9b1cfc9ce0dbbab469af186a7946ad26",
+        "actual": "f0adda63c8a84997582c6c520497160b9b1cfc9ce0dbbab469af186a7946ad26"
       }
     },
     {
@@ -243,7 +244,7 @@
       "check": "D7:figures_not_older_than_sources",
       "passed": true,
       "detail": {
-        "source_latest_utc": "2026-07-26T03:36:02.676591+00:00",
+        "source_latest_utc": "2026-07-26T05:26:54.220547+00:00",
         "stale_files": []
       }
     }

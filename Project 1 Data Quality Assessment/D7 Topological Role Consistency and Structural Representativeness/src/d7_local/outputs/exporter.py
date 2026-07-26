@@ -138,10 +138,10 @@ class D7OutputExporter:
                 {
                     "version": next(iter(templates.values())).template_version,
                     "parent": "none",
-                    "change_reason": "initial_v2.1_candidate_build",
+                    "change_reason": "v2.2_validation_graded_candidate_build",
                     "validator": "automated_contract_qa",
                     "approver": "PENDING_PRODUCTION_APPROVAL",
-                    "state": "research_candidate_production_pending",
+                    "state": "scientific_validation_candidate_deployment_pending",
                 }
             ]
         )

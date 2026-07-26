@@ -40,7 +40,7 @@ class D7RunResult:
 
 
 class D7Pipeline:
-    """Batch implementation of the D7 v2.1 Local Track contract."""
+    """Batch implementation of the D7 v2.2 Local Track contract."""
 
     def __init__(self, *, max_input_rows: int | None = None) -> None:
         self.paths = resolve_paths()
@@ -87,6 +87,7 @@ class D7Pipeline:
             self.topology,
             self.config["template_version"],
             ORPDegradationPolicy(self.orp_config),
+            self.aggregation_config["support_policy"],
         )
         templates, support = template_builder.build(snapshots, regime_state, reference_end)
         support = self._complete_support(support)
@@ -118,6 +119,7 @@ class D7Pipeline:
             interface_version=self.config["interface_version"],
             template_version=self.config["template_version"],
             mapping_version=self.config["mapping_version"],
+            veto_config=self.aggregation_config["veto"],
         )
         events = build_events(
             main,
@@ -161,7 +163,7 @@ class D7Pipeline:
             case_studies=case_studies,
             audit=audit,
         )
-        acceptance_status = "research_complete_production_gated"
+        acceptance_status = "scientific_score_candidate_validation_pending"
         self._write_manifest(
             run_id,
             observations,
@@ -336,15 +338,20 @@ class D7Pipeline:
         output = UncertaintyEngine().apply(output)
         output = ApplicabilityGate(
             research_topology_confirmed=self.topology.research_topology_confirmed,
-            topology_verified=self.topology.topology_verified,
+            deployment_approved=self.topology.topology_verified,
             minimum_coverage=float(self.windows["minimum_window_coverage"]),
             report_eligible_support=self.aggregation_config["support_policy"][
                 "report_eligible"
             ],
-            gate_eligible_support=self.aggregation_config["support_policy"][
-                "gate_eligible"
+            score_eligible_support=self.aggregation_config["support_policy"][
+                "score_eligible"
             ],
-            veto_eligible_support=self.aggregation_config["veto"]["eligible_support"],
+            dqr_eligible_support=self.aggregation_config["support_policy"][
+                "dqr_eligible"
+            ],
+            action_eligible_support=self.aggregation_config["support_policy"][
+                "action_eligible"
+            ],
         ).apply(output)
         q_columns = ["Q_profile", "Q_gradient", "Q_rank", "Q_rep"]
         output["dominant_evidence"] = pd.Series(None, index=output.index, dtype=object)
@@ -374,7 +381,6 @@ class D7Pipeline:
         output["upstream_score_consumed"] = False
         output["interface_version"] = self.config["interface_version"]
         output["event_id"] = np.nan
-        output["D7_forDQR"] = output["D7_total"]
         self.mapping_records = mapper.records_frame()
         ordered = [
             "timestamp", "window_start", "window_end", "sensor_id", "analyte", "line_id",
@@ -384,12 +390,14 @@ class D7Pipeline:
             "D7_raw", "D7_report_provisional", "D7_report", "D7_total", "D7_forDQR",
             "uncertainty", "confidence", "U_regime",
             "U_support", "U_coverage", "U_covariance", "evaluation_status", "status_reason",
-            "support_level", "report_support_eligible", "gate_support_eligible",
-            "report_eligible", "gate_eligible", "limited_support",
+            "support_level", "report_support_eligible", "score_support_eligible",
+            "gate_support_eligible", "report_eligible", "score_eligible",
+            "gate_eligible", "action_eligible_candidate", "limited_support",
             "profile_covariance_mode", "fallback_level",
             "alpha_floor", "alpha_used", "covariance_condition_number", "dominant_evidence",
             "veto_active", "veto_reason", "veto_eligible", "event_id", "window_coverage",
             "research_topology_confirmed", "production_topology_verified",
+            "deployment_approved",
             "topology_verified", "topology_version", "topology_hash", "template_id_used",
             "template_hash", "template_version", "mapping_version", "mapping_hash",
             "regime_model_version", "regime_model_hash", "run_id", "config_version",
@@ -416,17 +424,21 @@ class D7Pipeline:
 
     def _complete_support(self, support: pd.DataFrame) -> pd.DataFrame:
         output = support.copy()
-        output["holdout_count"] = 0
-        output["FAR"] = np.nan
-        output["swap_AUROC"] = np.nan
-        output["Top1"] = np.nan
-        output["IE_track"] = np.nan
-        output["event_jaccard"] = np.nan
-        output["culprit_spearman"] = np.nan
+        for column in [
+            "swap_AUROC",
+            "swap_AUPRC",
+            "Top1",
+            "IE_track",
+            "event_jaccard",
+            "culprit_spearman",
+        ]:
+            if column not in output:
+                output[column] = np.nan
         output["research_topology_confirmed"] = self.topology.research_topology_confirmed
         output["production_topology_verified"] = self.topology.topology_verified
         output["topology_verified"] = self.topology.topology_verified
         output["open_topology_alerts"] = np.nan
+        output["claim_validation_status"] = "pending_postrun_validation"
         return output
 
     def _build_influence(
@@ -797,7 +809,7 @@ class D7Pipeline:
                 "parent": "none",
                 "created_at": pd.Timestamp.utcnow(),
                 "template_version": self.config["template_version"],
-                "reason": "initial_v2.1_empirical_cdf_mapping",
+                "reason": "v2.2_validation_graded_empirical_cdf_mapping",
                 "status": "candidate_frozen_for_run",
             }]
         )
@@ -868,10 +880,11 @@ class D7Pipeline:
             },
             scientific_boundaries=[
                 "D7_raw measures spatial role consistency and structural representativeness, not sensor health, temporal availability, physical rate plausibility, or D6 temporal synchronization.",
-                "ORP remains L1 limited support with diagonal robust Z and alpha=1.00 until all exit criteria and manual approval pass.",
+                "ORP uses diagonal robust Z with alpha=1.00 because of its evidence geometry; model form and evidence-support tier are assessed independently.",
                 "Line, process zone, longitudinal order and SCADA-to-physical-point identity are author-confirmed and reconciled against an instrument register for research reporting.",
                 "Exact survey coordinates, asset/serial identity, maintenance records and dual approval are not required by the ordinal research model but remain production-governance requirements.",
-                "D7_total and D7_forDQR are null while production topology approval or L3 support is unavailable; no D6 final arbitration is produced.",
+                "L2/L3 evidence can populate retrospective D7_total and D7_forDQR; L3 plus claim-specific validation is required for automated action.",
+                "D6 final numeric scoring is non-destructive and independent of D7 deployment approval; D7 contributes applicability, attribution and claim-specific protection rather than numerical rewriting.",
                 "Observed low D7_raw windows are unlabeled structural evidence, not confirmed faults.",
             ],
             acceptance={
@@ -881,11 +894,10 @@ class D7Pipeline:
                     "production_documentary_audit_and_dual_approval_pending",
                     "maintenance_records_unavailable",
                     "asset_and_serial_identity_unavailable",
-                    "ORP_forced_initial_limited_support",
                     "external_fault_labels_unavailable",
-                    "sensitivity_and_injection_validation_pending",
+                    "postrun_claim_specific_validation_pending",
                 ],
-                "release_target": "research_review_only",
+                "release_target": "final_subscore_aggregation_after_postrun_admission",
             },
         )
 
@@ -922,13 +934,18 @@ class D7Pipeline:
              "passed": bool(main[["Q_profile", "Q_gradient", "Q_rank", "Q_rep", "D7_raw"]].stack().between(1, 5).all())},
             {"artifact": "D7_main_scores_hourly", "check": "local_track_isolation",
              "passed": bool((main["track_id"] == "d7_local").all() and ~main["upstream_score_consumed"].any())},
-            {"artifact": "D7_main_scores_hourly", "check": "gated_total_null",
-             "passed": bool(main["D7_total"].isna().all() and main["D7_forDQR"].isna().all())},
+            {"artifact": "D7_main_scores_hourly", "check": "scientific_scores_follow_eligibility",
+             "passed": bool(
+                 main.loc[main["score_eligible"], "D7_total"].notna().all()
+                 and main.loc[~main["score_eligible"], "D7_total"].isna().all()
+                 and main.loc[main["gate_eligible"], "D7_forDQR"].notna().all()
+                 and main.loc[~main["gate_eligible"], "D7_forDQR"].isna().all()
+             )},
             {"artifact": "D7_regime_state", "check": "primary_key_unique",
              "passed": not regime.duplicated(["timestamp", "sensor_id"]).any()},
-            {"artifact": "D7_support_assessment", "check": "ORP_L1_diagonal_alpha1",
-             "passed": bool(((support.loc[(support["analyte"] == "ORP") & (support["support_level"] == "L1"), "profile_covariance_mode"] == "diagonal_robust_z")
-                             & np.isclose(support.loc[(support["analyte"] == "ORP") & (support["support_level"] == "L1"), "alpha_used"], 1.0)).all())},
+            {"artifact": "D7_support_assessment", "check": "ORP_supported_diagonal_alpha1",
+             "passed": bool(((support.loc[(support["analyte"] == "ORP") & (support["support_level"] != "L0"), "profile_covariance_mode"] == "diagonal_robust_z")
+                             & np.isclose(support.loc[(support["analyte"] == "ORP") & (support["support_level"] != "L0"), "alpha_used"], 1.0)).all())},
             {"artifact": "D7_support_assessment", "check": "ORP_L0_disabled",
              "passed": bool((support.loc[(support["analyte"] == "ORP") & (support["support_level"] == "L0"), "profile_covariance_mode"] == "disabled").all())},
         ]

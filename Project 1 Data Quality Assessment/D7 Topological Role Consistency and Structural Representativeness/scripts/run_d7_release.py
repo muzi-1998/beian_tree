@@ -22,6 +22,7 @@ if __name__ == "__main__":
     for script in [
         "run_d7_sensitivity.py",
         "run_d7_validation.py",
+        "finalize_d7_admission.py",
         "run_d7_topology_review.py",
         "run_d7_shadow_v2.py",
         "make_d7_figures.py",

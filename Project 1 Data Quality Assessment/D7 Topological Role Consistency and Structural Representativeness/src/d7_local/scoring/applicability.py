@@ -9,20 +9,22 @@ class ApplicabilityGate:
         self,
         *,
         research_topology_confirmed: bool,
-        topology_verified: bool,
+        deployment_approved: bool,
         minimum_coverage: float = 0.80,
         report_only_coverage: float = 0.60,
         report_eligible_support: tuple[str, ...] | list[str] = ("L2", "L3"),
-        gate_eligible_support: tuple[str, ...] | list[str] = ("L3",),
-        veto_eligible_support: tuple[str, ...] | list[str] = ("L3",),
+        score_eligible_support: tuple[str, ...] | list[str] = ("L2", "L3"),
+        dqr_eligible_support: tuple[str, ...] | list[str] = ("L2", "L3"),
+        action_eligible_support: tuple[str, ...] | list[str] = ("L3",),
     ) -> None:
         self.research_topology_confirmed = bool(research_topology_confirmed)
-        self.topology_verified = bool(topology_verified)
+        self.deployment_approved = bool(deployment_approved)
         self.minimum_coverage = float(minimum_coverage)
         self.report_only_coverage = float(report_only_coverage)
         self.report_eligible_support = tuple(report_eligible_support)
-        self.gate_eligible_support = tuple(gate_eligible_support)
-        self.veto_eligible_support = tuple(veto_eligible_support)
+        self.score_eligible_support = tuple(score_eligible_support)
+        self.dqr_eligible_support = tuple(dqr_eligible_support)
+        self.action_eligible_support = tuple(action_eligible_support)
 
     def apply(self, frame: pd.DataFrame) -> pd.DataFrame:
         output = frame.copy()
@@ -36,22 +38,29 @@ class ApplicabilityGate:
         )
         ood = output["regime_state"].eq("OODHold")
         report_support = output["support_level"].isin(self.report_eligible_support)
-        gate_support = output["support_level"].isin(self.gate_eligible_support)
-        limited = ~gate_support
+        score_support = output["support_level"].isin(self.score_eligible_support)
+        dqr_support = output["support_level"].isin(self.dqr_eligible_support)
+        action_support = output["support_level"].isin(self.action_eligible_support)
+        limited = ~score_support
         status[report_coverage] = "report_only"
         reason[report_coverage] = "coverage_between_0.60_and_0.80"
         status[~report_support] = "limited_support"
         reason[~report_support] = "template_support_diagnostic_only"
-        report_only_support = report_support & ~gate_support
+        report_only_support = report_support & ~score_support
         status[report_only_support] = "report_only"
         reason[report_only_support] = "template_support_approved_for_reporting_only"
-        if not self.topology_verified:
-            topology_mask = ~(missing | low_coverage | ood | ~report_support)
-            status[topology_mask] = "report_only"
-            reason[topology_mask] = (
-                "research_topology_confirmed_production_approval_pending"
-                if self.research_topology_confirmed
-                else "research_topology_confirmation_pending"
+        score_candidate = ~(
+            missing | low_coverage | ood | ~score_support
+        )
+        if not self.research_topology_confirmed:
+            status[score_candidate] = "report_only"
+            reason[score_candidate] = "research_topology_confirmation_pending"
+        else:
+            score_coverage = output["window_coverage"].ge(self.minimum_coverage)
+            admitted = score_candidate & score_coverage
+            status[admitted] = "evaluable"
+            reason[admitted] = (
+                "scientific_score_admitted_deployment_governance_independent"
             )
         status[ood] = "out_of_template"
         reason[ood] = "context_posterior_or_ood_gate_failed"
@@ -61,30 +70,35 @@ class ApplicabilityGate:
         output["status_reason"] = reason
         report_coverage_ok = output["window_coverage"].ge(self.report_only_coverage)
         report_ready = report_support & report_coverage_ok & ~missing & ~ood
-        gate_ready = (
-            gate_support
+        score_ready = (
+            score_support
             & output["window_coverage"].ge(self.minimum_coverage)
             & ~missing
             & ~ood
-            & self.topology_verified
+            & self.research_topology_confirmed
+        )
+        dqr_ready = (
+            dqr_support
+            & output["window_coverage"].ge(self.minimum_coverage)
+            & ~missing
+            & ~ood
+            & self.research_topology_confirmed
         )
         output["report_support_eligible"] = report_support
-        output["gate_support_eligible"] = gate_support
+        output["score_support_eligible"] = score_support
+        output["gate_support_eligible"] = dqr_support
         research_report_ready = report_ready & self.research_topology_confirmed
         output["report_eligible"] = research_report_ready
-        output["gate_eligible"] = gate_ready
+        output["score_eligible"] = score_ready
+        output["gate_eligible"] = dqr_ready
+        output["action_eligible_candidate"] = action_support & score_ready
         output["limited_support"] = limited
         output["D7_report_provisional"] = output["D7_raw"].where(report_ready)
         output["D7_report"] = output["D7_raw"].where(research_report_ready)
-        output["D7_total"] = output["D7_raw"].where(output["evaluation_status"].eq("evaluable"))
-        output["D7_forDQR"] = output["D7_total"]
-        output["veto_eligible"] = (
-            output["support_level"].isin(self.veto_eligible_support)
-            & self.topology_verified
-            & output["evaluation_status"].eq("evaluable")
-        )
+        output["D7_total"] = output["D7_raw"].where(score_ready)
+        output["D7_forDQR"] = output["D7_raw"].where(dqr_ready)
+        output["deployment_approved"] = self.deployment_approved
+        output["veto_eligible"] = False
         output["veto_active"] = False
-        output["veto_reason"] = np.where(
-            output["veto_eligible"], "not_triggered", "ineligible_by_contract"
-        )
+        output["veto_reason"] = "pending_claim_specific_validation"
         return output

@@ -11,6 +11,7 @@ from d7_common.config import D7_ROOT, resolve_paths
 from d7_local.context import GlobalProcessContextBuilder, TargetExcludedContextBuilder
 from d7_local.contracts import TopologyRegistry
 from d7_local.scoring import ApplicabilityGate
+from d7_local.templates import SupportPolicy
 from d7_local.validation import D7ValidationRunner
 
 
@@ -87,7 +88,7 @@ def test_global_context_is_shared_and_robust_to_one_extreme_sensor() -> None:
     assert perturbed.loc[index[0], "do_pool_median"] == 1.0
 
 
-def test_research_topology_enables_report_but_blocks_total() -> None:
+def test_research_topology_enables_scientific_score_without_deployment() -> None:
     frame = pd.DataFrame(
         {
             "Q_profile": [4.0],
@@ -101,13 +102,14 @@ def test_research_topology_enables_report_but_blocks_total() -> None:
         }
     )
     output = ApplicabilityGate(
-        research_topology_confirmed=True, topology_verified=False
+        research_topology_confirmed=True, deployment_approved=False
     ).apply(frame)
-    assert output.loc[0, "evaluation_status"] == "report_only"
-    assert np.isnan(output.loc[0, "D7_total"])
-    assert np.isnan(output.loc[0, "D7_forDQR"])
+    assert output.loc[0, "evaluation_status"] == "evaluable"
+    assert output.loc[0, "D7_total"] == 4.0
+    assert output.loc[0, "D7_forDQR"] == 4.0
     assert output.loc[0, "D7_report_provisional"] == 4.0
     assert output.loc[0, "D7_report"] == 4.0
+    assert not output.loc[0, "deployment_approved"]
 
 
 def test_unconfirmed_research_topology_blocks_report() -> None:
@@ -124,14 +126,14 @@ def test_unconfirmed_research_topology_blocks_report() -> None:
         }
     )
     output = ApplicabilityGate(
-        research_topology_confirmed=False, topology_verified=False
+        research_topology_confirmed=False, deployment_approved=False
     ).apply(frame)
     assert output.loc[0, "D7_report_provisional"] == 4.0
     assert np.isnan(output.loc[0, "D7_report"])
     assert not output.loc[0, "report_eligible"]
 
 
-def test_support_tiers_separate_reporting_from_dqr_gating() -> None:
+def test_support_tiers_separate_scientific_score_from_action() -> None:
     frame = pd.DataFrame(
         {
             "Q_profile": [4.0, 4.0, 4.0],
@@ -145,17 +147,59 @@ def test_support_tiers_separate_reporting_from_dqr_gating() -> None:
         }
     )
     output = ApplicabilityGate(
-        research_topology_confirmed=True, topology_verified=True
+        research_topology_confirmed=True, deployment_approved=False
     ).apply(frame)
     assert output.loc[0, "evaluation_status"] == "limited_support"
     assert np.isnan(output.loc[0, "D7_report_provisional"])
-    assert output.loc[1, "evaluation_status"] == "report_only"
+    assert output.loc[1, "evaluation_status"] == "evaluable"
     assert output.loc[1, "D7_report"] == 4.0
-    assert np.isnan(output.loc[1, "D7_total"])
+    assert output.loc[1, "D7_total"] == 4.0
     assert not output.loc[1, "veto_eligible"]
     assert output.loc[2, "evaluation_status"] == "evaluable"
     assert output.loc[2, "D7_total"] == 4.0
-    assert output.loc[2, "veto_eligible"]
+    assert output.loc[2, "action_eligible_candidate"]
+    assert not output.loc[2, "veto_eligible"]
+
+
+def test_l3_support_is_validation_graded_not_covariance_graded() -> None:
+    policy = SupportPolicy(
+        {
+            "thresholds": {
+                "L3": {
+                    "min_effective_blocks": 60,
+                    "min_distinct_months": 3,
+                    "min_bootstrap_stability": 0.85,
+                    "min_blocked_holdouts": 3,
+                    "max_holdout_far": 0.10,
+                },
+                "L2": {
+                    "min_effective_blocks": 40,
+                    "min_distinct_months": 2,
+                },
+                "L1": {"min_effective_blocks": 20},
+            }
+        }
+    )
+    assert (
+        policy.resolve(
+            71,
+            3,
+            bootstrap_stability=0.90,
+            holdout_count=3,
+            holdout_far=0.05,
+        )
+        == "L3"
+    )
+    assert (
+        policy.resolve(
+            71,
+            3,
+            bootstrap_stability=0.80,
+            holdout_count=3,
+            holdout_far=0.05,
+        )
+        == "L2"
+    )
 
 
 def test_wilson_interval_contains_observed_proportion() -> None:
@@ -164,18 +208,19 @@ def test_wilson_interval_contains_observed_proportion() -> None:
     assert 0.0 <= low < high <= 1.0
 
 
-def test_local_outputs_respect_gating_and_orp_policy() -> None:
+def test_local_outputs_respect_claim_specific_admission() -> None:
     paths = resolve_paths()
     main = pd.read_parquet(paths.local_output_root / "D7_main_scores_hourly.parquet")
     support = pd.read_parquet(paths.local_output_root / "D7_support_assessment.parquet")
     assert not main.duplicated(["timestamp", "sensor_id"]).any()
-    assert main["D7_total"].isna().all()
-    assert main["D7_forDQR"].isna().all()
+    assert main["D7_total"].notna().any()
+    assert main["D7_forDQR"].notna().sum() == main["D7_total"].notna().sum()
     assert main["D7_report"].notna().sum() == main["D7_report_provisional"].notna().sum()
     assert main["D7_report"].notna().any()
     assert not main["upstream_score_consumed"].any()
     orp = support[support["analyte"] == "ORP"]
-    assert (orp["support_level"] == "L1").all()
+    assert orp["support_level"].isin(["L1", "L2", "L3"]).all()
+    assert orp["support_level"].isin(["L2", "L3"]).any()
     assert (orp["profile_covariance_mode"] == "diagonal_robust_z").all()
     assert np.isclose(orp["alpha_used"], 1.0).all()
 

@@ -1,0 +1,20 @@
+{
+  "policy_version": "d7-admission-v2.2",
+  "scientific_score_released": true,
+  "protective_veto_validated": true,
+  "sensor_localization_validated": false,
+  "detection_checks": {
+    "swap_AUROC": true,
+    "swap_AUPRC": true,
+    "common_mode_FAR": true,
+    "zone_coherent_FAR": true,
+    "switch_chatter_rate": true
+  },
+  "swap_top1": 0.7,
+  "l3_templates": 8,
+  "d7_total_rows": 39648,
+  "d7_fordqr_rows": 39648,
+  "protective_veto_rows": 66,
+  "sensor_veto_rows": 0,
+  "deployment_release": false
+}

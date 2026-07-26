@@ -143,10 +143,32 @@ class D7PlotDataBuilder:
                 order=order,
             )
         facts = [
-            ("Raw spatial evidence", 1.0, "D7_raw retained when calculable"),
-            ("Research topology", 1.0, "Author-confirmed and inventory-reconciled"),
-            ("Production approval", 0.0, "Documentary audit and dual approval pending"),
-            ("D7_forDQR", 0.0, "Null until all production gates pass"),
+            ("Raw evidence", 1.0, "D7_raw retained when calculable"),
+            (
+                "Scientific score",
+                float(self.main["D7_total"].notna().any()),
+                "L2/L3 evidence admitted independently of deployment",
+            ),
+            (
+                "D7_forDQR",
+                float(self.main["D7_forDQR"].notna().any()),
+                "Released for non-destructive subscore aggregation",
+            ),
+            (
+                "Process protection",
+                float(self.support["protective_veto_eligible"].any()),
+                "Detection and negative-control validation",
+            ),
+            (
+                "Sensor hard Veto",
+                float(self.support["sensor_veto_eligible"].any()),
+                "Requires Top-1 localization validation",
+            ),
+            (
+                "Deployment",
+                float(self.topology["production_approval_status"] == "approved"),
+                "Documentary audit and dual approval pending",
+            ),
         ]
         for order, (label, value, annotation) in enumerate(facts):
             self._add(
@@ -305,7 +327,19 @@ class D7PlotDataBuilder:
             (metrics["metric"] == "Top1")
             & metrics["scenario"].isin(["channel_swap", "role_offset", "role_substitution"])
         ]
-        for order, record in enumerate(acceptance.iloc[:-1].itertuples(index=False)):
+        release_metrics = acceptance[
+            acceptance["criterion"].isin(
+                [
+                    "swap_AUROC",
+                    "swap_AUPRC",
+                    "swap_Top1",
+                    "common_mode_FAR",
+                    "zone_coherent_FAR",
+                    "switch_chatter_rate",
+                ]
+            )
+        ]
+        for order, record in enumerate(release_metrics.itertuples(index=False)):
             self._add(
                 rows,
                 figure_id="FigD7_4_validation",
@@ -432,29 +466,56 @@ class D7PlotDataBuilder:
             sheet_name="acceptance",
         )
         top1_row = validation.loc[validation["criterion"].eq("swap_Top1")].iloc[0]
+        detection_passed = bool(
+            validation.loc[
+                validation["criterion"].isin(
+                    [
+                        "swap_AUROC",
+                        "swap_AUPRC",
+                        "common_mode_FAR",
+                        "zone_coherent_FAR",
+                        "switch_chatter_rate",
+                    ]
+                ),
+                "passed",
+            ].all()
+        )
         gates = [
             ("Track isolation", 1.0, "Local consumes no D1-D6 scores"),
-            ("Swap AUROC/AUPRC", float(validation.iloc[:2]["passed"].all()), "synthetic observed-window test"),
             (
-                "Top-1",
-                float(top1_row["passed"]),
+                "Scientific score",
+                float(self.main["D7_total"].notna().any()),
+                "L2/L3 retrospective score admitted",
+            ),
+            (
+                "Process protection",
+                float(
+                    detection_passed
+                    and self.support["protective_veto_eligible"].any()
+                ),
+                "Detection and negative controls passed",
+            ),
+            (
+                "Sensor hard Veto",
+                float(
+                    top1_row["passed"]
+                    and self.support["sensor_veto_eligible"].any()
+                ),
                 (
-                    f"{top1_row['estimate']:.2f} "
-                    f"[{top1_row['ci95_low']:.2f}, {top1_row['ci95_high']:.2f}] "
-                    "vs 0.80"
+                    f"Top-1 {top1_row['estimate']:.2f} "
+                    f"[{top1_row['ci95_low']:.2f}, {top1_row['ci95_high']:.2f}]"
                 ),
             ),
             (
-                "Research topology",
-                float(self.topology["research_confirmation_status"] == "author_confirmed"),
-                "author-confirmed and inventory-reconciled",
+                "D7_forDQR",
+                float(self.main["D7_forDQR"].notna().any()),
+                "Non-destructive aggregation released",
             ),
             (
-                "Production approval",
+                "Deployment",
                 float(self.topology["production_approval_status"] == "approved"),
-                "documentary audit and dual approval pending",
+                "Documentary audit and dual approval pending",
             ),
-            ("DQR release", 0.0, "production gate remains closed"),
         ]
         for order, (gate, value, annotation) in enumerate(gates):
             self._add(

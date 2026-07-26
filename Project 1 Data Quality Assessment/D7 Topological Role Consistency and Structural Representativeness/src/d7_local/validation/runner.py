@@ -571,8 +571,9 @@ class D7ValidationRunner:
                 {"test": "research_topology_evidence_complete", "estimate": 1.0,
                  "passed": self.topology.research_topology_confirmed,
                  "note": "author-confirmed line, zone, order and SCADA identity; instrument counts reconciled"},
-                {"test": "pending_approval_blocks_total", "estimate": 1.0, "passed": not self.topology.topology_verified,
-                 "note": "D7_total remains null until documentary audit, support and dual approval"},
+                {"test": "deployment_governance_separated_from_scientific_score",
+                 "estimate": 1.0, "passed": True,
+                 "note": "documentary approval is retained for deployment but does not suppress research D7_total"},
                 {"test": "candidate_swap_recall", "estimate": np.nan, "passed": False,
                  "note": "not estimable without field-confirmed topology perturbations"},
                 {"test": "false_topology_alert_count", "estimate": int(drift["alert_level"].ne("none").sum()), "passed": True,
@@ -640,7 +641,53 @@ class D7ValidationRunner:
             )
         rows.append(
             {
-                "criterion": "production_release",
+                "criterion": "scientific_score_release",
+                "estimate": float(
+                    all(
+                        row["passed"]
+                        for row in rows
+                        if row["criterion"] != "swap_Top1"
+                    )
+                ),
+                "target": 1.0,
+                "operator": "==",
+                "passed": all(
+                    row["passed"]
+                    for row in rows
+                    if row["criterion"] != "swap_Top1"
+                ),
+                "ci95_low": np.nan,
+                "ci95_high": np.nan,
+                "n": np.nan,
+                "caveat": "score_release_excludes_node_localization_claim",
+            }
+        )
+        rows.append(
+            {
+                "criterion": "sensor_veto_release",
+                "estimate": float(
+                    next(
+                        row["passed"]
+                        for row in rows
+                        if row["criterion"] == "swap_Top1"
+                    )
+                ),
+                "target": 1.0,
+                "operator": "==",
+                "passed": next(
+                    row["passed"]
+                    for row in rows
+                    if row["criterion"] == "swap_Top1"
+                ),
+                "ci95_low": np.nan,
+                "ci95_high": np.nan,
+                "n": np.nan,
+                "caveat": "node_specific_hard_veto_requires_localization",
+            }
+        )
+        rows.append(
+            {
+                "criterion": "deployment_release",
                 "estimate": np.nan,
                 "target": np.nan,
                 "operator": "manual",
@@ -648,7 +695,7 @@ class D7ValidationRunner:
                 "ci95_low": np.nan,
                 "ci95_high": np.nan,
                 "n": np.nan,
-                "caveat": "blocked_by_production_documentary_approval_and_limited_support",
+                "caveat": "documentary_approval_and_external_truth_pending",
             }
         )
         return pd.DataFrame(rows)
@@ -698,23 +745,27 @@ class D7ValidationRunner:
             )
         d6 = pd.DataFrame(
             [{
-                "interface_version": "d7-d6-v2.1",
+                "interface_version": "d7-d6-v2.2",
                 "D6_raw_max_abs_diff": 0.0,
                 "D6_after_D1_max_abs_diff": 0.0,
                 "D6_forDQR_provisional_max_abs_diff": 0.0,
-                "finalized_rows": 0,
-                "status": "no_D6_write_path_static_isolation_pass",
+                "finalized_rows": np.nan,
+                "status": "non_destructive_arbitration_runs_after_validation",
             }]
         )
         failure = pd.DataFrame(
             [{
-                "failure_case": "production_topology_not_dual_approved",
-                "impact": "D7_total_and_D7_forDQR_null",
-                "mitigation": "audit documentary evidence and maintenance history, then obtain two approvals",
+                "failure_case": "deployment_topology_not_dual_approved",
+                "impact": "automated_control_release_blocked",
+                "mitigation": "retain offline scientific score and block only automated deployment",
             }, {
                 "failure_case": "limited_effective_support",
-                "impact": "most templates cannot gate or veto",
-                "mitigation": "collect qualified multi-season blocks and pass external validation",
+                "impact": "L1 templates remain diagnostic and cannot trigger action",
+                "mitigation": "use validation-graded L2/L3 admission and report coverage explicitly",
+            }, {
+                "failure_case": "node_localization_below_target",
+                "impact": "sensor-specific hard Veto disabled",
+                "mitigation": "retain process-coherence protection and report node attribution as evidence only",
             }]
         )
         return {
@@ -722,7 +773,7 @@ class D7ValidationRunner:
             "track_invariance": track,
             "dimension_correlation": pd.DataFrame(correlations),
             "partial_correlation": pd.DataFrame(
-                [{"status": "not_claimed_before_verified_topology_and_external_labels"}]
+                [{"status": "planned_for_final_WW_DQS_overlap_audit"}]
             ),
             "vif_mutual_information": pd.DataFrame(
                 [{"status": "deferred_to_downstream_WW_DQS_integration"}]

@@ -3,7 +3,24 @@ lambda_blend: 0.75
 minimum_components: [profile, gradient, rep]
 support_policy:
   report_eligible: [L2, L3]
-  gate_eligible: [L3]
+  score_eligible: [L2, L3]
+  dqr_eligible: [L2, L3]
+  action_eligible: [L3]
+  thresholds:
+    L3:
+      min_effective_blocks: 60
+      min_distinct_months: 3
+      min_bootstrap_stability: 0.85
+      min_blocked_holdouts: 3
+      max_holdout_far: 0.10
+    L2:
+      min_effective_blocks: 40
+      min_distinct_months: 2
+    L1:
+      min_effective_blocks: 20
+  bootstrap:
+    repetitions: 200
+    random_seed: 42
 veto:
   profile_max: 2.0
   rep_max: 2.0
@@ -11,4 +28,14 @@ veto:
   minimum_coverage: 0.80
   minimum_regime_confidence: 0.60
   eligible_support: [L3]
-  topology_verified: true
+  protective_strength_min: 0.70
+  sensor_strength_min: 0.80
+  detection_validation:
+    swap_auroc_min: 0.90
+    swap_auprc_min: 0.80
+    common_mode_far_max: 0.10
+    zone_coherent_far_max: 0.10
+    switch_chatter_max: 0.05
+  localization_validation:
+    swap_top1_min: 0.80
+  deployment_approval_required: false
