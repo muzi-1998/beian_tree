@@ -1,0 +1,79 @@
+schema_version: ww-dqs-ambiguity-registry-v2.0
+items:
+  - ambiguity_id: A-D1-PEER-MARGIN
+    scope: D1_peer_admission
+    scheme_text: no_material_tail_degradation_and_not_significantly_worse
+    issue: Exact equivalence margin, confidence rule and alpha are not specified.
+    execution_policy: retain_existing_locked_numeric_margins_and_report_them
+    status: pending_author_confirmation
+    recommended_resolution: prespecify a 5_percent P90/P95 noninferiority margin and 95_percent block-bootstrap CI rule.
+  - ambiguity_id: A-D1-RESOLUTION
+    scope: D1_degraded_resolution_injections
+    scheme_text: original_resolution_plus_one_degraded_resolution_level
+    issue: The degraded resolution increment is not numerically specified.
+    execution_policy: use_2x_native_or_empirical_resolution_as_sensitivity_only
+    status: pending_author_confirmation
+    recommended_resolution: lock the degraded increment from instrument resolution and SCADA encoding metadata before confirmatory reuse.
+  - ambiguity_id: A-D1-INJECTION-ROUTE
+    scope: D1_fault_injection_preprocessing
+    scheme_text: inject_in_raw_domain_then_rerun_decomposition_whitening_and_scoring
+    issue: It is unclear whether rerun means applying the frozen causal transform or refitting preprocessing on each contaminated test window.
+    execution_policy: apply_faults_in_measurement_units_through_the_frozen_training_route_without_refitting
+    status: resolved_by_no_leakage_principle_pending_author_confirmation
+    recommended_resolution: state explicitly that all preprocessing parameters are trained before the injection window and remain frozen during injected evaluation.
+  - ambiguity_id: A-D4-SHRINKAGE
+    scope: D4_ORP_hierarchical_shrinkage
+    scheme_text: lambda_depends_on_effective_blocks_and_estimation_variance
+    issue: The estimator, prior strength and minimum independent block count are not specified.
+    execution_policy: run sensitivity_only_without_replacing_D4_raw
+    status: pending_method_lock
+    recommended_resolution: select one empirical-Bayes estimator in development data, freeze it, then test it in future blocks.
+  - ambiguity_id: A-D4-FAR
+    scope: D4_common_process_guard
+    scheme_text: keep_conditional_new_far_low
+    issue: Low is qualitative in the work-package table.
+    execution_policy: use_existing_locked_0_10_ceiling
+    status: resolved_by_existing_locked_contract
+    recommended_resolution: retain 0.10 in the frozen SAP and cite the originating D4 validation contract.
+  - ambiguity_id: A-D4-LAG-RESOLUTION
+    scope: D4_change_point_lag_validation
+    scheme_text: validate_0_10_30_60_180_minute_lags
+    issue: The production change-point timeline is hourly, so 10 and 30 minute lag levels are below its nominal resolution.
+    execution_policy: retain_all_levels_as_resolution_sensitivity_and_do_not_claim_subhour_identification
+    status: pending_method_choice
+    recommended_resolution: either predefine a minute-scale auxiliary change-point detector or restrict the confirmatory lag claim to one hour and longer.
+  - ambiguity_id: A-D5-NODE-SUPPORT
+    scope: D5_L3_admission
+    scheme_text: prespecified_node_level_independent_time_blocks
+    issue: The v2.0 document does not state the numeric minimum.
+    execution_policy: retain_current_D5_v2_3_support_contract
+    status: pending_author_confirmation
+    recommended_resolution: copy the exact v2.3 node minimums into the manuscript SAP before submission.
+  - ambiguity_id: A-D5-CONTEXT-ABLATION
+    scope: D5_context_and_template_ablation
+    scheme_text: remove_qr_qir_time_hysteresis_and_fixed_regime_then_rerun
+    issue: The document does not define outer-fold refitting, regime-label alignment, K selection or threshold recalibration for these structural ablations.
+    execution_policy: compute_component_score_space_ablation_and_mark_structural_refits_pending
+    status: pending_method_lock
+    recommended_resolution: freeze one outer-fold refit protocol on development months and rerun all structural ablations without reusing confirmatory labels.
+  - ambiguity_id: A-COMP-BOTTLENECK
+    scope: composite_conservative_gate
+    scheme_text: Q_min_below_3_for_2_to_3_hours
+    issue: The primary persistence is given as a range.
+    execution_policy: report_2h_and_3h_sensitivity_without_releasing_a_primary_action_gate
+    status: pending_author_choice
+    recommended_resolution: use 3h as the conservative primary rule and 2h as sensitivity.
+  - ambiguity_id: A-COMP-GRADE
+    scope: composite_A_to_E_grades
+    scheme_text: thresholds_frozen_before_confirmatory_testing
+    issue: No composite grade cut points are supplied.
+    execution_policy: publish_continuous_scores_and_coverage_only
+    status: pending_threshold_lock
+    recommended_resolution: lock grade cut points using development-period utility or expert criteria, never the confirmatory blocks.
+  - ambiguity_id: A-D3-SOFT-SOURCE
+    scope: D3_soft_and_rate_thresholds
+    scheme_text: design_literature_or_expert_approved_rules
+    issue: Existing rules are versioned but several remain expert rules without signed site approval.
+    execution_policy: retain_as_Grade_B_warning_only
+    status: pending_site_expert_approval
+    recommended_resolution: add named source, date, applicable condition and reviewer sign-off to the threshold register.

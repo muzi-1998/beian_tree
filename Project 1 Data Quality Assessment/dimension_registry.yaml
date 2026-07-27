@@ -1,5 +1,5 @@
-schema_version: ww-dqs-dimension-registry-v1
-effective_date: "2026-07-26"
+schema_version: ww-dqs-dimension-registry-v2
+effective_date: "2026-07-27"
 canonical_dimensions:
   D1:
     name: Sensor Health
@@ -37,7 +37,8 @@ canonical_dimensions:
     name: Physical Rationality and Rate Constraints
     project_dir: D3 Physical rationality and rate constraints
     legacy_id: D4
-    primary_score: D3_total
+    primary_interface: D3_gate_status
+    legacy_supplementary_score: D3_total
     independent_inputs:
       - canonical unimputed observations
       - fixed physical and rate constraints
@@ -46,7 +47,7 @@ canonical_dimensions:
       - D2
       - D4
       - D5
-    aggregation_status: score_ready
+    aggregation_status: safety_gate_ready_legacy_score_supplemental
   D4:
     name: Parallel-redundancy Temporal Consistency
     project_dir: D4 Parallel-redundancy Temporal Consistency
@@ -106,5 +107,12 @@ aggregation_contract:
   forbidden_missing_policy: replace_missing_with_low_score
   veto_policy: sensor_identity_veto_is_separate_from_dimension_score
   guard_policy: process_coherence_guard_is_attribution_only
-  weights_status: pending_prespecified_calibration
-  composite_release_status: calibration_stage
+  node_formula: equal_mean_of_eligible_D1_D2_D5
+  node_minimum_eligible_dimensions: 2
+  pair_formula: equal_mean_of_target_node_reference_node_D4_raw
+  D3_role: independent_non_compensatory_safety_gate
+  weights_status: frozen_equal_weights
+  grade_cut_points_status: pending_independent_lock
+  confirmatory_run_id: D1D5V20-a2b2bef69861
+  confirmatory_run_location: outputs/confirmatory/D1D5V20-a2b2bef69861
+  composite_release_status: retrospective_single_plant_scientific_release

@@ -10,20 +10,55 @@ The canonical high-frequency dynamic data-quality dimensions are:
 |---|---|---|---|
 | D1 | Sensor health | D1 | `D1_total` (`D1_total_hourly` release sheet) |
 | D2 | Temporal continuity and information availability | D2 | `D2_total` |
-| D3 | Physical rationality and rate constraints | former D4 | `D3_total` |
+| D3 | Physical rationality and rate constraints | former D4 | `D3_gate_status`; `D3_total` supplementary only |
 | D4 | Parallel-redundancy temporal consistency | former D6 | `D4_raw` |
 | D5 | Topological role consistency and structural representativeness | former D7 | `D5_report_score` |
 
-All five dimensions are current, reproducible and numerically separated at the
-dimension-score layer. They may enter a locked retrospective aggregation and
-calibration study. The present evidence does not yet support calling the
-composite an externally validated, deployment-ready WW-DQS index.
+All five constructs are current and reproducible. D1, D2, D4 and D5 remain
+numerically separated dynamic evidence; D3 is an independent
+non-compensatory Safety Gate. The prespecified retrospective aggregation has
+now been executed as run `D1D5V20-a2b2bef69861`. The present evidence does not
+support calling it an externally validated, deployment-ready WW-DQS index.
 
 This distinction is important:
 
-- **Subscore aggregation development: admitted.**
-- **Final manuscript composite after prespecified calibration: conditionally admitted.**
+- **Retrospective scientific aggregation: completed.**
+- **Final manuscript claims: conditionally admitted with the limitations below.**
 - **Automated operational deployment: not admitted.**
+
+## v2.0 confirmatory execution outcome
+
+The authoritative package is
+`outputs/confirmatory/D1D5V20-a2b2bef69861/`. Its 55 manifested artifacts pass
+complete SHA-256 verification. It contains frozen configurations, six expanding
+future-month splits, source registries, all derived plot data, three
+Nature-ready figure groups, the composite products and the execution report.
+
+- D1: Hard Freeze recall 1.000, Drift 0.698, Spike 0.379 and Step 0.240. These
+  results define applicability boundaries; they do not justify a blanket
+  0.80-detection claim. Four of 144 spike trials were explicitly excluded as
+  locally non-evaluable.
+- D2: channel ranking was stable (`rho >= 0.996`). QFA 3 h and 12 h event
+  Jaccard values were 0.731 and 0.721, below the frozen 0.75 threshold; the 6 h
+  primary setting remains supported.
+- D3: 27,689 Pass, 15,319 Warn and zero instrument-range Fail windows. All
+  warning OAT Jaccard values were at least 0.899. Grade B source approval remains
+  pending.
+- D4: target/peer drift and step AUROC values were 0.912-0.936; freeze AUROC
+  values were 0.798-0.809; equal common-process conditional FAR was 0.041.
+  Hourly change-point scoring did not show monotonic severity across
+  0-180 min (`rho=0`), so subhour lag identification is not claimed.
+- D5: Swap AUROC 0.912 and AUPRC 0.870 passed, but Top-1 localization 0.700
+  failed the locked 0.80 gate. Scientific report scores remain eligible;
+  sensor-specific hard Veto remains disabled.
+- Composite: 85,652 formal node rows and 37,975 formal pair rows were produced.
+  Coverage was 39,606 full, 46,046 basic and 364 limited sensor-hours. D5
+  report eligibility declines sharply after January 2026 and is shown as
+  reduced evidence coverage rather than imputed low quality.
+
+Nature figure source validation passed 14/14 checks with no warnings. The
+confirmatory package adds 3 PNG/PDF/SVG/TIFF figure groups without altering the
+existing dimension-specific bundles.
 
 ## Freshness evidence
 
@@ -46,8 +81,15 @@ The strengthened cross-project audit passed **50/50 checks**. It verifies:
 - canonical D1-D5 directory names and removal of retired top-level names;
 - figure bundle completeness and freshness.
 
-Formal tests passed **84/84**: D1 23, D2 18, D3 11, D4 10, D5 14 and
-cross-project publication-style tests 8.
+The dimension tests pass **76/76**: D1 23, D2 18, D3 11, D4 10 and D5 14.
+Cross-project publication/freshness contract tests pass **10/10** and the added
+confirmatory package tests pass **6/6**.
+
+The cross-project freshness audit passes **50/50**. Its D1 dependency and D5
+Local bundle hashes now canonicalize text to LF while hashing binary artifacts
+unchanged. This removes Windows CRLF false mismatches; the locked portable D5
+Local core hash is
+`d4d4ec83ed4469b5b7ae9b62d69a8a3c28290c8b6ef841eaa80b4713ceb43a99`.
 
 ## Independence assessment
 
@@ -58,7 +100,8 @@ residual evidence. Section 1.1 supplies the canonical time grid and regime
 context, not a competing quality score. D2-D5 scores are prohibited numeric
 inputs.
 
-**Conclusion:** numerically independent and aggregation-ready.
+**Conclusion:** independent Safety Gate ready. `D3_total` is retained for
+supplementary physical-evidence analysis and is not a composite score input.
 
 ### D2 Temporal continuity and information availability
 
@@ -111,8 +154,8 @@ report score is admitted, while node-specific hard Veto and deployment are not.
 7. Use `D4_raw`, not `D4_after_D1`, as the D4 numeric input.
 8. Use `D5_report_score` for aggregation and keep the D5 gate interface
    separate.
-9. Freeze mapping functions and aggregation weights before the final temporal
-   test period is opened.
+9. Use the frozen equal-weight formula. Do not learn weights without a separate
+   external criterion.
 10. Report both the composite estimate and propagated uncertainty.
 
 ## Dimension-specific work before a top-journal claim
@@ -179,16 +222,13 @@ report score is admitted, while node-specific hard Veto and deployment are not.
 
 ## Cross-dimensional work before final manuscript lock
 
-### Priority 0: required for the definitive composite
+### Priority 0: required for claims beyond retrospective aggregation
 
-- Prespecify the aggregation family, weight constraints and missing-dimension
-  policy.
-- Estimate weights with nested blocked temporal validation or a separately
-  defined downstream criterion; do not optimize and test on the same period.
-- Propagate subscore uncertainty by block bootstrap or an equivalent
-  autocorrelation-aware method.
-- Quantify inter-dimension dependence, redundancy and effective dimensionality.
-- Perform leave-one-dimension-out ablation and weight-sensitivity analysis.
+- Retain the frozen equal-weight and eligible-dimension missingness policy.
+- Learn alternative weights only against a separately defined external
+  criterion and within nested blocked temporal validation.
+- Extend the completed block-bootstrap uncertainty and dimension ablation to
+  external criterion analyses.
 - Reserve an untouched terminal time block for final composite evaluation.
 
 ### Priority 1: required for a strong top-journal paper
@@ -295,10 +335,11 @@ Recommended final manuscript curation:
 
 ## Final conclusion
 
-The current D1-D5 implementation is suitable for the **final subscore
-aggregation development stage** and for drafting the methods/results structure
-of a high-frequency dynamic data-quality paper. It is not yet sufficient for a
-definitive claim that the composite score is externally validated or ready for
-automated plant decisions. The remaining critical work is composite
-calibration, uncertainty propagation, blocked independent testing and external
-criterion validation, not another redesign of the five subdimensions.
+The current D1-D5 implementation has completed the **retrospective scientific
+aggregation stage** and is suitable for drafting the methods/results structure
+of a high-frequency dynamic data-quality paper. It is not sufficient for a
+definitive claim that the composite is externally validated or ready for
+automated plant decisions. The remaining critical work is independent truth,
+an untouched future period, D5 structural refit ablations, external criterion
+validation and cross-plant transportability, not another redesign of the five
+constructs.

@@ -57,3 +57,16 @@ The seven figures were rebuilt as compact double-column scientific figures with 
 3. Add externally justified multivariate constraints only where mass balance, redox coupling, hydraulic residence, or process topology can be supported; these must remain separate from D1/D2 evidence.
 4. Validate event precision/recall against independently reviewed abnormal-event labels.
 5. Report the low-DO behavior of DO-1-4 as an operational plausibility finding, not automatically as sensor failure; D1 must adjudicate sensor-state evidence independently.
+
+## v2.0 confirmatory addendum
+
+The formal aggregation interface is now `D3_gate_status`, not `D3_total`.
+Registered instrument-range violations are Grade A Fail; operational
+value/rate evidence is Grade B Warn. `D3_total` is retained as a supplementary
+legacy analysis and is not averaged into node or pair WW-DQS.
+
+Run `D1D5V20-a2b2bef69861` contains 27,689 Pass, 15,319 Warn and zero Fail
+nonoverlapping 2 h sensor windows. Soft-bound and rate-threshold perturbations
+produce warning-event Jaccard values of 0.899-1.000. The Gate implementation is
+stable, but unsigned Grade B rule sources and the absence of independently
+adjudicated warning events prevent operational alarm-validity claims.

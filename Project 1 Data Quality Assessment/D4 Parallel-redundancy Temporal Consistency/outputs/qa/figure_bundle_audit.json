@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-27T05:28:35.952718+00:00",
+  "generated_at": "2026-07-27T12:44:18.329118+00:00",
   "figure_dir": "D:\\004_git\\beian_tree\\Project 1 Data Quality Assessment\\D4 Parallel-redundancy Temporal Consistency\\outputs\\figures",
   "figures": 8,
   "failed": 0,
@@ -28,6 +28,7 @@
       ],
       "nonconforming_bare_panel_labels": [],
       "fresh_vs_sources": true,
+      "freshness_basis": "locked_sha256_lineage",
       "passed": true
     },
     {
@@ -48,6 +49,7 @@
       ],
       "nonconforming_bare_panel_labels": [],
       "fresh_vs_sources": true,
+      "freshness_basis": "locked_sha256_lineage",
       "passed": true
     },
     {
@@ -68,6 +70,7 @@
       ],
       "nonconforming_bare_panel_labels": [],
       "fresh_vs_sources": true,
+      "freshness_basis": "locked_sha256_lineage",
       "passed": true
     },
     {
@@ -85,6 +88,7 @@
       "panel_labels": [],
       "nonconforming_bare_panel_labels": [],
       "fresh_vs_sources": true,
+      "freshness_basis": "locked_sha256_lineage",
       "passed": true
     },
     {
@@ -105,6 +109,7 @@
       ],
       "nonconforming_bare_panel_labels": [],
       "fresh_vs_sources": true,
+      "freshness_basis": "locked_sha256_lineage",
       "passed": true
     },
     {
@@ -125,6 +130,7 @@
       ],
       "nonconforming_bare_panel_labels": [],
       "fresh_vs_sources": true,
+      "freshness_basis": "locked_sha256_lineage",
       "passed": true
     },
     {
@@ -145,6 +151,7 @@
       ],
       "nonconforming_bare_panel_labels": [],
       "fresh_vs_sources": true,
+      "freshness_basis": "locked_sha256_lineage",
       "passed": true
     },
     {
@@ -165,6 +172,7 @@
       ],
       "nonconforming_bare_panel_labels": [],
       "fresh_vs_sources": true,
+      "freshness_basis": "locked_sha256_lineage",
       "passed": true
     }
   ]

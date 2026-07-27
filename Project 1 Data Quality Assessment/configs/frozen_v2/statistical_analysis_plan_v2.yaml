@@ -1,0 +1,118 @@
+schema_version: ww-dqs-sap-v2.0
+protocol_version: northbank-d1-d5-v2.0
+status: frozen_for_retrospective_confirmatory_execution
+study_scope:
+  plant_count: 1
+  design: single_plant_retrospective_method_validation
+  canonical_frequency: 1min
+  reporting_frequencies:
+    node: 1h
+    pair: 1h
+    plant: 1d
+  allowed_claims:
+    - within_plant_temporal_robustness
+    - mechanism_consistency_under_controlled_injection
+    - retrospective_scientific_score
+  prohibited_claims:
+    - prospective_operational_effectiveness
+    - maintenance_truth_diagnostic_accuracy
+    - external_plant_transportability
+    - optimal_learned_composite_weights
+
+analysis_units:
+  D1_primary: independent_injection_episode
+  D2_primary: sensor_hour_and_independent_event
+  D3_primary: sensor_window_and_independent_warning_event
+  D4_primary: independent_pair_window
+  D5_primary: independent_injected_24h_window
+  composite_primary: joint_time_block
+  non_independent_units:
+    - overlapping_minutes
+    - overlapping_hours
+    - sensors_reusing_the_same_injected_window
+
+temporal_validation:
+  method: expanding_blocked_walk_forward
+  development_end: "2025-10-31 23:59:59"
+  outer_test_blocks:
+    - {fold_id: F01, train_end: "2025-10-31 23:59:59", test_start: "2025-11-01 00:00:00", test_end: "2025-11-30 23:59:59"}
+    - {fold_id: F02, train_end: "2025-11-30 23:59:59", test_start: "2025-12-01 00:00:00", test_end: "2025-12-31 23:59:59"}
+    - {fold_id: F03, train_end: "2025-12-31 23:59:59", test_start: "2026-01-01 00:00:00", test_end: "2026-01-31 23:59:59"}
+    - {fold_id: F04, train_end: "2026-01-31 23:59:59", test_start: "2026-02-01 00:00:00", test_end: "2026-02-28 23:59:59"}
+    - {fold_id: F05, train_end: "2026-02-28 23:59:59", test_start: "2026-03-01 00:00:00", test_end: "2026-03-31 23:59:59"}
+    - {fold_id: F06, train_end: "2026-03-31 23:59:59", test_start: "2026-04-01 00:00:00", test_end: "2026-04-13 23:59:59"}
+  untouched_terminal_test_status: unavailable
+  untouched_terminal_test_reason: record_has_already_been_reviewed_during_method_development
+
+primary_endpoints:
+  D1:
+    - event_recall
+    - false_alarms_per_sensor_day
+    - minimum_detection_delay
+    - common_process_conditional_new_far
+  D2:
+    - channel_rank_spearman
+    - event_jaccard
+    - veto_hour_change
+    - reason_code_migration
+  D3:
+    - hard_range_fail_count
+    - warning_event_jaccard
+    - warning_burden_change
+  D4:
+    - target_fault_auroc
+    - peer_fault_auroc
+    - common_process_conditional_new_far
+    - change_point_lag_monotonicity
+  D5:
+    - swap_auroc
+    - swap_auprc
+    - swap_top1
+    - common_mode_far
+    - zone_coherent_far
+  composite:
+    - equal_weight_node_score
+    - equal_weight_pair_score
+    - effective_dimension_count
+    - coverage_class
+    - block_bootstrap_95ci
+
+minimum_support:
+  D1_trials_per_core_fault: 120
+  D2_events_for_confirmatory_event_stability: 20
+  D3_events_for_confirmatory_event_stability: 20
+  D4_independent_windows_per_core_scenario: 80
+  D5_swap_trials: 60
+  minimum_distinct_outer_test_blocks: 3
+  below_minimum_policy: descriptive_only
+
+uncertainty:
+  main_method: joint_moving_block_bootstrap
+  main_block_hours: 168
+  sensitivity_block_hours: 48
+  repetitions: 2000
+  confidence_level: 0.95
+  seed: 20260727
+  resample_joint_dimensions: true
+
+multiplicity:
+  primary_endpoints: effect_size_and_95ci_no_significance_gate
+  secondary_family: benjamini_hochberg
+  secondary_fdr: 0.05
+  exploratory_subgroups: label_exploratory_no_confirmatory_p_values
+
+missingness:
+  score_missing_as_low: false
+  score_missing_as_high: false
+  renormalize_over_eligible_dimensions: true
+  formal_node_grade_minimum_core_dimensions: 2
+
+locked_decision_thresholds:
+  D1_high_amplitude_detection_min: 0.80
+  D2_rank_spearman_min: 0.90
+  D2_event_jaccard_min: 0.75
+  D4_common_mode_far_max: 0.10
+  D5_swap_top1_min: 0.80
+  D5_common_mode_far_max: 0.10
+  D5_zone_coherent_far_max: 0.10
+

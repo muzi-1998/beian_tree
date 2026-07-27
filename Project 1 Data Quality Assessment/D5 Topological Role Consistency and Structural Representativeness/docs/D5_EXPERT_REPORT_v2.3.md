@@ -106,3 +106,18 @@ The branch may enter final WW-DQS subscore aggregation as a **scientific impleme
 The deployment evidence and role-separated approval procedure remain specified
 in `docs/D5_FIELD_VERIFICATION_REQUIREMENTS.md`; they are not prerequisites for
 retrospective scientific aggregation.
+
+## 10. v2.0 confirmatory addendum
+
+Run `D1D5V20-a2b2bef69861` confirms Swap AUROC 0.912 and AUPRC 0.870, while
+Top-1 localization remains 0.700 and fails the locked 0.80 criterion.
+Scientific report scores may enter eligible-dimension node aggregation;
+sensor-specific hard Veto and deployment remain disabled.
+
+Component score-space ablations are complete. Full structural refits without
+QR/QIR context, time-of-day context, MAP/hysteresis and learned regime context
+remain pending because the v2.0 plan does not lock outer-fold refitting,
+regime-label alignment, K selection or threshold recalibration. D5 full
+coverage declines sharply after January 2026 as templates become
+limited-support; the composite reports this loss of evidence instead of
+converting it into a low score.

@@ -182,7 +182,7 @@ def d5_local_core_sha256(root: Path) -> str:
         if not path.is_file():
             raise FileNotFoundError(f"Missing D5 Local core artifact: {path}")
         digest.update(name.encode("utf-8"))
-        digest.update(path.read_bytes())
+        digest.update(_canonical_file_bytes(path))
     return digest.hexdigest()
 
 
@@ -486,7 +486,11 @@ def main() -> int:
     dependency_hashes = d1_run_manifest.get("dependency_hashes", {})
     for role, relative_path in D1_DEPENDENCY_PATHS.items():
         path = d1_root / relative_path
-        actual = sha256_file(path) if path.is_file() else None
+        actual = (
+            hashlib.sha256(_canonical_file_bytes(path)).hexdigest()
+            if path.is_file()
+            else None
+        )
         record(
             checks,
             f"D1:dependency:{role}",
@@ -759,19 +763,25 @@ def main() -> int:
             "registry_dimensions": sorted(registry_dimensions),
         },
     )
-    primary_score_fields = {
-        dimension: registry_dimensions.get(dimension, {}).get("primary_score")
+    authoritative_interfaces = {
+        dimension: (
+            registry_dimensions.get(dimension, {}).get("primary_interface")
+            if dimension == "D3"
+            else registry_dimensions.get(dimension, {}).get("primary_score")
+        )
         for dimension in CANONICAL_PROJECT_DIRS
     }
     primary_fields_valid = (
-        primary_score_fields
+        authoritative_interfaces
         == {
             "D1": "D1_total",
             "D2": "D2_total",
-            "D3": "D3_total",
+            "D3": "D3_gate_status",
             "D4": "D4_raw",
             "D5": "D5_report_score",
         }
+        and registry_dimensions["D3"].get("legacy_supplementary_score")
+        == "D3_total"
         and "D1_total_hourly"
         in pd.ExcelFile(d1_data / "D1_main_scores_min.xlsx").sheet_names
         and "D2_total"
@@ -786,9 +796,9 @@ def main() -> int:
     )
     record(
         checks,
-        "D1-D5:authoritative_primary_score_fields",
+        "D1-D5:authoritative_interfaces",
         primary_fields_valid,
-        primary_score_fields,
+        authoritative_interfaces,
     )
 
     audit_d1_release_equivalence(checks)

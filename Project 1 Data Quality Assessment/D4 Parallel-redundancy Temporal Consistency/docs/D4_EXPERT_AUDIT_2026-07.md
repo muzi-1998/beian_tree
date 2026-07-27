@@ -108,3 +108,18 @@ for full frames, outward ticks for open frames, and PNG/PDF/SVG counterparts.
 These limitations do not block retrospective D4 subscore aggregation when
 eligibility and uncertainty are reported. They block stronger causal and
 deployment claims.
+
+## v2.0 confirmatory addendum
+
+Run `D1D5V20-a2b2bef69861` evaluates 1,890 pair-window scenarios. Target/peer
+drift and step AUROC values are 0.912-0.936 with direction accuracy
+0.984-1.000; target/peer freeze AUROC values are 0.798 and 0.809. Equal
+common-process change has conditional new FAR 0.041 (95% CI 0.000-0.095).
+Unequal and opposite changes are correctly reported as structural-asymmetry
+positive controls, not common-process false alarms.
+
+The current hourly change-point layer yields zero monotonic severity across the
+0, 10, 30, 60 and 180 min grid. Ten- and 30-minute levels are below nominal
+resolution; they remain a resolution sensitivity only. ORP hierarchical
+shrinkage is also sensitivity-only until its empirical-Bayes estimator and
+minimum independent-block rule are frozen.

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-27T05:28:33.137045+00:00",
+  "generated_at": "2026-07-27T12:44:17.612068+00:00",
   "figure_dir": "D:\\004_git\\beian_tree\\Project 1 Data Quality Assessment\\D3 Physical rationality and rate constraints\\outputs\\figures",
   "figures": 7,
   "failed": 0,
@@ -25,6 +25,7 @@
       ],
       "nonconforming_bare_panel_labels": [],
       "fresh_vs_sources": true,
+      "freshness_basis": "locked_sha256_lineage",
       "passed": true
     },
     {
@@ -47,6 +48,7 @@
       ],
       "nonconforming_bare_panel_labels": [],
       "fresh_vs_sources": true,
+      "freshness_basis": "locked_sha256_lineage",
       "passed": true
     },
     {
@@ -69,6 +71,7 @@
       ],
       "nonconforming_bare_panel_labels": [],
       "fresh_vs_sources": true,
+      "freshness_basis": "locked_sha256_lineage",
       "passed": true
     },
     {
@@ -91,6 +94,7 @@
       ],
       "nonconforming_bare_panel_labels": [],
       "fresh_vs_sources": true,
+      "freshness_basis": "locked_sha256_lineage",
       "passed": true
     },
     {
@@ -113,6 +117,7 @@
       ],
       "nonconforming_bare_panel_labels": [],
       "fresh_vs_sources": true,
+      "freshness_basis": "locked_sha256_lineage",
       "passed": true
     },
     {
@@ -135,6 +140,7 @@
       ],
       "nonconforming_bare_panel_labels": [],
       "fresh_vs_sources": true,
+      "freshness_basis": "locked_sha256_lineage",
       "passed": true
     },
     {
@@ -159,6 +165,7 @@
       ],
       "nonconforming_bare_panel_labels": [],
       "fresh_vs_sources": true,
+      "freshness_basis": "locked_sha256_lineage",
       "passed": true
     }
   ]

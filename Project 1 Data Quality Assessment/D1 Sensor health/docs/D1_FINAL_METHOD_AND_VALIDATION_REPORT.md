@@ -106,3 +106,20 @@ This correction preserves removal of the unsupported `DO_2_4 -> DO_1_1/DO_1_2` f
 ## Interpretation boundary
 
 The event recovery rate measures internal state-machine completion, not diagnostic sensitivity or specificity against maintenance truth. Controlled injections validate mechanism behavior but do not replace blind maintenance-log adjudication, site-held-out validation, or prospective fault follow-up.
+
+## v2.0 confirmatory addendum
+
+Run `D1D5V20-a2b2bef69861` adds 672 attempted core-fault episodes across
+analyte, regime, route, direction, amplitude, duration and original/2x
+resolution strata. Four spike episodes had nonfinite local minute-level
+evaluation windows and are separately exported rather than counted as misses.
+Eligible recalls were Hard Freeze 1.000, Drift 0.698, Spike 0.379 and Step
+0.240. The corresponding applicability maps and all episode-level data are
+published in the confirmatory package.
+
+These values do not invalidate the current D1 release; they narrow its
+publishable claim. D1 robustly detects hard locks, shows moderate drift
+sensitivity and has limited sensitivity to small/short spike and step mixtures.
+The frozen route is applied without refitting preprocessing on contaminated
+test windows. Field fault truth, recovery truth and external peer-model
+validation remain required before diagnostic-accuracy claims.
