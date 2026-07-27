@@ -1,6 +1,7 @@
 # D1 Sensor Health: final method and validation record
 
-**Run ID:** `d1-final-8fdd3599890f`
+**Run ID:** `d1-final-33fa914b2f71`
+**Release ID:** `D1REL-1.3.0-cb06fed4b63a`
 
 **Algorithm:** `1.3.0-final-candidate`
 **Scope:** 14 DO/ORP channels; QR/QIR are offline support only.

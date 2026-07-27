@@ -1,6 +1,6 @@
 # Final D1-D5 readiness audit
 
-Audit date: 2026-07-26
+Audit date: 2026-07-27
 
 ## Executive decision
 
@@ -31,9 +31,9 @@ This distinction is important:
 |---|---|---|---|
 | D1 | `d1-final-33fa914b2f71`; `D1REL-1.3.0-cb06fed4b63a` | Released; release artifacts and dependency hashes verified | Yes |
 | D2 | `D2V1_20260722_1714`; calibration `NorthBank_D2_v1_20260722` | Core score hash unchanged by refreshed D1 linkage | Yes |
-| D3 | `RUN_D3_v2.2.0_20260726T084811Z_4246fb53` | 43,008 windows; 42,840 evaluable; mean score 4.799 | Yes |
+| D3 | `RUN_D3_v2.2.1_20260727T043759Z_8d52c551` | 43,008 windows; 42,840 evaluable; mean score 4.799486 | Yes |
 | D4 | `D4V14_20260726_100717`; calibration `D4CAL-V14-7a16d7f511d3` | 42,847 pair-hours; 37,987 finalizable; numeric adjustment exactly zero | Yes, from `D4_raw` |
-| D5 | `D5-LOCAL-20260726T101447Z` | 39,648 report-score rows; scientific score released; deployment blocked | Yes for report score; no hard action gate |
+| D5 | `D5-LOCAL-20260727T034533Z` | 39,648 report-score rows; scientific score released; deployment blocked | Yes for report score; no hard action gate |
 
 The strengthened cross-project audit passed **50/50 checks**. It verifies:
 
@@ -46,7 +46,7 @@ The strengthened cross-project audit passed **50/50 checks**. It verifies:
 - canonical D1-D5 directory names and removal of retired top-level names;
 - figure bundle completeness and freshness.
 
-Formal tests passed **83/83**: D1 23, D2 18, D3 10, D4 10, D5 14 and
+Formal tests passed **84/84**: D1 23, D2 18, D3 11, D4 10, D5 14 and
 cross-project publication-style tests 8.
 
 ## Independence assessment
@@ -141,6 +141,9 @@ report score is admitted, while node-specific hard Veto and deployment are not.
 
 ### D3
 
+- Preserve the verified installation-register ranges (DO 0-20 mg/L and ORP
+  -1500-1500 mV) as instrument evidence, separate from operational alarm
+  limits and expert plausibility bounds.
 - Trace every physical/rate threshold to an instrument range, process design
   source, literature source or expert-approved rule.
 - Quantify threshold uncertainty and show that conclusions are stable under
@@ -206,6 +209,67 @@ report score is admitted, while node-specific hard Veto and deployment are not.
   executable environment information under a FAIR data/code plan.
 - Predefine multiplicity control for confirmatory subgroup analyses.
 - Conduct an independent code and rule review before manuscript submission.
+
+## Implementation feasibility as of 2026-07-27
+
+### Can be executed directly with current data and code
+
+- D1: extend controlled fault injection across analyte, regime, amplitude,
+  duration and resolution strata; complete forward-block, tail-error and
+  injection audits for peer models beyond the current DO_2_4 exemplar.
+- D2: run sensitivity analyses for the 6 h QFA window, 15 min hard RLE and gap
+  severity mappings; retain floor occupancy and resolution limitation as
+  diagnostics separate from sensor freeze.
+- D3: build the threshold-source register from the verified instrument
+  workbook and primary literature; perturb hard, soft and rate thresholds and
+  report score/event stability with autocorrelation-aware intervals.
+- D4: strengthen sparse ORP analyte-by-regime baselines using prespecified
+  pooling or shrinkage; add directional target-fault, peer-fault,
+  common-process and controlled change-point-lag injections.
+- D5: perform blocked model/feature ablation and robustness analysis and test
+  whether additional node templates satisfy L3 evidence rules. The 0.80 Top-1
+  threshold must remain a locked acceptance rule, not a tuning target on the
+  same validation set.
+- Composite: prespecify weights and missingness rules, run blocked nested
+  validation, block-bootstrap uncertainty propagation, dependence analysis,
+  dimension ablation and simpler-baseline comparisons.
+- Figures: move sparse D3 event heatmaps to the Supplement or filter to
+  event-bearing channels with an explicit excluded-channel count; standardize
+  sensor IDs; move `Figure X`, `final` and implementation labels from canvases
+  to captions.
+
+### Can be started now but requires expert adjudication to become confirmatory
+
+- D1 event recovery and false-alarm validation can be prepared now, but final
+  sensitivity and specificity require matched maintenance or operator truth.
+- D2 outage patterns can be provisionally classified, but sensor, network and
+  planned-downtime causes require SCADA or maintenance-log adjudication.
+- D3 stable-window negative controls can estimate an internal false-alarm
+  burden, but event precision requires labelled or dual-reviewed events.
+- D4 synthetic controls can establish mechanism discrimination, while real
+  synchronization and process-asymmetry events require independent review.
+- D5 additional L3 candidates may be screened with current records, but each
+  node template still requires minimum node-level validation support.
+- A within-plant downstream criterion may be analyzed if laboratory, forecast,
+  control or assimilation outcomes are supplied and temporally aligned.
+
+### Requires new records, an untouched period or an external dataset
+
+- Maintenance work orders, operator fault logs and verified recovery times for
+  D1.
+- PLC/SCADA communication logs, network alarms and planned-shutdown records for
+  D2.
+- Plant design documents and signed expert provenance for operational D3
+  thresholds not covered by the instrument register or primary literature.
+- Independently confirmed synchronization faults, peer failures and
+  common-process events for D4.
+- Asset/maintenance provenance and dual approval for D5 deployment. These
+  remain deployment blockers only and do not block retrospective scientific
+  aggregation.
+- A genuinely unseen future period for definitive terminal testing, an
+  independent external criterion and a second-plant dataset for
+  transportability claims. A segment already inspected during method
+  development cannot be relabelled as an untouched test set.
 
 ## Figure assessment
 
