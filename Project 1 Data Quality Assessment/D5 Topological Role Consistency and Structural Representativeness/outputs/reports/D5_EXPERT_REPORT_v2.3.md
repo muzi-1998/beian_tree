@@ -1,8 +1,8 @@
 # D5 Expert Review Report v2.3
 
 **Project:** Topological Role Consistency and Structural Representativeness
-**Run:** `D5-LOCAL-20260726T101447Z`
-**Generated:** 2026-07-26 19:11 CST
+**Run:** `D5-LOCAL-20260727T034533Z`
+**Generated:** 2026-07-27 12:26 CST
 **Decision:** Scientific D5 score released for final subscore aggregation; automated deployment remains gated.
 
 ## 1. Executive verdict

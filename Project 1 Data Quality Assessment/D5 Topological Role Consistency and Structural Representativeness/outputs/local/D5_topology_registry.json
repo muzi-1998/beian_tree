@@ -11,13 +11,13 @@
     "verification_status": "research_confirmed_production_pending",
     "research_confirmation_status": "author_confirmed",
     "research_confirmed_at": "2026-07-26T00:00:00+08:00",
-    "research_evidence_version": "d5-topology-evidence-20260726",
+    "research_evidence_version": "d5-topology-evidence-20260727-inventory-reverified",
     "production_approval_status": "pending_documentary_audit_and_dual_approval",
     "maintenance_record_status": "unavailable_not_required_for_research"
   },
   "evidence": {
-    "schema_version": "d5-topology-evidence-v1",
-    "evidence_version": "d5-topology-evidence-20260726",
+    "schema_version": "d5-topology-evidence-v1.1",
+    "evidence_version": "d5-topology-evidence-20260727-inventory-reverified",
     "research_confirmation": {
       "status": "author_confirmed",
       "confirmed_at": "2026-07-26T00:00:00+08:00",
@@ -34,7 +34,24 @@
       "source_id": "provided_instrument_installation_register",
       "source_sha256": "2085f4de640aa0231f95e3abe370dec6d1da9c3daf064e6f05042e344ca58ea9",
       "source_last_modified_local": "2026-03-16T11:29:30+08:00",
+      "source_reverified_at": "2026-07-27T00:00:00+08:00",
       "inspected_sheet": "Sheet1",
+      "inspected_range": "A1:P34",
+      "independently_supported_fields": [
+        "analyte",
+        "listed_instrument_count",
+        "in_service_status",
+        "brand",
+        "measurement_range",
+        "signal_type"
+      ],
+      "author_confirmed_not_independently_mapped_by_register": [
+        "process_line",
+        "process_zone",
+        "longitudinal_order",
+        "scada_to_physical_point_one_to_one",
+        "no_probe_or_channel_change_during_study"
+      ],
       "biological_pool": {
         "DO": {
           "listed_count": 8,
@@ -73,7 +90,8 @@
     },
     "production_governance": {
       "status": "pending_documentary_audit_and_dual_approval",
-      "required_before_d5_total": [
+      "scientific_score_status": "released_for_retrospective_aggregation",
+      "required_before_operational_gate_or_automated_deployment": [
         "controlled_drawing_or_equivalent_documentary_audit",
         "asset_and_serial_identity_where_available",
         "maintenance_replacement_and_remapping_records",
@@ -81,7 +99,7 @@
       ]
     }
   },
-  "topology_hash": "00d1d8f3e63aa9a40fa4c8bc85d532d175a6f2761b3fa7d04b06814d1ca96493",
+  "topology_hash": "7b1ba852f0405944538e558e8df7fe74468789604eb0d90372b1762be3ca036a",
   "research_topology_confirmed": true,
   "production_topology_verified": false,
   "topology_verified": false,

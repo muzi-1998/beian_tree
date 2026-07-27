@@ -30,6 +30,17 @@ def test_declared_topology_contract() -> None:
     reconciliation = registry.evidence["instrument_inventory"]["reconciliation"]
     assert reconciliation["d5_do_node_count"] == 8
     assert reconciliation["d5_orp_node_count"] == 6
+    inventory = registry.evidence["instrument_inventory"]
+    assert inventory["inspected_range"] == "A1:P34"
+    assert "process_line" in inventory[
+        "author_confirmed_not_independently_mapped_by_register"
+    ]
+    governance = registry.evidence["production_governance"]
+    assert governance["scientific_score_status"] == (
+        "released_for_retrospective_aggregation"
+    )
+    assert "required_before_d5_total" not in governance
+    assert governance["required_before_operational_gate_or_automated_deployment"]
 
 
 def test_production_verification_requires_independent_documentary_approval(

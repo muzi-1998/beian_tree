@@ -20,6 +20,10 @@ topology metadata. It never consumes D1-D4 scores or states.
   installation register reconciles eight active DO and six active ORP
   instruments. Eligible L2/L3 windows may therefore populate `D5_report`,
   `D5_total` and the sensor-hour `D5_report_interface`.
+- The register independently verifies inventory count, in-service status,
+  brand, range and signal type, but it does not contain per-instrument asset
+  identity or explicit line/zone/order/SCADA mapping. Those mappings remain
+  author-confirmed research inputs pending documentary audit.
 - Maintenance provenance, production documentary audit and dual approval remain
   pending. These items limit automated deployment and confirmatory
   maintenance-cause claims; they do not suppress retrospective scientific

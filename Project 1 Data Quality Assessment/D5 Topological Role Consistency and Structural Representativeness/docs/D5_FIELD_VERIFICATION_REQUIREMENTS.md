@@ -14,6 +14,12 @@ This evidence is sufficient for the current ordinal-topology research model.
 Exact surveyed coordinates, asset IDs and serial numbers are not model inputs.
 They must not be invented from time-series data.
 
+The installation register independently supports only the instrument inventory
+fields listed above. Because its per-instrument asset/device codes are blank and
+it does not contain explicit process-line, zone, longitudinal-order or SCADA-tag
+columns, it does not independently prove those mappings. Those fields remain
+author-confirmed research inputs until the production documentary audit.
+
 Under the current author-confirmed research topology:
 
 - `D5_raw`, `D5_report_provisional` and eligible `D5_report` rows may be used as
@@ -39,7 +45,9 @@ scientific score readiness.
 The machine-readable evidence ledger is
 `configs/common/topology_evidence.yaml`. The source installation register is
 not copied into the repository; its checksum, inspected scope and limitations
-are recorded in the ledger.
+are recorded in the ledger. The source was reverified against `Sheet1!A1:P34`;
+its checksum matches the previously registered source, so the D5 graph,
+templates and scientific score definition are unchanged.
 
 Maintenance records are currently unavailable. This is a provenance limitation
 for retrospective interpretation, not an absolute blocker for ordinal research
