@@ -1,0 +1,12 @@
+# Keep release-manifest inputs byte-stable across Windows and POSIX checkouts.
+/.gitattributes text eol=lf
+/*.py text eol=lf
+"D1 Sensor health/configs/*.yaml" text eol=lf
+"D1 Sensor health/*.py" text eol=lf
+"D1 Sensor health/src/**/*.py" text eol=lf
+
+# These D5 core artifacts retain the line endings used by the locked release.
+"D5 Topological Role Consistency and Structural Representativeness/outputs/local/D5_spatial_templates.template_bundle.json" text eol=crlf
+"D5 Topological Role Consistency and Structural Representativeness/outputs/local/D5_topology_registry.json" text eol=crlf
+"D5 Topological Role Consistency and Structural Representativeness/outputs/local/D5_topology_registry.yaml" text eol=lf
+"D5 Topological Role Consistency and Structural Representativeness/outputs/local/D5_topology_evidence.yaml" text eol=lf

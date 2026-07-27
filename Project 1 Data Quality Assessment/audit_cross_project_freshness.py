@@ -19,6 +19,19 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parent
 OUTPUT = ROOT / "cross_project_qa" / "cross_project_freshness_audit.json"
+FIGURE_LINEAGE_MANIFEST = (
+    ROOT / "cross_project_qa" / "figure_lineage_manifest.json"
+)
+CANONICAL_TEXT_SUFFIXES = {
+    ".csv",
+    ".json",
+    ".md",
+    ".py",
+    ".svg",
+    ".txt",
+    ".yaml",
+    ".yml",
+}
 D5_LOCAL_CORE_FILES = (
     "D5_main_scores_hourly.parquet",
     "D5_report_interface.parquet",
@@ -181,6 +194,23 @@ def record(checks: list[dict[str, object]], name: str, passed: bool, detail: obj
     checks.append({"check": name, "passed": bool(passed), "detail": detail})
 
 
+def _canonical_file_bytes(path: Path) -> bytes:
+    content = path.read_bytes()
+    if path.suffix.lower() in CANONICAL_TEXT_SUFFIXES:
+        return content.replace(b"\r\n", b"\n")
+    return content
+
+
+def _bundle_sha256(paths: list[Path]) -> str:
+    digest = hashlib.sha256()
+    for path in sorted(set(paths), key=lambda item: item.relative_to(ROOT).as_posix()):
+        relative_path = path.relative_to(ROOT).as_posix()
+        digest.update(relative_path.encode("utf-8"))
+        digest.update(b"\0")
+        digest.update(_canonical_file_bytes(path))
+    return digest.hexdigest()
+
+
 def _source_paths(spec: dict[str, object]) -> list[Path]:
     paths = [Path(path) for path in spec.get("sources", ())]
     for pattern in spec.get("source_globs", ()):
@@ -189,19 +219,61 @@ def _source_paths(spec: dict[str, object]) -> list[Path]:
     return paths
 
 
-def audit_figure_bundle(
-    checks: list[dict[str, object]], project: str, spec: dict[str, object]
-) -> None:
+def _figure_bundles(spec: dict[str, object]) -> dict[str, dict[str, Path]]:
     bundles: dict[str, dict[str, Path]] = {}
     for root in spec["roots"]:
         root = Path(root)
         if not root.is_dir():
-            record(checks, f"{project}:figure_root", False, str(root))
-            return
+            continue
         for path in root.rglob("*"):
             if path.is_file() and path.suffix.lower() in FIGURE_FORMATS:
                 key = str(path.relative_to(root).with_suffix(""))
-                bundles.setdefault(f"{root.name}/{key}", {})[path.suffix.lower()] = path
+                bundles.setdefault(f"{root.name}/{key}", {})[
+                    path.suffix.lower()
+                ] = path
+    return bundles
+
+
+def build_figure_lineage_manifest() -> dict[str, object]:
+    projects = {}
+    for project, spec in FIGURE_PROJECTS.items():
+        bundles = _figure_bundles(spec)
+        sources = _source_paths(spec)
+        figure_paths = [
+            path
+            for formats in bundles.values()
+            for path in formats.values()
+        ]
+        missing_sources = [str(path) for path in sources if not path.is_file()]
+        if missing_sources or not sources or not figure_paths:
+            raise FileNotFoundError(
+                f"Cannot lock {project} figure lineage; missing={missing_sources}"
+            )
+        projects[project] = {
+            "source_bundle_sha256": _bundle_sha256(sources),
+            "figure_bundle_sha256": _bundle_sha256(figure_paths),
+            "n_sources": len(sources),
+            "n_figure_files": len(figure_paths),
+        }
+    return {
+        "schema_version": "figure-lineage-v1",
+        "hash_policy": "relative_path_plus_canonical_bytes",
+        "text_line_endings": "CRLF_normalized_to_LF_for_hashing",
+        "projects": projects,
+    }
+
+
+def audit_figure_bundle(
+    checks: list[dict[str, object]],
+    project: str,
+    spec: dict[str, object],
+    lineage_manifest: dict[str, object],
+) -> bool:
+    missing_roots = [str(root) for root in spec["roots"] if not Path(root).is_dir()]
+    if missing_roots:
+        record(checks, f"{project}:figure_root", False, missing_roots)
+        return False
+    bundles = _figure_bundles(spec)
 
     missing = {
         stem: [suffix for suffix in FIGURE_FORMATS if suffix not in formats]
@@ -235,25 +307,38 @@ def audit_figure_bundle(
             False,
             {"missing_sources": missing_sources, "n_sources": len(sources)},
         )
-        return
-    source_latest = max(path.stat().st_mtime_ns for path in sources)
-    stale = [
-        str(path.relative_to(ROOT))
+        return False
+    figure_paths = [
+        path
         for formats in bundles.values()
         for path in formats.values()
-        if path.stat().st_mtime_ns < source_latest
     ]
+    expected = lineage_manifest.get("projects", {}).get(project, {})
+    actual_source_hash = _bundle_sha256(sources)
+    actual_figure_hash = _bundle_sha256(figure_paths)
+    lineage_valid = (
+        expected.get("source_bundle_sha256") == actual_source_hash
+        and expected.get("figure_bundle_sha256") == actual_figure_hash
+        and expected.get("n_sources") == len(sources)
+        and expected.get("n_figure_files") == len(figure_paths)
+    )
     record(
         checks,
         f"{project}:figures_not_older_than_sources",
-        not stale,
+        lineage_valid,
         {
-            "source_latest_utc": datetime.fromtimestamp(
-                source_latest / 1e9, tz=timezone.utc
-            ).isoformat(),
-            "stale_files": stale,
+            "freshness_basis": "locked_sha256_lineage",
+            "expected_source_bundle_sha256": expected.get(
+                "source_bundle_sha256"
+            ),
+            "actual_source_bundle_sha256": actual_source_hash,
+            "expected_figure_bundle_sha256": expected.get(
+                "figure_bundle_sha256"
+            ),
+            "actual_figure_bundle_sha256": actual_figure_hash,
         },
     )
+    return lineage_valid
 
 
 def audit_d1_release_equivalence(checks: list[dict[str, object]]) -> None:
@@ -302,11 +387,14 @@ def _svg_text_values(path: Path) -> list[str]:
 
 
 def write_detailed_figure_audit(
-    figure_dir: Path, target: Path, sources: list[Path]
+    figure_dir: Path,
+    target: Path,
+    sources: list[Path],
+    lineage_verified: bool,
 ) -> None:
-    source_latest = max(path.stat().st_mtime_ns for path in sources if path.is_file())
+    png_files = sorted(figure_dir.glob("*.png"))
     records = []
-    for png in sorted(figure_dir.glob("*.png")):
+    for png in png_files:
         stem = png.stem
         svg = figure_dir / f"{stem}.svg"
         pdf = figure_dir / f"{stem}.pdf"
@@ -323,10 +411,7 @@ def write_detailed_figure_audit(
             value for value in text_values if re.fullmatch(r"[A-Za-z]", value)
         ]
         outputs = [png, svg, pdf]
-        fresh = all(
-            path.is_file() and path.stat().st_mtime_ns >= source_latest
-            for path in outputs
-        )
+        fresh = lineage_verified and all(path.is_file() for path in outputs)
         records.append({
             "stem": stem,
             "png": png.is_file(),
@@ -341,6 +426,7 @@ def write_detailed_figure_audit(
             "panel_labels": panel_labels,
             "nonconforming_bare_panel_labels": bare_labels,
             "fresh_vs_sources": fresh,
+            "freshness_basis": "locked_sha256_lineage",
         })
     for row in records:
         row["passed"] = bool(
@@ -367,7 +453,25 @@ def write_detailed_figure_audit(
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--expected-d5-local-sha256", required=True)
+    parser.add_argument("--write-figure-lineage-manifest", action="store_true")
     args = parser.parse_args()
+    if args.write_figure_lineage_manifest:
+        manifest = build_figure_lineage_manifest()
+        FIGURE_LINEAGE_MANIFEST.parent.mkdir(parents=True, exist_ok=True)
+        FIGURE_LINEAGE_MANIFEST.write_text(
+            json.dumps(manifest, indent=2, ensure_ascii=True),
+            encoding="utf-8",
+        )
+        print(
+            json.dumps(
+                {
+                    "figure_lineage_manifest": str(FIGURE_LINEAGE_MANIFEST),
+                    "projects": len(manifest["projects"]),
+                }
+            )
+        )
+        return 0
+    lineage_manifest = load_json(FIGURE_LINEAGE_MANIFEST)
     checks: list[dict[str, object]] = []
 
     d1_data = ROOT / "D1 Sensor health" / "outputs" / "data"
@@ -688,8 +792,12 @@ def main() -> int:
     )
 
     audit_d1_release_equivalence(checks)
-    for project, spec in FIGURE_PROJECTS.items():
-        audit_figure_bundle(checks, project, spec)
+    figure_lineage_status = {
+        project: audit_figure_bundle(
+            checks, project, spec, lineage_manifest
+        )
+        for project, spec in FIGURE_PROJECTS.items()
+    }
 
     d3_root = ROOT / CANONICAL_PROJECT_DIRS["D3"]
     write_detailed_figure_audit(
@@ -699,6 +807,7 @@ def main() -> int:
             *list((d3_root / "outputs" / "data").glob("*")),
             *list((d3_root / "figures").glob("*.py")),
         ],
+        figure_lineage_status["D3"],
     )
     d4_root = ROOT / CANONICAL_PROJECT_DIRS["D4"]
     write_detailed_figure_audit(
@@ -709,6 +818,7 @@ def main() -> int:
             d4_root / "src" / "d4" / "figure_style.py",
             d4_root / "src" / "d4" / "figures.py",
         ],
+        figure_lineage_status["D4-main"],
     )
 
     result = {
