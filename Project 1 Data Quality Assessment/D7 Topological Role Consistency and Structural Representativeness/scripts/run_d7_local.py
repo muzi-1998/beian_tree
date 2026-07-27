@@ -15,7 +15,7 @@ from d7_local.pipeline import D7Pipeline  # noqa: E402
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Run the D7 v2.1 Local Track")
+    parser = argparse.ArgumentParser(description="Run the D7 v2.2 Local Track")
     parser.add_argument(
         "--max-input-rows",
         type=int,

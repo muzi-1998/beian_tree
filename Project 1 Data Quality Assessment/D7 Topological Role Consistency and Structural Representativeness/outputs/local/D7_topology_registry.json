@@ -1,22 +1,95 @@
 {
   "metadata": {
-    "schema_version": "d7-topology-schema-v2.1",
-    "topology_version": "d7-topology-declared-v1",
-    "source_drawing_id": "PENDING_FIELD_VERIFICATION",
-    "reviewer": "PENDING_FIELD_VERIFICATION",
-    "approver": "PENDING_FIELD_VERIFICATION",
+    "schema_version": "d7-topology-schema-v2.2",
+    "topology_version": "d7-topology-author-confirmed-v2",
+    "source_drawing_id": "NOT_PROVIDED_RESEARCH_NOT_REQUIRED",
+    "reviewer": "PENDING_PRODUCTION_APPROVAL",
+    "approver": "PENDING_PRODUCTION_APPROVAL",
     "created_at": "2026-07-16T00:00:00+08:00",
     "valid_from": "2025-08-01T00:00:00+08:00",
     "valid_to": "2026-04-14T00:00:00+08:00",
-    "verification_status": "provisional_pending_field_verification"
+    "verification_status": "research_confirmed_production_pending",
+    "research_confirmation_status": "author_confirmed",
+    "research_confirmed_at": "2026-07-26T00:00:00+08:00",
+    "research_evidence_version": "d7-topology-evidence-20260726",
+    "production_approval_status": "pending_documentary_audit_and_dual_approval",
+    "maintenance_record_status": "unavailable_not_required_for_research"
   },
-  "topology_hash": "f2b0327f5fd5fbc10a96cbc361259c5e52098db43a174d469ed8c45852c78033",
+  "evidence": {
+    "schema_version": "d7-topology-evidence-v1",
+    "evidence_version": "d7-topology-evidence-20260726",
+    "research_confirmation": {
+      "status": "author_confirmed",
+      "confirmed_at": "2026-07-26T00:00:00+08:00",
+      "source": "author_domain_confirmation",
+      "scope": {
+        "process_line": true,
+        "process_zone": true,
+        "longitudinal_order": true,
+        "scada_to_physical_point_one_to_one": true,
+        "no_probe_or_channel_change_during_study": true
+      }
+    },
+    "instrument_inventory": {
+      "source_id": "provided_instrument_installation_register",
+      "source_sha256": "2085f4de640aa0231f95e3abe370dec6d1da9c3daf064e6f05042e344ca58ea9",
+      "source_last_modified_local": "2026-03-16T11:29:30+08:00",
+      "inspected_sheet": "Sheet1",
+      "biological_pool": {
+        "DO": {
+          "listed_count": 8,
+          "active_count": 8,
+          "brand": "E+H",
+          "range": "0-20 mg/L",
+          "signal": "4-20 mA"
+        },
+        "ORP": {
+          "listed_count": 6,
+          "active_count": 6,
+          "brand": "E+H",
+          "range": "-1500 to 1500 mV",
+          "signal": "4-20 mA"
+        }
+      },
+      "reconciliation": {
+        "d7_do_node_count": 8,
+        "d7_orp_node_count": 6,
+        "status": "analyte_count_reconciled"
+      },
+      "limitations": [
+        "no_per_instrument_asset_or_device_code",
+        "no_serial_number",
+        "no_explicit_line_zone_order_or_scada_mapping",
+        "no_maintenance_or_replacement_history"
+      ]
+    },
+    "research_use": {
+      "status": "eligible_for_ordinal_topology_reporting",
+      "rationale": [
+        "ordinal_model_requires_confirmed_line_zone_order_and_channel_identity",
+        "inventory_reconciles_instrument_type_count_status_range_and_signal",
+        "exact_survey_coordinates_asset_ids_and_serials_are_not_model_inputs"
+      ]
+    },
+    "production_governance": {
+      "status": "pending_documentary_audit_and_dual_approval",
+      "required_before_d7_total": [
+        "controlled_drawing_or_equivalent_documentary_audit",
+        "asset_and_serial_identity_where_available",
+        "maintenance_replacement_and_remapping_records",
+        "independent_reviewer_and_approver"
+      ]
+    }
+  },
+  "topology_hash": "1e9138c373c38435b6d42c46a6f83777aa2501c0e67ad8f9094e59e3a884be39",
+  "research_topology_confirmed": true,
+  "production_topology_verified": false,
   "topology_verified": false,
   "nodes": [
     {
       "sensor_id": "ORP_1_1",
-      "asset_id": "PENDING_FIELD_VERIFICATION",
-      "serial_no": "PENDING_FIELD_VERIFICATION",
+      "asset_id": "NOT_AVAILABLE_IN_PROVIDED_REGISTER",
+      "serial_no": "NOT_AVAILABLE_IN_PROVIDED_REGISTER",
       "channel_tag": "ORP_1_1",
       "analyte": "ORP",
       "line_id": "L1",
@@ -28,13 +101,13 @@
         0.0,
         0.0
       ],
-      "coordinate_source": "schematic_not_surveyed",
+      "coordinate_source": "schematic_ordinal_author_confirmed",
       "floor_flag": false
     },
     {
       "sensor_id": "ORP_1_2",
-      "asset_id": "PENDING_FIELD_VERIFICATION",
-      "serial_no": "PENDING_FIELD_VERIFICATION",
+      "asset_id": "NOT_AVAILABLE_IN_PROVIDED_REGISTER",
+      "serial_no": "NOT_AVAILABLE_IN_PROVIDED_REGISTER",
       "channel_tag": "ORP_1_2",
       "analyte": "ORP",
       "line_id": "L1",
@@ -46,13 +119,13 @@
         1.0,
         0.0
       ],
-      "coordinate_source": "schematic_not_surveyed",
+      "coordinate_source": "schematic_ordinal_author_confirmed",
       "floor_flag": false
     },
     {
       "sensor_id": "ORP_1_3",
-      "asset_id": "PENDING_FIELD_VERIFICATION",
-      "serial_no": "PENDING_FIELD_VERIFICATION",
+      "asset_id": "NOT_AVAILABLE_IN_PROVIDED_REGISTER",
+      "serial_no": "NOT_AVAILABLE_IN_PROVIDED_REGISTER",
       "channel_tag": "ORP_1_3",
       "analyte": "ORP",
       "line_id": "L1",
@@ -64,13 +137,13 @@
         2.0,
         0.0
       ],
-      "coordinate_source": "schematic_not_surveyed",
+      "coordinate_source": "schematic_ordinal_author_confirmed",
       "floor_flag": false
     },
     {
       "sensor_id": "DO_1_1",
-      "asset_id": "PENDING_FIELD_VERIFICATION",
-      "serial_no": "PENDING_FIELD_VERIFICATION",
+      "asset_id": "NOT_AVAILABLE_IN_PROVIDED_REGISTER",
+      "serial_no": "NOT_AVAILABLE_IN_PROVIDED_REGISTER",
       "channel_tag": "DO_1_1",
       "analyte": "DO",
       "line_id": "L1",
@@ -82,13 +155,13 @@
         3.0,
         0.0
       ],
-      "coordinate_source": "schematic_not_surveyed",
+      "coordinate_source": "schematic_ordinal_author_confirmed",
       "floor_flag": false
     },
     {
       "sensor_id": "DO_1_2",
-      "asset_id": "PENDING_FIELD_VERIFICATION",
-      "serial_no": "PENDING_FIELD_VERIFICATION",
+      "asset_id": "NOT_AVAILABLE_IN_PROVIDED_REGISTER",
+      "serial_no": "NOT_AVAILABLE_IN_PROVIDED_REGISTER",
       "channel_tag": "DO_1_2",
       "analyte": "DO",
       "line_id": "L1",
@@ -100,13 +173,13 @@
         4.0,
         0.0
       ],
-      "coordinate_source": "schematic_not_surveyed",
+      "coordinate_source": "schematic_ordinal_author_confirmed",
       "floor_flag": false
     },
     {
       "sensor_id": "DO_1_3",
-      "asset_id": "PENDING_FIELD_VERIFICATION",
-      "serial_no": "PENDING_FIELD_VERIFICATION",
+      "asset_id": "NOT_AVAILABLE_IN_PROVIDED_REGISTER",
+      "serial_no": "NOT_AVAILABLE_IN_PROVIDED_REGISTER",
       "channel_tag": "DO_1_3",
       "analyte": "DO",
       "line_id": "L1",
@@ -118,13 +191,13 @@
         5.0,
         0.0
       ],
-      "coordinate_source": "schematic_not_surveyed",
+      "coordinate_source": "schematic_ordinal_author_confirmed",
       "floor_flag": false
     },
     {
       "sensor_id": "DO_1_4",
-      "asset_id": "PENDING_FIELD_VERIFICATION",
-      "serial_no": "PENDING_FIELD_VERIFICATION",
+      "asset_id": "NOT_AVAILABLE_IN_PROVIDED_REGISTER",
+      "serial_no": "NOT_AVAILABLE_IN_PROVIDED_REGISTER",
       "channel_tag": "DO_1_4",
       "analyte": "DO",
       "line_id": "L1",
@@ -136,13 +209,13 @@
         6.0,
         0.0
       ],
-      "coordinate_source": "schematic_not_surveyed",
+      "coordinate_source": "schematic_ordinal_author_confirmed",
       "floor_flag": true
     },
     {
       "sensor_id": "ORP_2_1",
-      "asset_id": "PENDING_FIELD_VERIFICATION",
-      "serial_no": "PENDING_FIELD_VERIFICATION",
+      "asset_id": "NOT_AVAILABLE_IN_PROVIDED_REGISTER",
+      "serial_no": "NOT_AVAILABLE_IN_PROVIDED_REGISTER",
       "channel_tag": "ORP_2_1",
       "analyte": "ORP",
       "line_id": "L2",
@@ -154,13 +227,13 @@
         0.0,
         1.0
       ],
-      "coordinate_source": "schematic_not_surveyed",
+      "coordinate_source": "schematic_ordinal_author_confirmed",
       "floor_flag": false
     },
     {
       "sensor_id": "ORP_2_2",
-      "asset_id": "PENDING_FIELD_VERIFICATION",
-      "serial_no": "PENDING_FIELD_VERIFICATION",
+      "asset_id": "NOT_AVAILABLE_IN_PROVIDED_REGISTER",
+      "serial_no": "NOT_AVAILABLE_IN_PROVIDED_REGISTER",
       "channel_tag": "ORP_2_2",
       "analyte": "ORP",
       "line_id": "L2",
@@ -172,13 +245,13 @@
         1.0,
         1.0
       ],
-      "coordinate_source": "schematic_not_surveyed",
+      "coordinate_source": "schematic_ordinal_author_confirmed",
       "floor_flag": false
     },
     {
       "sensor_id": "ORP_2_3",
-      "asset_id": "PENDING_FIELD_VERIFICATION",
-      "serial_no": "PENDING_FIELD_VERIFICATION",
+      "asset_id": "NOT_AVAILABLE_IN_PROVIDED_REGISTER",
+      "serial_no": "NOT_AVAILABLE_IN_PROVIDED_REGISTER",
       "channel_tag": "ORP_2_3",
       "analyte": "ORP",
       "line_id": "L2",
@@ -190,13 +263,13 @@
         2.0,
         1.0
       ],
-      "coordinate_source": "schematic_not_surveyed",
+      "coordinate_source": "schematic_ordinal_author_confirmed",
       "floor_flag": false
     },
     {
       "sensor_id": "DO_2_1",
-      "asset_id": "PENDING_FIELD_VERIFICATION",
-      "serial_no": "PENDING_FIELD_VERIFICATION",
+      "asset_id": "NOT_AVAILABLE_IN_PROVIDED_REGISTER",
+      "serial_no": "NOT_AVAILABLE_IN_PROVIDED_REGISTER",
       "channel_tag": "DO_2_1",
       "analyte": "DO",
       "line_id": "L2",
@@ -208,13 +281,13 @@
         3.0,
         1.0
       ],
-      "coordinate_source": "schematic_not_surveyed",
+      "coordinate_source": "schematic_ordinal_author_confirmed",
       "floor_flag": false
     },
     {
       "sensor_id": "DO_2_2",
-      "asset_id": "PENDING_FIELD_VERIFICATION",
-      "serial_no": "PENDING_FIELD_VERIFICATION",
+      "asset_id": "NOT_AVAILABLE_IN_PROVIDED_REGISTER",
+      "serial_no": "NOT_AVAILABLE_IN_PROVIDED_REGISTER",
       "channel_tag": "DO_2_2",
       "analyte": "DO",
       "line_id": "L2",
@@ -226,13 +299,13 @@
         4.0,
         1.0
       ],
-      "coordinate_source": "schematic_not_surveyed",
+      "coordinate_source": "schematic_ordinal_author_confirmed",
       "floor_flag": false
     },
     {
       "sensor_id": "DO_2_3",
-      "asset_id": "PENDING_FIELD_VERIFICATION",
-      "serial_no": "PENDING_FIELD_VERIFICATION",
+      "asset_id": "NOT_AVAILABLE_IN_PROVIDED_REGISTER",
+      "serial_no": "NOT_AVAILABLE_IN_PROVIDED_REGISTER",
       "channel_tag": "DO_2_3",
       "analyte": "DO",
       "line_id": "L2",
@@ -244,13 +317,13 @@
         5.0,
         1.0
       ],
-      "coordinate_source": "schematic_not_surveyed",
+      "coordinate_source": "schematic_ordinal_author_confirmed",
       "floor_flag": false
     },
     {
       "sensor_id": "DO_2_4",
-      "asset_id": "PENDING_FIELD_VERIFICATION",
-      "serial_no": "PENDING_FIELD_VERIFICATION",
+      "asset_id": "NOT_AVAILABLE_IN_PROVIDED_REGISTER",
+      "serial_no": "NOT_AVAILABLE_IN_PROVIDED_REGISTER",
       "channel_tag": "DO_2_4",
       "analyte": "DO",
       "line_id": "L2",
@@ -262,7 +335,7 @@
         6.0,
         1.0
       ],
-      "coordinate_source": "schematic_not_surveyed",
+      "coordinate_source": "schematic_ordinal_author_confirmed",
       "floor_flag": true
     }
   ],

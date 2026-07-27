@@ -3,8 +3,8 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
+import numpy as np
 
 
 D6_ROOT = Path(__file__).resolve().parents[1]
@@ -114,3 +114,96 @@ def test_d1_fuse_preserves_raw_and_neutralizes_unreliable_reference():
         "valid_pair", "reference_unreliable", "target_suspect", "bilateral_unreliable"
     ]
     assert score.tolist() == [2.0, 3.0, 2.0, 3.0]
+from d6.integration import build_d6_d7_readiness
+
+
+def test_d7_arbitration_finalizes_without_mutating_independent_scores() -> None:
+    d6 = pd.DataFrame(
+        {
+            "timestamp": pd.to_datetime(["2025-08-01 00:00"]),
+            "pair_id": ["PAIR_DO11"],
+            "D6_raw": [4.2],
+            "D6_after_D1": [4.0],
+            "D6_forDQR": [np.nan],
+        }
+    )
+    d7 = pd.DataFrame(
+        {
+            "timestamp": pd.to_datetime(["2025-08-01 00:00"]),
+            "pair_id": ["PAIR_DO11"],
+            "zone_consensus_label": ["not_evaluable"],
+            "zone_consensus_strength": [np.nan],
+            "target_D7_report": [np.nan],
+            "reference_D7_report": [np.nan],
+            "d7_evaluable": [False],
+            "d7_score_ready": [False],
+            "d7_action_ready": [False],
+            "support_level": ["L2"],
+            "limited_support": [True],
+            "process_coherence_guard_active": [False],
+            "attribution_suppressed": [False],
+            "sensor_identity_veto_active": [False],
+            "veto_active": [False],
+            "decision_type": ["not_triggered"],
+            "sensor_veto_role": ["none"],
+            "topology_hash": ["hash"],
+            "template_version": ["candidate"],
+            "d7_run_id": ["run"],
+            "interface_version": ["d7-d6-v2.3"],
+            "track_id": ["d7_local"],
+        }
+    )
+    output = build_d6_d7_readiness(d6, d7)
+    assert output.loc[0, "integration_status"] == "final_independent_D7_limited"
+    assert output.loc[0, "finalization_allowed"]
+    assert output.loc[0, "D6_forDQR"] == 4.2
+    assert output.loc[0, "D6_numeric_adjustment"] == 0.0
+    assert output.loc[0, "D6_raw"] == d6.loc[0, "D6_raw"]
+    assert not output.loc[0, "D6_gate_applicable"]
+
+
+def test_process_guard_suppresses_attribution_without_changing_d6_score() -> None:
+    d6 = pd.DataFrame(
+        {
+            "timestamp": pd.to_datetime(["2025-08-01 00:00"]),
+            "pair_id": ["PAIR_DO11"],
+            "D6_raw": [2.0],
+            "D6_after_D1": [2.0],
+            "D6_forDQR": [np.nan],
+        }
+    )
+    d7 = pd.DataFrame(
+        {
+            "timestamp": pd.to_datetime(["2025-08-01 00:00"]),
+            "pair_id": ["PAIR_DO11"],
+            "zone_consensus_label": ["zone_coherent_process_shift"],
+            "zone_consensus_strength": [0.9],
+            "target_D7_report": [2.2],
+            "reference_D7_report": [2.3],
+            "d7_evaluable": [True],
+            "d7_score_ready": [True],
+            "d7_action_ready": [True],
+            "support_level": ["L3"],
+            "limited_support": [False],
+            "process_coherence_guard_active": [True],
+            "attribution_suppressed": [True],
+            "sensor_identity_veto_active": [False],
+            "veto_active": [False],
+            "decision_type": ["process_coherence_guard"],
+            "sensor_veto_role": ["none"],
+            "topology_hash": ["hash"],
+            "template_version": ["admitted"],
+            "d7_run_id": ["run"],
+            "interface_version": ["d7-d6-v2.3"],
+            "track_id": ["d7_local"],
+        }
+    )
+    output = build_d6_d7_readiness(d6, d7)
+    assert output.loc[0, "D6_forDQR"] == 2.0
+    assert output.loc[0, "D6_gate_applicable"]
+    assert not output.loc[0, "sensor_fault_attribution_allowed"]
+    assert not output.loc[0, "veto_active"]
+    assert (
+        output.loc[0, "causal_attribution"]
+        == "coherent_process_change_not_sensor_fault"
+    )

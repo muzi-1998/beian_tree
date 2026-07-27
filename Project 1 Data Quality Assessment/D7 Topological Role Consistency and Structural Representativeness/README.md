@@ -14,21 +14,40 @@ topology metadata. It never consumes D1-D6 scores or states.
   temporal-distribution scoring.
 - Sensitivity outputs are physically separated and cannot create production
   scores or the D6 interface.
-- The current declared topology awaits field drawing, asset, coordinate, and
-  dual-approval verification. Current results are therefore report-only:
-  `D7_raw` is available, while `D7_total` and final D6 arbitration remain empty.
+- Process line, pool zone, longitudinal order, SCADA-to-physical-point identity
+  and no study-period probe/channel change are author-confirmed. A provided
+  installation register reconciles eight active DO and six active ORP
+  instruments. Eligible L2/L3 windows may therefore populate `D7_report`,
+  `D7_total` and the sensor-hour `D7_report_interface`.
+- Maintenance provenance, production documentary audit and dual approval remain
+  pending. These items limit automated deployment and confirmatory
+  maintenance-cause claims; they do not suppress retrospective scientific
+  scores.
+- The Local regime model is plant-global: QR/QIR, robust pooled DO/ORP level
+  and dispersion, and cyclic time features define one shared process context.
+  Gradient, rank and leave-one-out evidence are learned and evaluated within
+  that shared regime.
+- Family-level samples may support an analyte-regime-model family, but every
+  node still requires its own blocked-temporal validation. L1 is diagnostic;
+  L2 supports scientific scoring; only final node L3 can enter the pair-hour
+  action gate.
+- The process-coherence mechanism is an attribution Guard, not a Veto.
+  Sensor-specific hard Veto additionally requires localization validation.
+  Automated deployment remains separately approval-gated.
+- D7 exports separate report and gate interfaces. D6 finalizes
+  non-destructively from `D6_raw`; D1 and D7 provide interpretation and action
+  governance without rewriting the D6 numeric score.
+
+See `configs/common/topology_evidence.yaml` for the research evidence ledger and
+`docs/D7_FIELD_VERIFICATION_REQUIREMENTS.md` for the production documentary and
+two-person approval gate. Statistical topology candidates cannot replace it.
 
 ## Reproduce
 
-Run from `Project 1 Data Quality Assessment`:
+Run the complete release from `Project 1 Data Quality Assessment`:
 
 ```powershell
-python ".\D7 Topological Role Consistency and Structural Representativeness\scripts\run_d7_local.py"
-python ".\D7 Topological Role Consistency and Structural Representativeness\scripts\run_d7_sensitivity.py"
-python ".\D7 Topological Role Consistency and Structural Representativeness\scripts\run_d7_validation.py"
-python ".\D7 Topological Role Consistency and Structural Representativeness\scripts\make_d7_figures.py"
-python ".\D7 Topological Role Consistency and Structural Representativeness\scripts\build_d7_reports.py"
-python ".\D7 Topological Role Consistency and Structural Representativeness\scripts\check_d7_release.py"
+python ".\D7 Topological Role Consistency and Structural Representativeness\scripts\run_d7_release.py"
 python -m pytest ".\D7 Topological Role Consistency and Structural Representativeness\tests" -q
 ```
 

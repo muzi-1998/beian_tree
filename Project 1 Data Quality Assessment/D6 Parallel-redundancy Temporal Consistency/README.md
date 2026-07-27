@@ -15,6 +15,11 @@ score can be declared final.
 - D7: not currently available and never emulated. `D6_forDQR` therefore remains
   empty, while `D6_forDQR_provisional` stores the real D1-fused value with an
   explicit `pending_D7_arbitration` status.
+- The current D7 research interface can be inspected without finalizing D6 by
+  running `python scripts/run_d6_d7_readiness.py`. The resulting readiness
+  workbook treats D6 as pair/edge evidence and D7 as node/zone evidence,
+  verifies protected D6 columns, and leaves finalization disabled until
+  field-verified L3 D7 support and an approved arbitration policy exist.
 - D6 detects pair asymmetry. It cannot by itself attribute the cause to a sensor
   fault or a real local process asymmetry.
 

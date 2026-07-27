@@ -10,11 +10,13 @@ class ORPDegradationPolicy:
         self.config = config
 
     def resolve_mode(self, support_level: str) -> tuple[str, float]:
-        if support_level == "L3" and not self.config.get("force_initial_limited_support", True):
+        if self.config.get("force_diagonal_robust_model", True):
+            return "diagonal_robust_z", float(self.config["alpha_l1"])
+        if support_level == "L3":
             return "full_shrinkage", 0.0
-        if support_level == "L2" and not self.config.get("force_initial_limited_support", True):
+        if support_level == "L2":
             return "pooled_shrinkage", float(self.config["alpha_floor_l2"])
-        if support_level in {"L1", "L2", "L3"}:
+        if support_level == "L1":
             return "diagonal_robust_z", 1.0
         return "disabled", 1.0
 

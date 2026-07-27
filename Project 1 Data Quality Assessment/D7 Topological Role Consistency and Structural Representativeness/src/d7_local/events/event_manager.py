@@ -67,7 +67,12 @@ def build_events(
                     "support_level": event_frame["support_level"].mode().iloc[0],
                     "fallback": event_frame["fallback_level"].mode().iloc[0],
                     "profile_covariance_mode": event_frame["profile_covariance_mode"].mode().iloc[0],
-                    "topology_suspect": bool(~event_frame["topology_verified"].all()),
+                    "topology_suspect": bool(
+                        ~event_frame["research_topology_confirmed"].all()
+                    ),
+                    "production_approval_pending": bool(
+                        ~event_frame["production_topology_verified"].all()
+                    ),
                     "alternative_topology_id": np.nan,
                     "process_vs_sensor_ambiguity": "undetermined",
                     "review_status": "unreviewed",

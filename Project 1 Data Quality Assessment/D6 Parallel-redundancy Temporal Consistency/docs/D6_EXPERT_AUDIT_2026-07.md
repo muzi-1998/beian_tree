@@ -203,3 +203,18 @@ revision.
 Recommendation: merge the restored implementation only with its provisional
 status and limitations intact. It is engineering-complete for `D6_raw`, but the
 final DQR-facing scientific product remains pending real D7 arbitration.
+# D6-D7 aggregation readiness addendum (2026-07-26)
+
+The D6-D7 relationship is hierarchical rather than a flat weighted average.
+D6 remains an edge-level assessment of temporal consistency between parallel
+counterparts. D7 contributes node- and zone-level structural evidence that may
+later support attribution or arbitration.
+
+`scripts/run_d6_d7_readiness.py` performs a read-only interface audit. It
+requires the isolated `d7_local` track, checks timestamp/pair alignment and
+support status, and proves that `D6_raw`, `D6_after_D1` and `D6_forDQR` are
+unchanged. It does not implement or imply a final arbitration rule.
+
+Current D7 topology is unverified and no L3 template is available. Therefore
+all matched rows remain `pending_D7_topology_or_support`, finalization is
+disabled, and no D7 proxy is generated.

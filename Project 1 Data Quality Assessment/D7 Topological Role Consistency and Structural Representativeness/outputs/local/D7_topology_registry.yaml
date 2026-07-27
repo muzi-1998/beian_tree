@@ -1,12 +1,17 @@
-schema_version: d7-topology-schema-v2.1
-topology_version: d7-topology-declared-v1
-source_drawing_id: PENDING_FIELD_VERIFICATION
-reviewer: PENDING_FIELD_VERIFICATION
-approver: PENDING_FIELD_VERIFICATION
+schema_version: d7-topology-schema-v2.2
+topology_version: d7-topology-author-confirmed-v2
+source_drawing_id: NOT_PROVIDED_RESEARCH_NOT_REQUIRED
+reviewer: PENDING_PRODUCTION_APPROVAL
+approver: PENDING_PRODUCTION_APPROVAL
 created_at: '2026-07-16T00:00:00+08:00'
 valid_from: '2025-08-01T00:00:00+08:00'
 valid_to: '2026-04-14T00:00:00+08:00'
-verification_status: provisional_pending_field_verification
+verification_status: research_confirmed_production_pending
+research_confirmation_status: author_confirmed
+research_confirmed_at: '2026-07-26T00:00:00+08:00'
+research_evidence_version: d7-topology-evidence-20260726
+production_approval_status: pending_documentary_audit_and_dual_approval
+maintenance_record_status: unavailable_not_required_for_research
 edges:
   - {edge_id: ORP-L1-1-2, source: ORP_1_1, target: ORP_1_2, direction: forward, edge_type: longitudinal, adjacency_order: 1, weight: 1.0}
   - {edge_id: ORP-L1-2-3, source: ORP_1_2, target: ORP_1_3, direction: forward, edge_type: longitudinal, adjacency_order: 2, weight: 1.0}

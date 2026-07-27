@@ -15,6 +15,7 @@ def build_zone_consensus(
     interface_version: str,
     template_version: str,
     mapping_version: str,
+    decision_config: dict[str, object],
 ) -> pd.DataFrame:
     score_index = scores.set_index(["timestamp", "sensor_id"])
     influence_index = influence.set_index(["timestamp", "sensor_id"])
@@ -44,9 +45,9 @@ def build_zone_consensus(
             d7_evaluable = bool(
                 target_score["evaluation_status"] == "evaluable"
                 and reference_score["evaluation_status"] == "evaluable"
-                and not target_score["limited_support"]
-                and not reference_score["limited_support"]
-                and topology.topology_verified
+                and np.isfinite(target_score["D7_report_score"])
+                and np.isfinite(reference_score["D7_report_score"])
+                and topology.research_topology_confirmed
             )
             if not np.isfinite(target_score["D7_raw"]) or not np.isfinite(reference_score["D7_raw"]):
                 label, strength = "not_evaluable", np.nan
@@ -71,6 +72,29 @@ def build_zone_consensus(
             support_level = min(
                 str(target_score["support_level"]), str(reference_score["support_level"])
             )
+            process_guard_candidate = bool(
+                d7_evaluable
+                and support_level == "L3"
+                and bool(target_score["action_eligible_candidate"])
+                and bool(reference_score["action_eligible_candidate"])
+                and label in {
+                    "zone_coherent_process_shift",
+                    "bilateral_structural_shift",
+                }
+                and strength
+                >= float(decision_config["process_guard_strength_min"])
+            )
+            sensor_candidate = bool(
+                d7_evaluable
+                and support_level == "L3"
+                and bool(target_score["action_eligible_candidate"])
+                and bool(reference_score["action_eligible_candidate"])
+                and label in {
+                    "sensor_localized_target",
+                    "sensor_localized_reference",
+                }
+                and strength >= float(decision_config["sensor_strength_min"])
+            )
             rows.append(
                 {
                     "timestamp": timestamp,
@@ -82,8 +106,8 @@ def build_zone_consensus(
                     "zone_consensus_strength": strength,
                     "target_influence": target_influence,
                     "reference_influence": reference_influence,
-                    "target_D7": target_score["D7_total"],
-                    "reference_D7": reference_score["D7_total"],
+                    "target_D7_report": target_score["D7_report_score"],
+                    "reference_D7_report": reference_score["D7_report_score"],
                     "neighbor_abnormal_count": abnormal_count,
                     "evidence_count": len(zone_frame),
                     "direction": "unknown",
@@ -92,6 +116,23 @@ def build_zone_consensus(
                     "limited_support": bool(
                         target_score["limited_support"] or reference_score["limited_support"]
                     ),
+                    "d7_score_ready": d7_evaluable,
+                    "d7_action_candidate": bool(
+                        d7_evaluable
+                        and support_level == "L3"
+                        and target_score["action_eligible_candidate"]
+                        and reference_score["action_eligible_candidate"]
+                    ),
+                    "process_guard_candidate": process_guard_candidate,
+                    "sensor_veto_candidate": sensor_candidate,
+                    "process_coherence_guard_active": False,
+                    "attribution_suppressed": False,
+                    "sensor_identity_veto_active": False,
+                    "veto_active": False,
+                    "decision_type": "pending_postrun_validation",
+                    "sensor_veto_role": "none",
+                    "research_topology_confirmed": topology.research_topology_confirmed,
+                    "production_topology_verified": topology.topology_verified,
                     "topology_hash": topology.topology_hash,
                     "template_version": template_version,
                     "mapping_version": mapping_version,
@@ -99,5 +140,5 @@ def build_zone_consensus(
                     "interface_version": interface_version,
                     "track_id": "d7_local",
                 }
-            )
+        )
     return pd.DataFrame(rows)

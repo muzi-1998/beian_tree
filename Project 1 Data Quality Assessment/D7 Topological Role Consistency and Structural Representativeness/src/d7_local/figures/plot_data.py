@@ -37,6 +37,25 @@ class D7PlotDataBuilder:
         self.support = pd.read_parquet(
             self.paths.local_output_root / "D7_support_assessment.parquet"
         )
+        self.report_interface = pd.read_parquet(
+            self.paths.local_output_root / "D7_report_interface.parquet"
+        )
+        self.gate_interface = pd.read_parquet(
+            self.paths.local_output_root / "D7_gate_interface.parquet"
+        )
+        d6_final_path = (
+            self.paths.project_root
+            / "D6 Parallel-redundancy Temporal Consistency"
+            / "outputs"
+            / "integration"
+            / "D6_D7_final_arbitration.parquet"
+        )
+        if not d6_final_path.exists():
+            raise FileNotFoundError(
+                "Run D6-D7 readiness before building D7 plot data: "
+                f"{d6_final_path}"
+            )
+        self.d6_final = pd.read_parquet(d6_final_path)
         self.regime = pd.read_parquet(
             self.paths.local_output_root / "D7_regime_state.parquet"
         )
@@ -143,9 +162,32 @@ class D7PlotDataBuilder:
                 order=order,
             )
         facts = [
-            ("Raw spatial evidence", 1.0, "D7_raw retained when calculable"),
-            ("Topology approval", 0.0, "Pending field drawing and two-person approval"),
-            ("D7_forDQR", 0.0, "Null until all production gates pass"),
+            ("Raw evidence", 1.0, "D7_raw retained when calculable"),
+            (
+                "Report interface",
+                float(self.report_interface["D7_report_score"].notna().any()),
+                "Scientific score is independent of action admission",
+            ),
+            (
+                "Pair action gate",
+                float(self.gate_interface["d7_action_ready"].any()),
+                "Requires both nodes to pass final L3 validation",
+            ),
+            (
+                "Process Guard claim",
+                float(self.gate_interface["detection_validation_passed"].any()),
+                "Validated attribution suppression, not a Veto",
+            ),
+            (
+                "Sensor Veto claim",
+                float(self.gate_interface["localization_validation_passed"].any()),
+                "Requires validated sensor-identity localization",
+            ),
+            (
+                "Deployment",
+                float(self.topology["production_approval_status"] == "approved"),
+                "Documentary audit and dual approval pending",
+            ),
         ]
         for order, (label, value, annotation) in enumerate(facts):
             self._add(
@@ -256,20 +298,29 @@ class D7PlotDataBuilder:
             "influence_score", ascending=False
         )
         for order, record in enumerate(ranking.itertuples(index=False)):
-            self._add(
-                rows,
-                figure_id="FigD7_3_evidence",
-                panel="b",
-                record_type="influence_rank",
-                x=record.sensor_id,
-                x_numeric=order,
-                y="influence_score",
-                value=float(record.influence_score),
-                group="target" if record.sensor_id == event["sensor_id"] else "other",
-                sensor_id=record.sensor_id,
-                event_id=event["event_id"],
-                order=order,
-            )
+            for component, label in [
+                ("contribution_leave_one_out", "Leave-one-out"),
+                ("contribution_graph_energy", "Graph energy"),
+                ("contribution_gradient", "Gradient"),
+            ]:
+                self._add(
+                    rows,
+                    figure_id="FigD7_3_evidence",
+                    panel="b",
+                    record_type="influence_component",
+                    x=record.sensor_id,
+                    x_numeric=order,
+                    y="influence_score",
+                    value=float(getattr(record, component)),
+                    group=label,
+                    sensor_id=record.sensor_id,
+                    context=(
+                        "target" if record.sensor_id == event["sensor_id"] else "other"
+                    ),
+                    event_id=event["event_id"],
+                    annotation=record.attribution_method,
+                    order=order,
+                )
         labels = self.consensus["zone_consensus_label"].value_counts(normalize=True)
         for order, (label, value) in enumerate(labels.items()):
             self._add(
@@ -295,7 +346,19 @@ class D7PlotDataBuilder:
             (metrics["metric"] == "Top1")
             & metrics["scenario"].isin(["channel_swap", "role_offset", "role_substitution"])
         ]
-        for order, record in enumerate(acceptance.iloc[:-1].itertuples(index=False)):
+        release_metrics = acceptance[
+            acceptance["criterion"].isin(
+                [
+                    "swap_AUROC",
+                    "swap_AUPRC",
+                    "swap_Top1",
+                    "common_mode_FAR",
+                    "zone_coherent_FAR",
+                    "switch_chatter_rate",
+                ]
+            )
+        ]
+        for order, record in enumerate(release_metrics.itertuples(index=False)):
             self._add(
                 rows,
                 figure_id="FigD7_4_validation",
@@ -305,9 +368,11 @@ class D7PlotDataBuilder:
                 x_numeric=order,
                 y="estimate",
                 value=float(record.estimate),
+                value_low=float(record.ci95_low) if np.isfinite(record.ci95_low) else np.nan,
+                value_high=float(record.ci95_high) if np.isfinite(record.ci95_high) else np.nan,
                 target=float(record.target),
                 group="pass" if record.passed else "fail",
-                annotation=f"target {record.operator} {record.target:.2f}",
+                annotation=f"target {record.operator} {record.target:.2f}; n={record.n:g}",
                 order=order,
             )
         for order, record in enumerate(top1.itertuples(index=False)):
@@ -320,8 +385,11 @@ class D7PlotDataBuilder:
                 x_numeric=order,
                 y="Top-1",
                 value=float(record.estimate),
+                value_low=float(record.ci95_low),
+                value_high=float(record.ci95_high),
                 target=0.80,
                 group="pass" if record.estimate >= 0.80 else "fail",
+                annotation=f"n={record.n:g}; {record.ci_method}",
                 order=order,
             )
         for order, record in enumerate(negative.itertuples(index=False)):
@@ -364,77 +432,132 @@ class D7PlotDataBuilder:
             )
 
     def _figure_5(self, rows: list[dict[str, Any]]) -> None:
-        support_counts = self.support.groupby(["analyte", "support_level"]).size()
-        for order, ((analyte, level), value) in enumerate(support_counts.items()):
-            self._add(
-                rows,
-                figure_id="FigD7_5_governance",
-                panel="a",
-                record_type="support_count",
-                x=analyte,
-                x_numeric=order,
-                y=level,
-                value=float(value),
-                group=level,
-                analyte=analyte,
-                order=order,
-            )
-        state_rates = self.regime["regime_state"].value_counts(normalize=True)
-        for order, (state, value) in enumerate(state_rates.items()):
-            self._add(
-                rows,
-                figure_id="FigD7_5_governance",
-                panel="b",
-                record_type="regime_state_rate",
-                x=state,
-                x_numeric=order,
-                y="fraction",
-                value=float(value),
-                group=state,
-                annotation=f"{value:.1%}",
-                order=order,
-            )
-        for order, record in enumerate(
-            self.drift.sort_values("log_likelihood_ratio", ascending=False).head(14).itertuples(index=False)
-        ):
+        for source, column in [
+            ("Family support", "family_support_level"),
+            ("Validated node", "support_level"),
+        ]:
+            counts = self.support.groupby(["analyte", column]).size()
+            for order, ((analyte, level), value) in enumerate(counts.items()):
+                self._add(
+                    rows,
+                    figure_id="FigD7_5_governance",
+                    panel="a",
+                    record_type="hierarchical_support_count",
+                    x=analyte,
+                    x_numeric=order,
+                    y=source,
+                    value=float(value),
+                    group=level,
+                    analyte=analyte,
+                    context=source,
+                    order=order,
+                )
+
+        family_l3 = self.support[
+            self.support["family_support_level"].eq("L3")
+        ].sort_values("target_sensor")
+        for order, record in enumerate(family_l3.itertuples(index=False)):
+            for metric, value, target in [
+                (
+                    "Bootstrap stability",
+                    record.node_bootstrap_stability,
+                    0.80,
+                ),
+                ("Holdout FAR", record.node_holdout_far, 0.15),
+            ]:
+                self._add(
+                    rows,
+                    figure_id="FigD7_5_governance",
+                    panel="b",
+                    record_type="node_validation",
+                    x=record.target_sensor,
+                    x_numeric=order,
+                    y=metric,
+                    value=float(value),
+                    target=target,
+                    group=metric,
+                    sensor_id=record.target_sensor,
+                    analyte=record.analyte,
+                    context=record.support_level,
+                    annotation=(
+                        "Final L3"
+                        if record.support_level == "L3"
+                        else "Node validation downgrade"
+                    ),
+                    order=order,
+                )
+
+        interface_metrics = [
+            (
+                "Report score",
+                int(self.report_interface["D7_report_score"].notna().sum()),
+                len(self.report_interface),
+                "report",
+            ),
+            (
+                "Action-ready gate",
+                int(self.gate_interface["d7_action_ready"].sum()),
+                len(self.gate_interface),
+                "gate",
+            ),
+            (
+                "Process Guard active",
+                int(
+                    self.gate_interface[
+                        "process_coherence_guard_active"
+                    ].sum()
+                ),
+                len(self.gate_interface),
+                "guard",
+            ),
+            (
+                "Sensor Veto active",
+                int(self.gate_interface["sensor_identity_veto_active"].sum()),
+                len(self.gate_interface),
+                "veto",
+            ),
+        ]
+        for order, (label, count, total, group) in enumerate(interface_metrics):
             self._add(
                 rows,
                 figure_id="FigD7_5_governance",
                 panel="c",
-                record_type="topology_candidate",
-                x=f"{record.target_sensor}->{record.candidate_mapping}",
+                record_type="interface_coverage",
+                x=label,
                 x_numeric=order,
-                y="log likelihood ratio",
-                value=float(record.log_likelihood_ratio),
-                target=0.35,
-                group=record.alert_level,
-                sensor_id=record.target_sensor,
-                annotation="report-only; production impact none",
+                y="row fraction",
+                value=float(count / total) if total else 0.0,
+                group=group,
+                annotation=f"{count:,}/{total:,}",
                 order=order,
             )
-        validation = pd.read_excel(
-            self.paths.local_output_root / "D7_validation_results.xlsx",
-            sheet_name="acceptance",
+
+        identity = self.d6_final.loc[
+            self.d6_final["finalization_allowed"].fillna(False)
+            & self.d6_final["D6_raw"].notna()
+            & self.d6_final["D6_forDQR"].notna(),
+            ["D6_raw", "D6_forDQR"],
+        ].copy()
+        if identity.empty:
+            raise RuntimeError(
+                "No finalized D6 rows are available for the independence audit"
+            )
+        max_delta = float(
+            (identity["D6_forDQR"] - identity["D6_raw"]).abs().max()
         )
-        gates = [
-            ("Track isolation", 1.0, "Local consumes no D1-D6 scores"),
-            ("Swap AUROC/AUPRC", float(validation.iloc[:2]["passed"].all()), "synthetic observed-window test"),
-            ("Top-1", float(validation.loc[validation["criterion"] == "swap_Top1", "passed"].iloc[0]), "0.75 observed vs 0.80 target"),
-            ("Topology approval", float(self.topology["verification_status"] == "verified"), "field verification pending"),
-            ("DQR release", 0.0, "production gate remains closed"),
-        ]
-        for order, (gate, value, annotation) in enumerate(gates):
+        audit_note = f"n={len(identity):,}; max |delta|={max_delta:.3g}"
+        for order, record in enumerate(identity.itertuples(index=False)):
             self._add(
                 rows,
                 figure_id="FigD7_5_governance",
                 panel="d",
-                record_type="release_gate",
-                x=gate,
-                x_numeric=order,
-                y="gate",
-                value=value,
-                target=1.0,
-                group="pass" if value else "blocked",
-                annotation=annotation,
+                record_type="d6_numeric_independence",
+                x=f"row_{order}",
+                x_numeric=float(record.D6_raw),
+                y="D6_forDQR",
+                value=float(record.D6_forDQR),
+                target=0.0,
+                group="identity",
+                annotation=audit_note if order == 0 else "",
                 order=order,
             )

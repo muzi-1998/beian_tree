@@ -138,10 +138,10 @@ class D7OutputExporter:
                 {
                     "version": next(iter(templates.values())).template_version,
                     "parent": "none",
-                    "change_reason": "initial_v2.1_candidate_build",
+                    "change_reason": "v2.3_family_support_and_node_validation",
                     "validator": "automated_contract_qa",
-                    "approver": "PENDING_FIELD_VERIFICATION",
-                    "state": "candidate",
+                    "approver": "PENDING_PRODUCTION_APPROVAL",
+                    "state": "scientific_validation_candidate_deployment_pending",
                 }
             ]
         )
@@ -172,16 +172,70 @@ class D7OutputExporter:
         return [workbook, bundle]
 
     def write_topology(
-        self, topology: TopologyRegistry, source_yaml: Path, schema_path: Path
+        self,
+        topology: TopologyRegistry,
+        source_yaml: Path,
+        schema_path: Path,
+        evidence_path: Path,
     ) -> list[Path]:
         metadata = pd.DataFrame(
             [{**topology.metadata, "topology_hash": topology.topology_hash,
+              "research_topology_confirmed": topology.research_topology_confirmed,
+              "production_topology_verified": topology.topology_verified,
               "topology_verified": topology.topology_verified}]
+        )
+        evidence_rows: list[dict[str, object]] = []
+        confirmation = topology.evidence["research_confirmation"]
+        for item, value in confirmation["scope"].items():
+            evidence_rows.append(
+                {
+                    "evidence_group": "author_confirmation",
+                    "item": item,
+                    "value": value,
+                    "status": confirmation["status"],
+                }
+            )
+        inventory = topology.evidence["instrument_inventory"]
+        for analyte, record in inventory["biological_pool"].items():
+            for item, value in record.items():
+                evidence_rows.append(
+                    {
+                        "evidence_group": f"instrument_inventory_{analyte}",
+                        "item": item,
+                        "value": value,
+                        "status": inventory["reconciliation"]["status"],
+                    }
+                )
+        for limitation in inventory["limitations"]:
+            evidence_rows.append(
+                {
+                    "evidence_group": "inventory_limitation",
+                    "item": limitation,
+                    "value": True,
+                    "status": "documented",
+                }
+            )
+        evidence_rows.extend(
+            [
+                {
+                    "evidence_group": "research_use",
+                    "item": "status",
+                    "value": topology.evidence["research_use"]["status"],
+                    "status": "active",
+                },
+                {
+                    "evidence_group": "production_governance",
+                    "item": "status",
+                    "value": topology.evidence["production_governance"]["status"],
+                    "status": "blocked",
+                },
+            ]
         )
         workbook = self.write_workbook(
             "D7_topology_registry",
             {
                 "metadata": metadata,
+                "evidence_summary": pd.DataFrame(evidence_rows),
                 "nodes": topology.nodes,
                 "edges": topology.edges,
                 "twin_pairs": topology.twin_pairs,
@@ -189,7 +243,7 @@ class D7OutputExporter:
                     [{
                         "version": topology.metadata.get("topology_version"),
                         "topology_hash": topology.topology_hash,
-                        "change_reason": "initial_declared_topology_pending_field_verification",
+                        "change_reason": "author_confirmed_ordinal_topology_with_inventory_reconciliation",
                         "reviewer": topology.metadata.get("reviewer"),
                         "approver": topology.metadata.get("approver"),
                     }]
@@ -198,14 +252,19 @@ class D7OutputExporter:
         )
         yaml_target = self.output_root / "D7_topology_registry.yaml"
         schema_target = self.output_root / "D7_topology_registry.schema.json"
+        evidence_target = self.output_root / "D7_topology_evidence.yaml"
         shutil.copy2(source_yaml, yaml_target)
         shutil.copy2(schema_path, schema_target)
+        shutil.copy2(evidence_path, evidence_target)
         json_target = self.output_root / "D7_topology_registry.json"
         json_target.write_text(
             json.dumps(
                 {
                     "metadata": topology.metadata,
+                    "evidence": topology.evidence,
                     "topology_hash": topology.topology_hash,
+                    "research_topology_confirmed": topology.research_topology_confirmed,
+                    "production_topology_verified": topology.topology_verified,
                     "topology_verified": topology.topology_verified,
                     "nodes": topology.nodes.to_dict("records"),
                     "edges": topology.edges.to_dict("records"),
@@ -217,12 +276,18 @@ class D7OutputExporter:
             ),
             encoding="utf-8",
         )
-        return [workbook, yaml_target, json_target, schema_target]
+        return [workbook, yaml_target, json_target, schema_target, evidence_target]
 
-    def copy_interface_schema(self, schema_path: Path) -> Path:
-        target = self.output_root / "D7_d6_interface.schema.json"
-        shutil.copy2(schema_path, target)
-        return target
+    def copy_interface_schemas(
+        self, report_schema_path: Path, gate_schema_path: Path
+    ) -> list[Path]:
+        targets = [
+            self.output_root / "D7_report_interface.schema.json",
+            self.output_root / "D7_gate_interface.schema.json",
+        ]
+        shutil.copy2(report_schema_path, targets[0])
+        shutil.copy2(gate_schema_path, targets[1])
+        return targets
 
 
 def records_to_frame(records: Iterable[Any]) -> pd.DataFrame:
