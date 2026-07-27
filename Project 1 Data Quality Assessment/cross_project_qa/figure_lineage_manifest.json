@@ -1,0 +1,49 @@
+{
+  "schema_version": "figure-lineage-v1",
+  "hash_policy": "relative_path_plus_canonical_bytes",
+  "text_line_endings": "CRLF_normalized_to_LF_for_hashing",
+  "projects": {
+    "1.1": {
+      "source_bundle_sha256": "c1da6a8bc714a84e5a7f77ee3636e1d94fbc8a1bba19f67d19e047fc19d32eef",
+      "figure_bundle_sha256": "6536fb6f0dfd59df0f7be73ad3412a8a8869c80b043fa718c5c05171be632aac",
+      "n_sources": 1,
+      "n_figure_files": 267
+    },
+    "D1": {
+      "source_bundle_sha256": "f5b1af9dfaf4e5967a1e9a0a77db2ef191c92a5eccbc4fc362d2d83d05f6d019",
+      "figure_bundle_sha256": "6f6371e8b2df4b2314853e0e970c8b6951462d522df821f37bf61847c3d1eacb",
+      "n_sources": 2,
+      "n_figure_files": 60
+    },
+    "D2": {
+      "source_bundle_sha256": "0e9fb52dcb2a1c6b8c2058dc3d668eb39ceddc76910034c1a735b32f6e9fb470",
+      "figure_bundle_sha256": "03681f3da3e4bda4876ea0c7459e892f687c4a05532c695736cb9b8ce1d29feb",
+      "n_sources": 3,
+      "n_figure_files": 36
+    },
+    "D3": {
+      "source_bundle_sha256": "00a4fe8c24c64c237598c47a677ad2d670230b29b4e537a77d707ee8df4e3952",
+      "figure_bundle_sha256": "e2394c2a640e80d58f1d1cac3e3d2c6bf09629e8f8f9a3f6693c6acef2eb04ef",
+      "n_sources": 8,
+      "n_figure_files": 21
+    },
+    "D4-main": {
+      "source_bundle_sha256": "b037a2b267990dadc381fdbcb087bb09fc735881de4876b2b3927c543c6746d4",
+      "figure_bundle_sha256": "d484df17154f863d532c4924c3d6768c79e2143aa91ca46ca2d1531ee3e70583",
+      "n_sources": 11,
+      "n_figure_files": 24
+    },
+    "D4-sensitivity": {
+      "source_bundle_sha256": "1c38a9f7046d84e24b0b71539b6b2583cb8cf6386c8b83ce68a0eda501ce8b91",
+      "figure_bundle_sha256": "ce0b7b171ba57d7fb7a958fe2a16461e31fa856a18359654d6cafcff2f1a9f84",
+      "n_sources": 1,
+      "n_figure_files": 3
+    },
+    "D5": {
+      "source_bundle_sha256": "4f4dc662240022e2562082e859ccfa5bb63c119a8947e11df874186940019f0c",
+      "figure_bundle_sha256": "09958af5e49454ab090bd78393f0e4575dccc7a9f6e285759b00510f1679f08a",
+      "n_sources": 1,
+      "n_figure_files": 15
+    }
+  }
+}
