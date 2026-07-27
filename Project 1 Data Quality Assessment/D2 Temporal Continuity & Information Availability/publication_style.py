@@ -18,8 +18,8 @@ TITLE_PAD = 6.0
 # Low-saturation water/environment palette with stable semantic roles.
 PALETTE = {
     "blue_main": "#2F6F9F", "blue_secondary": "#6FA8C9",
-    "blue_light": "#D7E8F2",
-    "green_1": "#D7E7D8", "green_2": "#9FC6A5", "green_3": "#6FA478",
+    "blue_light": "#D5E8F2",
+    "green_1": "#D5E7D8", "green_2": "#9FC6A5", "green_3": "#6FA478",
     "red_1": "#EBCFCB", "red_2": "#D5A09B", "red_strong": "#B65C5C",
     "neutral_light": "#D9DEE2", "neutral_mid": "#7C8388",
     "neutral_dark": "#4E565B", "neutral_black": "#2B2B2B",

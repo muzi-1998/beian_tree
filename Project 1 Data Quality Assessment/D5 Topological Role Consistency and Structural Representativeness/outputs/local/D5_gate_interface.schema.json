@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "D5 action and attribution gate interface",
+  "interface_version": "d5-d4-v2.3",
+  "grain": "pair-hour",
+  "required_columns": [
+    "timestamp", "pair_id", "target_sensor_id", "reference_sensor_id",
+    "zone", "zone_consensus_label", "zone_consensus_strength",
+    "target_D5_report", "reference_D5_report", "d5_evaluable",
+    "d5_score_ready", "d5_action_candidate", "d5_action_ready",
+    "support_level", "limited_support", "process_guard_candidate",
+    "process_coherence_guard_active", "attribution_suppressed",
+    "sensor_veto_candidate", "sensor_identity_veto_active",
+    "veto_active", "decision_type", "sensor_veto_role",
+    "detection_validation_passed", "localization_validation_passed",
+    "topology_hash", "template_version", "mapping_version",
+    "d5_run_id", "interface_version", "track_id"
+  ],
+  "guard_semantics": "Process coherence suppresses sensor-fault attribution only; it is not a Veto.",
+  "veto_semantics": "veto_active must equal sensor_identity_veto_active.",
+  "allowed_track_id": "d5_local"
+}

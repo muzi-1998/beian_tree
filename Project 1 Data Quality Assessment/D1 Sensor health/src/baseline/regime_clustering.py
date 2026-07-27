@@ -6,7 +6,7 @@ Approach: k-means on hourly multivariate features:
   - mean/std of all 18 channels in a 24-h sliding window
   - day-of-week + hour-of-day cyclical features
 Output: regime_id per hour, written to blackboard. Aggregation layer can
-then use regime-conditional templates for D7 and adjust expectations.
+then use regime-conditional templates for D5 and adjust expectations.
 """
 from __future__ import annotations
 import numpy as np

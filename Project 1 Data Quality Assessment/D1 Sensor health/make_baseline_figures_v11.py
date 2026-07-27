@@ -78,7 +78,7 @@ def save(fig, name, plot_data: dict = None):
 
 
 # Grade colormap
-grade_clrs = ["#9E1F1F", "#F46D43", "#FEE08B", "#A6D96A", "#1A9850"]
+grade_clrs = ["#9E1F1F", "#F46D33", "#FEE08B", "#A6D96A", "#1A9850"]
 grade_cmap = LinearSegmentedColormap.from_list("grade", grade_clrs[::-1], N=256)
 score_cmap = LinearSegmentedColormap.from_list(
     "d1_score",

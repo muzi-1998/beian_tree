@@ -124,7 +124,7 @@
 
 **架构主线**:D1 输入从"自带 deperiodise + 未白化残差"换成 **§1.1 的 `residual_*/innovation_*.parquet` + `whiteness_manifest.csv`**,并按 `scoring_mode` 分支:
 - `iid`(已白化创新):**②Step-KS / ⑨PELT / ⑧Tier-2 KS 跑在创新上 → 临界值/惩罚此时合法**。
-- `autocorr_aware`(robust_z,近单位根):**不**跑 i.i.d. 的 KS/PELT;漂移走 **④Drift-PLS + ⑤FF-PCA + D7 沿程梯度**,变点/阶跃用 n_eff 校正或块方法;共模漂移靠 **D5 机理锚点**。
+- `autocorr_aware`(robust_z,近单位根):**不**跑 i.i.d. 的 KS/PELT;漂移走 **④Drift-PLS + ⑤FF-PCA + D5 沿程梯度**,变点/阶跃用 n_eff 校正或块方法;共模漂移靠 **D5 机理锚点**。
 - `floor_freeze`(DO_1_4 等):走 **⑥/⑦ freeze/floor** 逻辑,排除出白化类评分。
 
 **按 ROI 排序的动手清单**:
@@ -134,7 +134,7 @@
 4. **③ Page-Hinkley `δ/λ` 改 σ 倍数**。
 5. **⑦/⑨ 先清 QR 负流量伪值**(§1.1 已打标),再算响应/变点。
 
-**验收**:接入后,在 `iid` 通道上 ②⑨⑧ 的报警率应显著回落到接近名义水平;`autocorr_aware` 通道改由 ④⑤+D7 监控,不再由 ②⑨ 主导;floor 通道由 ⑥⑦ 处理。
+**验收**:接入后,在 `iid` 通道上 ②⑨⑧ 的报警率应显著回落到接近名义水平;`autocorr_aware` 通道改由 ④⑤+D5 监控,不再由 ②⑨ 主导;floor 通道由 ⑥⑦ 处理。
 
 ---
 

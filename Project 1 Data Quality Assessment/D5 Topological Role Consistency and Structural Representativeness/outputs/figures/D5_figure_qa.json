@@ -1,0 +1,64 @@
+{
+  "passed": true,
+  "failures": [],
+  "figures": [
+    {
+      "stem": "FigD5_1_framework",
+      "png_width": 4389,
+      "png_height": 1900,
+      "nonwhite_fraction": 0.21482606036622656,
+      "png_sha256": "347e59f63f0c1cdf329f7375c27f3516c79e5068b4ea597ee43af1aa7d6e8236",
+      "pdf_sha256": "a872e0785320e7e8f6b15fef7f2ab4d167635bf4c74ccdefaab449f03c4ad25d",
+      "svg_sha256": "412c49bfe1e3289c79ed9039c14e4b817fd6ecd6880c7adb400eb541d2aa2afe",
+      "tiff_sha256": "6c436b0badd0f3728278bf32e8e188eee38e9b0ab8122de2f6731b9e5f2a49de"
+    },
+    {
+      "stem": "FigD5_2_spatiotemporal",
+      "png_width": 4378,
+      "png_height": 3129,
+      "nonwhite_fraction": 0.4793177660871836,
+      "png_sha256": "1a3693d32cb3698bf270272eaa1454fcb0cb327b09c0d4f07d2558e752bdc884",
+      "pdf_sha256": "16fb7f73931ef0bcc5044c55147e22c1e5b4d9198fc0ceaabba68e1d8236dfb8",
+      "svg_sha256": "7aea48aa61203adb09fa646cd3935f09c2a544db6d6ce16b1d5c15022f637b76",
+      "tiff_sha256": "453f55b4cbe5768323d20ed751a9ca0224df7ac78039010c8de90c4f107112ec"
+    },
+    {
+      "stem": "FigD5_3_evidence",
+      "png_width": 4385,
+      "png_height": 3069,
+      "nonwhite_fraction": 0.08436830882852879,
+      "png_sha256": "579af665f82a2b29865d392e3d74537346efbe4f2fdc7c0125cc31fd30404314",
+      "pdf_sha256": "0360a1c00cfe7e0c80f9ab49d0e587dffcf9a69973e58c8f410d2fae2747272e",
+      "svg_sha256": "be3822405e2c14214629ff549e51121033850093cc454593ec5fad7937851189",
+      "tiff_sha256": "ce6ddfc9adca0b09fadff514018446089063d21627cf2f4a86f76566e01ea7dd"
+    },
+    {
+      "stem": "FigD5_4_validation",
+      "png_width": 4386,
+      "png_height": 3309,
+      "nonwhite_fraction": 0.22907257177119372,
+      "png_sha256": "3783592511e27dd37446d891c95d88e70ad444942531f54820f8dbfa438f0a12",
+      "pdf_sha256": "c08f738254549d88fda6d7ddf70b6e6f79fa7fd773fdf93e761fa033708d8b16",
+      "svg_sha256": "fef0c6e7297f56553b0acb7c2441dc67bb49cb3d5d526d5bd018a27697bf51a6",
+      "tiff_sha256": "d42e75853c77121516bbc34a59c005fdee056bff211907a1269b4708db19a0ec"
+    },
+    {
+      "stem": "FigD5_5_governance",
+      "png_width": 4389,
+      "png_height": 3309,
+      "nonwhite_fraction": 0.1208403023548321,
+      "png_sha256": "f931dad797efa29713ce271068677d91cda7a985b123f9539c886bb6c3ba7dc2",
+      "pdf_sha256": "bc4a257d4b3669abeb3872eadb78119e9f2a2d2ff426028040735e84c8587139",
+      "svg_sha256": "a9cdb0c0a34753e20cc9946ae5b75df42741d4118a2aad58006770e690fe1624",
+      "tiff_sha256": "c928a1e6e2a7517e6002c22db7c7a1f829c86a6555c6d34b2a44c3dd8ee11c82"
+    }
+  ],
+  "checked_contracts": [
+    "PNG/PDF/SVG/TIFF counterparts",
+    "600 dpi raster dimensions",
+    "nonblank raster content",
+    "Arial SVG font reference",
+    "panel label (a)",
+    "frozen plot-data manifest"
+  ]
+}

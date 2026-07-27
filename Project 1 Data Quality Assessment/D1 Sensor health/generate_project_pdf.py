@@ -103,7 +103,7 @@ SCRIPTS = [
     ("src/baseline/local_baseline.py",
      "# Local rolling baseline (median ± IQR) for residual normalisation"),
     ("src/baseline/regime_clustering.py",
-     "# Exploratory fixed-k regime clustering retained for D7 redevelopment; not a D1 figure"),
+     "# Exploratory fixed-k regime clustering retained for D5 redevelopment; not a D1 figure"),
     ("src/baseline/__init__.py",
      "# Package init"),
 
@@ -372,7 +372,7 @@ with PdfPages(OUT_PDF) as pdf:
             color="white", ha="center", va="center", linespacing=1.6)
     ax.text(0.5, 0.60,
             "Python Project Directory",
-            transform=ax.transAxes, fontsize=18, color="#AED6F1",
+            transform=ax.transAxes, fontsize=18, color="#AED4F1",
             ha="center", va="center")
     ax.text(0.5, 0.50,
             "DO / ORP Sensor Health  |  D1 v1.1 + P1 Optimisations",
@@ -388,7 +388,7 @@ with PdfPages(OUT_PDF) as pdf:
             transform=ax.transAxes, fontsize=10, color="#AEB6BF",
             ha="center", va="center", linespacing=1.7)
     # divider
-    ax.axhline(0.27, xmin=0.1, xmax=0.9, color="#AED6F1", lw=0.6)
+    ax.axhline(0.27, xmin=0.1, xmax=0.9, color="#AED4F1", lw=0.6)
     ax.text(0.5, 0.21,
             "Contents\n"
             "  Page 2-3 : Directory tree\n"

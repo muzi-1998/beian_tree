@@ -50,7 +50,7 @@
 | `outputs/qa/figures/` | Contact sheets and automated audit JSON |
 | `outputs/D1_Sensor_Health_Expert_Report_Auto.docx` | Synchronized final expert report |
 
-The formal bundle contains current-pipeline results only. `D1_v11_vs_strictV1_compare.xlsx` may be retained under `outputs/data/` for software regression traceability, but it is not a manuscript result and is not consumed by the current expert report. The retired fixed-`k=4` regime figure must not be restored to D1 without independent D7 validation of cluster number, stability, recurrence, and operational meaning.
+The formal bundle contains current-pipeline results only. `D1_v11_vs_strictV1_compare.xlsx` may be retained under `outputs/data/` for software regression traceability, but it is not a manuscript result and is not consumed by the current expert report. The retired fixed-`k=4` regime figure must not be restored to D1 without independent D5 validation of cluster number, stability, recurrence, and operational meaning.
 
 ## PLS peer-topology contract
 

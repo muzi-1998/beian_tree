@@ -1,7 +1,0 @@
-version: d7-sensitivity-v2.1
-track_id: sensitivity
-consumed_sources: [D1, D2, D4]
-production_write_allowed: false
-active_template_alias_allowed: false
-d6_interface_allowed: false
-gates: {ie_track_max: 0.20, event_jaccard_min: 0.80, culprit_spearman_min: 0.80}

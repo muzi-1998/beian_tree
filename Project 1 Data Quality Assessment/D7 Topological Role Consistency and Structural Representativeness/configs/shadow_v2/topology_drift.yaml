@@ -1,6 +1,0 @@
-version: d7-topology-drift-v1
-candidate_types: [adjacent_position_swap, twin_pair_swap, channel_label_swap]
-minimum_persistence_days: 7
-minimum_contexts: 2
-automatic_topology_update: false
-production_impact: none

@@ -1,0 +1,13 @@
+version: d5-v2.3.0-20260726
+schema_version: d5-output-schema-v2.3
+track_id: d5_local
+upstream_score_consumed: false
+random_seed: 42
+context_regimes: 4
+posterior_temperature_multiplier: 0.25
+topology_verified_required_for_total: false
+production_mode: dual_report_and_gate_interfaces_with_separate_deployment_governance
+mapping_version: d5-map-v2.2
+template_version: d5-local-template-v2.3-family-node-validation
+regime_model_version: d5-context-kmeans-v2-global-robust
+interface_version: d5-d4-v2.3

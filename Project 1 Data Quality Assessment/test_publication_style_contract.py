@@ -73,7 +73,7 @@ def test_d1_publication_contract():
          "configure_publication_style", "finalize_figure"),
         ("D2 Temporal Continuity & Information Availability/publication_style.py",
          "configure_publication_style", "finalize_figure"),
-        ("D6 Parallel-redundancy Temporal Consistency/src/d6/figure_style.py",
+        ("D4 Parallel-redundancy Temporal Consistency/src/d4/figure_style.py",
          "configure_style", "finalize"),
     ],
 )
@@ -127,16 +127,16 @@ def test_d2_panel_label_normalization():
     plt.close(fig)
 
 
-def test_d4_and_d6_panel_labels_share_position():
-    d4 = _load_style(
-        "D4 Physical rationality and rate constraints/figures/_nature_style.py"
+def test_d3_and_d4_panel_labels_share_position():
+    d3 = _load_style(
+        "D3 Physical rationality and rate constraints/figures/_nature_style.py"
     )
-    d6 = _load_style(
-        "D6 Parallel-redundancy Temporal Consistency/src/d6/figure_style.py"
+    d4 = _load_style(
+        "D4 Parallel-redundancy Temporal Consistency/src/d4/figure_style.py"
     )
     fig, axes = plt.subplots(1, 2)
-    d4.panel_label(axes[0], "(A)")
-    d6.panel_label(axes[1], "B")
+    d3.panel_label(axes[0], "(A)")
+    d4.panel_label(axes[1], "B")
     for index, ax in enumerate(axes):
         label = ax.texts[0]
         assert label.get_text() == f"({chr(97 + index)})"

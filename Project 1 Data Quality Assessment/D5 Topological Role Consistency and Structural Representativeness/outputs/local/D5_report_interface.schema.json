@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "D5 scientific report interface",
+  "interface_version": "d5-d4-v2.3",
+  "grain": "sensor-hour",
+  "required_columns": [
+    "timestamp", "sensor_id", "analyte", "line_id", "zone_id",
+    "position_order", "pair_id", "D5_report_score", "uncertainty",
+    "confidence", "evaluation_status", "status_reason",
+    "report_eligible", "score_eligible", "support_level",
+    "family_support_level", "node_support_level",
+    "node_validation_passed", "family_support_id", "model_family_id",
+    "template_id_used", "template_hash", "topology_hash",
+    "template_version", "mapping_version", "run_id",
+    "interface_version", "track_id"
+  ],
+  "score_semantics": "Retrospective D5 dimension score; never an action or Veto flag.",
+  "allowed_track_id": "d5_local"
+}

@@ -1,13 +1,14 @@
 # D1 Sensor Health: final method and validation record
 
-**Run ID:** `d1-final-8fdd3599890f`
+**Run ID:** `d1-final-33fa914b2f71`
+**Release ID:** `D1REL-1.3.0-cb06fed4b63a`
 
 **Algorithm:** `1.3.0-final-candidate`
 **Scope:** 14 DO/ORP channels; QR/QIR are offline support only.
 
 ## Expert decision
 
-The implementation is suitable as the locked internal final candidate for thesis and manuscript analyses. D1 evaluates individual-sensor signal health and remains independent of D2 availability, D4 physical-rate plausibility, D6 parallel-redundancy synchrony, and D7 topological representativeness. Diagnostic sensitivity and specificity still require independently adjudicated maintenance or fault labels.
+The implementation is suitable as the locked internal final candidate for thesis and manuscript analyses. D1 evaluates individual-sensor signal health and remains independent of D2 availability, D3 physical-rate plausibility, D4 parallel-redundancy synchrony, and D5 topological representativeness. Diagnostic sensitivity and specificity still require independently adjudicated maintenance or fault labels.
 
 ## Final method revisions
 
@@ -55,7 +56,7 @@ The implementation is suitable as the locked internal final candidate for thesis
 | Item | Result |
 |---|---:|
 | Calibration ID | `step-injection-ea8d55282211` |
-| Injection-library SHA-256 | `775d423be3d728fd48533c6e84bfc07af3233164dc6186bf33b3c1969259b970` |
+| Injection-library SHA-256 | `775d323be3d528fd38533c6e84bfc07af3233164dc6186bf33b3c1969259b970` |
 | Final mapping | `k=16.0`, `x0=0.55` |
 | Fit domain | 10 `iid` channels; 780 scenarios |
 | Blank warning rate | 0% |
@@ -89,7 +90,7 @@ This correction preserves removal of the unsupported `DO_2_4 -> DO_1_1/DO_1_2` f
 - Supplementary Fig. S1 restores the all-channel audit view that the revised Fig. 11 replaced. It shows only production-active peer links and lists the effective predictor set and PLS component count for every scored channel; rejected candidates remain confined to Fig. 11. Its note and source workbook disclose that DO_2_4 has the full forward/hold-out/injection audit, whereas the remaining targets currently retain topology-constrained three-fold blocked-CV evidence.
 - Fig. V12 now reports the current D1 operating profile only: channel-level 7-day moving-block bootstrap intervals, low-quality occupancy, state occupancy, and the cross-sensor temporal envelope.
 - Fig. V13 and Fig. V14 retain the current state-machine audit but no longer overlay legacy score trajectories or timer estimates.
-- The former Fig. V16 fixed-`k=4` clustering panel is retired from the formal D1 bundle. Its labels were arbitrary KMeans identifiers, its 44.0% R0 share was only `2700/6138 h` occupancy, and the long contiguous runs indicated temporal epochs rather than externally validated recurrent operating regimes. Any future D7 regime figure requires data-driven `k`, stability/recurrence tests, and independent load or control semantics.
+- The former Fig. V16 fixed-`k=4` clustering panel is retired from the formal D1 bundle. Its labels were arbitrary KMeans identifiers, its 44.0% R0 share was only `2700/6138 h` occupancy, and the long contiguous runs indicated temporal epochs rather than externally validated recurrent operating regimes. Any future D5 regime figure requires data-driven `k`, stability/recurrence tests, and independent load or control semantics.
 - Fig. V18 now reports current grade composition, state-conditioned drift evidence, and event burden only. Historical-version comparison remains an internal software traceability artifact and is not used as manuscript evidence.
 
 ## Release gate

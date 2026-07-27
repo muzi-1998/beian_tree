@@ -141,7 +141,7 @@ def make_recovery_validation_figure(state: dict) -> None:
         .reindex(index=variants, columns=scenarios)
         .to_numpy(float)
     )
-    cmap = ListedColormap(["#F2D7D5", "#DCEBDD", PALETTE["green"]])
+    cmap = ListedColormap(["#F2D5D5", "#DCEBDD", PALETTE["green"]])
     image = ax.imshow(matrix, vmin=0, vmax=1, cmap=cmap, aspect="auto")
     ax.set_xticks(np.arange(4), scenario_labels)
     ax.tick_params(axis="x", labelsize=7)

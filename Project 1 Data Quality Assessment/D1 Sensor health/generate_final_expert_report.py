@@ -23,7 +23,7 @@ MANIFEST = ROOT / "outputs" / "reports" / "D1_Sensor_Health_Expert_Report_Auto.m
 FIG_DIR = ROOT / "outputs" / "figures"
 
 BLUE = "2E74B5"
-DARK_BLUE = "1F4D78"
+DARK_BLUE = "1F4D58"
 LIGHT_BLUE = "E8EEF5"
 LIGHT_GRAY = "F2F4F7"
 INK = "202124"
@@ -277,9 +277,9 @@ def build_report(force: bool = True) -> Path:
     doc.add_heading("1. Scope and non-overlap", level=1)
     doc.add_paragraph(
         "D1 evaluates the health of each DO/ORP sensor from signal-health evidence. "
-        "It is intentionally independent of D2 temporal availability, D4 physical-rate "
-        "plausibility, D6 parallel-redundancy synchrony, and D7 topological representativeness. "
-        "Section 1.1 provides the causal hourly preprocessing and residual basis; D2-D7 do not "
+        "It is intentionally independent of D2 temporal availability, D3 physical-rate "
+        "plausibility, D4 parallel-redundancy synchrony, and D5 topological representativeness. "
+        "Section 1.1 provides the causal hourly preprocessing and residual basis; D2-D5 do not "
         "feed back into the D1 score."
     )
 
@@ -476,7 +476,7 @@ def build_report(force: bool = True) -> Path:
         "The former Figure V16 fixed-k regime panel is retired from D1. R0 was an arbitrary "
         "KMeans label whose 44.0% share represented 2,700 of 6,138 hours, not a validated "
         "normal regime. Its long contiguous runs were more consistent with temporal epochs. "
-        "A future D7 regime analysis must independently validate cluster number, stability, "
+        "A future D5 regime analysis must independently validate cluster number, stability, "
         "recurrence, and operational meaning."
     )
 

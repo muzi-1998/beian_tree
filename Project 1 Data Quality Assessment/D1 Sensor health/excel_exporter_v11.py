@@ -649,7 +649,7 @@ modules = pd.DataFrame([
     {"module": "src/state_blackboard.py", "version": "v1.1.0",
      "spec_ref": "工程目录修订 §八"},
     {"module": "src/auxiliary_modules.py", "version": "v1.1.0",
-     "spec_ref": "QR/QIR 修订 §七 (D5/D7 templates only)"},
+     "spec_ref": "QR/QIR 修订 §七 (D5/D5 templates only)"},
     {"module": "configs/rules.yaml", "version": "v1.1.0",
      "spec_ref": "veto3_signal_only=true, scored_channels=DO/ORP only"},
     {"module": "configs/state_machine.yaml", "version": S["algorithm_version"],
@@ -786,7 +786,7 @@ _save(OUT / "D1_qr_qir_side_outputs.xlsx", {
     "note": pd.DataFrame([{
         "note": "Per QR/QIR 仅作为驱动变量纳入D1的修订正式文本_无泵状态最终版.docx, "
                 "QR/QIR are NOT scored in D1 main link. These annotations are "
-                "for offline case-study, D5 modelling, and D7 template only.",
+                "for offline case-study, D5 modelling, and D5 template only.",
         "spec_section": "§七 — QR/QIR 在当前项目中的正式保留用途",
     }]),
 })

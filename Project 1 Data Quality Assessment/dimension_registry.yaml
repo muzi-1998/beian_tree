@@ -1,0 +1,110 @@
+schema_version: ww-dqs-dimension-registry-v1
+effective_date: "2026-07-26"
+canonical_dimensions:
+  D1:
+    name: Sensor Health
+    project_dir: D1 Sensor health
+    legacy_id: null
+    primary_score: D1_total
+    release_location: D1_main_scores_min.xlsx::D1_total_hourly
+    independent_inputs:
+      - canonical sensor observations
+      - section 1.1 regime context
+      - topology-constrained peer observations
+    prohibited_numeric_inputs:
+      - D2
+      - D3
+      - D4
+      - D5
+    aggregation_status: score_ready
+  D2:
+    name: Temporal Continuity and Information Availability
+    project_dir: D2 Temporal Continuity & Information Availability
+    legacy_id: null
+    primary_score: D2_total
+    independent_inputs:
+      - canonical observation timestamps
+      - missingness and hard-run evidence
+    prohibited_numeric_inputs:
+      - D1
+      - D3
+      - D4
+      - D5
+    contextual_interfaces:
+      - D1 event linkage for interpretation only
+    aggregation_status: score_ready
+  D3:
+    name: Physical Rationality and Rate Constraints
+    project_dir: D3 Physical rationality and rate constraints
+    legacy_id: D4
+    primary_score: D3_total
+    independent_inputs:
+      - canonical unimputed observations
+      - fixed physical and rate constraints
+    prohibited_numeric_inputs:
+      - D1
+      - D2
+      - D4
+      - D5
+    aggregation_status: score_ready
+  D4:
+    name: Parallel-redundancy Temporal Consistency
+    project_dir: D4 Parallel-redundancy Temporal Consistency
+    legacy_id: D6
+    primary_score: D4_raw
+    independent_inputs:
+      - canonical paired observations
+      - public analyte-by-regime benchmark mapping
+    prohibited_numeric_inputs:
+      - D1
+      - D2
+      - D3
+      - D5
+    contextual_interfaces:
+      - D2 evaluability gate
+      - D1 interpretation only
+      - D5 report and gate interfaces
+    aggregation_status: score_ready_from_raw
+  D5:
+    name: Topological Role Consistency and Structural Representativeness
+    project_dir: D5 Topological Role Consistency and Structural Representativeness
+    legacy_id: D7
+    primary_score: D5_report_score
+    independent_inputs:
+      - canonical sensor observations
+      - confirmed ordinal topology
+      - exogenous QR and QIR context
+      - time-of-day context
+    prohibited_numeric_inputs:
+      - D1
+      - D2
+      - D3
+      - D4
+    contextual_interfaces:
+      - isolated sensitivity track may read D1 to D4 without production writes
+      - separate action gate requires node-level L3 evidence
+    aggregation_status: report_score_ready_action_gate_limited
+legacy_lineage:
+  D4:
+    canonical_id: D3
+    meaning: Physical Rationality and Rate Constraints
+  D6:
+    canonical_id: D4
+    meaning: Parallel-redundancy Temporal Consistency
+  D7:
+    canonical_id: D5
+    meaning: Topological Role Consistency and Structural Representativeness
+aggregation_contract:
+  score_scale: [1.0, 5.0]
+  authoritative_fields:
+    - score
+    - evaluable
+    - evidence_level
+    - uncertainty
+    - lineage
+  missing_dimension_policy: renormalize_over_eligible_dimensions
+  forbidden_missing_policy: replace_missing_with_low_score
+  veto_policy: sensor_identity_veto_is_separate_from_dimension_score
+  guard_policy: process_coherence_guard_is_attribution_only
+  weights_status: pending_prespecified_calibration
+  composite_release_status: calibration_stage

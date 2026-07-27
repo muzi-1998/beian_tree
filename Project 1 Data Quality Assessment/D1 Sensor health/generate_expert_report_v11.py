@@ -287,7 +287,7 @@ def configure_document(doc: Document):
     for name, size, color, before, after in [
         ("Heading 1", 16, "2E74B5", 16, 8),
         ("Heading 2", 13, "2E74B5", 12, 6),
-        ("Heading 3", 12, "1F4D78", 8, 4),
+        ("Heading 3", 12, "1F4D58", 8, 4),
     ]:
         st = styles[name]
         st.font.name = "Microsoft YaHei"
@@ -355,7 +355,7 @@ def add_summary(doc: Document, m: dict):
         "当前结果的解释重点是输入合法性、事件唯一性、状态可恢复性以及低分事件的可追溯性。"
     )
     doc.add_heading("核心结论速览", level=2)
-    add_bullet(doc, "scope 收敛：D1 主链严格限定为 14 路 DO/ORP；QR/QIR 仅作为 D5/D7 与离线案例支撑，不参与最终健康度评分。")
+    add_bullet(doc, "scope 收敛：D1 主链严格限定为 14 路 DO/ORP；QR/QIR 仅作为 D5/D5 与离线案例支撑，不参与最终健康度评分。")
     add_bullet(doc, "§1.1 桥接生效：step / regime / PELT 使用白化或路由输入，drift 使用残差，spike / freeze 保持分钟级原始信号。")
     add_bullet(doc, f"事件唯一性：{state['n_pelt_cps']} 个 PELT 变更点经状态机约束后形成 {len(state['transitions_all'])} 条状态转移，避免持续低信号反复刷新冷却。")
     add_bullet(doc, f"状态分布健康：Normal 占 {_pct(m['state_pct'].get('Normal',0))}，Refractory 与 SustainedAnomaly 合计约 {_pct(m['state_pct'].get('Refractory',0)+m['state_pct'].get('SustainedAnomaly',0))}。")
@@ -368,7 +368,7 @@ def chapter_background(doc: Document):
     doc.add_paragraph(
         "污水处理与生化反应过程高度依赖 DO 与 ORP 在线探头。长期运行中，膜污染、电极极化、生物膜附着、"
         "流态扰动和工况转换会引发尖峰、阶跃、慢漂、冻结以及工况域偏移。单一阈值报警难以兼顾误报率、漏报率和解释性，"
-        "也无法为后续 D5 机理一致性和 D7 区段模板提供连续可靠度输入。"
+        "也无法为后续 D5 机理一致性和 D5 区段模板提供连续可靠度输入。"
     )
     doc.add_paragraph(
         "D1 的定位是把每路仪表每小时的信号可信度量化为 1-5 分，并同时输出子分、主导故障、状态机状态和审计字段。"
@@ -438,7 +438,7 @@ def chapter_methods(doc: Document, m: dict):
         ("3.1.2  邻区双窗 KS 阶跃检测", "KS24 强调近因，KS36 强调持续性；二者取最大值后再映射，有利于区分孤立扰动和真正阶跃。"),
         ("3.1.3  PLS 同伴漂移检测", "PLS 只使用同类或相邻同伴，不使用 QR/QIR 驱动量，避免驱动量泄露到传感器健康评分。"),
         ("3.1.4  冻结复合判据", "冻结检测不依赖单一 RLE，而综合持续相同值、低方差和唯一值比例，覆盖死值和近似死值。"),
-        ("3.1.5  双层工况漂移", "Tier-1 W1 捕捉慢分布漂移，Tier-2 KS 确认新工况域；该维度对 D7 模板也有解释价值。"),
+        ("3.1.5  双层工况漂移", "Tier-1 W1 捕捉慢分布漂移，Tier-2 KS 确认新工况域；该维度对 D5 模板也有解释价值。"),
     ]:
         doc.add_heading(title, level=3)
         doc.add_paragraph(text)
@@ -536,7 +536,7 @@ def add_figure_section(doc: Document, label: str, idx: str, m: dict):
     doc.add_heading(f"{idx}  {label} — {title}", level=2)
     add_figure(doc, label, title, width=6.15)
     doc.add_paragraph(text)
-    doc.add_paragraph("专家解读：本图按旧主报告的“图示内容—主要结果—工程意义”口径解读。图示内容负责定位证据来源，主要结果读取当前自动产物，工程意义则指向评分可靠性、运维优先级或后续 D5/D7 使用边界。")
+    doc.add_paragraph("专家解读：本图按旧主报告的“图示内容—主要结果—工程意义”口径解读。图示内容负责定位证据来源，主要结果读取当前自动产物，工程意义则指向评分可靠性、运维优先级或后续 D5/D5 使用边界。")
 
 
 def chapter_figures(doc: Document, m: dict):
@@ -578,7 +578,7 @@ def chapter_discussion(doc: Document, m: dict):
     for text in [
         "R90/P2 仍是回顾性审计口径，在线部署时需要定期重标定或引入受控滚动基线。",
         "RecoveryCandidate 覆盖率较低，说明恢复事件样本有限；后续应结合人工维护记录验证恢复判据。",
-        "QR/QIR 当前只作离线解释，若未来引入过程状态，需要明确独立的 D5/D7 接口，不能回流至 D1 主链。",
+        "QR/QIR 当前只作离线解释，若未来引入过程状态，需要明确独立的 D5/D5 接口，不能回流至 D1 主链。",
         "报告生成依赖 Word COM 做视觉 QA；跨平台部署时可改用 LibreOffice + Poppler。",
     ]:
         add_bullet(doc, text)
@@ -586,7 +586,7 @@ def chapter_discussion(doc: Document, m: dict):
     for text in [
         "短期：把人工维护记录接入事件表，验证 ORP_1_2、ORP_1_3、DO_2_3、DO_2_4 的低分解释。",
         "中期：把 D1 自动报告与每日/每周调度联动，形成运行报告归档。",
-        "长期：将 D1 输出作为 D5 机理一致性和 D7 区段模板的输入契约，形成完整 WW-DQR 数据质量闭环。",
+        "长期：将 D1 输出作为 D5 机理一致性和 D5 区段模板的输入契约，形成完整 WW-DQR 数据质量闭环。",
     ]:
         add_bullet(doc, text)
 

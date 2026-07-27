@@ -1,0 +1,13 @@
+canonical_observations: 1.1 Decomposition/outputs/parquet/time_base_1min_raw.parquet
+canonical_flags: 1.1 Decomposition/outputs/parquet/time_base_1min_flags.parquet
+time_base_contract: 1.1 Decomposition/outputs/parquet/time_base_contract.json
+d1_scores: D1 Sensor health/outputs/data/D1_main_scores_min.xlsx
+d2_scores: D2 Temporal Continuity & Information Availability/artifacts/data/D2_main_scores_hourly.xlsx
+d3_scores: D3 Physical rationality and rate constraints/outputs/data/D3_window_scores.xlsx
+d4_scores: D4 Parallel-redundancy Temporal Consistency/outputs/data/D4_main_scores.xlsx
+local_output_root: D5 Topological Role Consistency and Structural Representativeness/outputs/local
+sensitivity_output_root: D5 Topological Role Consistency and Structural Representativeness/outputs/sensitivity
+shadow_v2_output_root: D5 Topological Role Consistency and Structural Representativeness/outputs/shadow_v2
+plot_data_root: D5 Topological Role Consistency and Structural Representativeness/outputs/plot_data
+figure_root: D5 Topological Role Consistency and Structural Representativeness/outputs/figures
+report_root: D5 Topological Role Consistency and Structural Representativeness/outputs/reports
