@@ -8,17 +8,29 @@ sensors:
     soft_low: 0.0
     soft_high: 8.0
     unit: "mg/L"
-    instrument_range_low: -0.2
-    instrument_range_high: 20.0
+    manufacturer_range_low: 0.0
+    manufacturer_range_high: 20.0
+    instrument_veto_range_low: -0.2
+    instrument_veto_range_high: 20.0
+    instrument_veto_basis: "registered_range_with_negative_numeric_tolerance"
   ORP:
     hard_low: -500.0
     hard_high: 500.0
     soft_low: -400.0
     soft_high: 200.0
     unit: "mV"
-    instrument_range_low: -500.0
-    instrument_range_high: 500.0
+    manufacturer_range_low: -1500.0
+    manufacturer_range_high: 1500.0
+    instrument_veto_range_low: -1500.0
+    instrument_veto_range_high: 1500.0
+    instrument_veto_basis: "registered_range"
 
-source: "expert_operational_limits_pending_site_validation"
-version: "v2.2.0"
+sources:
+  operational_bounds: "expert_operational_limits_pending_site_validation"
+  instrument_register:
+    source_id: "provided_instrument_installation_register"
+    source_sha256: "2085f4de640aa0231f95e3abe370dec6d1da9c3daf064e6f05042e344ca58ea9"
+    inspected_sheet_range: "Sheet1!A1:P34"
+    reverified_at: "2026-07-27T00:00:00+08:00"
+version: "v2.2.1"
 effective_date: "2026-05-26"

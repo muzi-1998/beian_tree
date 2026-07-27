@@ -1,6 +1,6 @@
 {
   "schema_version": "cross-project-freshness-v4",
-  "generated_utc": "2026-07-26T11:30:11.504511+00:00",
+  "generated_utc": "2026-07-27T05:28:35.961333+00:00",
   "d1_release_id": "D1REL-1.3.0-cb06fed4b63a",
   "checks": [
     {
@@ -187,12 +187,12 @@
     {
       "check": "D5_sensitivity:D3_scores",
       "passed": true,
-      "detail": "de34c2e2ee5908436bb996bb93b61c3880b2b6b0049ee7cec4e4eb38ae79a3be"
+      "detail": "f484de198bf8c081c8cd95dc91a15b5f4c4e560b6ef2b205e05ad46659b0602e"
     },
     {
       "check": "D5_sensitivity:D5_local_evidence",
       "passed": true,
-      "detail": "51d0841f29d5cff2b6e76247be9c1f8b909f1663bbbae99cebd322a83ae61dcd"
+      "detail": "4edb2bd1af0cbdac8fc61382508099137349f67f6ce70da4ee1831848bfe3733"
     },
     {
       "check": "D5_sensitivity:no_production_write",
@@ -237,8 +237,8 @@
       "check": "D5_local:unchanged",
       "passed": true,
       "detail": {
-        "expected": "e589b3b64c32cc1b1d933c4b6b9d2e90b92a70dbb03a2b138ac06fa9935aae77",
-        "actual": "e589b3b64c32cc1b1d933c4b6b9d2e90b92a70dbb03a2b138ac06fa9935aae77"
+        "expected": "a6350ad6f0074a9fd3f56fbfc26cc9d381be907e1fce86b0d9ddb2e3cff293b0",
+        "actual": "a6350ad6f0074a9fd3f56fbfc26cc9d381be907e1fce86b0d9ddb2e3cff293b0"
       }
     },
     {
@@ -360,7 +360,7 @@
       "check": "D3:figures_not_older_than_sources",
       "passed": true,
       "detail": {
-        "source_latest_utc": "2026-07-26T08:52:09.032644+00:00",
+        "source_latest_utc": "2026-07-27T04:57:53.909259+00:00",
         "stale_files": []
       }
     },
@@ -426,7 +426,7 @@
       "check": "D5:figures_not_older_than_sources",
       "passed": true,
       "detail": {
-        "source_latest_utc": "2026-07-26T11:11:11.490602+00:00",
+        "source_latest_utc": "2026-07-27T05:24:42.044868+00:00",
         "stale_files": []
       }
     }

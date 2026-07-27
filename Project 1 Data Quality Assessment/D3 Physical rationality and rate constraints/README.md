@@ -1,4 +1,4 @@
-# D3 v2.2: Physical Rationality and Rate Constraints
+# D3 v2.2.1: Physical Rationality and Rate Constraints
 
 D3 independently evaluates whether observed DO/ORP values and their temporal rates are physically plausible. It uses the section 1.1 canonical one-minute observation grid but never consumes imputed values, D1/D2 scores, or regime labels.
 
@@ -16,7 +16,7 @@ Three zero-anchored subscores map zero violations exactly to 5:
 
 `D3_pre = 0.75 D3_base + 0.25 min(Q_hard, Q_soft, Q_rate)`
 
-Documented hard-value, instrument-range, and persistent-rate vetoes cap the result. Instrument ranges are contractually required to contain the hard physical range so a stricter zero-tolerance instrument rule cannot override the physical tolerance.
+Documented hard-value, instrument-range, and persistent-rate vetoes cap the result. Manufacturer ranges are recorded separately from expert operational hard/soft bounds. The instrument Veto range must contain the hard physical range so it cannot override a documented numeric tolerance. The registered ranges are 0-20 mg/L for DO and -1500 to 1500 mV for ORP; DO retains a -0.2 mg/L lower Veto tolerance to prevent quantization/calibration noise from becoming an automatic invalidation.
 
 ## Data Scope
 
@@ -32,10 +32,10 @@ The manifest records source-file SHA-256 hashes, configuration hash, code hash, 
 ```text
 configs/          versioned D3 rules, limits, paths, and independence contract
 src/              input, evidence, scoring, pipeline, and export modules
-tests/            v2.2 scientific-contract regression tests
+tests/            v2.2.1 scientific-contract regression tests
 ci/               forbidden-coupling and mapping checks
 figures/          Python scripts for seven publication figures
-outputs/data/     current v2.2 workbooks only
+outputs/data/     current v2.2.1 workbooks only
 outputs/figures/  current SVG, PDF, and 600-dpi PNG figures
 outputs/manifest/ current run manifest
 outputs/reports/  expert audit and result summary
@@ -66,4 +66,4 @@ python run_all.py --subset-days 2
 
 The authoritative data products are `D3_window_scores.xlsx`, `D3_value_evidence.xlsx`, `D3_rate_evidence.xlsx`, `D3_boundary_diagnostics.xlsx`, `D3_threshold_library.xlsx`, `D3_physical_events.xlsx`, `D3_mapping_params.xlsx`, and `D3_sensor_summary.xlsx`.
 
-All physical and rate limits remain expert operational priors until validated against probe specifications, plant operating envelopes, maintenance records, and process-engineer review. The current module is a rigorous univariate D3 baseline; coupled mass-balance and process-state constraints are future extensions and must not be inferred from these outputs.
+Instrument ranges are supported by the provided installation register. Physical hard/soft and rate limits remain expert operational priors until validated against plant operating envelopes, maintenance records, and process-engineer review. The current module is a rigorous univariate D3 baseline; coupled mass-balance and process-state constraints are future extensions and must not be inferred from these outputs.

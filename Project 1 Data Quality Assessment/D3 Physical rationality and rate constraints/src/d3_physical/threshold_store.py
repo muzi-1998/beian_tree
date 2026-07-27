@@ -46,7 +46,7 @@ class ThresholdStore:
         physical_bounds_cfg: dict,
         rate_limits_cfg: dict,
         benchmark: BenchmarkWindows,
-        version: str = "v2.2.0",
+        version: str = "v2.2.1",
     ) -> "ThresholdStore":
         bounds: list[PhysicalBound] = []
         threshold_number = 0
@@ -58,7 +58,7 @@ class ThresholdStore:
                 PhysicalBound(
                     threshold_id=f"T{threshold_number:04d}",
                     benchmark_version=benchmark.version,
-                    context_version="fixed_physical_contract_v2.2",
+                    context_version="fixed_physical_contract_v2.2.1",
                     version=version,
                     validator_passed=True,
                     **kwargs,
@@ -85,6 +85,28 @@ class ThresholdStore:
                 low=config["soft_low"],
                 high=config["soft_high"],
                 **common,
+            )
+            append_bound(
+                sensor_type=sensor_type,
+                sensor_scope=f"all_{sensor_type}",
+                condition_scope="hardware_specification",
+                bound_type="manufacturer_range",
+                low=config["manufacturer_range_low"],
+                high=config["manufacturer_range_high"],
+                unit=config["unit"],
+                source="instrument_register",
+                benchmark_window_ids=(),
+            )
+            append_bound(
+                sensor_type=sensor_type,
+                sensor_scope=f"all_{sensor_type}",
+                condition_scope="observed_values",
+                bound_type="instrument_veto",
+                low=config["instrument_veto_range_low"],
+                high=config["instrument_veto_range_high"],
+                unit=config["unit"],
+                source=config["instrument_veto_basis"],
+                benchmark_window_ids=(),
             )
 
         for sensor_type, config in rate_limits_cfg["rate_limits"].items():
@@ -197,7 +219,14 @@ class ThresholdStore:
                     "benchmark_version": bound.benchmark_version,
                     "context_version": bound.context_version,
                     "version": bound.version,
-                    "included_in_D3_score": bound.bound_type != "boundary",
+                    "included_in_D3_score": bound.bound_type
+                    in {
+                        "hard_value",
+                        "soft_value",
+                        "rate_soft",
+                        "rate_hard",
+                        "instrument_veto",
+                    },
                     "validator_passed": bound.validator_passed,
                 }
             )

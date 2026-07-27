@@ -1,8 +1,8 @@
 {
-  "run_id": "RUN_D3_v2.2.0_20260726T084811Z_4246fb53",
-  "d3_version": "v2.2.0",
-  "created_at_utc": "2026-07-26T08:48:11.754811+00:00",
-  "wall_time_s": 237.31764912605286,
+  "run_id": "RUN_D3_v2.2.1_20260727T043759Z_8d52c551",
+  "d3_version": "v2.2.1",
+  "created_at_utc": "2026-07-27T04:37:59.598261+00:00",
+  "wall_time_s": 1194.485069990158,
   "study_start": "2025-08-01 00:00:00",
   "study_end": "2026-04-13 23:59:00",
   "subset_days": null,
@@ -12,10 +12,10 @@
   "n_evaluated": 42840,
   "n_not_evaluated": 168,
   "n_events": 50,
-  "mean_D3_evaluated": 4.799234867598111,
+  "mean_D3_evaluated": 4.799486212750228,
   "versions": {
     "mapping": "v2.2.0",
-    "threshold": "v2.2.0",
+    "threshold": "v2.2.1",
     "rate_utils": "rate_utils@v2.2.0",
     "benchmark": "benchmark@v2.2.0"
   },
@@ -39,8 +39,8 @@
       "size_bytes": 16059938
     }
   },
-  "config_sha256": "4246fb53982839c2deb3a94cbb16c787e30585d358d52518be45bea4da52ec70",
-  "code_sha256": "a7bb005ad33d3fd78f7f0bee6abe26c860a806a29b03cbca40a77c13f787dc30",
+  "config_sha256": "8d52c551a6721f57d03e72b151864f1539e372dd41b5a263de4f4eef434ca906",
+  "code_sha256": "68c6966483d58bf612161d6d74acd3634a22b4ccbc95db74fbd27f9e36c288bf",
   "exported_files": [
     "D3_window_scores.xlsx",
     "D3_value_evidence.xlsx",

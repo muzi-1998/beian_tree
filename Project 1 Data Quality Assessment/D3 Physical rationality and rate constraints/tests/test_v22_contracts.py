@@ -13,6 +13,7 @@ from src.common.rate_utils import RATE_UTILS_VERSION, dx_dt_robust
 from src.d3_physical.aggregator import D3Aggregator
 from src.d3_physical.scorer import D3ScoreMapper, SubScores, logistic_zero_anchored
 from src.d3_physical.threshold_store import PhysicalBound, ThresholdStore
+from src.d3_physical.value_range_checker import ValueRangeChecker
 
 
 ROOT = Path(__file__).parent.parent
@@ -37,8 +38,32 @@ def test_boundary_is_not_part_of_d3_score():
 def test_instrument_range_does_not_override_hard_tolerance():
     bounds = _yaml("d3_physical_bounds.yaml")["sensors"]
     for config in bounds.values():
-        assert config["instrument_range_low"] <= config["hard_low"]
-        assert config["instrument_range_high"] >= config["hard_high"]
+        assert config["instrument_veto_range_low"] <= config["hard_low"]
+        assert config["instrument_veto_range_high"] >= config["hard_high"]
+        assert config["instrument_veto_range_low"] <= config["manufacturer_range_low"]
+        assert config["instrument_veto_range_high"] >= config["manufacturer_range_high"]
+
+
+def test_orp_operational_excursion_is_not_an_instrument_range_failure():
+    config = _yaml("d3_physical_bounds.yaml")
+    benchmark = SimpleNamespace(
+        _fixed_tails={},
+        version="benchmark@v2.2.0",
+    )
+    thresholds = ThresholdStore.build(
+        config,
+        _yaml("d3_rate_limits.yaml"),
+        benchmark,
+        version="v2.2.1",
+    )
+    bounds = config["sensors"]["ORP"]
+    evidence = ValueRangeChecker(
+        thresholds,
+        bounds["instrument_veto_range_low"],
+        bounds["instrument_veto_range_high"],
+    ).check(np.array([-600.0]), "ORP_1_3", "ORP")
+    assert evidence.hard_violation_count == 1
+    assert not evidence.out_of_instrument
 
 
 def test_gap_safe_rate_does_not_bridge_missing_run():

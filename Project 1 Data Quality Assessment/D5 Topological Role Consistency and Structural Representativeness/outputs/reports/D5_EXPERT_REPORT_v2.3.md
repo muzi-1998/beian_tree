@@ -2,7 +2,7 @@
 
 **Project:** Topological Role Consistency and Structural Representativeness
 **Run:** `D5-LOCAL-20260727T034533Z`
-**Generated:** 2026-07-27 12:26 CST
+**Generated:** 2026-07-27 13:25 CST
 **Decision:** Scientific D5 score released for final subscore aggregation; automated deployment remains gated.
 
 ## 1. Executive verdict

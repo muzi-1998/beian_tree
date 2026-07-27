@@ -1,4 +1,4 @@
-"""Validate, run, and render the complete D3 v2.2 project."""
+"""Validate, run, and render the complete D3 v2.2.1 project."""
 
 from __future__ import annotations
 
@@ -54,7 +54,7 @@ def main() -> None:
     for script in scripts:
         run([sys.executable, str(Path("figures") / script)])
 
-    print(f"D3 v2.2 complete in {time.time() - started:.1f} s")
+    print(f"D3 v2.2.1 complete in {time.time() - started:.1f} s")
     print(f"Data: {ROOT / 'outputs' / 'data'}")
     print(f"Figures: {ROOT / 'outputs' / 'figures'}")
     print(f"Manifest: {ROOT / 'outputs' / 'manifest' / 'run_manifest.json'}")

@@ -1,4 +1,4 @@
-"""Run the independent D3 v2.2 physical-plausibility pipeline."""
+"""Run the independent D3 v2.2.1 physical-plausibility pipeline."""
 
 from __future__ import annotations
 
@@ -61,13 +61,13 @@ def main(
 
     for sensor_type, bounds in physical_bounds_cfg["sensors"].items():
         if (
-            bounds["instrument_range_low"] > bounds["hard_low"]
-            or bounds["instrument_range_high"] < bounds["hard_high"]
+            bounds["instrument_veto_range_low"] > bounds["hard_low"]
+            or bounds["instrument_veto_range_high"] < bounds["hard_high"]
         ):
             raise ValueError(
-                f"{sensor_type} instrument range must not be narrower than the "
-                "hard physical range; otherwise zero-tolerance instrument vetoes "
-                "would override the documented physical tolerance."
+                f"{sensor_type} instrument Veto range must not be narrower than "
+                "the hard physical range; otherwise the Veto would override the "
+                "documented physical tolerance."
             )
 
     forbidden = set(dag_cfg["dimension_independence"]["forbidden_score_inputs"])

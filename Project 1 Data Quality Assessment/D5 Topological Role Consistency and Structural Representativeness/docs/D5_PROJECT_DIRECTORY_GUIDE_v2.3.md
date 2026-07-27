@@ -1,6 +1,6 @@
 # D5 Project Directory Guide v2.3
 
-**Generated:** 2026-07-27 12:26 CST
+**Generated:** 2026-07-27 13:25 CST
 **Update rule:** every computational or figure change must rerun reports and release QA.
 
 ## 1. Project layout

@@ -40,8 +40,8 @@ class D3Pipeline:
         self.value_checkers = {
             sensor_type: ValueRangeChecker(
                 thresholds,
-                cfg["instrument_range_low"],
-                cfg["instrument_range_high"],
+                cfg["instrument_veto_range_low"],
+                cfg["instrument_veto_range_high"],
             )
             for sensor_type, cfg in bounds_cfg.items()
         }
