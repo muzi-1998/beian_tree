@@ -1,0 +1,499 @@
+{
+  "schema_version": "ww-dqs-confirmatory-run-v2.0",
+  "run_id": "D1D5V20-854e66de7e6b",
+  "generated_utc": "2026-07-29T05:04:09.384708+00:00",
+  "status": "completed_with_prespecified_pending_items",
+  "code_commit": "70d5026281c630035190e6627a19d1b3f014c540",
+  "python_version": "3.10.5 (tags/v3.10.5:f377153, Jun  6 2022, 16:14:13) [MSC v.1929 64 bit (AMD64)]",
+  "platform": "Windows-10-10.0.26200-SP0",
+  "config_bundle_sha256": "036db45e7ec9b1fba34d3cfaab306cc4616644771d4119712e2c575ad715619b",
+  "code_bundle_sha256": "ad293ed6312554056bb83a751e33d4977bd998fa94ad2768d3e6838298f4b707",
+  "source_artifacts": [
+    {
+      "dimension": "D1",
+      "relative_path": "D1 Sensor health/outputs/data/D1_main_scores_min.xlsx",
+      "role": "D1_total",
+      "exists": true,
+      "size_bytes": 4816428,
+      "sha256": "83207ca6f818dd309fe36cdb3adfdc9e569ea540fbca5c4acc0e45e8a321923c"
+    },
+    {
+      "dimension": "D2",
+      "relative_path": "D2 Temporal Continuity & Information Availability/artifacts/data/D2_main_scores_hourly.xlsx",
+      "role": "D2_total",
+      "exists": true,
+      "size_bytes": 5643445,
+      "sha256": "70a4a093f0900b090d49dbe8eda8a025e5eb840fce44a267f43636627029c08a"
+    },
+    {
+      "dimension": "D3",
+      "relative_path": "D3 Physical rationality and rate constraints/outputs/data/D3_window_scores.xlsx",
+      "role": "D3_gate_source",
+      "exists": true,
+      "size_bytes": 3105057,
+      "sha256": "f484de198bf8c081c8cd95dc91a15b5f4c4e560b6ef2b205e05ad46659b0602e"
+    },
+    {
+      "dimension": "D4",
+      "relative_path": "D4 Parallel-redundancy Temporal Consistency/outputs/data/D4_main_scores.xlsx",
+      "role": "D4_raw",
+      "exists": true,
+      "size_bytes": 8748237,
+      "sha256": "b153f56cf488e482084373ecad98c1aa9c9097c6c65bc0d32888c6398a60caf2"
+    },
+    {
+      "dimension": "D5",
+      "relative_path": "D5 Topological Role Consistency and Structural Representativeness/outputs/local/D5_report_interface.parquet",
+      "role": "D5_report_score",
+      "exists": true,
+      "size_bytes": 1171194,
+      "sha256": "f057e0a8037282fb43a71a94d7043c7bd3de2b4c8fa9865365bcf0427195dbda"
+    }
+  ],
+  "temporal_validation": {
+    "outer_folds": 6,
+    "untouched_terminal_test": false
+  },
+  "framework_audit": {
+    "backend": "powerpoint",
+    "slide_index": 1,
+    "slide_size": {
+      "width": 960,
+      "height": 540
+    },
+    "object_counts": {
+      "total": 33,
+      "pictures": 0,
+      "native_or_composite": 33
+    },
+    "picture_audit": [],
+    "hard_failure_count": 0,
+    "warning_count": 0,
+    "findings_truncated": false,
+    "passed": true,
+    "findings": [],
+    "reviewer_contract": "Every hard finding must be converted by the Corrector into named geometry or decomposition operations, executed by the Drawer, rerendered, and audited again."
+  },
+  "artifacts": [
+    {
+      "relative_path": "config_registry.parquet",
+      "size_bytes": 2666,
+      "sha256": "56b142fede7cc0d4054bf486b64e1d725ef081123e7f1a82b2c76de8900cdb0a"
+    },
+    {
+      "relative_path": "configs/ambiguity_registry.yaml",
+      "size_bytes": 5559,
+      "sha256": "bfb931575ce9f338f913725ddf8834873b165e9751c963544b121c553534112f"
+    },
+    {
+      "relative_path": "configs/claim_registry.yaml",
+      "size_bytes": 3643,
+      "sha256": "792614d8e07630b72fc65b463f5d026f0563bcdcf8fe6e495ab3b1b837bbce05"
+    },
+    {
+      "relative_path": "configs/figure_contract.yaml",
+      "size_bytes": 1314,
+      "sha256": "ddc4b056e577e614db264a9a5366ff4b0fda3df54f647e0be3f532456cb2dcd4"
+    },
+    {
+      "relative_path": "configs/framework_design_spec.yaml",
+      "size_bytes": 2163,
+      "sha256": "fd4243ae252266bb183f6c011164ff90c153dc95891273b37311194843411905"
+    },
+    {
+      "relative_path": "configs/statistical_analysis_plan_v2.yaml",
+      "size_bytes": 5594,
+      "sha256": "cabb71f1f0b0a5a845ecf99afa07ffdeb3910393357caece5fb2da86bce4e785"
+    },
+    {
+      "relative_path": "configs/validation_design.yaml",
+      "size_bytes": 2829,
+      "sha256": "639bdbf930338950aab51fb17d28ab095f39b5f09f36241396847715c034e4e1"
+    },
+    {
+      "relative_path": "D1_applicability_map.parquet",
+      "size_bytes": 14685,
+      "sha256": "7fefcbe117fcff604f7093f799219598b1e1f2090a3c0f9b60a284dca0e9af68"
+    },
+    {
+      "relative_path": "D1_D5_V2_EXECUTION_REPORT.md",
+      "size_bytes": 11660,
+      "sha256": "090256cacc5ee3b20b0122d47b7cb122f1481de75cedd3b30ac5deb6e7c99e67"
+    },
+    {
+      "relative_path": "D1_design_audit.parquet",
+      "size_bytes": 10417,
+      "sha256": "ccad0390d9a9e39b5f6351fc86027448a2d1c0782944b98fabd92ce8e2f8808b"
+    },
+    {
+      "relative_path": "D1_duration_response.parquet",
+      "size_bytes": 7059,
+      "sha256": "b36ece86224d818d7a02eb2e298aee8ef26e05adc9cc6c3256c6275d9408c444"
+    },
+    {
+      "relative_path": "D1_excluded_injection_trials.parquet",
+      "size_bytes": 17356,
+      "sha256": "8943d8067b75aebec65938fbb3ace5df94ff2dc38f7a974b0231fa5842da4861"
+    },
+    {
+      "relative_path": "D1_existing_DO24_peer_control_summary.parquet",
+      "size_bytes": 5534,
+      "sha256": "bf4864f0cd4c2af169c3c7e329b88aec329ece1722cbe3598cf349bf592c7bf8"
+    },
+    {
+      "relative_path": "D1_existing_DO24_peer_controls.parquet",
+      "size_bytes": 16304,
+      "sha256": "ae3d4a3623656f7d2cdd0fc9307cc7d7ab17f80cd5dd6986961378b1d357766c"
+    },
+    {
+      "relative_path": "D1_existing_peer_model_audit.parquet",
+      "size_bytes": 14369,
+      "sha256": "7f44ab904a70dd3dd3954222ee25b4cfd18aaadb9390ee159602a5bb26877032"
+    },
+    {
+      "relative_path": "D1_frozen_whitener_audit.parquet",
+      "size_bytes": 8320,
+      "sha256": "04ec8e34774e022cf656e86e0c77229c22373b97d1977cd18d01a4e1a071f0af"
+    },
+    {
+      "relative_path": "D1_high_amplitude_summary.parquet",
+      "size_bytes": 7372,
+      "sha256": "a1c7244fcbd843d9eb19115216746b3c64e27c8507eeb67902fd5e67beee21db"
+    },
+    {
+      "relative_path": "D1_injection_stratified.parquet",
+      "size_bytes": 7215,
+      "sha256": "6df175207eba9408e9408a95682fdac3a4b87f75364ca1e19205516ae33368ef"
+    },
+    {
+      "relative_path": "D1_injection_summary.parquet",
+      "size_bytes": 11768,
+      "sha256": "f38429112fdf9b2d38f873924ae2e1f2d5eece4f7eeac0fa54d600fcccd27e11"
+    },
+    {
+      "relative_path": "D1_injection_trials.parquet",
+      "size_bytes": 72085,
+      "sha256": "fb95c00135d5153c46bce87444b74f1007bc265491d426b894c8453fd7e24eb4"
+    },
+    {
+      "relative_path": "D1_raw_endpoint_summary.parquet",
+      "size_bytes": 5835,
+      "sha256": "b9493d83b3eed92e0ba698fb8adae23d3b2d68d73ce0299612ab64e02accc09b"
+    },
+    {
+      "relative_path": "D1_raw_endpoint_trials.parquet",
+      "size_bytes": 28610,
+      "sha256": "45eebd7d9fdc0a3caecf2b09975ba91db1898d650150a19d32c3f24a15fd8f42"
+    },
+    {
+      "relative_path": "D1_raw_route_concordance.parquet",
+      "size_bytes": 5026,
+      "sha256": "4ab835c486b63755e5d49bde7b0f7ba041daf854bef36594e143d64117ac359f"
+    },
+    {
+      "relative_path": "D2_oat_by_sensor.parquet",
+      "size_bytes": 8354,
+      "sha256": "566c9ef08b93f5f219c65252686d284634e6680052e2cc80a05498352ca5a09c"
+    },
+    {
+      "relative_path": "D2_oat_summary.parquet",
+      "size_bytes": 6628,
+      "sha256": "526d60c41bb478aba4b965a10e3b9aaec33f4fd5414a80a4619bf7471eacb3b0"
+    },
+    {
+      "relative_path": "D2_process_floor_challenges.parquet",
+      "size_bytes": 14465,
+      "sha256": "067322a57f010a41775548e97335966bf8920587bb841f88edbd0720412764d5"
+    },
+    {
+      "relative_path": "D2_reason_migration.parquet",
+      "size_bytes": 2843,
+      "sha256": "5658ab4505becd19588f6abd93ddeb53321bd294f2a7d5d4c50913bfa117467e"
+    },
+    {
+      "relative_path": "D2_sensitivity_scores.parquet",
+      "size_bytes": 2828156,
+      "sha256": "ecd7129a142f1485705c8b06228fa25ab2d5131715735ef95ae238177e6f9a4b"
+    },
+    {
+      "relative_path": "D3_oat_by_sensor.parquet",
+      "size_bytes": 4343,
+      "sha256": "bd70bcfe93752e034ba5f21617136813e77cc0d0cf005e2a9e8b2afb8152fd25"
+    },
+    {
+      "relative_path": "D3_oat_summary.parquet",
+      "size_bytes": 6365,
+      "sha256": "ee2782257f36a39b8a19e7d563dbb30312dd9e5356513839ef46663eda9b94a1"
+    },
+    {
+      "relative_path": "D3_safety_gate.parquet",
+      "size_bytes": 157913,
+      "sha256": "046e8122fc9bcd5c6b914b6b8eeb7d9ec3d77a9915518d75323f810aaaeb293a"
+    },
+    {
+      "relative_path": "D3_threshold_register_v2.parquet",
+      "size_bytes": 12974,
+      "sha256": "3530a2f9ba38303ddd14e9500b3c32f96fc163ffd0262bc9368befe72cb9073b"
+    },
+    {
+      "relative_path": "D4_lag_response.parquet",
+      "size_bytes": 5020,
+      "sha256": "67fd683be1788d353a92181caf685c124b518b7810beb103776cf70b48c382a7"
+    },
+    {
+      "relative_path": "D4_mechanism_summary.parquet",
+      "size_bytes": 6847,
+      "sha256": "0d6fecafc1ed1f793ee7b5cd640b708619b2b840ee9a85f32b3fb65bcbe34eba"
+    },
+    {
+      "relative_path": "D4_mechanism_trials.parquet",
+      "size_bytes": 32354,
+      "sha256": "422d9206732a816b9daf865be02b2618c66c40c3063f78c50ef6ea19527ab376"
+    },
+    {
+      "relative_path": "D4_ORP_shrinkage_sensitivity.parquet",
+      "size_bytes": 8932,
+      "sha256": "e630ea0b67527d7c680d53529ceed5e7eef6df743b91918a8efeed8222d687e1"
+    },
+    {
+      "relative_path": "D5_acceptance.parquet",
+      "size_bytes": 6102,
+      "sha256": "a7b3cf43c0709c8eee2345783ceab9ec66b052af0fdf023871b75a0f370fe116"
+    },
+    {
+      "relative_path": "D5_blocked_validation.parquet",
+      "size_bytes": 4043,
+      "sha256": "0b2167b1599b12bcfc8bb74d24d4e5179db8842c26a60fecc5e730da31cd5796"
+    },
+    {
+      "relative_path": "D5_component_ablation.parquet",
+      "size_bytes": 7716,
+      "sha256": "92963af47ed4c87957851faba01cdf584d8cf941b1bcb75b5daf78f447b39506"
+    },
+    {
+      "relative_path": "D5_coverage_by_month.parquet",
+      "size_bytes": 3374,
+      "sha256": "b9baf507abb927157cbf99428b63ed236aed7579d7ac79d72476a142e35145bf"
+    },
+    {
+      "relative_path": "D5_negative_controls.parquet",
+      "size_bytes": 11817,
+      "sha256": "ce11bc0ed91cc9f8914ce730ebc14ee59633ac9d391d21684ed9a0e84a64d657"
+    },
+    {
+      "relative_path": "D5_outer_refit_fold_metrics.parquet",
+      "size_bytes": 3890,
+      "sha256": "e6aae693d7130788f95ac3d074c92b395b459d8b47705c24434f0912229f02b9"
+    },
+    {
+      "relative_path": "D5_outer_refit_model_registry.parquet",
+      "size_bytes": 11172,
+      "sha256": "fa3e17feb735a03d453fb1414287cf1114d81a42c572244002bb0791c45908d5"
+    },
+    {
+      "relative_path": "D5_outer_refit_summary.parquet",
+      "size_bytes": 6681,
+      "sha256": "9ea7de7e9e34e2bc3b5c657dd72bded594918e0310ad7e231a2610ef45253f30"
+    },
+    {
+      "relative_path": "D5_outer_refit_trials.parquet",
+      "size_bytes": 17268,
+      "sha256": "7b5dbbe86945d150f8ee5915d786838e59126b65a9922e3151b54b60ba113989"
+    },
+    {
+      "relative_path": "D5_support_funnel.parquet",
+      "size_bytes": 1811,
+      "sha256": "e4a4f6eb06b39504fffe272b8f44e11681392595666e49b387595cf62fc751ab"
+    },
+    {
+      "relative_path": "figures/figure_manifest.json",
+      "size_bytes": 34604,
+      "sha256": "8024636e196e1716fec7e853d233d08add8f63880b4f68f8259a61572a619eec"
+    },
+    {
+      "relative_path": "figures/FigV2_D1_applicability_boundary.pdf",
+      "size_bytes": 48496,
+      "sha256": "c4832a5ff2d5489949c6d306e8372b5ec5835f48fc58c65a38a4981302c61f95"
+    },
+    {
+      "relative_path": "figures/FigV2_D1_applicability_boundary.png",
+      "size_bytes": 532962,
+      "sha256": "3bee97836cf381fee9802b6c14ac3b321582d4c1a4341a80da7c0e9e8570678e"
+    },
+    {
+      "relative_path": "figures/FigV2_D1_applicability_boundary.svg",
+      "size_bytes": 60190,
+      "sha256": "85f4eed2b941ba480b964e70075a0738fd6fee4a9b9804e848757762471d05af"
+    },
+    {
+      "relative_path": "figures/FigV2_D1_applicability_boundary.tiff",
+      "size_bytes": 2182952,
+      "sha256": "2ddca9b3b078510c293d95f0f8de78caa36cdbedf652dbe6a835d73b3ab210e8"
+    },
+    {
+      "relative_path": "figures/FigV2_D1_applicability_boundary_source_data.xlsx",
+      "size_bytes": 13144,
+      "sha256": "c45568f36ded7d2d5597d56cee1de4549a15fd073e7c7b64a2f1180e394d14a4"
+    },
+    {
+      "relative_path": "figures/FigV2_D2_oat_stability.pdf",
+      "size_bytes": 44094,
+      "sha256": "ee6f78e9d78a934f9b2ad8a1a8cca5229abd8441ad64018a9e26e2451b5ccd99"
+    },
+    {
+      "relative_path": "figures/FigV2_D2_oat_stability.png",
+      "size_bytes": 212379,
+      "sha256": "2d2185e2aa0210e6c4bbf4a07dbe7f66b035c54717d7c141403c8c7b8d016243"
+    },
+    {
+      "relative_path": "figures/FigV2_D2_oat_stability.svg",
+      "size_bytes": 27014,
+      "sha256": "1cdf9af6ad2cd185bcf8478f9a8a250cb13d86a594755956b97d4263bf1fae18"
+    },
+    {
+      "relative_path": "figures/FigV2_D2_oat_stability.tiff",
+      "size_bytes": 470410,
+      "sha256": "1aaf658fd8827066ab232689e2821e7fee1c36e70447771aa2b49a1573abb436"
+    },
+    {
+      "relative_path": "figures/FigV2_D2_oat_stability_source_data.xlsx",
+      "size_bytes": 31611,
+      "sha256": "da873276ce94d5b2271d6d956554087c3910abd853ec884cc4c3f1edae52e547"
+    },
+    {
+      "relative_path": "figures/FigV2_D3_safety_gate.pdf",
+      "size_bytes": 43079,
+      "sha256": "920c03bb4cd2f5d0590a9fad7c5c46e77fac6fa7449d59f349db228fa1378a17"
+    },
+    {
+      "relative_path": "figures/FigV2_D3_safety_gate.png",
+      "size_bytes": 261173,
+      "sha256": "ab86c73713de2c46de4dd788cf3d439702bbbbbf7de937eaab53876e99944b2e"
+    },
+    {
+      "relative_path": "figures/FigV2_D3_safety_gate.svg",
+      "size_bytes": 28679,
+      "sha256": "5c06765ab15bcfefb450b7aa1ac88cd5b752e274b241784205e2b77052386c23"
+    },
+    {
+      "relative_path": "figures/FigV2_D3_safety_gate.tiff",
+      "size_bytes": 634114,
+      "sha256": "aa09f5875a585a62192bb98f03b3ee96a260710a3c661a4e810f009b20b2bab9"
+    },
+    {
+      "relative_path": "figures/FigV2_D3_safety_gate_source_data.xlsx",
+      "size_bytes": 10711,
+      "sha256": "8da8d9da049b9ec8c18830808d685debe4b67e357a401e13cb8bdd9c8e86fee0"
+    },
+    {
+      "relative_path": "figures/FigV2_D4_D5_mechanism_localization.pdf",
+      "size_bytes": 51955,
+      "sha256": "9384a43203fa8b47b474da2c735654c82d74f59b9e5aa603379e50501f6fdcdd"
+    },
+    {
+      "relative_path": "figures/FigV2_D4_D5_mechanism_localization.png",
+      "size_bytes": 559123,
+      "sha256": "dced3198f37476b45e27f0c599788d99b90f74dfba3d94ac76d074c75d1214ef"
+    },
+    {
+      "relative_path": "figures/FigV2_D4_D5_mechanism_localization.svg",
+      "size_bytes": 68054,
+      "sha256": "9d46b4fa19e33d8b35d69af58649cfbc1b2e6ec914f84cc481f1bfb0801fa0a7"
+    },
+    {
+      "relative_path": "figures/FigV2_D4_D5_mechanism_localization.tiff",
+      "size_bytes": 1152740,
+      "sha256": "a528c358c1d868d6a92f9a4771ab677fbd69642741e11457ef1a3d13d88d2174"
+    },
+    {
+      "relative_path": "figures/FigV2_D4_D5_mechanism_localization_source_data.xlsx",
+      "size_bytes": 11287,
+      "sha256": "59ca7399b87644267b1ab277e2828ae601bed2facb21728b0ce170648e06c111"
+    },
+    {
+      "relative_path": "figures/FigV2_WWDQS_framework.pdf",
+      "size_bytes": 47749,
+      "sha256": "dbd712b61518a83b0cd52508b2a8f06594e6fdb834db7b36668366f4d41efba5"
+    },
+    {
+      "relative_path": "figures/FigV2_WWDQS_framework.png",
+      "size_bytes": 181588,
+      "sha256": "1ac7e189f29f9d2c593119db36efce14cefe12f1928b7c88eb95c1877f5c21f1"
+    },
+    {
+      "relative_path": "figures/FigV2_WWDQS_framework.pptx",
+      "size_bytes": 51385,
+      "sha256": "53e3caf4ebe73aad04e3f699a1b01e1e4165575829bc4c4c3964bd9f202d75fe"
+    },
+    {
+      "relative_path": "figures/FigV2_WWDQS_framework.tiff",
+      "size_bytes": 396292,
+      "sha256": "8fd335039a16a6b8be77ac224bc870b44ddfe43343964d2b88cc6e1de1a6e3e7"
+    },
+    {
+      "relative_path": "figures/FigV2_WWDQS_framework_audit.json",
+      "size_bytes": 542,
+      "sha256": "28cf240d85c172cd08892506ee5b664ac8f63c94b986afbc95df20f1ef4da9af"
+    },
+    {
+      "relative_path": "figures/FigV2_WWDQS_full_basic.pdf",
+      "size_bytes": 54144,
+      "sha256": "20641013badf9ca54f9685a183a1ded1e219b0257de44f76eed9ef4f40239ca0"
+    },
+    {
+      "relative_path": "figures/FigV2_WWDQS_full_basic.png",
+      "size_bytes": 459118,
+      "sha256": "75c24618cc3f7e14ec070bedead414421ba69f7b534588f92698966ecc61d30b"
+    },
+    {
+      "relative_path": "figures/FigV2_WWDQS_full_basic.svg",
+      "size_bytes": 72165,
+      "sha256": "f5f4cb4885c88b2ef59c57cd14683a3a075cc43360239073f3b3f047561d2565"
+    },
+    {
+      "relative_path": "figures/FigV2_WWDQS_full_basic.tiff",
+      "size_bytes": 1132354,
+      "sha256": "eae957fe27a7fd2c6375fc4e80dcee5a107a7d0bb70c6d7b824f3da45cf7d5dd"
+    },
+    {
+      "relative_path": "figures/FigV2_WWDQS_full_basic_source_data.xlsx",
+      "size_bytes": 45404,
+      "sha256": "f99200ebc72e4ee4d79a290607a3f940536764f558cf3eea3d9e4a858d47d61b"
+    },
+    {
+      "relative_path": "source_artifact_registry.parquet",
+      "size_bytes": 5068,
+      "sha256": "e34dc727e1735d40b86ac36c7c40e547f8159fa31d02b7f1b5aa24f8989c7ff0"
+    },
+    {
+      "relative_path": "temporal_split_registry.parquet",
+      "size_bytes": 5799,
+      "sha256": "7699eb06e9c5b2822629c4c5b10727dda6d938baf297e9e351c8ed437c762911"
+    },
+    {
+      "relative_path": "WWDQS_block_bootstrap.parquet",
+      "size_bytes": 7938,
+      "sha256": "aef98fd9997fbcbe1c226d3a8ea51fe6dc0e7b6c240992f5c9f22efef92bca61"
+    },
+    {
+      "relative_path": "WWDQS_dimension_ablation.parquet",
+      "size_bytes": 3879,
+      "sha256": "e72f786debb132e23d7fcb2cda2e3d77e8d98193ade75b98bca28d4253e89746"
+    },
+    {
+      "relative_path": "WWDQS_node_scores.parquet",
+      "size_bytes": 5100030,
+      "sha256": "dd7c6ad1d09a184e724ddf875574256a752e5daee8c74abc0353d1cdbacdac0f"
+    },
+    {
+      "relative_path": "WWDQS_pair_scores.parquet",
+      "size_bytes": 3745048,
+      "sha256": "9811eb94a405f4d444fd18403a0492d2435279c2a0d673f1706ad4e7ebb1f5e4"
+    },
+    {
+      "relative_path": "WWDQS_plant_summary.parquet",
+      "size_bytes": 34400,
+      "sha256": "c13ac3cdffcf33dbe51218adbfe79e386b4b55244dad8bd6e11a8c261f457b0f"
+    }
+  ]
+}

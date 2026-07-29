@@ -1,6 +1,6 @@
 # Final D1-D5 readiness audit
 
-Audit date: 2026-07-27
+Audit date: 2026-07-29
 
 ## Executive decision
 
@@ -17,7 +17,7 @@ The canonical high-frequency dynamic data-quality dimensions are:
 All five constructs are current and reproducible. D1, D2, D4 and D5 remain
 numerically separated dynamic evidence; D3 is an independent
 non-compensatory Safety Gate. The prespecified retrospective aggregation has
-now been executed as run `D1D5V20-a2b2bef69861`. The present evidence does not
+now been executed as run `D1D5V20-854e66de7e6b`. The present evidence does not
 support calling it an externally validated, deployment-ready WW-DQS index.
 
 This distinction is important:
@@ -29,15 +29,17 @@ This distinction is important:
 ## v2.0 confirmatory execution outcome
 
 The authoritative package is
-`outputs/confirmatory/D1D5V20-a2b2bef69861/`. Its 55 manifested artifacts pass
+`outputs/confirmatory/D1D5V20-854e66de7e6b/`. Its 84 manifested artifacts pass
 complete SHA-256 verification. It contains frozen configurations, six expanding
-future-month splits, source registries, all derived plot data, three
-Nature-ready figure groups, the composite products and the execution report.
+future-month splits, source registries, all derived plot data, six
+Nature-ready main-text figure groups, the composite products and the execution
+report.
 
-- D1: Hard Freeze recall 1.000, Drift 0.698, Spike 0.379 and Step 0.240. These
+- D1: Hard Freeze recall 1.000, Drift 0.693, Spike 0.396 and Step 0.240. These
   results define applicability boundaries; they do not justify a blanket
-  0.80-detection claim. Four of 144 spike trials were explicitly excluded as
-  locally non-evaluable.
+  0.80-detection claim. Seven exploratory 2x-resolution spike trials were
+  explicitly excluded as locally non-evaluable; the primary native-resolution
+  analysis was retained.
 - D2: channel ranking was stable (`rho >= 0.996`). QFA 3 h and 12 h event
   Jaccard values were 0.731 and 0.721, below the frozen 0.75 threshold; the 6 h
   primary setting remains supported.
@@ -48,8 +50,10 @@ Nature-ready figure groups, the composite products and the execution report.
   values were 0.798-0.809; equal common-process conditional FAR was 0.041.
   Hourly change-point scoring did not show monotonic severity across
   0-180 min (`rho=0`), so subhour lag identification is not claimed.
-- D5: Swap AUROC 0.912 and AUPRC 0.870 passed, but Top-1 localization 0.700
-  failed the locked 0.80 gate. Scientific report scores remain eligible;
+- D5: the released swap audit retained AUROC 0.912 and AUPRC 0.870. In the
+  complete future-month outer refit, the full model achieved AUROC 0.967,
+  AUPRC 0.974 and Top-1 localization 0.767. Detection passed, but localization
+  still failed the locked 0.80 gate. Scientific report scores remain eligible;
   sensor-specific hard Veto remains disabled.
 - Composite: 85,652 formal node rows and 37,975 formal pair rows were produced.
   Coverage was 39,606 full, 46,046 basic and 364 limited sensor-hours. D5
@@ -57,8 +61,10 @@ Nature-ready figure groups, the composite products and the execution report.
   reduced evidence coverage rather than imputed low quality.
 
 Nature figure source validation passed 14/14 checks with no warnings. The
-confirmatory package adds 3 PNG/PDF/SVG/TIFF figure groups without altering the
-existing dimension-specific bundles.
+confirmatory package adds five Python PNG/PDF/SVG/TIFF quantitative groups and
+one editable Scientific Illustrator framework group without altering the
+existing dimension-specific bundles. The framework audit found 33 native
+objects, zero raster pictures and zero findings.
 
 ## Freshness evidence
 
@@ -83,7 +89,7 @@ The strengthened cross-project audit passed **50/50 checks**. It verifies:
 
 The dimension tests pass **76/76**: D1 23, D2 18, D3 11, D4 10 and D5 14.
 Cross-project publication/freshness contract tests pass **10/10** and the added
-confirmatory package tests pass **6/6**.
+confirmatory package tests pass **9/9**.
 
 The cross-project freshness audit passes **50/50**. Its D1 dependency and D5
 Local bundle hashes now canonicalize text to LF while hashing binary artifacts
@@ -134,9 +140,12 @@ D5 Local uses confirmed ordinal topology, sensor observations, QR/QIR context
 and time-of-day context. Its Local track consumes no D1-D4 score. The isolated
 sensitivity track may read D1-D4 but has no production-write permission.
 
-Validation achieved swap AUROC 0.912 and AUPRC 0.870. Swap Top-1 localization
-was 0.70, below the 0.80 node-action threshold. Therefore, the scientific
-report score is admitted, while node-specific hard Veto and deployment are not.
+The released swap audit achieved AUROC 0.912 and AUPRC 0.870. Complete
+future-month outer refits were additionally performed for the full model,
+no-exogenous-context, no-regime and no-hysteresis variants. Full-model Top-1
+localization was 0.767 (outer-fold 95% CI 0.683-0.850), below the 0.80
+node-action threshold. Therefore, the scientific report score is admitted,
+while node-specific hard Veto and deployment are not.
 
 **Conclusion:** `D5_report_score` is aggregation-ready for eligible rows.
 `D5_gate_interface` remains a separate action interface.
@@ -250,13 +259,14 @@ report score is admitted, while node-specific hard Veto and deployment are not.
 - Predefine multiplicity control for confirmatory subgroup analyses.
 - Conduct an independent code and rule review before manuscript submission.
 
-## Implementation feasibility as of 2026-07-27
+## Implementation feasibility as of 2026-07-29
 
 ### Can be executed directly with current data and code
 
-- D1: extend controlled fault injection across analyte, regime, amplitude,
-  duration and resolution strata; complete forward-block, tail-error and
-  injection audits for peer models beyond the current DO_2_4 exemplar.
+- D1: use the completed analyte-, regime-, amplitude-, duration- and
+  resolution-stratified injection outputs to define applicability boundaries;
+  extend the frozen raw-domain endpoint audit only when additional compute or
+  independent records are available.
 - D2: run sensitivity analyses for the 6 h QFA window, 15 min hard RLE and gap
   severity mappings; retain floor occupancy and resolution limitation as
   diagnostics separate from sensor freeze.
@@ -266,10 +276,10 @@ report score is admitted, while node-specific hard Veto and deployment are not.
 - D4: strengthen sparse ORP analyte-by-regime baselines using prespecified
   pooling or shrinkage; add directional target-fault, peer-fault,
   common-process and controlled change-point-lag injections.
-- D5: perform blocked model/feature ablation and robustness analysis and test
-  whether additional node templates satisfy L3 evidence rules. The 0.80 Top-1
-  threshold must remain a locked acceptance rule, not a tuning target on the
-  same validation set.
+- D5: retain the completed full outer refits for no exogenous context, no
+  regime conditioning and no hysteresis; test whether additional node
+  templates satisfy L3 evidence rules using future evidence. The 0.80 Top-1
+  threshold remains a locked acceptance rule, not a tuning target.
 - Composite: prespecify weights and missingness rules, run blocked nested
   validation, block-bootstrap uncertainty propagation, dependence analysis,
   dimension ablation and simpler-baseline comparisons.
@@ -313,9 +323,12 @@ report score is admitted, while node-specific hard Veto and deployment are not.
 
 ## Figure assessment
 
-The current formal bundle contains 52 PNG/PDF/SVG figure sets with zero bundle
-failures; D5 also provides TIFF exports. Arial, editable SVG/PDF text, panel
-labels and outward/inward tick conventions are implemented consistently.
+The existing dimension bundles remain unchanged. The confirmatory package adds
+six curated main-text groups: framework and claim boundary, D1 applicability,
+D2 one-at-a-time sensitivity, D3 Safety Gate, D4/D5 mechanism and localization,
+and Full/Basic composite evidence. Arial, editable vector text, source-data
+workbooks, panel labels and outward/inward tick conventions are implemented
+consistently.
 
 Recommended final manuscript curation:
 
@@ -340,6 +353,6 @@ aggregation stage** and is suitable for drafting the methods/results structure
 of a high-frequency dynamic data-quality paper. It is not sufficient for a
 definitive claim that the composite is externally validated or ready for
 automated plant decisions. The remaining critical work is independent truth,
-an untouched future period, D5 structural refit ablations, external criterion
-validation and cross-plant transportability, not another redesign of the five
-constructs.
+an untouched future period, external criterion validation and cross-plant
+transportability, not another redesign of the five constructs or another
+post-hoc structural-ablation search.

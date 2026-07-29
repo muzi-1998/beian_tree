@@ -1,5 +1,5 @@
 schema_version: ww-dqs-dimension-registry-v2
-effective_date: "2026-07-27"
+effective_date: "2026-07-29"
 canonical_dimensions:
   D1:
     name: Sensor Health
@@ -113,6 +113,6 @@ aggregation_contract:
   D3_role: independent_non_compensatory_safety_gate
   weights_status: frozen_equal_weights
   grade_cut_points_status: pending_independent_lock
-  confirmatory_run_id: D1D5V20-a2b2bef69861
-  confirmatory_run_location: outputs/confirmatory/D1D5V20-a2b2bef69861
+  confirmatory_run_id: D1D5V20-854e66de7e6b
+  confirmatory_run_location: outputs/confirmatory/D1D5V20-854e66de7e6b
   composite_release_status: retrospective_single_plant_scientific_release
