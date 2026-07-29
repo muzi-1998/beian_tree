@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import pickle
 import sys
+import warnings
 from pathlib import Path
 
 import numpy as np
@@ -10,7 +11,14 @@ import yaml
 from scipy.stats import qmc
 from sklearn.metrics import average_precision_score, roc_auc_score
 
-from .common import CONFIG_ROOT, PROJECT_ROOT, read_yaml, wilson_interval
+from .common import (
+    CONFIG_ROOT,
+    PROJECT_ROOT,
+    cluster_bootstrap_proportion,
+    expand_window_end_gate,
+    read_yaml,
+    wilson_interval,
+)
 
 
 D1_ROOT = PROJECT_ROOT / "D1 Sensor health"
@@ -34,6 +42,18 @@ def _load_d1_api():
         HampelSpikeDetector,
         AdjacentKSStepDetector,
     )
+
+
+def _load_decomposition_api():
+    source_root = PROJECT_ROOT / "1.1 Decomposition" / "src"
+    import src
+
+    if str(source_root) not in src.__path__:
+        src.__path__.append(str(source_root))
+    from src.whiten.model_selection import select_model
+    from src.whiten.online_whitener import whiten_series
+
+    return select_model, whiten_series
 
 
 def _robust_scale(values: pd.Series) -> float:
@@ -94,8 +114,7 @@ def _prepare_clean_hours(
     d2_state: dict,
     d3_gate: pd.DataFrame,
 ) -> dict[str, pd.DatetimeIndex]:
-    d3 = d3_gate.copy()
-    d3["timestamp"] = pd.to_datetime(d3["timestamp"])
+    d3 = expand_window_end_gate(d3_gate)
     fail = {
         sensor: set(frame.loc[frame["D3_gate_status"].eq("Fail"), "timestamp"])
         for sensor, frame in d3.groupby("sensor_id")
@@ -195,43 +214,37 @@ def _spike_trial(
     )
 
 
-def _step_trial(
-    routed: pd.Series,
-    onset: pd.Timestamp,
-    amplitude: float,
-    duration_h: float,
-    direction: int,
+def _step_quality(
+    series: pd.Series,
+    *,
     neff_ratio: float,
     mapping: dict,
-    degraded_resolution: bool,
-) -> tuple[float, float, bool, bool, float]:
+) -> pd.Series:
     confirmation_gate, logistic_quality, _, _, AdjacentKSStepDetector = _load_d1_api()
-    start = onset - pd.Timedelta(hours=72)
-    end = onset + pd.Timedelta(hours=max(72, int(np.ceil(duration_h)) + 48))
-    blank = routed.loc[start:end].copy()
-    scale = _robust_scale(blank.loc[: onset - pd.Timedelta(hours=1)])
-    resolution_step = _empirical_resolution(blank) * 2.0 if degraded_resolution else None
-    blank = _quantize(blank, resolution_step)
-    injected = blank.copy()
-    event_end = onset + pd.Timedelta(hours=max(1, int(np.ceil(duration_h))) - 1)
-    injected.loc[onset:event_end] += direction * amplitude * scale
-    injected = _quantize(injected, resolution_step)
+    q24 = logistic_quality(
+        AdjacentKSStepDetector(24, 0.001, neff_ratio).score(series).raw_score,
+        float(mapping["k"]),
+        float(mapping["x0"]),
+    )
+    q36 = logistic_quality(
+        AdjacentKSStepDetector(36, 0.001, neff_ratio).score(series).raw_score,
+        float(mapping["k"]),
+        float(mapping["x0"]),
+    )
+    return pd.Series(confirmation_gate(q24, q36), index=series.index)
 
-    def quality(series: pd.Series) -> pd.Series:
-        q24 = logistic_quality(
-            AdjacentKSStepDetector(24, 0.001, neff_ratio).score(series).raw_score,
-            float(mapping["k"]),
-            float(mapping["x0"]),
-        )
-        q36 = logistic_quality(
-            AdjacentKSStepDetector(36, 0.001, neff_ratio).score(series).raw_score,
-            float(mapping["k"]),
-            float(mapping["x0"]),
-        )
-        return pd.Series(confirmation_gate(q24, q36), index=series.index)
 
-    blank_q = quality(blank)
-    injected_q = quality(injected)
+def _step_pair_metrics(
+    blank: pd.Series,
+    injected: pd.Series,
+    *,
+    onset: pd.Timestamp,
+    event_end: pd.Timestamp,
+    neff_ratio: float,
+    mapping: dict,
+) -> tuple[float, float, bool, bool, float]:
+    blank_q = _step_quality(blank, neff_ratio=neff_ratio, mapping=mapping)
+    injected_q = _step_quality(injected, neff_ratio=neff_ratio, mapping=mapping)
     evaluation_end = event_end + pd.Timedelta(hours=48)
     blank_eval = blank_q.loc[onset:evaluation_end]
     injected_eval = injected_q.loc[onset:evaluation_end]
@@ -242,6 +255,36 @@ def _step_trial(
         bool((blank_eval <= 2.5).any()),
         bool((injected_eval <= 2.5).any()),
         float(hits[0]) if len(hits) else np.nan,
+    )
+
+
+def _step_trial(
+    routed: pd.Series,
+    onset: pd.Timestamp,
+    amplitude: float,
+    duration_h: float,
+    direction: int,
+    neff_ratio: float,
+    mapping: dict,
+    degraded_resolution: bool,
+) -> tuple[float, float, bool, bool, float]:
+    start = onset - pd.Timedelta(hours=72)
+    end = onset + pd.Timedelta(hours=max(72, int(np.ceil(duration_h)) + 48))
+    blank = routed.loc[start:end].copy()
+    scale = _robust_scale(blank.loc[: onset - pd.Timedelta(hours=1)])
+    resolution_step = _empirical_resolution(blank) * 2.0 if degraded_resolution else None
+    blank = _quantize(blank, resolution_step)
+    injected = blank.copy()
+    event_end = onset + pd.Timedelta(hours=max(1, int(np.ceil(duration_h))) - 1)
+    injected.loc[onset:event_end] += direction * amplitude * scale
+    injected = _quantize(injected, resolution_step)
+    return _step_pair_metrics(
+        blank,
+        injected,
+        onset=onset,
+        event_end=event_end,
+        neff_ratio=neff_ratio,
+        mapping=mapping,
     )
 
 
@@ -337,26 +380,430 @@ def _freeze_trial(
     )
 
 
-def _summaries(trials: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
+def _fit_frozen_whiteners(
+    decomposition: dict,
+    state: dict,
+    sensors: list[str],
+    *,
+    fit_end: pd.Timestamp,
+) -> tuple[dict[str, object], pd.DataFrame]:
+    select_model, _ = _load_decomposition_api()
+    config = yaml.safe_load(
+        (
+            PROJECT_ROOT / "1.1 Decomposition" / "configs" / "whiten.yaml"
+        ).read_text(encoding="utf-8")
+    )
+    cold_days = int(config["cold_start_reference_days"])
+    grid_lags = int(config["ljungbox_lags"]["min"])
+    models: dict[str, object] = {}
+    rows = []
+    for sensor in sorted(set(sensors)):
+        mode = str(state["scoring_mode"].get(sensor, "autocorr_aware"))
+        if mode != "iid":
+            rows.append(
+                {
+                    "sensor_id": sensor,
+                    "scoring_mode": mode,
+                    "model_fitted": False,
+                    "fit_end": fit_end,
+                    "fit_rows": 0,
+                    "model_family": "not_required_residual_route",
+                    "fit_warning_count": 0,
+                    "fit_warning_messages": "",
+                }
+            )
+            continue
+        residual = decomposition["resid_min"][sensor].loc[:fit_end].dropna()
+        reference = residual.iloc[: cold_days * 1440]
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            model, selection = select_model(
+                reference,
+                config,
+                version=f"{sensor}_D1V2_frozen_raw_audit",
+                track="min",
+                lb_lags=grid_lags,
+            )
+        if model is None:
+            raise RuntimeError(
+                f"Unable to fit the prespecified frozen whitening route for {sensor}"
+            )
+        models[sensor] = model
+        rows.append(
+            {
+                "sensor_id": sensor,
+                "scoring_mode": mode,
+                "model_fitted": True,
+                "fit_end": fit_end,
+                "fit_rows": len(reference),
+                "model_family": selection.get("family", "unknown"),
+                "p": selection.get("p_arma"),
+                "q": selection.get("q"),
+                "d": selection.get("d"),
+                "D": selection.get("D"),
+                "fractional_d": selection.get("fd"),
+                "fit_warning_count": len(caught),
+                "fit_warning_messages": " | ".join(
+                    sorted({str(item.message) for item in caught})
+                ),
+            }
+        )
+    return models, pd.DataFrame(rows)
+
+
+def _raw_spike_trial(
+    raw: pd.Series,
+    trend: pd.Series,
+    seasonal: pd.Series,
+    onset: pd.Timestamp,
+    amplitude: float,
+    duration_min: int,
+    direction: int,
+    resolution_step: float | None,
+) -> tuple[float, float, bool, bool, float]:
+    _, _, _, HampelSpikeDetector, _ = _load_d1_api()
+    start = onset - pd.Timedelta(minutes=90)
+    end = onset + pd.Timedelta(minutes=duration_min + 90)
+    blank_raw = _quantize(raw.loc[start:end].copy(), resolution_step)
+    frozen_baseline = trend.reindex(blank_raw.index) + seasonal.reindex(blank_raw.index)
+    blank = blank_raw - frozen_baseline
+    scale = _robust_scale(blank.loc[: onset - pd.Timedelta(minutes=1)])
+    injected_raw = blank_raw.copy()
+    event_end = onset + pd.Timedelta(minutes=duration_min - 1)
+    injected_raw.loc[onset:event_end] += direction * amplitude * scale
+    injected_raw = _quantize(injected_raw, resolution_step)
+    injected = injected_raw - frozen_baseline
+    detector = HampelSpikeDetector(window_min=21, k=3.0)
+    blank_score = detector.score(blank.rename(raw.name)).raw_score
+    injected_score = detector.score(injected.rename(raw.name)).raw_score
+    evaluation_end = event_end + pd.Timedelta(minutes=10)
+    blank_eval = blank_score.loc[onset:evaluation_end]
+    injected_eval = injected_score.loc[onset:evaluation_end]
+    hits = np.flatnonzero(injected_eval.to_numpy(dtype=float) > 3.0)
+    return (
+        _finite_max(blank_eval),
+        _finite_max(injected_eval),
+        bool((blank_eval > 3.0).any()),
+        bool((injected_eval > 3.0).any()),
+        float(hits[0]) if len(hits) else np.nan,
+    )
+
+
+def _raw_step_trial(
+    raw: pd.Series,
+    trend: pd.Series,
+    seasonal: pd.Series,
+    model: object | None,
+    *,
+    scoring_mode: str,
+    onset: pd.Timestamp,
+    amplitude: float,
+    duration_h: float,
+    direction: int,
+    neff_ratio: float,
+    mapping: dict,
+    resolution_step: float | None,
+) -> tuple[float, float, bool, bool, float]:
+    _, whiten_series = _load_decomposition_api()
+    event_hours = max(1, int(np.ceil(duration_h)))
+    start = onset - pd.Timedelta(days=7)
+    end = onset + pd.Timedelta(hours=event_hours + 48)
+    blank_raw = _quantize(raw.loc[start:end].copy(), resolution_step)
+    frozen_baseline = trend.reindex(blank_raw.index) + seasonal.reindex(blank_raw.index)
+    blank_residual = blank_raw - frozen_baseline
+    scale = _robust_scale(blank_residual.loc[: onset - pd.Timedelta(minutes=1)])
+    injected_raw = blank_raw.copy()
+    event_end_min = onset + pd.Timedelta(hours=event_hours) - pd.Timedelta(minutes=1)
+    injected_raw.loc[onset:event_end_min] += direction * amplitude * scale
+    injected_raw = _quantize(injected_raw, resolution_step)
+    injected_residual = injected_raw - frozen_baseline
+    if scoring_mode == "iid":
+        if model is None:
+            return (np.nan, np.nan, False, False, np.nan)
+        blank_min = whiten_series(blank_residual, model)["std_innovation"]
+        injected_min = whiten_series(injected_residual, model)["std_innovation"]
+    else:
+        blank_min = blank_residual
+        injected_min = injected_residual
+    blank_hourly = blank_min.resample("1h").mean()
+    injected_hourly = injected_min.resample("1h").mean()
+    event_end_hour = onset + pd.Timedelta(hours=event_hours - 1)
+    return _step_pair_metrics(
+        blank_hourly,
+        injected_hourly,
+        onset=onset,
+        event_end=event_end_hour,
+        neff_ratio=neff_ratio,
+        mapping=mapping,
+    )
+
+
+def _raw_drift_trial(
+    raw: pd.Series,
+    state: dict,
+    detector,
+    peer_columns: list[str],
+    sensor: str,
+    onset: pd.Timestamp,
+    amplitude: float,
+    duration_h: float,
+    direction: int,
+    resolution_step: float | None,
+) -> tuple[float, float, bool, bool, float]:
+    hours = max(12, int(np.ceil(duration_h)))
+    start = onset - pd.Timedelta(hours=48)
+    end = onset + pd.Timedelta(hours=hours + 24)
+    blank_raw = _quantize(raw.loc[start:end].copy(), resolution_step)
+    blank_hourly = blank_raw.resample("1h").mean()
+    frame_index = state["df_h"].loc[start:end].index
+    blank = state["df_h"].loc[frame_index, [sensor, *peer_columns]].copy()
+    blank.loc[:, sensor] = blank_hourly.reindex(frame_index).to_numpy()
+    scale = _robust_scale(blank.loc[: onset - pd.Timedelta(hours=1), sensor])
+    injected_raw = blank_raw.copy()
+    event_index_min = pd.date_range(onset, periods=hours * 60, freq="1min")
+    profile = np.linspace(
+        0.0,
+        direction * amplitude * scale,
+        len(event_index_min),
+    )
+    injected_raw.loc[event_index_min] += profile
+    injected_raw = _quantize(injected_raw, resolution_step)
+    injected = blank.copy()
+    injected.loc[:, sensor] = (
+        injected_raw.resample("1h").mean().reindex(frame_index).to_numpy()
+    )
+    blank_z = _pls_z(detector, blank, sensor)
+    injected_z = _pls_z(detector, injected, sensor)
+    event_end = onset + pd.Timedelta(hours=hours - 1)
+    evaluation = (frame_index >= onset) & (
+        frame_index <= event_end + pd.Timedelta(hours=12)
+    )
+    blank_alarm, _ = _consecutive_alarm(blank_z[evaluation] >= 3.0, 3)
+    injected_alarm, delay = _consecutive_alarm(injected_z[evaluation] >= 3.0, 3)
+    return (
+        _finite_max(blank_z[evaluation]),
+        _finite_max(injected_z[evaluation]),
+        blank_alarm,
+        injected_alarm,
+        delay,
+    )
+
+
+def _raw_endpoint_audit(
+    trials: pd.DataFrame,
+    *,
+    raw: pd.DataFrame,
+    decomposition: dict,
+    decomposition_components: dict,
+    state: dict,
+    models: dict[str, object],
+    peers: dict[str, list[str]],
+    sensor_cfg: dict,
+    mapping: dict,
+    design: dict,
+    repetitions: int,
+    rng: np.random.Generator,
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    audit_design = design["raw_domain_frozen_transform_audit"]
+    count = int(audit_design["scenarios_per_fault"])
+    selected_frames = []
+    original = trials[
+        trials["resolution_mode"].eq("original") & trials["valid_evaluation"]
+    ]
+    for fault, fault_frame in original.groupby("fault_type", sort=False):
+        parts = []
+        for _, analyte_frame in fault_frame.groupby("analyte", sort=False):
+            n = min(count // 2, len(analyte_frame))
+            positions = np.linspace(0, len(analyte_frame) - 1, n, dtype=int)
+            parts.append(analyte_frame.iloc[positions])
+        selected_frames.append(pd.concat(parts, ignore_index=True).iloc[:count])
+    selected = pd.concat(selected_frames, ignore_index=True)
+    fit_end = pd.Timestamp(audit_design["preprocessing_fit_end"])
+    step_iid_sensors = selected.loc[
+        selected["fault_type"].eq("step")
+        & selected["sensor_id"].map(state["scoring_mode"]).eq("iid"),
+        "sensor_id",
+    ].unique().tolist()
+    frozen_models, model_audit = _fit_frozen_whiteners(
+        decomposition,
+        state,
+        step_iid_sensors,
+        fit_end=fit_end,
+    )
+    rows = []
+    for row in selected.itertuples(index=False):
+        sensor = row.sensor_id
+        resolution_step = None
+        if row.fault_type == "spike":
+            components = decomposition_components["decomp"][sensor]
+            result = _raw_spike_trial(
+                raw[sensor],
+                components["trend"],
+                components["seasonal"],
+                pd.Timestamp(row.onset),
+                float(row.amplitude_sigma),
+                int(row.duration),
+                int(row.direction),
+                resolution_step,
+            )
+        elif row.fault_type == "step":
+            components = decomposition_components["decomp"][sensor]
+            result = _raw_step_trial(
+                raw[sensor],
+                components["trend"],
+                components["seasonal"],
+                frozen_models.get(sensor),
+                scoring_mode=str(state["scoring_mode"][sensor]),
+                onset=pd.Timestamp(row.onset),
+                amplitude=float(row.amplitude_sigma),
+                duration_h=float(row.duration),
+                direction=int(row.direction),
+                neff_ratio=float(state["eff_neff"].get(sensor, 1.0)),
+                mapping=mapping,
+                resolution_step=resolution_step,
+            )
+        elif row.fault_type == "linear_drift":
+            result = _raw_drift_trial(
+                raw[sensor],
+                state,
+                models[sensor],
+                peers[sensor],
+                sensor,
+                pd.Timestamp(row.onset),
+                float(row.amplitude_sigma),
+                float(row.duration),
+                int(row.direction),
+                resolution_step,
+            )
+        else:
+            result = _freeze_trial(
+                raw[sensor],
+                pd.Timestamp(row.onset),
+                int(row.duration),
+                float(sensor_cfg[sensor]["precision"]),
+                False,
+            )
+        rows.append(
+            {
+                "source_trial_id": row.trial_id,
+                "scenario_id": row.scenario_id,
+                "fault_type": row.fault_type,
+                "sensor_id": sensor,
+                "analyte": row.analyte,
+                "route": row.route,
+                "base_window_onset": row.base_window_onset,
+                "onset": row.onset,
+                "amplitude_sigma": row.amplitude_sigma,
+                "duration": row.duration,
+                "duration_unit": row.duration_unit,
+                "route_detected": bool(row.detected),
+                "raw_domain_detected": bool(result[3]),
+                "blank_statistic": result[0],
+                "injected_statistic": result[1],
+                "blank_alarm": result[2],
+                "detection_delay": result[4],
+                "valid_evaluation": bool(
+                    np.isfinite(result[0]) and np.isfinite(result[1])
+                ),
+                "injection_domain": "raw_minute_measurement",
+                "transform_policy": (
+                    "pre_injection_fitted_or_saved_components_then_frozen"
+                ),
+                "preprocessing_fit_end": fit_end,
+                "refit_on_contaminated_window": False,
+                "resolution_mode": "original",
+            }
+        )
+    audit = pd.DataFrame(rows)
+    summary_rows = []
+    concordance_rows = []
+    for fault, frame in audit[audit["valid_evaluation"]].groupby(
+        "fault_type", sort=False
+    ):
+        low, high = cluster_bootstrap_proportion(
+            frame,
+            outcome_column="raw_domain_detected",
+            cluster_columns=["sensor_id", "base_window_onset"],
+            repetitions=repetitions,
+            rng=rng,
+        )
+        summary_rows.append(
+            {
+                "fault_type": fault,
+                "n_scenarios": len(frame),
+                "raw_domain_recall": float(frame["raw_domain_detected"].mean()),
+                "recall_ci_low": low,
+                "recall_ci_high": high,
+                "route_level_recall_same_scenarios": float(
+                    frame["route_detected"].mean()
+                ),
+                "detection_agreement": float(
+                    frame["raw_domain_detected"].eq(frame["route_detected"]).mean()
+                ),
+                "analysis_unit": "sensor_onset_cluster",
+            }
+        )
+        for keys, group in frame.groupby(["analyte", "route"], sort=False):
+            concordance_rows.append(
+                {
+                    "fault_type": fault,
+                    "analyte": keys[0],
+                    "route": keys[1],
+                    "n_scenarios": len(group),
+                    "raw_domain_recall": float(
+                        group["raw_domain_detected"].mean()
+                    ),
+                    "route_level_recall": float(group["route_detected"].mean()),
+                    "detection_agreement": float(
+                        group["raw_domain_detected"]
+                        .eq(group["route_detected"])
+                        .mean()
+                    ),
+                }
+            )
+    return (
+        audit,
+        pd.DataFrame(summary_rows),
+        pd.DataFrame(concordance_rows),
+        model_audit,
+    )
+
+
+def _summaries(
+    trials: pd.DataFrame,
+    *,
+    repetitions: int,
+    rng: np.random.Generator,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
     rows = []
     stratified = []
     for fault, attempted in trials.groupby("fault_type"):
-        frame = attempted[attempted["valid_evaluation"]].copy()
+        primary_attempted = attempted[attempted["resolution_mode"].eq("original")]
+        frame = primary_attempted[primary_attempted["valid_evaluation"]].copy()
         if frame.empty:
             continue
         successes = int(frame["detected"].sum())
-        low, high = wilson_interval(successes, len(frame))
+        cluster_low, cluster_high = cluster_bootstrap_proportion(
+            frame,
+            outcome_column="detected",
+            cluster_columns=["sensor_id", "base_window_onset"],
+            repetitions=repetitions,
+            rng=rng,
+        )
+        wilson_low, wilson_high = wilson_interval(successes, len(frame))
         labels = np.r_[np.zeros(len(frame)), np.ones(len(frame))]
         scores = np.r_[frame["blank_statistic"], frame["injected_statistic"]]
         rows.append(
             {
                 "fault_type": fault,
                 "n_trials": len(frame),
-                "n_attempted": len(attempted),
-                "n_excluded_not_evaluable": len(attempted) - len(frame),
+                "n_attempted": len(primary_attempted),
+                "n_excluded_not_evaluable": len(primary_attempted) - len(frame),
                 "event_recall": successes / len(frame),
-                "recall_ci_low": low,
-                "recall_ci_high": high,
+                "recall_ci_low": cluster_low,
+                "recall_ci_high": cluster_high,
+                "wilson_ci_low_supplementary": wilson_low,
+                "wilson_ci_high_supplementary": wilson_high,
                 "AUROC": float(roc_auc_score(labels, scores)),
                 "AUPRC": float(average_precision_score(labels, scores)),
                 "false_alarms_per_sensor_day": float(
@@ -373,29 +820,224 @@ def _summaries(trials: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
                     ~frame["blank_alarm"], "common_process_alarm"
                 ].notna().any()
                 else np.nan,
-                "analysis_unit": "independent_injection_episode",
+                "analysis_unit": "sensor_onset_cluster",
+                "ci_method": "cluster_bootstrap_sensor_plus_base_window",
+                "resolution_role": "original_primary",
             }
         )
-        for keys, group in frame.groupby(["analyte", "route"]):
+        for keys, group in attempted[
+            attempted["valid_evaluation"]
+        ].groupby(["analyte", "route", "resolution_mode"]):
             success = int(group["detected"].sum())
-            ci_low, ci_high = wilson_interval(success, len(group))
+            ci_low, ci_high = cluster_bootstrap_proportion(
+                group,
+                outcome_column="detected",
+                cluster_columns=["sensor_id", "base_window_onset"],
+                repetitions=repetitions,
+                rng=rng,
+            )
             stratified.append(
                 {
                     "fault_type": fault,
                     "analyte": keys[0],
                     "route": keys[1],
+                    "resolution_mode": keys[2],
                     "n_trials": len(group),
                     "event_recall": success / len(group),
                     "recall_ci_low": ci_low,
                     "recall_ci_high": ci_high,
                     "median_detection_delay": _finite_median(group["detection_delay"]),
+                    "ci_method": "cluster_bootstrap_sensor_plus_base_window",
                 }
             )
     return pd.DataFrame(rows), pd.DataFrame(stratified)
 
 
+def _applicability_outputs(
+    trials: pd.DataFrame,
+    *,
+    design: dict,
+    repetitions: int,
+    rng: np.random.Generator,
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    map_rows = []
+    high_rows = []
+    duration_rows = []
+    valid = trials[trials["valid_evaluation"]].copy()
+    high_threshold = float(
+        read_yaml(CONFIG_ROOT / "statistical_analysis_plan_v2.yaml")[
+            "locked_decision_thresholds"
+        ]["D1_high_amplitude_sigma"]
+    )
+    for fault in ("spike", "step", "linear_drift"):
+        fault_frame = valid[valid["fault_type"].eq(fault)].copy()
+        specification = design["core_faults"][fault]
+        amplitude_edges = np.linspace(
+            float(specification["amplitude_sigma"][0]),
+            float(specification["amplitude_sigma"][1]),
+            4,
+        )
+        duration_limits = next(
+            value
+            for key, value in specification.items()
+            if key.startswith("duration_")
+        )
+        duration_edges = np.geomspace(
+            float(duration_limits[0]),
+            float(duration_limits[1]),
+            5,
+        )
+        expanded = pd.concat(
+            [
+                fault_frame.assign(route_scope=fault_frame["route"]),
+                fault_frame.assign(route_scope="all_routes"),
+            ],
+            ignore_index=True,
+        )
+        expanded["amplitude_bin"] = pd.cut(
+            expanded["amplitude_sigma"],
+            bins=amplitude_edges,
+            include_lowest=True,
+            labels=False,
+        )
+        expanded["duration_bin"] = pd.cut(
+            expanded["duration"],
+            bins=duration_edges,
+            include_lowest=True,
+            labels=False,
+        )
+        for keys, group in expanded.dropna(
+            subset=["amplitude_bin", "duration_bin"]
+        ).groupby(
+            [
+                "analyte",
+                "route_scope",
+                "resolution_mode",
+                "amplitude_bin",
+                "duration_bin",
+            ],
+            sort=False,
+        ):
+            amp_index = int(keys[3])
+            duration_index = int(keys[4])
+            low, high = cluster_bootstrap_proportion(
+                group,
+                outcome_column="detected",
+                cluster_columns=["sensor_id", "base_window_onset"],
+                repetitions=repetitions,
+                rng=rng,
+            )
+            map_rows.append(
+                {
+                    "fault_type": fault,
+                    "analyte": keys[0],
+                    "route": keys[1],
+                    "resolution_mode": keys[2],
+                    "amplitude_bin": amp_index,
+                    "amplitude_low_sigma": amplitude_edges[amp_index],
+                    "amplitude_high_sigma": amplitude_edges[amp_index + 1],
+                    "amplitude_center_sigma": float(
+                        np.mean(amplitude_edges[amp_index : amp_index + 2])
+                    ),
+                    "duration_bin": duration_index,
+                    "duration_low": duration_edges[duration_index],
+                    "duration_high": duration_edges[duration_index + 1],
+                    "duration_center": float(
+                        np.sqrt(
+                            duration_edges[duration_index]
+                            * duration_edges[duration_index + 1]
+                        )
+                    ),
+                    "duration_unit": group["duration_unit"].iloc[0],
+                    "n_scenarios": len(group),
+                    "detection_probability": float(group["detected"].mean()),
+                    "ci95_low": low,
+                    "ci95_high": high,
+                    "ci_method": "cluster_bootstrap_sensor_plus_base_window",
+                }
+            )
+        high_frame = fault_frame[
+            fault_frame["amplitude_sigma"].ge(high_threshold)
+        ]
+        for keys, group in high_frame.groupby(
+            ["analyte", "route", "resolution_mode"],
+            sort=False,
+        ):
+            low, high = cluster_bootstrap_proportion(
+                group,
+                outcome_column="detected",
+                cluster_columns=["sensor_id", "base_window_onset"],
+                repetitions=repetitions,
+                rng=rng,
+            )
+            high_rows.append(
+                {
+                    "fault_type": fault,
+                    "analyte": keys[0],
+                    "route": keys[1],
+                    "resolution_mode": keys[2],
+                    "amplitude_threshold_sigma": high_threshold,
+                    "n_scenarios": len(group),
+                    "event_recall": float(group["detected"].mean()),
+                    "ci95_low": low,
+                    "ci95_high": high,
+                    "locked_target": 0.80,
+                    "target_passed": float(group["detected"].mean()) >= 0.80,
+                }
+            )
+    for fault in ("spike", "hard_freeze"):
+        fault_frame = valid[valid["fault_type"].eq(fault)].copy()
+        limits = next(
+            value
+            for key, value in design["core_faults"][fault].items()
+            if key.startswith("duration_")
+        )
+        edges = np.geomspace(float(limits[0]), float(limits[1]), 7)
+        fault_frame["duration_bin"] = pd.cut(
+            fault_frame["duration"],
+            bins=edges,
+            include_lowest=True,
+            labels=False,
+        )
+        for keys, group in fault_frame.dropna(subset=["duration_bin"]).groupby(
+            ["analyte", "resolution_mode", "duration_bin"],
+            sort=False,
+        ):
+            bin_index = int(keys[2])
+            low, high = cluster_bootstrap_proportion(
+                group,
+                outcome_column="detected",
+                cluster_columns=["sensor_id", "base_window_onset"],
+                repetitions=repetitions,
+                rng=rng,
+            )
+            duration_rows.append(
+                {
+                    "fault_type": fault,
+                    "analyte": keys[0],
+                    "resolution_mode": keys[1],
+                    "duration_bin": bin_index,
+                    "duration_center": float(
+                        np.sqrt(edges[bin_index] * edges[bin_index + 1])
+                    ),
+                    "duration_unit": group["duration_unit"].iloc[0],
+                    "n_scenarios": len(group),
+                    "event_recall": float(group["detected"].mean()),
+                    "ci95_low": low,
+                    "ci95_high": high,
+                }
+            )
+    return (
+        pd.DataFrame(map_rows),
+        pd.DataFrame(high_rows),
+        pd.DataFrame(duration_rows),
+    )
+
+
 def run_d1_validation(output_dir: Path, d3_gate: pd.DataFrame) -> dict[str, pd.DataFrame]:
     design = read_yaml(CONFIG_ROOT / "validation_design.yaml")["D1"]
+    sap = read_yaml(CONFIG_ROOT / "statistical_analysis_plan_v2.yaml")
+    repetitions = int(sap["uncertainty"]["repetitions"])
     with (D1_ROOT / "v11_state.pkl").open("rb") as handle:
         state = pickle.load(handle)
     with (
@@ -412,7 +1054,8 @@ def run_d1_validation(output_dir: Path, d3_gate: pd.DataFrame) -> dict[str, pd.D
     with (
         PROJECT_ROOT / "1.1 Decomposition" / "outputs" / "_w2_checkpoint.pkl"
     ).open("rb") as handle:
-        raw = pickle.load(handle)["out"]["df_min"]
+        decomposition_components = pickle.load(handle)["out"]
+        raw = decomposition_components["df_min"]
 
     clean = _prepare_clean_hours(state, d2_state, d3_gate)
     models, peers = _fit_pls_models(state)
@@ -427,7 +1070,10 @@ def run_d1_validation(output_dir: Path, d3_gate: pd.DataFrame) -> dict[str, pd.D
     mapping = yaml.safe_load((D1_ROOT / "configs" / "mapping.yaml").read_text(encoding="utf-8"))[
         "step"
     ]
-    rng = np.random.default_rng(20260727)
+    rng_design = np.random.default_rng(20260727)
+    rng_summary = np.random.default_rng(20260728)
+    rng_applicability = np.random.default_rng(20260729)
+    rng_raw_audit = np.random.default_rng(20260730)
     rows = []
     fault_specs = [
         ("spike", int(design["core_faults"]["spike"]["target_trials"])),
@@ -436,111 +1082,172 @@ def run_d1_validation(output_dir: Path, d3_gate: pd.DataFrame) -> dict[str, pd.D
         ("hard_freeze", int(design["core_faults"]["hard_freeze"]["target_trials"])),
     ]
     for fault, total in fault_specs:
-        sampler = qmc.LatinHypercube(d=2, seed=int(rng.integers(0, 2**31 - 1)))
+        sampler = qmc.LatinHypercube(
+            d=2, seed=int(rng_design.integers(0, 2**31 - 1))
+        )
         lhs = sampler.random(total)
         per_analyte = {"DO": total // 2, "ORP": total - total // 2}
         schedule = []
         for analyte, count in per_analyte.items():
-            schedule.extend(_pick_onsets(clean, state, analyte=analyte, n=count, rng=rng))
-        rng.shuffle(schedule)
-        for trial_no, ((sensor, onset, regime), point) in enumerate(zip(schedule, lhs), 1):
+            schedule.extend(
+                _pick_onsets(
+                    clean,
+                    state,
+                    analyte=analyte,
+                    n=count,
+                    rng=rng_design,
+                )
+            )
+        rng_design.shuffle(schedule)
+        for trial_no, ((sensor, base_onset, regime), point) in enumerate(
+            zip(schedule, lhs), 1
+        ):
             analyte = sensor.split("_")[0]
             route = state["scoring_mode"][sensor]
             direction = -1 if trial_no % 2 else 1
-            resolution_mode = (
-                "original" if ((trial_no - 1) // 2) % 2 == 0 else "degraded_2x"
-            )
-            degraded_resolution = resolution_mode == "degraded_2x"
             sensor_precision = float(sensor_cfg[sensor]["precision"])
-            amplitude = 0.5 + 2.5 * float(point[0])
-            common_process_alarm = np.nan
+            scenario_amplitude = (
+                np.nan if fault == "hard_freeze" else 0.5 + 2.5 * float(point[0])
+            )
             if fault == "spike":
                 duration = 1 + int(np.floor(9 * point[1]))
-                result = _spike_trial(
-                    decomposition["resid_min"][sensor],
-                    onset + pd.Timedelta(minutes=30),
-                    amplitude,
-                    duration,
-                    direction,
-                    sensor_precision * 2.0 if degraded_resolution else None,
-                )
+                injection_onset = base_onset + pd.Timedelta(minutes=30)
                 evaluation_hours = max(1.0, (duration + 10) / 60.0)
                 duration_value, duration_unit = duration, "min"
             elif fault == "step":
                 duration = 0.5 + 47.5 * float(point[1])
-                result = _step_trial(
-                    state["whitened_input_h"][sensor],
-                    onset,
-                    amplitude,
-                    duration,
-                    direction,
-                    float(state["eff_neff"].get(sensor, 1.0)),
-                    mapping,
-                    degraded_resolution,
-                )
+                injection_onset = base_onset
                 evaluation_hours = duration + 48.0
                 duration_value, duration_unit = duration, "h"
             elif fault == "linear_drift":
                 duration = 12.0 + 156.0 * float(point[1])
-                drift_result = _drift_trial(
-                    state,
-                    models[sensor],
-                    peers[sensor],
-                    sensor,
-                    onset,
-                    amplitude,
-                    duration,
-                    direction,
-                    sensor_precision * 2.0 if degraded_resolution else None,
-                )
-                result = drift_result[:5]
-                common_process_alarm = drift_result[5]
+                injection_onset = base_onset
                 evaluation_hours = duration + 12.0
                 duration_value, duration_unit = duration, "h"
             else:
                 duration = 15 + int(np.floor((1440 - 15) * point[1]))
-                result = _freeze_trial(
-                    raw[sensor],
-                    onset + pd.Timedelta(minutes=15),
-                    duration,
-                    sensor_precision,
-                    degraded_resolution,
-                )
-                amplitude = np.nan
+                injection_onset = base_onset + pd.Timedelta(minutes=15)
                 evaluation_hours = duration / 60.0
                 duration_value, duration_unit = duration, "min"
-            rows.append(
-                {
-                    "trial_id": f"D1V2-{fault}-{trial_no:04d}",
-                    "fault_type": fault,
-                    "sensor_id": sensor,
-                    "analyte": analyte,
-                    "regime_id": regime,
-                    "route": route,
-                    "resolution_mode": resolution_mode,
-                    "onset": onset,
-                    "amplitude_sigma": amplitude,
-                    "direction": direction,
-                    "duration": duration_value,
-                    "duration_unit": duration_unit,
-                    "blank_statistic": result[0],
-                    "injected_statistic": result[1],
-                    "blank_alarm": result[2],
-                    "detected": result[3],
-                    "detection_delay": result[4],
-                    "common_process_alarm": common_process_alarm,
-                    "evaluation_hours": evaluation_hours,
-                    "injection_domain": (
-                        "original_measurement_scale_with_frozen_training_route_projection"
-                    ),
-                    "analysis_unit": "independent_injection_episode",
-                    "valid_evaluation": bool(
-                        np.isfinite(result[0]) and np.isfinite(result[1])
-                    ),
-                }
-            )
+            scenario_id = f"D1V2-{fault}-{trial_no:04d}"
+            for resolution_mode in ("original", "degraded_2x"):
+                degraded_resolution = resolution_mode == "degraded_2x"
+                common_process_alarm = np.nan
+                if fault == "spike":
+                    result = _spike_trial(
+                        decomposition["resid_min"][sensor],
+                        injection_onset,
+                        scenario_amplitude,
+                        duration,
+                        direction,
+                        sensor_precision * 2.0 if degraded_resolution else None,
+                    )
+                elif fault == "step":
+                    result = _step_trial(
+                        state["whitened_input_h"][sensor],
+                        injection_onset,
+                        scenario_amplitude,
+                        duration,
+                        direction,
+                        float(state["eff_neff"].get(sensor, 1.0)),
+                        mapping,
+                        degraded_resolution,
+                    )
+                elif fault == "linear_drift":
+                    drift_result = _drift_trial(
+                        state,
+                        models[sensor],
+                        peers[sensor],
+                        sensor,
+                        injection_onset,
+                        scenario_amplitude,
+                        duration,
+                        direction,
+                        sensor_precision * 2.0 if degraded_resolution else None,
+                    )
+                    result = drift_result[:5]
+                    common_process_alarm = drift_result[5]
+                else:
+                    result = _freeze_trial(
+                        raw[sensor],
+                        injection_onset,
+                        duration,
+                        sensor_precision,
+                        degraded_resolution,
+                    )
+                rows.append(
+                    {
+                        "trial_id": (
+                            f"{scenario_id}-"
+                            f"{'R0' if resolution_mode == 'original' else 'R2X'}"
+                        ),
+                        "scenario_id": scenario_id,
+                        "fault_type": fault,
+                        "sensor_id": sensor,
+                        "analyte": analyte,
+                        "regime_id": regime,
+                        "route": route,
+                        "resolution_mode": resolution_mode,
+                        "resolution_role": (
+                            "primary"
+                            if resolution_mode == "original"
+                            else "exploratory_sensitivity"
+                        ),
+                        "base_window_onset": base_onset,
+                        "onset": injection_onset,
+                        "amplitude_sigma": scenario_amplitude,
+                        "direction": direction,
+                        "duration": duration_value,
+                        "duration_unit": duration_unit,
+                        "blank_statistic": result[0],
+                        "injected_statistic": result[1],
+                        "blank_alarm": result[2],
+                        "detected": result[3],
+                        "detection_delay": result[4],
+                        "common_process_alarm": common_process_alarm,
+                        "evaluation_hours": evaluation_hours,
+                        "injection_domain": design["route_domains"][fault],
+                        "validation_layer": "detector_route_level",
+                        "preprocessing_refit_on_fault": False,
+                        "analysis_unit": (
+                            "sensor_onset_clustered_injection_episode"
+                        ),
+                        "valid_evaluation": bool(
+                            np.isfinite(result[0]) and np.isfinite(result[1])
+                        ),
+                    }
+                )
     trials = pd.DataFrame(rows)
-    summary, stratified = _summaries(trials)
+    summary, stratified = _summaries(
+        trials,
+        repetitions=repetitions,
+        rng=rng_summary,
+    )
+    applicability, high_amplitude, duration_response = _applicability_outputs(
+        trials,
+        design=design,
+        repetitions=repetitions,
+        rng=rng_applicability,
+    )
+    (
+        raw_audit,
+        raw_summary,
+        raw_concordance,
+        whitener_audit,
+    ) = _raw_endpoint_audit(
+        trials,
+        raw=raw,
+        decomposition=decomposition,
+        decomposition_components=decomposition_components,
+        state=state,
+        models=models,
+        peers=peers,
+        sensor_cfg=sensor_cfg,
+        mapping=mapping,
+        design=design,
+        repetitions=repetitions,
+        rng=rng_raw_audit,
+    )
     design_audit = (
         trials.groupby(
             ["fault_type", "analyte", "regime_id", "route", "resolution_mode"],
@@ -548,8 +1255,9 @@ def run_d1_validation(output_dir: Path, d3_gate: pd.DataFrame) -> dict[str, pd.D
         )
         .agg(
             n_trials=("trial_id", "size"),
+            n_scenarios=("scenario_id", "nunique"),
             distinct_sensors=("sensor_id", "nunique"),
-            distinct_onsets=("onset", "nunique"),
+            distinct_onsets=("base_window_onset", "nunique"),
             amplitude_min=("amplitude_sigma", "min"),
             amplitude_max=("amplitude_sigma", "max"),
             duration_min=("duration", "min"),
@@ -564,6 +1272,13 @@ def run_d1_validation(output_dir: Path, d3_gate: pd.DataFrame) -> dict[str, pd.D
         "D1_injection_trials": trials,
         "D1_injection_summary": summary,
         "D1_injection_stratified": stratified,
+        "D1_applicability_map": applicability,
+        "D1_high_amplitude_summary": high_amplitude,
+        "D1_duration_response": duration_response,
+        "D1_raw_endpoint_trials": raw_audit,
+        "D1_raw_endpoint_summary": raw_summary,
+        "D1_raw_route_concordance": raw_concordance,
+        "D1_frozen_whitener_audit": whitener_audit,
         "D1_design_audit": design_audit,
         "D1_excluded_injection_trials": excluded,
         "D1_existing_peer_model_audit": state["detectors_raw"][

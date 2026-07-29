@@ -6,7 +6,13 @@ import numpy as np
 import pandas as pd
 from scipy.stats import spearmanr
 
-from .common import CONFIG_ROOT, PROJECT_ROOT, moving_block_bootstrap_mean, read_yaml
+from .common import (
+    CONFIG_ROOT,
+    PROJECT_ROOT,
+    expand_window_end_gate,
+    moving_block_bootstrap_mean,
+    read_yaml,
+)
 
 
 def _load_d1() -> pd.DataFrame:
@@ -76,21 +82,7 @@ def _load_d5() -> pd.DataFrame:
 
 
 def _expand_d3_gate(gate: pd.DataFrame) -> pd.DataFrame:
-    rows = []
-    for hours_back in range(2, 0, -1):
-        block = gate.copy()
-        block["timestamp"] = pd.to_datetime(block["timestamp"]) - pd.Timedelta(hours=hours_back)
-        rows.append(block)
-    expanded = pd.concat(rows, ignore_index=True)
-    precedence = pd.CategoricalDtype(["Pass", "Warn", "Fail"], ordered=True)
-    expanded["D3_gate_status"] = expanded["D3_gate_status"].astype(precedence)
-    expanded = (
-        expanded.sort_values("D3_gate_status")
-        .groupby(["timestamp", "sensor_id"], as_index=False)
-        .tail(1)
-    )
-    expanded["D3_gate_status"] = expanded["D3_gate_status"].astype(str)
-    return expanded
+    return expand_window_end_gate(gate)
 
 
 def build_node_scores(d3_gate: pd.DataFrame) -> pd.DataFrame:
@@ -130,6 +122,12 @@ def build_node_scores(d3_gate: pd.DataFrame) -> pd.DataFrame:
     node["coverage_class"] = node["effective_dimension_count"].map(
         {3: "full", 2: "basic", 1: "limited", 0: "insufficient"}
     )
+    node["Q_node_full"] = node["Q_node_diagnostic"].where(
+        node["coverage_class"].eq("full")
+    )
+    node["Q_node_basic"] = node["Q_node_diagnostic"].where(
+        node["coverage_class"].eq("basic")
+    )
     node["contains_D5"] = node["evaluable_D5"]
     node["D3_gate_status"] = node["D3_gate_status"].fillna("NotEvaluated")
     node["physical_warning"] = node["D3_gate_status"].eq("Warn")
@@ -138,7 +136,13 @@ def build_node_scores(d3_gate: pd.DataFrame) -> pd.DataFrame:
         node["effective_dimension_count"].ge(2) & ~node["unsafe_or_invalid"]
     )
     node = node.sort_values(["sensor_id", "timestamp"]).reset_index(drop=True)
-    for persistence in (2, 3):
+    bottleneck = read_yaml(CONFIG_ROOT / "validation_design.yaml")["composite"][
+        "bottleneck"
+    ]
+    for persistence, role in (
+        (int(bottleneck["primary_persistence_hours"]), "primary"),
+        (int(bottleneck["sensitivity_persistence_hours"]), "sensitivity"),
+    ):
         low = node["Q_min"].lt(3.0) & node["Q_node"].notna()
         run = low.astype(int).groupby(
             [
@@ -149,6 +153,9 @@ def build_node_scores(d3_gate: pd.DataFrame) -> pd.DataFrame:
             ]
         ).cumsum()
         node[f"bottleneck_gate_{persistence}h"] = low & run.ge(persistence)
+        node[f"bottleneck_gate_{role}"] = node[
+            f"bottleneck_gate_{persistence}h"
+        ]
     return node
 
 
@@ -163,11 +170,21 @@ def build_pair_scores(node: pd.DataFrame) -> pd.DataFrame:
     d4 = pd.read_excel(path, sheet_name="main_scores")
     d4["timestamp"] = pd.to_datetime(d4["timestamp"])
     target = node[
-        ["timestamp", "sensor_id", "Q_node", "coverage_class", "D3_gate_status"]
+        [
+            "timestamp",
+            "sensor_id",
+            "Q_node",
+            "Q_node_full",
+            "Q_node_basic",
+            "coverage_class",
+            "D3_gate_status",
+        ]
     ].rename(
         columns={
             "sensor_id": "target_sensor_id",
             "Q_node": "Q_node_target",
+            "Q_node_full": "Q_node_full_target",
+            "Q_node_basic": "Q_node_basic_target",
             "coverage_class": "coverage_target",
             "D3_gate_status": "D3_gate_target",
         }
@@ -176,6 +193,8 @@ def build_pair_scores(node: pd.DataFrame) -> pd.DataFrame:
         columns={
             "target_sensor_id": "reference_sensor_id",
             "Q_node_target": "Q_node_reference",
+            "Q_node_full_target": "Q_node_full_reference",
+            "Q_node_basic_target": "Q_node_basic_reference",
             "coverage_target": "coverage_reference",
             "D3_gate_target": "D3_gate_reference",
         }
@@ -199,6 +218,24 @@ def build_pair_scores(node: pd.DataFrame) -> pd.DataFrame:
         & pair["Q_node_reference"].notna()
     )
     pair["effective_component_count"] = components.notna().sum(axis=1)
+    pair["pair_coverage_class"] = np.select(
+        [
+            pair["contains_D4"]
+            & pair["coverage_target"].eq("full")
+            & pair["coverage_reference"].eq("full"),
+            pair["contains_D4"]
+            & pair["coverage_target"].isin(["full", "basic"])
+            & pair["coverage_reference"].isin(["full", "basic"]),
+        ],
+        ["full", "basic"],
+        default="limited",
+    )
+    pair["Q_pair_full"] = pair["Q_pair"].where(
+        pair["pair_coverage_class"].eq("full")
+    )
+    pair["Q_pair_basic"] = pair["Q_pair"].where(
+        pair["pair_coverage_class"].eq("basic")
+    )
     pair["D3_gate_status"] = np.select(
         [
             pair[["D3_gate_target", "D3_gate_reference"]].eq("Fail").any(axis=1),
@@ -215,9 +252,26 @@ def build_plant_summary(node: pd.DataFrame, pair: pd.DataFrame) -> pd.DataFrame:
         node.assign(date=node["timestamp"].dt.floor("1d"))
         .groupby("date", as_index=False)
         .agg(
-            node_score_median=("Q_node", "median"),
-            node_score_p10=("Q_node", lambda values: values.quantile(0.10)),
-            node_full_coverage_rate=("coverage_class", lambda values: values.eq("full").mean()),
+            node_score_full_median=("Q_node_full", "median"),
+            node_score_full_p10=(
+                "Q_node_full",
+                lambda values: values.quantile(0.10),
+            ),
+            node_score_basic_median=("Q_node_basic", "median"),
+            node_score_basic_p10=(
+                "Q_node_basic",
+                lambda values: values.quantile(0.10),
+            ),
+            node_score_all_eligible_median_diagnostic=("Q_node", "median"),
+            full_coverage_rate=(
+                "coverage_class",
+                lambda values: values.eq("full").mean(),
+            ),
+            basic_coverage_rate=(
+                "coverage_class",
+                lambda values: values.eq("basic").mean(),
+            ),
+            D5_available_rate=("evaluable_D5", "mean"),
             node_insufficient_rate=(
                 "coverage_class",
                 lambda values: values.eq("insufficient").mean(),
@@ -230,9 +284,25 @@ def build_plant_summary(node: pd.DataFrame, pair: pd.DataFrame) -> pd.DataFrame:
         pair.assign(date=pair["timestamp"].dt.floor("1d"))
         .groupby("date", as_index=False)
         .agg(
-            pair_score_median=("Q_pair", "median"),
-            pair_score_p10=("Q_pair", lambda values: values.quantile(0.10)),
+            pair_score_full_median=("Q_pair_full", "median"),
+            pair_score_full_p10=(
+                "Q_pair_full",
+                lambda values: values.quantile(0.10),
+            ),
+            pair_score_basic_median=("Q_pair_basic", "median"),
+            pair_score_basic_p10=(
+                "Q_pair_basic",
+                lambda values: values.quantile(0.10),
+            ),
             pair_evaluable_rate=("Q_pair", lambda values: values.notna().mean()),
+            pair_full_coverage_rate=(
+                "pair_coverage_class",
+                lambda values: values.eq("full").mean(),
+            ),
+            pair_basic_coverage_rate=(
+                "pair_coverage_class",
+                lambda values: values.eq("basic").mean(),
+            ),
         )
     )
     return node_daily.merge(pair_daily, on="date", how="outer").sort_values("date")
@@ -242,43 +312,62 @@ def composite_uncertainty(node: pd.DataFrame) -> pd.DataFrame:
     sap = read_yaml(CONFIG_ROOT / "statistical_analysis_plan_v2.yaml")
     repetitions = int(sap["uncertainty"]["repetitions"])
     rng = np.random.default_rng(int(sap["uncertainty"]["seed"]))
-    plant_hour = (
-        node.groupby("timestamp", as_index=False)
-        .agg(Q_node=("Q_node", "median"), coverage=("Q_node", lambda values: values.notna().mean()))
-        .dropna(subset=["Q_node"])
-    )
-    plant_hour["month"] = plant_hour["timestamp"].dt.to_period("M").astype(str)
     rows = []
-    for month, frame in plant_hour.groupby("month"):
-        for label, block_hours in (
-            ("main_7d", int(sap["uncertainty"]["main_block_hours"])),
-            ("sensitivity_48h", int(sap["uncertainty"]["sensitivity_block_hours"])),
-        ):
-            samples = moving_block_bootstrap_mean(
-                frame["Q_node"].to_numpy(),
-                block_size=block_hours,
-                repetitions=repetitions,
-                rng=rng,
+    for coverage_class, score_column in (
+        ("full", "Q_node_full"),
+        ("basic", "Q_node_basic"),
+    ):
+        plant_hour = (
+            node.groupby("timestamp", as_index=False)
+            .agg(
+                Q_node=(score_column, "median"),
+                coverage=(
+                    score_column,
+                    lambda values: values.notna().mean(),
+                ),
             )
-            rows.append(
-                {
-                    "month": month,
-                    "method": label,
-                    "block_hours": block_hours,
-                    "repetitions": repetitions,
-                    "estimate": float(frame["Q_node"].mean()),
-                    "ci_low": float(np.nanquantile(samples, 0.025)),
-                    "ci_high": float(np.nanquantile(samples, 0.975)),
-                    "n_plant_hours": len(frame),
-                    "analysis_unit": "plant_hour_joint_across_dimensions",
-                }
-            )
+            .dropna(subset=["Q_node"])
+        )
+        plant_hour["month"] = plant_hour["timestamp"].dt.to_period("M").astype(
+            str
+        )
+        for month, frame in plant_hour.groupby("month"):
+            for label, block_hours in (
+                ("main_7d", int(sap["uncertainty"]["main_block_hours"])),
+                (
+                    "sensitivity_48h",
+                    int(sap["uncertainty"]["sensitivity_block_hours"]),
+                ),
+            ):
+                samples = moving_block_bootstrap_mean(
+                    frame["Q_node"].to_numpy(),
+                    block_size=block_hours,
+                    repetitions=repetitions,
+                    rng=rng,
+                )
+                rows.append(
+                    {
+                        "month": month,
+                        "coverage_class": coverage_class,
+                        "method": label,
+                        "block_hours": block_hours,
+                        "repetitions": repetitions,
+                        "estimate": float(frame["Q_node"].mean()),
+                        "ci_low": float(np.nanquantile(samples, 0.025)),
+                        "ci_high": float(np.nanquantile(samples, 0.975)),
+                        "n_plant_hours": len(frame),
+                        "mean_sensor_coverage": float(frame["coverage"].mean()),
+                        "analysis_unit": (
+                            "plant_hour_joint_across_dimensions_by_coverage"
+                        ),
+                    }
+                )
     return pd.DataFrame(rows)
 
 
 def dimension_ablation(node: pd.DataFrame) -> pd.DataFrame:
     rows = []
-    full = node["Q_node"]
+    full = node["Q_node_full"]
     mapping = {"D1": "D1_total", "D2": "D2_total", "D5": "D5_report_score"}
     for dimension, column in mapping.items():
         kept = [value for key, value in mapping.items() if key != dimension]
@@ -329,4 +418,3 @@ def run_composite(output_dir: Path, d3_gate: pd.DataFrame) -> dict[str, pd.DataF
     for name, frame in outputs.items():
         frame.to_parquet(output_dir / f"{name}.parquet", index=False)
     return outputs
-

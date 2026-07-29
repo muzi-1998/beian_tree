@@ -26,6 +26,9 @@ def build_execution_report(
     d3_summary = d3["D3_oat_summary"]
     d4_summary = d4["D4_mechanism_summary"]
     d5_acceptance = d5["D5_acceptance"]
+    d5_outer = d5["D5_outer_refit_summary"]
+    d1_raw = d1["D1_raw_endpoint_summary"]
+    d1_high = d1["D1_high_amplitude_summary"]
     gate_counts = d3["D3_safety_gate"]["D3_gate_status"].value_counts()
     node = composite["WWDQS_node_scores"]
     pair = composite["WWDQS_pair_scores"]
@@ -50,12 +53,12 @@ def build_execution_report(
         "| Work package | Execution | Decision |",
         "|---|---|---|",
         "| WP0 | Frozen SAP, claim registry, split registry, figure contract and immutable run manifest | Complete |",
-        "| D1 | Core-fault mixed injection design across analyte, regime and routing strata | Internal mechanism validation complete; field truth pending |",
+        "| D1 | Route-accurate core-fault validation plus raw-domain frozen-transform endpoint audit | Internal mechanism validation complete; field truth pending |",
         "| D2 | QFA-window, hard-RLE and gap-mapping OAT with full sensor-hour rescoring | Complete |",
         "| D3 | Grade A instrument Fail, Grade B value/rate Warn and legacy-score separation | Complete; site approval of Grade B sources pending |",
-        "| D4 | Target, peer, common-process, opposite-direction and lag mechanisms | Complete; ORP shrinkage remains sensitivity-only |",
-        "| D5 | Component ablation, blocked-month validation, support funnel and locked admission audit | Partial: context/template ablations require outer-fold refit |",
-        "| Composite | Node/pair/plant products, coverage, 7 d and 48 h bootstrap, dimension ablation | Complete without formal A-E grades |",
+        "| D4 | Target, peer, common-process, opposite-direction and lag mechanisms with timestamp-clustered CI | Complete; ORP shrinkage remains sensitivity-only |",
+        "| D5 | Three prespecified structural ablations with complete future-month outer refit | Complete for retrospective validation; deployment governance pending |",
+        "| Composite | Full/basic-stratified node, pair and plant products with 7 d and 48 h block bootstrap | Complete without formal A-E grades |",
         "",
         "## Key numerical results",
         "",
@@ -72,9 +75,32 @@ def build_execution_report(
     lines.extend(
         [
             "",
-            "D1 injections are parameterized in original measurement units and projected through the frozen training-time detector route. "
-            "The implementation does not refit decomposition or whitening on each contaminated test window. This revision is deliberate: "
-            "test-window refitting would leak fault information and allow preprocessing to adapt to the injected fault.",
+            "The full D1 design is explicitly route-level: spike uses the residual route, step the routed whitened detector input, "
+            "drift the fixed PLS route, and hard freeze the raw minute route. A separate prespecified subset injects each fault in "
+            "the raw measurement domain and applies decomposition/whitening parameters fitted before the validation period and then frozen. "
+            "No contaminated test window is used to refit preprocessing.",
+            "",
+            "Raw-domain frozen-transform audit:",
+        ]
+    )
+    for row in d1_raw.itertuples(index=False):
+        lines.append(
+            f"- {row.fault_type}: raw-domain recall {_format_metric(row.raw_domain_recall)} "
+            f"(cluster 95% CI {_format_metric(row.recall_ci_low)}-{_format_metric(row.recall_ci_high)}), "
+            f"route/raw agreement {_format_metric(row.detection_agreement)}; n={int(row.n_scenarios)}."
+        )
+    high_primary = d1_high[
+        d1_high["resolution_mode"].eq("original")
+        & d1_high["route"].eq("all_routes")
+    ]
+    if high_primary.empty:
+        high_primary = d1_high[d1_high["resolution_mode"].eq("original")]
+    lines.extend(
+        [
+            "",
+            f"At the locked >=2 sigma region, {int(high_primary['target_passed'].sum())}/"
+            f"{len(high_primary)} analyte-route strata met the 0.80 recall target. "
+            "The amplitude-duration maps retain low-recall regions instead of pooling them away.",
             "",
             "### D2",
             "",
@@ -92,8 +118,22 @@ def build_execution_report(
         ]
     )
     for row in d4_summary.itertuples(index=False):
-        lines.append(f"- {row.scenario} / {row.metric}: {_format_metric(row.estimate)} (n={row.n_independent_windows}).")
-    lines.extend(["", "### D5", ""])
+        n_value = getattr(row, "n_pair_windows", pd.NA)
+        lines.append(
+            f"- {row.scenario} / {row.metric}: {_format_metric(row.estimate)} "
+            f"(pair-windows={n_value}, timestamp-clustered where applicable)."
+        )
+    lines.extend(
+        [
+            "",
+            "Subhour D4 lag values are retained as supplementary sensitivity only. "
+            "They do not replace D4_raw or support a formal subhour monotonicity claim. "
+            "ORP shrinkage remains an exploratory sparse-support analysis.",
+            "",
+            "### D5",
+            "",
+        ]
+    )
     for row in d5_acceptance.itertuples(index=False):
         if row.criterion in {
             "swap_AUROC",
@@ -106,12 +146,22 @@ def build_execution_report(
                 f"- {row.criterion}: {_format_metric(row.estimate)}; target {row.operator} {row.target}; "
                 f"{'Pass' if row.passed else 'Fail'}."
             )
+    lines.append("")
+    lines.append("Complete future-month outer refits:")
+    for row in d5_outer.itertuples(index=False):
+        lines.append(
+            f"- {row.variant} / {row.metric}: {_format_metric(row.estimate)} "
+            f"(outer-fold 95% CI {_format_metric(row.ci95_low)}-"
+            f"{_format_metric(row.ci95_high)}); "
+            f"{'Pass' if row.passed else 'Fail'} against {row.threshold:.2f}."
+        )
     lines.extend(
         [
             "",
             "### Composite",
             "",
-            f"- Formal node-score rows: {int(node['Q_node'].notna().sum()):,}.",
+            f"- Full node-score rows: {int(node['Q_node_full'].notna().sum()):,}.",
+            f"- Basic extension rows: {int(node['Q_node_basic'].notna().sum()):,}.",
             f"- Full/basic/limited/insufficient coverage: "
             + ", ".join(
                 f"{key}={int(value):,}"
@@ -119,6 +169,8 @@ def build_execution_report(
             )
             + ".",
             f"- Formal pair-score rows: {int(pair['Q_pair'].notna().sum()):,}.",
+            f"- Full/basic pair rows: {int(pair['Q_pair_full'].notna().sum()):,}/"
+            f"{int(pair['Q_pair_basic'].notna().sum()):,}.",
             "- D3 is not averaged into Q_node or Q_pair; Fail prevents a high-confidence grade and Warn is retained as an explicit label.",
             "",
             "## Pending or disputed items",
@@ -144,11 +196,18 @@ def build_execution_report(
             "- A truly unseen future period and preferably a second treatment plant.",
             "- An independent downstream criterion before any learned weighting or operational-utility claim.",
             "",
+            "## Prespecified failures retained",
+            "",
+            "- D1 Spike/Step low-recall regions remain visible in the amplitude-duration maps.",
+            "- D2 settings that fail the 0.75 event-Jaccard threshold remain in the main OAT figure.",
+            "- D4 subhour lag monotonicity is not claimed and is shown as sensitivity-only.",
+            "- D5 variants that fail the locked 0.80 Top-1 localization threshold remain reported.",
+            "",
             "## Publication decision",
             "",
-            "The package is suitable for a retrospective single-plant methods manuscript after the pending full-refit D5 context ablations "
-            "and the listed method locks are resolved. It is not yet suitable for an operational deployment claim or a cross-plant "
-            "generalization claim.",
+            "The package is suitable for a retrospective single-plant methods manuscript with explicit claim boundaries. "
+            "The completed D5 outer refits remove the previous structural-ablation blocker. It remains unsuitable for an operational "
+            "deployment claim, learned-optimal-weight claim or cross-plant generalization claim until the listed external evidence is available.",
         ]
     )
     path = output_dir / "D1_D5_V2_EXECUTION_REPORT.md"

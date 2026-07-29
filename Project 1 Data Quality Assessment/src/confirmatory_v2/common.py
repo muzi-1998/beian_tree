@@ -4,7 +4,7 @@ import hashlib
 import json
 import subprocess
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any, Callable, Iterable, Sequence
 
 import numpy as np
 import pandas as pd
@@ -139,3 +139,128 @@ def moving_block_bootstrap_mean(
         samples[index] = float(np.mean(array[sample_index]))
     return samples
 
+
+def cluster_bootstrap_interval(
+    frame: pd.DataFrame,
+    statistic: Callable[[pd.DataFrame], float],
+    *,
+    cluster_columns: Sequence[str],
+    repetitions: int,
+    rng: np.random.Generator,
+    confidence_level: float = 0.95,
+) -> tuple[float, float]:
+    """Bootstrap whole dependence clusters and return a percentile interval."""
+    if frame.empty:
+        return np.nan, np.nan
+    missing = [column for column in cluster_columns if column not in frame.columns]
+    if missing:
+        raise KeyError(f"Missing cluster columns: {missing}")
+    groups = [
+        group.copy()
+        for _, group in frame.groupby(
+            list(cluster_columns),
+            sort=False,
+            dropna=False,
+            observed=True,
+        )
+    ]
+    if not groups:
+        return np.nan, np.nan
+    estimates = np.empty(int(repetitions), dtype=float)
+    for index in range(int(repetitions)):
+        selected = rng.integers(0, len(groups), size=len(groups))
+        sample = pd.concat(
+            [groups[group_index] for group_index in selected],
+            ignore_index=True,
+        )
+        estimates[index] = float(statistic(sample))
+    finite = estimates[np.isfinite(estimates)]
+    if not len(finite):
+        return np.nan, np.nan
+    alpha = 1.0 - float(confidence_level)
+    low, high = np.quantile(finite, [alpha / 2.0, 1.0 - alpha / 2.0])
+    return float(low), float(high)
+
+
+def cluster_bootstrap_proportion(
+    frame: pd.DataFrame,
+    *,
+    outcome_column: str,
+    cluster_columns: Sequence[str],
+    repetitions: int,
+    rng: np.random.Generator,
+    confidence_level: float = 0.95,
+) -> tuple[float, float]:
+    """Fast cluster bootstrap for a binary row-level proportion."""
+    grouped = (
+        frame.groupby(
+            list(cluster_columns),
+            sort=False,
+            dropna=False,
+            observed=True,
+        )[outcome_column]
+        .agg(["sum", "count"])
+        .astype(float)
+    )
+    if grouped.empty:
+        return np.nan, np.nan
+    successes = grouped["sum"].to_numpy()
+    counts = grouped["count"].to_numpy()
+    selected = rng.integers(
+        0,
+        len(grouped),
+        size=(int(repetitions), len(grouped)),
+    )
+    estimates = successes[selected].sum(axis=1) / np.maximum(
+        counts[selected].sum(axis=1),
+        1.0,
+    )
+    alpha = 1.0 - float(confidence_level)
+    low, high = np.quantile(estimates, [alpha / 2.0, 1.0 - alpha / 2.0])
+    return float(low), float(high)
+
+
+def expand_window_end_gate(
+    frame: pd.DataFrame,
+    *,
+    timestamp_column: str = "timestamp",
+    duration_column: str = "window_min",
+    status_column: str = "D3_gate_status",
+) -> pd.DataFrame:
+    """Map end-exclusive whole-hour windows onto the node hours they cover."""
+    required = {timestamp_column, duration_column, status_column, "sensor_id"}
+    missing = sorted(required.difference(frame.columns))
+    if missing:
+        raise KeyError(f"Missing gate-window columns: {missing}")
+    source = frame.copy()
+    source[timestamp_column] = pd.to_datetime(source[timestamp_column])
+    rows: list[pd.DataFrame] = []
+    for duration_min, group in source.groupby(duration_column, sort=False):
+        duration = int(duration_min)
+        if duration <= 0 or duration % 60:
+            raise ValueError(
+                f"Gate duration must be a positive whole number of hours, got {duration_min}"
+            )
+        for hours_back in range(duration // 60, 0, -1):
+            block = group.copy()
+            block["source_window_end_exclusive"] = block[timestamp_column]
+            block[timestamp_column] = block[timestamp_column] - pd.Timedelta(
+                hours=hours_back
+            )
+            rows.append(block)
+    if not rows:
+        return source.iloc[0:0].copy()
+    expanded = pd.concat(rows, ignore_index=True)
+    precedence = {"Pass": 0, "Warn": 1, "Fail": 2}
+    expanded["_gate_precedence"] = (
+        expanded[status_column].map(precedence).fillna(-1).astype(int)
+    )
+    expanded = (
+        expanded.sort_values("_gate_precedence")
+        .groupby([timestamp_column, "sensor_id"], as_index=False, sort=False)
+        .tail(1)
+        .drop(columns="_gate_precedence")
+        .sort_values(["sensor_id", timestamp_column])
+        .reset_index(drop=True)
+    )
+    return expanded

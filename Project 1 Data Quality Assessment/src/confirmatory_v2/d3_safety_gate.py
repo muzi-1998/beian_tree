@@ -88,10 +88,18 @@ def build_safety_gate() -> pd.DataFrame:
         ],
         default="none",
     )
+    gate["window_start"] = gate["ts"] - pd.to_timedelta(
+        gate["window_min"], unit="min"
+    )
+    gate["window_end_exclusive"] = gate["ts"]
+    gate["timestamp_role"] = "window_end_exclusive"
     columns = [
         "ts",
         "sensor_id",
         "window_min",
+        "window_start",
+        "window_end_exclusive",
+        "timestamp_role",
         "D3_gate_status",
         "D3_hard_fail",
         "D3_soft_warning",

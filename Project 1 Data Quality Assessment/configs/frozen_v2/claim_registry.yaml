@@ -3,7 +3,7 @@ claims:
   - claim_id: C-D1-MECH
     dimension: D1
     claim: Four core fault mechanisms have measurable amplitude-duration applicability boundaries.
-    evidence_required: controlled_raw_domain_injection_with_blocked_time_validation
+    evidence_required: route_level_applicability_design_plus_raw_domain_frozen_transform_audit
     current_execution_status: executable_with_current_data
     external_data_required: false
   - claim_id: C-D1-FIELD
@@ -51,7 +51,7 @@ claims:
   - claim_id: C-D5-SCORE
     dimension: D5
     claim: Regime-conditioned ordinal structure provides report-grade retrospective evidence.
-    evidence_required: blocked_validation_ablation_coverage_and_negative_controls
+    evidence_required: blocked_validation_outer_refit_ablation_coverage_and_negative_controls
     current_execution_status: executable_with_current_data
     external_data_required: false
   - claim_id: C-D5-ACTION
@@ -72,4 +72,3 @@ claims:
     evidence_required: independent_downstream_or_operational_criterion
     current_execution_status: pending_external_criterion
     external_data_required: true
-

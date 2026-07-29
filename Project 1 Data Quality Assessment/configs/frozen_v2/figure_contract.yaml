@@ -19,10 +19,23 @@ statistics:
   show_95ci: true
   state_analysis_unit: true
   state_block_length: true
+main_figure_groups:
+  - overall_framework_and_claim_boundary
+  - D1_amplitude_duration_applicability
+  - D2_rank_and_event_OAT
+  - D3_safety_gate_composition
+  - D4_mechanism_and_D5_detection_localization
+  - composite_full_basic_coverage
+framework:
+  designer: scientific_illustrator
+  editable_source: pptx
+  reading_order: left_to_right
+  raster_evidence: none
 exports:
   - svg
   - pdf
   - png_600dpi
+  - tiff_600dpi
 source_data:
   one_file_per_figure: true
   allowed_formats: [csv, parquet, xlsx]
@@ -38,4 +51,3 @@ forbidden_canvas_text:
   - final
   - draft
   - implementation note
-

@@ -8,7 +8,12 @@ import pandas as pd
 from scipy.stats import spearmanr
 from sklearn.metrics import average_precision_score, roc_auc_score
 
-from .common import CONFIG_ROOT, PROJECT_ROOT, read_yaml
+from .common import (
+    CONFIG_ROOT,
+    PROJECT_ROOT,
+    cluster_bootstrap_interval,
+    read_yaml,
+)
 
 
 D4_ROOT = PROJECT_ROOT / "D4 Parallel-redundancy Temporal Consistency"
@@ -90,20 +95,17 @@ def _bootstrap_interval(
     frame: pd.DataFrame,
     statistic,
     *,
+    cluster_columns: tuple[str, ...] = ("timestamp",),
     reps: int = 2000,
     seed: int = 20260727,
 ) -> tuple[float, float]:
-    if frame.empty:
-        return np.nan, np.nan
-    rng = np.random.default_rng(seed)
-    estimates = np.empty(reps, dtype=float)
-    for index in range(reps):
-        sample = frame.iloc[rng.integers(0, len(frame), size=len(frame))]
-        estimates[index] = statistic(sample)
-    finite = estimates[np.isfinite(estimates)]
-    if not len(finite):
-        return np.nan, np.nan
-    return tuple(np.quantile(finite, [0.025, 0.975]))
+    return cluster_bootstrap_interval(
+        frame,
+        statistic,
+        cluster_columns=cluster_columns,
+        repetitions=reps,
+        rng=np.random.default_rng(seed),
+    )
 
 
 def _mechanism_trials() -> tuple[pd.DataFrame, object]:
@@ -252,7 +254,7 @@ def _mechanism_summary(trials: pd.DataFrame, threshold: float) -> pd.DataFrame:
         "peer_freeze",
     ]:
         positive = trials[trials["scenario"].eq(scenario)]
-        merged = baseline[["window_id", "anomaly_score"]].merge(
+        merged = baseline[["window_id", "pair_id", "timestamp", "anomaly_score"]].merge(
             positive[["window_id", "anomaly_score", "direction_correct"]],
             on="window_id",
             suffixes=("_baseline", "_positive"),
@@ -276,8 +278,10 @@ def _mechanism_summary(trials: pd.DataFrame, threshold: float) -> pd.DataFrame:
                 "estimate": float(roc_auc_score(labels, scores)),
                 "ci95_low": auc_ci[0],
                 "ci95_high": auc_ci[1],
-                "n_independent_windows": len(merged),
-                "analysis_unit": "pair_window",
+                "n_pair_windows": len(merged),
+                "n_independent_time_clusters": merged["timestamp"].nunique(),
+                "analysis_unit": "shared_timestamp_clustered_pair_window",
+                "ci_method": "cluster_bootstrap_timestamp",
             }
         )
         rows.append(
@@ -287,8 +291,10 @@ def _mechanism_summary(trials: pd.DataFrame, threshold: float) -> pd.DataFrame:
                 "estimate": float(average_precision_score(labels, scores)),
                 "ci95_low": ap_ci[0],
                 "ci95_high": ap_ci[1],
-                "n_independent_windows": len(merged),
-                "analysis_unit": "pair_window",
+                "n_pair_windows": len(merged),
+                "n_independent_time_clusters": merged["timestamp"].nunique(),
+                "analysis_unit": "shared_timestamp_clustered_pair_window",
+                "ci_method": "cluster_bootstrap_timestamp",
             }
         )
         if scenario.endswith(("drift", "step")):
@@ -303,13 +309,17 @@ def _mechanism_summary(trials: pd.DataFrame, threshold: float) -> pd.DataFrame:
                     "estimate": float(merged["direction_correct"].mean()),
                     "ci95_low": direction_ci[0],
                     "ci95_high": direction_ci[1],
-                    "n_independent_windows": len(merged),
-                    "analysis_unit": "pair_window",
+                    "n_pair_windows": len(merged),
+                    "n_independent_time_clusters": merged["timestamp"].nunique(),
+                    "analysis_unit": "shared_timestamp_clustered_pair_window",
+                    "ci_method": "cluster_bootstrap_timestamp",
                 }
             )
     for scenario in ["common_equal", "common_unequal", "opposite_direction"]:
-        scenario_frame = trials[trials["scenario"].eq(scenario)][["window_id", "D4_raw"]]
-        merged = baseline[["window_id", "D4_raw"]].merge(
+        scenario_frame = trials[trials["scenario"].eq(scenario)][
+            ["window_id", "D4_raw"]
+        ]
+        merged = baseline[["window_id", "pair_id", "timestamp", "D4_raw"]].merge(
             scenario_frame,
             on="window_id",
             suffixes=("_baseline", "_scenario"),
@@ -336,8 +346,12 @@ def _mechanism_summary(trials: pd.DataFrame, threshold: float) -> pd.DataFrame:
                 "estimate": float(far),
                 "ci95_low": far_ci[0],
                 "ci95_high": far_ci[1],
-                "n_independent_windows": int(eligible.sum()),
-                "analysis_unit": "pair_window",
+                "n_pair_windows": int(eligible.sum()),
+                "n_independent_time_clusters": eligible_frame[
+                    "timestamp"
+                ].nunique(),
+                "analysis_unit": "shared_timestamp_clustered_pair_window",
+                "ci_method": "cluster_bootstrap_timestamp",
             }
         )
     lag = (
@@ -354,8 +368,14 @@ def _mechanism_summary(trials: pd.DataFrame, threshold: float) -> pd.DataFrame:
             "estimate": float(rho),
             "ci95_low": np.nan,
             "ci95_high": np.nan,
-            "n_independent_windows": int(lag["n"].sum()),
+            "n_pair_windows": int(lag["n"].sum()),
+            "n_independent_time_clusters": int(
+                trials.loc[
+                    trials["scenario"].str.startswith("lag_"), "timestamp"
+                ].nunique()
+            ),
             "analysis_unit": "lag_level_mean",
+            "ci_method": "descriptive_no_interval",
         }
     )
     return pd.DataFrame(rows)
@@ -415,6 +435,11 @@ def run_d4_validation(output_dir: Path) -> dict[str, pd.DataFrame]:
             mean_Qcp=("Q_cp", "mean"),
             n_independent_windows=("window_id", "size"),
         )
+    )
+    lag["reporting_role"] = np.where(
+        lag["lag_minutes"].ge(60),
+        "main_change_point_scale",
+        "supplementary_subhour_sensitivity",
     )
     shrinkage = _orp_shrinkage_sensitivity()
     outputs = {

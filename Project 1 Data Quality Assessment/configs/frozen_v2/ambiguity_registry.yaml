@@ -3,24 +3,24 @@ items:
   - ambiguity_id: A-D1-PEER-MARGIN
     scope: D1_peer_admission
     scheme_text: no_material_tail_degradation_and_not_significantly_worse
-    issue: Exact equivalence margin, confidence rule and alpha are not specified.
-    execution_policy: retain_existing_locked_numeric_margins_and_report_them
-    status: pending_author_confirmation
-    recommended_resolution: prespecify a 5_percent P90/P95 noninferiority margin and 95_percent block-bootstrap CI rule.
+    issue: The v2.0 prose omitted the numeric admission rule already used by the D1 peer-upgrade implementation.
+    execution_policy: lock_the_existing_2pct_gain_zero_ci_lower_bound_60pct_positive_folds_and_5pct_p90_tail_margin_in_the_SAP
+    status: resolved_by_existing_D1_validation_contract
+    recommended_resolution: retain the frozen rule; do not add a post-hoc P95 endpoint without a new development protocol.
   - ambiguity_id: A-D1-RESOLUTION
     scope: D1_degraded_resolution_injections
     scheme_text: original_resolution_plus_one_degraded_resolution_level
     issue: The degraded resolution increment is not numerically specified.
-    execution_policy: use_2x_native_or_empirical_resolution_as_sensitivity_only
-    status: pending_author_confirmation
+    execution_policy: use_paired_2x_native_or_empirical_resolution_as_exploratory_sensitivity_only
+    status: pending_instrument_and_SCADA_encoding_metadata
     recommended_resolution: lock the degraded increment from instrument resolution and SCADA encoding metadata before confirmatory reuse.
   - ambiguity_id: A-D1-INJECTION-ROUTE
     scope: D1_fault_injection_preprocessing
     scheme_text: inject_in_raw_domain_then_rerun_decomposition_whitening_and_scoring
-    issue: It is unclear whether rerun means applying the frozen causal transform or refitting preprocessing on each contaminated test window.
-    execution_policy: apply_faults_in_measurement_units_through_the_frozen_training_route_without_refitting
-    status: resolved_by_no_leakage_principle_pending_author_confirmation
-    recommended_resolution: state explicitly that all preprocessing parameters are trained before the injection window and remain frozen during injected evaluation.
+    issue: The original implementation labelled every route-level trial as raw-domain even though spike, step and drift entered different detector routes.
+    execution_policy: label_all_primary_trials_by_their_true_route_and_add_a_64_scenario_per_fault_raw_domain_frozen_transform_audit
+    status: resolved_by_route_truth_and_no_leakage_audit
+    recommended_resolution: keep route-level applicability and raw-domain concordance as separate evidence layers; never refit on a contaminated window.
   - ambiguity_id: A-D4-SHRINKAGE
     scope: D4_ORP_hierarchical_shrinkage
     scheme_text: lambda_depends_on_effective_blocks_and_estimation_variance
@@ -39,30 +39,30 @@ items:
     scope: D4_change_point_lag_validation
     scheme_text: validate_0_10_30_60_180_minute_lags
     issue: The production change-point timeline is hourly, so 10 and 30 minute lag levels are below its nominal resolution.
-    execution_policy: retain_all_levels_as_resolution_sensitivity_and_do_not_claim_subhour_identification
-    status: pending_method_choice
-    recommended_resolution: either predefine a minute-scale auxiliary change-point detector or restrict the confirmatory lag claim to one hour and longer.
+    execution_policy: remove_subhour_levels_from_main_claim_and_retain_the_existing_grid_as_supplementary_resolution_sensitivity
+    status: resolved_for_current_manuscript_scope
+    recommended_resolution: a future minute-scale auxiliary detector is required before making 10 or 30 minute identification claims.
   - ambiguity_id: A-D5-NODE-SUPPORT
     scope: D5_L3_admission
     scheme_text: prespecified_node_level_independent_time_blocks
-    issue: The v2.0 document does not state the numeric minimum.
-    execution_policy: retain_current_D5_v2_3_support_contract
-    status: pending_author_confirmation
-    recommended_resolution: copy the exact v2.3 node minimums into the manuscript SAP before submission.
+    issue: The v2.0 document did not state the numeric minimum.
+    execution_policy: retain_current_D5_v2_3_support_contract_and_copy_exact_thresholds_into_the_SAP
+    status: resolved_by_v2_3_contract_lock
+    recommended_resolution: cite the frozen SAP and D5 v2.3 support contract together.
   - ambiguity_id: A-D5-CONTEXT-ABLATION
     scope: D5_context_and_template_ablation
     scheme_text: remove_qr_qir_time_hysteresis_and_fixed_regime_then_rerun
-    issue: The document does not define outer-fold refitting, regime-label alignment, K selection or threshold recalibration for these structural ablations.
-    execution_policy: compute_component_score_space_ablation_and_mark_structural_refits_pending
-    status: pending_method_lock
-    recommended_resolution: freeze one outer-fold refit protocol on development months and rerun all structural ablations without reusing confirmatory labels.
+    issue: The v2.0 document did not define K selection or the exact reduced set of structural refits.
+    execution_policy: run_full_reference_no_exogenous_no_regime_and_no_hysteresis_with_training_only_silhouette_K_and_frozen_future_month_tests
+    status: resolved_by_prespecified_outer_refit_protocol
+    recommended_resolution: retain only these three high-value ablations and do not search feature combinations using Top1.
   - ambiguity_id: A-COMP-BOTTLENECK
     scope: composite_conservative_gate
     scheme_text: Q_min_below_3_for_2_to_3_hours
     issue: The primary persistence is given as a range.
-    execution_policy: report_2h_and_3h_sensitivity_without_releasing_a_primary_action_gate
-    status: pending_author_choice
-    recommended_resolution: use 3h as the conservative primary rule and 2h as sensitivity.
+    execution_policy: use_3h_as_primary_and_2h_as_sensitivity_without_releasing_an_operational_action_gate
+    status: resolved_for_retrospective_analysis
+    recommended_resolution: preserve the same rule in the manuscript SAP; deployment still requires prospective validation.
   - ambiguity_id: A-COMP-GRADE
     scope: composite_A_to_E_grades
     scheme_text: thresholds_frozen_before_confirmatory_testing

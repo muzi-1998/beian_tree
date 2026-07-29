@@ -28,10 +28,13 @@ from .d4_validation import run_d4_validation
 from .d5_validation import run_d5_validation
 from .figures import (
     figure_composite,
-    figure_cross_dimension,
     figure_d1,
+    figure_d2,
+    figure_d3,
+    figure_d4_d5,
     write_figure_manifest,
 )
+from .framework import build_framework_figure
 from .report import build_execution_report
 from .wp0 import build_temporal_split_registry, config_registry, source_artifact_registry
 
@@ -79,9 +82,13 @@ def run_confirmatory_v2() -> Path:
 
     figure_dir = output_dir / "figures"
     figure_dir.mkdir(exist_ok=True)
+    framework_stem, framework_audit = build_framework_figure(figure_dir)
     figure_stems = [
+        framework_stem,
         *figure_d1(d1, figure_dir),
-        *figure_cross_dimension(d2, d3, d4, d5, figure_dir),
+        *figure_d2(d2, figure_dir),
+        *figure_d3(d3, figure_dir),
+        *figure_d4_d5(d4, d5, figure_dir),
         *figure_composite(composite, figure_dir),
     ]
     source_paths = sorted(output_dir.glob("*.parquet"))
@@ -103,6 +110,7 @@ def run_confirmatory_v2() -> Path:
             "outer_folds": len(split),
             "untouched_terminal_test": False,
         },
+        "framework_audit": framework_audit,
         "artifacts": _artifact_manifest(output_dir),
     }
     json_dump(output_dir / "run_manifest.json", manifest)
