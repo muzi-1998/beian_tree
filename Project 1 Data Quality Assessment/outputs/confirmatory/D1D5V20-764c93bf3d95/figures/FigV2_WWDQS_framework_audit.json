@@ -1,0 +1,20 @@
+{
+  "backend": "powerpoint",
+  "slide_index": 1,
+  "slide_size": {
+    "width": 960,
+    "height": 540
+  },
+  "object_counts": {
+    "total": 33,
+    "pictures": 0,
+    "native_or_composite": 33
+  },
+  "picture_audit": [],
+  "hard_failure_count": 0,
+  "warning_count": 0,
+  "findings_truncated": false,
+  "passed": true,
+  "findings": [],
+  "reviewer_contract": "Every hard finding must be converted by the Corrector into named geometry or decomposition operations, executed by the Drawer, rerendered, and audited again."
+}

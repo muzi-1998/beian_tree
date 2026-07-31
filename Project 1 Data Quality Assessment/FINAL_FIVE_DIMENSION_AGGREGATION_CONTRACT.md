@@ -79,4 +79,10 @@ product, not an externally validated operational decision instrument.
    release.
 
 The authoritative v2.0 retrospective run is
-`outputs/confirmatory/D1D5V20-a2b2bef69861/`.
+`outputs/confirmatory/D1D5V20-764c93bf3d95/`.
+
+Full coverage is the primary complete-evidence estimand. Basic coverage is a
+separately labelled extension; Limited and Insufficient rows do not enter
+formal composite comparisons. Because Full coverage is selected by calendar
+time, regime/OOD state and D5 support, it must not be generalized to all
+sensor-hours without an explicit coverage-selection analysis.

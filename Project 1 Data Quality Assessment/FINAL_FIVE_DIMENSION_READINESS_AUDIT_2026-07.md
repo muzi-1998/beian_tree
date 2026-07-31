@@ -1,6 +1,6 @@
 # Final D1-D5 readiness audit
 
-Audit date: 2026-07-29
+Audit date: 2026-07-31
 
 ## Executive decision
 
@@ -17,7 +17,7 @@ The canonical high-frequency dynamic data-quality dimensions are:
 All five constructs are current and reproducible. D1, D2, D4 and D5 remain
 numerically separated dynamic evidence; D3 is an independent
 non-compensatory Safety Gate. The prespecified retrospective aggregation has
-now been executed as run `D1D5V20-854e66de7e6b`. The present evidence does not
+now been executed as run `D1D5V20-764c93bf3d95`. The present evidence does not
 support calling it an externally validated, deployment-ready WW-DQS index.
 
 This distinction is important:
@@ -29,42 +29,58 @@ This distinction is important:
 ## v2.0 confirmatory execution outcome
 
 The authoritative package is
-`outputs/confirmatory/D1D5V20-854e66de7e6b/`. Its 84 manifested artifacts pass
+`outputs/confirmatory/D1D5V20-764c93bf3d95/`. Its 137 manifested artifacts pass
 complete SHA-256 verification. It contains frozen configurations, six expanding
 future-month splits, source registries, all derived plot data, six
-Nature-ready main-text figure groups, the composite products and the execution
-report.
+Nature-ready main-text figure groups plus dedicated D1/D2/D5 validation figures,
+the composite products and the execution report.
 
 - D1: Hard Freeze recall 1.000, Drift 0.693, Spike 0.396 and Step 0.240. These
   results define applicability boundaries; they do not justify a blanket
   0.80-detection claim. Seven exploratory 2x-resolution spike trials were
   explicitly excluded as locally non-evaluable; the primary native-resolution
-  analysis was retained.
+  analysis was retained. The frozen existing trial set was verified against 12
+  source-artifact SHA-256 values and reprocessed into 432 amplitude-duration
+  cells. Of these, 163 met the minimum five-cluster support and 269 are shown as
+  gray hatched cells without interpolation. Hard Freeze is duration-only because
+  an injected amplitude is not scientifically defined.
 - D2: channel ranking was stable (`rho >= 0.996`). QFA 3 h and 12 h event
   Jaccard values were 0.731 and 0.721, below the frozen 0.75 threshold; the 6 h
-  primary setting remains supported.
+  primary setting remains supported. All six process-floor contract checks
+  passed: true low-oxygen floor, exact digital lock, low-amplitude variation,
+  recovery after leaving the floor, missing/long-gap non-exemption and common
+  semantics for DO_1_4 and DO_2_4.
 - D3: 27,689 Pass, 15,319 Warn and zero instrument-range Fail windows. All
   warning OAT Jaccard values were at least 0.899. Grade B source approval remains
   pending.
 - D4: target/peer drift and step AUROC values were 0.912-0.936; freeze AUROC
   values were 0.798-0.809; equal common-process conditional FAR was 0.041.
+  Unequal same-direction and opposite-direction changes were retained as
+  positive asymmetry stress tests, with detection rates 0.500 and 1.000, and
+  were not pooled into common-process FAR.
   Hourly change-point scoring did not show monotonic severity across
   0-180 min (`rho=0`), so subhour lag identification is not claimed.
 - D5: the released swap audit retained AUROC 0.912 and AUPRC 0.870. In the
   complete future-month outer refit, the full model achieved AUROC 0.967,
   AUPRC 0.974 and Top-1 localization 0.767. Detection passed, but localization
   still failed the locked 0.80 gate. Scientific report scores remain eligible;
-  sensor-specific hard Veto remains disabled.
+  sensor-specific hard Veto remains disabled. Paired Full-minus-ablation
+  month-fold effects are reported for AUROC, AUPRC and Top-1 and do not alter
+  the production model.
 - Composite: 85,652 formal node rows and 37,975 formal pair rows were produced.
   Coverage was 39,606 full, 46,046 basic and 364 limited sensor-hours. D5
   report eligibility declines sharply after January 2026 and is shown as
-  reduced evidence coverage rather than imputed low quality.
+  reduced evidence coverage rather than imputed low quality. The coverage audit
+  shows that Basic contains 29.1% OOD and 74.8% L1-support hours, whereas Full
+  contains neither; three calendar months have no Full observations. Full is
+  therefore a complete-evidence selected subset, not an all-hours estimand.
 
-Nature figure source validation passed 14/14 checks with no warnings. The
-confirmatory package adds five Python PNG/PDF/SVG/TIFF quantitative groups and
-one editable Scientific Illustrator framework group without altering the
-existing dimension-specific bundles. The framework audit found 33 native
-objects, zero raster pictures and zero findings.
+Nature figure static validation passed 13 checks with zero failures; one
+dropna-tracking warning is resolved by explicit cell support, sample counts and
+exclusion tables in the source-data package. The confirmatory package contains
+66 figure files, including editable/vector and 600-dpi raster exports plus
+source-data workbooks. The framework audit found 33 native objects, zero raster
+pictures and zero findings.
 
 ## Freshness evidence
 
