@@ -201,7 +201,19 @@ def run_d2_sensitivity(output_dir: Path) -> dict[str, pd.DataFrame]:
         .size()
         .rename(columns={"size": "sensor_hours"})
     )
-    challenge_path = D2_ROOT / "artifacts" / "data" / "D2_process_floor_validation.xlsx"
+    challenge_path = (
+        D2_ROOT
+        / "artifacts"
+        / "data"
+        / "D2_process_floor_casebook.xlsx"
+    )
+    if not challenge_path.exists():
+        challenge_path = (
+            D2_ROOT
+            / "artifacts"
+            / "data"
+            / "D2_process_floor_validation.xlsx"
+        )
     challenges = pd.read_excel(challenge_path, sheet_name=None)
     challenge_summary = pd.concat(
         [frame.assign(sheet=name) for name, frame in challenges.items()],
@@ -214,6 +226,22 @@ def run_d2_sensitivity(output_dir: Path) -> dict[str, pd.DataFrame]:
         "D2_oat_by_sensor": by_sensor,
         "D2_reason_migration": reason_migration,
         "D2_process_floor_challenges": challenge_summary,
+        "D2_process_floor_contract_checks": challenges.get(
+            "contract_checks",
+            pd.DataFrame(),
+        ),
+        "D2_process_floor_casebook": challenges.get(
+            "challenge_timeseries",
+            pd.DataFrame(),
+        ),
+        "D2_process_floor_observed_channels": challenges.get(
+            "observed_channels",
+            pd.DataFrame(),
+        ),
+        "D2_process_floor_semantic_contract": challenges.get(
+            "semantic_contract",
+            pd.DataFrame(),
+        ),
     }
     for name, frame in outputs.items():
         frame.to_parquet(output_dir / f"{name}.parquet", index=False)

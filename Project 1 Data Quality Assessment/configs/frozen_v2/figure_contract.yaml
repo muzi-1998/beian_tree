@@ -26,6 +26,12 @@ main_figure_groups:
   - D3_safety_gate_composition
   - D4_mechanism_and_D5_detection_localization
   - composite_full_basic_coverage
+supplementary_figure_groups:
+  - D1_fault_specific_detection_surfaces
+  - D1_route_raw_agreement
+  - D2_process_floor_contract_trajectories
+  - D4_common_change_control_roles
+  - D5_coverage_selection_and_paired_ablation
 framework:
   designer: scientific_illustrator
   editable_source: pptx

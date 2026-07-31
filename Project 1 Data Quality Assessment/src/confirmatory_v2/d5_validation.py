@@ -585,6 +585,79 @@ def _blocked_metrics(trials: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def _paired_outer_fold_deltas(
+    fold_metrics: pd.DataFrame,
+    *,
+    reference_variant: str,
+    metrics: list[str],
+    repetitions: int,
+    rng: np.random.Generator,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    reference = fold_metrics[
+        fold_metrics["variant"].eq(reference_variant)
+        & fold_metrics["metric"].isin(metrics)
+    ][["blocked_fold", "metric", "estimate"]].rename(
+        columns={"estimate": "reference_estimate"}
+    )
+    comparisons = []
+    for variant in fold_metrics["variant"].drop_duplicates():
+        if variant == reference_variant:
+            continue
+        ablation = fold_metrics[
+            fold_metrics["variant"].eq(variant)
+            & fold_metrics["metric"].isin(metrics)
+        ][["blocked_fold", "metric", "estimate"]].rename(
+            columns={"estimate": "ablation_estimate"}
+        )
+        paired = reference.merge(
+            ablation,
+            on=["blocked_fold", "metric"],
+            how="inner",
+            validate="one_to_one",
+        )
+        paired.insert(1, "reference_variant", reference_variant)
+        paired.insert(2, "ablation_variant", variant)
+        paired["delta_full_minus_ablation"] = (
+            paired["reference_estimate"] - paired["ablation_estimate"]
+        )
+        comparisons.append(paired)
+    deltas = pd.concat(comparisons, ignore_index=True)
+    summary_rows = []
+    for (variant, metric), frame in deltas.groupby(
+        ["ablation_variant", "metric"],
+        sort=False,
+    ):
+        low, high = cluster_bootstrap_interval(
+            frame,
+            lambda sample: float(
+                sample["delta_full_minus_ablation"].mean()
+            ),
+            cluster_columns=["blocked_fold"],
+            repetitions=repetitions,
+            rng=rng,
+        )
+        summary_rows.append(
+            {
+                "reference_variant": reference_variant,
+                "ablation_variant": variant,
+                "metric": metric,
+                "mean_delta_full_minus_ablation": float(
+                    frame["delta_full_minus_ablation"].mean()
+                ),
+                "ci95_low": low,
+                "ci95_high": high,
+                "positive_gain_fold_fraction": float(
+                    frame["delta_full_minus_ablation"].gt(0).mean()
+                ),
+                "n_outer_month_folds": int(frame["blocked_fold"].nunique()),
+                "analysis_unit": "paired_blocked_future_month",
+                "ci_method": "cluster_bootstrap_outer_month_fold",
+                "production_model_changed": False,
+            }
+        )
+    return deltas, pd.DataFrame(summary_rows)
+
+
 def run_d5_validation(output_dir: Path) -> dict[str, pd.DataFrame]:
     main = pd.read_parquet(D5_LOCAL / "D5_main_scores_hourly.parquet")
     main["timestamp"] = pd.to_datetime(main["timestamp"])
@@ -617,6 +690,16 @@ def run_d5_validation(output_dir: Path) -> dict[str, pd.DataFrame]:
         sap,
         read_yaml(CONFIG_ROOT / "validation_design.yaml")["D5"],
         repetitions=repetitions,
+    )
+    paired_design = read_yaml(CONFIG_ROOT / "validation_design.yaml")["D5"][
+        "paired_ablation_delta"
+    ]
+    paired_deltas, paired_delta_summary = _paired_outer_fold_deltas(
+        outer_fold_metrics,
+        reference_variant=paired_design["reference_variant"],
+        metrics=list(paired_design["metrics"]),
+        repetitions=repetitions,
+        rng=rng,
     )
     blocked = _blocked_metrics(trials)
     support_funnel = pd.DataFrame(
@@ -658,6 +741,8 @@ def run_d5_validation(output_dir: Path) -> dict[str, pd.DataFrame]:
         "D5_outer_refit_fold_metrics": outer_fold_metrics,
         "D5_outer_refit_summary": outer_summary,
         "D5_outer_refit_model_registry": outer_registry,
+        "D5_outer_refit_paired_deltas": paired_deltas,
+        "D5_outer_refit_paired_delta_summary": paired_delta_summary,
         "D5_blocked_validation": blocked,
         "D5_support_funnel": support_funnel,
         "D5_coverage_by_month": coverage,

@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from matplotlib.lines import Line2D
+from matplotlib.patches import Patch, Rectangle
 
 from .common import sha256_file
 
@@ -53,6 +54,10 @@ VERY_LIGHT = "#F2F2F2"
 DETECTION_CMAP = mpl.colors.LinearSegmentedColormap.from_list(
     "detection_probability",
     ["#F4F5F8", "#B4C0E4", "#3775BA", "#0F4D92"],
+)
+BALANCE_CMAP = mpl.colors.LinearSegmentedColormap.from_list(
+    "full_basic_balance",
+    ["#B64342", "#F4F5F8", "#0F4D92"],
 )
 
 
@@ -100,108 +105,353 @@ def _interval_error(frame: pd.DataFrame, estimate: str = "estimate") -> np.ndarr
     )
 
 
-def figure_d1(outputs: dict[str, pd.DataFrame], figure_dir: Path) -> list[Path]:
-    applicability = outputs["D1_applicability_map"].copy()
-    shown = applicability[
-        applicability["route"].eq("all_routes")
-        & applicability["resolution_mode"].eq("original")
-    ].copy()
-    faults = [
-        ("spike", "Spike"),
-        ("step", "Step"),
-        ("linear_drift", "Linear drift"),
-    ]
-    analytes = ["DO", "ORP"]
-    fig, axes = plt.subplots(3, 2, figsize=(7.2, 6.3))
-    panel_index = 0
-    image = None
-    for row_index, (fault, fault_label) in enumerate(faults):
-        for column_index, analyte in enumerate(analytes):
-            ax = axes[row_index, column_index]
-            frame = shown[
-                shown["fault_type"].eq(fault)
-                & shown["analyte"].eq(analyte)
-            ].copy()
-            matrix = frame.pivot(
-                index="amplitude_bin",
-                columns="duration_bin",
-                values="detection_probability",
-            ).sort_index()
-            image = ax.imshow(
-                matrix.to_numpy(),
-                origin="lower",
-                aspect="auto",
-                vmin=0,
-                vmax=1,
-                cmap=DETECTION_CMAP,
-                interpolation="nearest",
+def _draw_detection_surface(
+    ax: plt.Axes,
+    frame: pd.DataFrame,
+    *,
+    value_column: str,
+    amplitude_axis: bool,
+) -> mpl.image.AxesImage:
+    if amplitude_axis:
+        matrix = frame.pivot(
+            index="amplitude_bin",
+            columns="duration_bin",
+            values=value_column,
+        ).sort_index()
+        support = frame.pivot(
+            index="amplitude_bin",
+            columns="duration_bin",
+            values="cell_support",
+        ).reindex(index=matrix.index, columns=matrix.columns)
+        lookup = frame.set_index(["amplitude_bin", "duration_bin"])
+    else:
+        matrix = (
+            frame.set_index("duration_bin")[[value_column]]
+            .T.sort_index(axis=1)
+        )
+        support = (
+            frame.set_index("duration_bin")[["cell_support"]]
+            .T.reindex(columns=matrix.columns)
+        )
+        lookup = frame.set_index("duration_bin")
+    masked = np.ma.masked_where(
+        support.to_numpy() != "sufficient",
+        matrix.to_numpy(dtype=float),
+    )
+    cmap = DETECTION_CMAP.copy()
+    cmap.set_bad(LIGHT)
+    image = ax.imshow(
+        masked,
+        origin="lower",
+        aspect="auto",
+        vmin=0,
+        vmax=1,
+        cmap=cmap,
+        interpolation="nearest",
+    )
+    for y_index, row_key in enumerate(matrix.index):
+        for x_index, column_key in enumerate(matrix.columns):
+            cell = (
+                lookup.loc[(row_key, column_key)]
+                if amplitude_axis
+                else lookup.loc[column_key]
             )
-            cell_lookup = frame.set_index(["amplitude_bin", "duration_bin"])
-            for y_index, amplitude_bin in enumerate(matrix.index):
-                for x_index, duration_bin in enumerate(matrix.columns):
-                    key = (amplitude_bin, duration_bin)
-                    if key not in cell_lookup.index:
-                        continue
-                    cell = cell_lookup.loc[key]
-                    value = float(cell["detection_probability"])
-                    color = "white" if value >= 0.62 else DARK
-                    ax.text(
-                        x_index,
-                        y_index,
-                        f"{value:.2f}",
-                        ha="center",
-                        va="center",
-                        color=color,
-                        fontsize=6.2,
+            sufficient = str(cell["cell_support"]) == "sufficient"
+            if not sufficient:
+                ax.add_patch(
+                    Rectangle(
+                        (x_index - 0.5, y_index - 0.5),
+                        1,
+                        1,
+                        facecolor="none",
+                        edgecolor=GRAY,
+                        hatch="////",
+                        lw=0.0,
                     )
-            x_labels = []
-            for duration_bin in matrix.columns:
-                cell = frame[frame["duration_bin"].eq(duration_bin)].iloc[0]
-                x_labels.append(
-                    f"{cell.duration_low:.1f}\n{cell.duration_high:.1f}"
                 )
-            y_labels = []
-            for amplitude_bin in matrix.index:
-                cell = frame[frame["amplitude_bin"].eq(amplitude_bin)].iloc[0]
-                y_labels.append(
-                    f"{cell.amplitude_low_sigma:.1f}-{cell.amplitude_high_sigma:.1f}"
+                label = f"n={int(cell['n_independent_clusters'])}"
+                text_color = DARK
+            else:
+                value = float(cell[value_column])
+                label = (
+                    f"{value:.2f}\n"
+                    f"[{float(cell['ci95_low']):.2f},"
+                    f"{float(cell['ci95_high']):.2f}]\n"
+                    f"n={int(cell['n_independent_clusters'])}"
                 )
-            ax.set_xticks(np.arange(len(x_labels)), x_labels)
-            ax.set_yticks(np.arange(len(y_labels)), y_labels)
-            unit = str(frame["duration_unit"].iloc[0])
-            ax.set_xlabel(f"Duration range ({unit})")
-            ax.set_ylabel("Amplitude range (local sigma)")
-            ax.set_title(f"{fault_label}, {analyte}")
-            _panel_label(ax, chr(ord("a") + panel_index))
-            panel_index += 1
-    colorbar = fig.colorbar(
-        image,
-        ax=axes,
-        fraction=0.022,
-        pad=0.025,
-        aspect=35,
+                text_color = "white" if value >= 0.62 else DARK
+                edge_color = TEAL if value >= 0.80 else RED
+                ax.add_patch(
+                    Rectangle(
+                        (x_index - 0.46, y_index - 0.46),
+                        0.92,
+                        0.92,
+                        fill=False,
+                        edgecolor=edge_color,
+                        lw=0.9,
+                    )
+                )
+            ax.text(
+                x_index,
+                y_index,
+                label,
+                ha="center",
+                va="center",
+                color=text_color,
+                fontsize=5.0,
+                linespacing=0.95,
+            )
+    x_labels = []
+    for duration_bin in matrix.columns:
+        cell = frame[frame["duration_bin"].eq(duration_bin)].iloc[0]
+        x_labels.append(f"{cell.duration_low:.1f}\n{cell.duration_high:.1f}")
+    ax.set_xticks(np.arange(len(x_labels)), x_labels)
+    if amplitude_axis:
+        y_labels = []
+        for amplitude_bin in matrix.index:
+            cell = frame[frame["amplitude_bin"].eq(amplitude_bin)].iloc[0]
+            y_labels.append(
+                f"{cell.amplitude_low_sigma:.1f}-"
+                f"{cell.amplitude_high_sigma:.1f}"
+            )
+        ax.set_yticks(np.arange(len(y_labels)), y_labels)
+        ax.set_ylabel("Amplitude (local sigma)")
+    else:
+        ax.set_yticks([0], ["Not defined"])
+        ax.set_ylabel("Injected amplitude")
+    ax.set_xlabel(
+        f"Duration ({str(frame['duration_unit'].iloc[0])})"
     )
-    colorbar.set_label("Detection probability")
-    colorbar.set_ticks([0, 0.25, 0.5, 0.75, 1.0])
+    return image
+
+
+def _figure_d1_fault_surface(
+    outputs: dict[str, pd.DataFrame],
+    figure_dir: Path,
+    fault: str,
+) -> Path:
+    amplitude_axis = fault != "hard_freeze"
+    source = (
+        outputs["D1_detection_surface"]
+        if amplitude_axis
+        else outputs["D1_duration_response"]
+    )
+    shown = source[
+        source["fault_type"].eq(fault)
+        & source["route"].eq("all_routes")
+    ].copy()
+    if amplitude_axis:
+        fig, axes = plt.subplots(2, 2, figsize=(7.2, 4.5), squeeze=False)
+    else:
+        fig, axes = plt.subplots(2, 2, figsize=(7.2, 3.85), squeeze=False)
+    image = None
+    panels = [
+        ("DO", "original", "DO, native resolution"),
+        ("DO", "degraded_2x", "DO, exploratory 2x"),
+        ("ORP", "original", "ORP, native resolution"),
+        ("ORP", "degraded_2x", "ORP, exploratory 2x"),
+    ]
+    for panel_index, (analyte, resolution, title) in enumerate(panels):
+        row, column = divmod(panel_index, 2)
+        ax = axes[row, column]
+        frame = shown[
+            shown["analyte"].eq(analyte)
+            & shown["resolution_mode"].eq(resolution)
+        ].copy()
+        image = _draw_detection_surface(
+            ax,
+            frame,
+            value_column=(
+                "detection_probability"
+                if amplitude_axis
+                else "event_recall"
+            ),
+            amplitude_axis=amplitude_axis,
+        )
+        ax.set_title(title)
+        _panel_label(ax, chr(ord("a") + panel_index))
+    fig.legend(
+        handles=[
+            Patch(
+                facecolor="none",
+                edgecolor=TEAL,
+                label="Recall >= 0.80",
+            ),
+            Patch(
+                facecolor="none",
+                edgecolor=RED,
+                label="Recall < 0.80",
+            ),
+            Patch(
+                facecolor=LIGHT,
+                edgecolor=GRAY,
+                hatch="////",
+                label="Insufficient clusters",
+            ),
+        ],
+        loc="lower center",
+        ncol=3,
+        frameon=False,
+        bbox_to_anchor=(0.5, 0.0),
+    )
     fig.subplots_adjust(
-        left=0.11,
-        right=0.90,
-        bottom=0.08,
-        top=0.97,
-        wspace=0.27,
-        hspace=0.45,
+        left=0.10,
+        right=0.88,
+        bottom=0.19 if amplitude_axis else 0.21,
+        top=0.94,
+        wspace=0.32,
+        hspace=0.47 if amplitude_axis else 0.58,
     )
-    path = figure_dir / "FigV2_D1_applicability_boundary"
+    colorbar_axis = fig.add_axes(
+        [0.91, 0.23 if amplitude_axis else 0.24, 0.014, 0.64]
+    )
+    colorbar = fig.colorbar(image, cax=colorbar_axis)
+    colorbar.set_label("Cluster-bootstrap recall")
+    colorbar.set_ticks([0, 0.25, 0.5, 0.75, 1.0])
+    path = figure_dir / f"FigV2_D1_{fault}_detection_surface"
     _save(fig, path)
     _write_source_data(
         path,
         {
-            "amplitude_duration": shown,
-            "high_amplitude": outputs["D1_high_amplitude_summary"],
-            "raw_domain_audit": outputs["D1_raw_endpoint_summary"],
+            "surface": shown,
+            "exclusions": outputs["D1_excluded_injection_trials"][
+                outputs["D1_excluded_injection_trials"]["fault_type"].eq(fault)
+            ],
         },
     )
-    return [path]
+    return path
+
+
+def _figure_d1_route_raw(
+    outputs: dict[str, pd.DataFrame],
+    figure_dir: Path,
+) -> Path:
+    concordance = outputs["D1_raw_route_concordance"].copy()
+    pooled = outputs["D1_raw_endpoint_summary"].copy()
+    fault_order = ["spike", "step", "linear_drift", "hard_freeze"]
+    fault_labels = ["Spike", "Step", "Drift", "Freeze"]
+    fault_markers = {
+        "spike": "o",
+        "step": "s",
+        "linear_drift": "^",
+        "hard_freeze": "D",
+    }
+    fig, axes = plt.subplots(1, 2, figsize=(7.2, 2.8))
+    ax = axes[0]
+    ax.plot([0, 1], [0, 1], color=GRAY, ls="--", lw=0.8)
+    for fault in fault_order:
+        frame = concordance[concordance["fault_type"].eq(fault)]
+        for analyte, color in (("DO", BLUE), ("ORP", ROSE)):
+            subset = frame[frame["analyte"].eq(analyte)]
+            ax.scatter(
+                subset["route_level_recall"],
+                subset["raw_domain_recall"],
+                s=18 + 36 * subset["detection_agreement"],
+                marker=fault_markers[fault],
+                facecolor=color,
+                edgecolor="white",
+                linewidth=0.45,
+                alpha=0.85,
+            )
+    ax.set_xlim(-0.03, 1.03)
+    ax.set_ylim(-0.03, 1.03)
+    ax.set_aspect("equal", adjustable="box")
+    ax.set_xlabel("Route-level recall")
+    ax.set_ylabel("Raw-domain frozen-route recall")
+    ax.set_title("Agreement across analyte and route")
+    ax.legend(
+        handles=[
+            Line2D([], [], marker="o", ls="", color=BLUE, label="DO"),
+            Line2D([], [], marker="o", ls="", color=ROSE, label="ORP"),
+            *[
+                Line2D(
+                    [],
+                    [],
+                    marker=fault_markers[fault],
+                    ls="",
+                    color=DARK,
+                    label=label,
+                )
+                for fault, label in zip(fault_order, fault_labels)
+            ],
+        ],
+        ncol=2,
+        loc="lower right",
+    )
+    _panel_label(ax, "a")
+
+    ax = axes[1]
+    ordered = pooled.set_index("fault_type").loc[fault_order].reset_index()
+    y = np.arange(len(ordered))
+    ax.plot(
+        ordered["route_level_recall_same_scenarios"],
+        y,
+        "o",
+        color=BLUE,
+        ms=4,
+        label="Route-level",
+    )
+    ax.errorbar(
+        ordered["raw_domain_recall"],
+        y,
+        xerr=np.vstack(
+            [
+                ordered["raw_domain_recall"] - ordered["recall_ci_low"],
+                ordered["recall_ci_high"] - ordered["raw_domain_recall"],
+            ]
+        ),
+        fmt="s",
+        color=ROSE,
+        ecolor=ROSE,
+        capsize=2,
+        ms=3.8,
+        lw=0.8,
+        label="Raw-domain (95% CI)",
+    )
+    for row in ordered.itertuples(index=False):
+        position = fault_order.index(row.fault_type)
+        ax.text(
+            0.02,
+            position + 0.24,
+            f"agreement={row.detection_agreement:.2f}",
+            fontsize=5.8,
+            color=DARK,
+        )
+    ax.set_yticks(y, fault_labels)
+    ax.set_xlim(0, 1.03)
+    ax.axvline(0.80, color=GRAY, ls=":", lw=0.8)
+    ax.set_xlabel("Recall on matched scenarios")
+    ax.set_title("Pooled endpoint concordance")
+    ax.legend(loc="lower right")
+    _panel_label(ax, "b")
+    fig.subplots_adjust(
+        left=0.10,
+        right=0.985,
+        bottom=0.18,
+        top=0.90,
+        wspace=0.34,
+    )
+    path = figure_dir / "FigV2_D1_route_raw_agreement"
+    _save(fig, path)
+    _write_source_data(
+        path,
+        {
+            "route_raw_by_stratum": concordance,
+            "pooled_endpoint": pooled,
+        },
+    )
+    return path
+
+
+def figure_d1(outputs: dict[str, pd.DataFrame], figure_dir: Path) -> list[Path]:
+    paths = [
+        _figure_d1_fault_surface(outputs, figure_dir, "spike"),
+        _figure_d1_fault_surface(outputs, figure_dir, "step"),
+        _figure_d1_fault_surface(outputs, figure_dir, "linear_drift"),
+        _figure_d1_fault_surface(outputs, figure_dir, "hard_freeze"),
+        _figure_d1_route_raw(outputs, figure_dir),
+    ]
+    return paths
 
 
 def _d2_setting_label(row) -> str:
@@ -289,7 +539,99 @@ def figure_d2(outputs: dict[str, pd.DataFrame], figure_dir: Path) -> list[Path]:
             "floor_challenges": outputs["D2_process_floor_challenges"],
         },
     )
-    return [path]
+    casebook = outputs["D2_process_floor_casebook"].copy()
+    scenario_order = [
+        "true_low_oxygen_floor",
+        "digital_lock",
+        "response_recovery_after_floor",
+        "missing_and_long_gap_not_exempt",
+    ]
+    scenario_titles = {
+        "true_low_oxygen_floor": "True low-oxygen floor",
+        "digital_lock": "Exact digital lock",
+        "response_recovery_after_floor": "Response after leaving floor",
+        "missing_and_long_gap_not_exempt": "Missing and long-gap evidence",
+    }
+    fig, axes = plt.subplots(2, 2, figsize=(7.2, 4.4), sharey=False)
+    for panel_index, scenario in enumerate(scenario_order):
+        ax = axes.ravel()[panel_index]
+        frame = casebook[casebook["scenario"].eq(scenario)].copy()
+        frame["elapsed_min"] = np.arange(len(frame))
+        ax.plot(
+            frame["elapsed_min"],
+            frame["value"],
+            color=BLUE,
+            lw=1.05,
+            label="Observed DO",
+        )
+        ax.axhline(
+            0.20,
+            color=GOLD,
+            ls="--",
+            lw=0.8,
+            label="Process-floor threshold",
+        )
+        unavailable = frame["qfa_unavailable"].astype(bool).to_numpy()
+        ax.fill_between(
+            frame["elapsed_min"],
+            0,
+            1,
+            where=unavailable,
+            transform=ax.get_xaxis_transform(),
+            color=RED,
+            alpha=0.10,
+            step="mid",
+            label="QFA unavailable",
+        )
+        frozen = frame["sensor_freeze"].astype(bool)
+        if frozen.any():
+            ax.scatter(
+                frame.loc[frozen, "elapsed_min"],
+                frame.loc[frozen, "value"],
+                marker="x",
+                color=RED,
+                s=14,
+                lw=0.8,
+                label="Hard digital freeze",
+                zorder=4,
+            )
+        ax.set_xlabel("Elapsed time (min)")
+        ax.set_ylabel("DO (mg L$^{-1}$)")
+        ax.set_title(scenario_titles[scenario])
+        _panel_label(ax, chr(ord("a") + panel_index))
+    handles, labels = axes.ravel()[1].get_legend_handles_labels()
+    by_label = dict(zip(labels, handles))
+    fig.legend(
+        by_label.values(),
+        by_label.keys(),
+        loc="lower center",
+        ncol=4,
+        bbox_to_anchor=(0.5, 0.0),
+    )
+    fig.subplots_adjust(
+        left=0.10,
+        right=0.985,
+        bottom=0.17,
+        top=0.92,
+        wspace=0.28,
+        hspace=0.48,
+    )
+    contract_path = figure_dir / "FigV2_D2_process_floor_contract"
+    _save(fig, contract_path)
+    _write_source_data(
+        contract_path,
+        {
+            "contract_checks": outputs["D2_process_floor_contract_checks"],
+            "casebook": casebook,
+            "observed_channels": outputs[
+                "D2_process_floor_observed_channels"
+            ],
+            "semantic_contract": outputs[
+                "D2_process_floor_semantic_contract"
+            ],
+        },
+    )
+    return [path, contract_path]
 
 
 def figure_d3(outputs: dict[str, pd.DataFrame], figure_dir: Path) -> list[Path]:
@@ -631,12 +973,292 @@ def figure_d4_d5(
         path,
         {
             "D4_mechanism": summary,
+            "D4_common_change_contract": d4[
+                "D4_common_change_contract"
+            ],
             "D4_lag": lag,
             "D5_outer_folds": fold,
             "D5_outer_summary": d5["D5_outer_refit_summary"],
+            "D5_paired_fold_deltas": d5[
+                "D5_outer_refit_paired_deltas"
+            ],
+            "D5_paired_delta_summary": d5[
+                "D5_outer_refit_paired_delta_summary"
+            ],
         },
     )
     return [path]
+
+
+def figure_d5_coverage_selection(
+    coverage: dict[str, pd.DataFrame],
+    figure_dir: Path,
+) -> list[Path]:
+    strata = coverage["D5_coverage_strata"].copy()
+    balance = coverage["D5_full_basic_balance"].copy()
+    paired = coverage["D5_monthly_paired_balance"].copy()
+
+    monthly = strata[strata["stratum"].eq("month")].pivot(
+        index="stratum_value",
+        columns="coverage_class",
+        values="within_stratum_fraction",
+    ).fillna(0)
+    monthly = monthly.sort_index()
+    fig, ax = plt.subplots(1, 1, figsize=(7.2, 2.65))
+    coverage_styles = {
+        "full": (BLUE, "o", "Full"),
+        "basic": (ROSE, "s", "Basic"),
+        "limited": (GOLD, "^", "Limited"),
+        "insufficient": (GRAY, "D", "Insufficient"),
+    }
+    x = pd.to_datetime(monthly.index)
+    for coverage_class, (color, marker, label) in coverage_styles.items():
+        values = (
+            monthly[coverage_class]
+            if coverage_class in monthly.columns
+            else np.zeros(len(monthly))
+        )
+        ax.plot(
+            x,
+            values,
+            color=color,
+            marker=marker,
+            ms=3.4,
+            lw=1.15,
+            label=label,
+        )
+    ax.set_ylim(0, 1.03)
+    ax.set_ylabel("Sensor-hour fraction")
+    ax.set_xlabel("Calendar month")
+    fig.suptitle(
+        "Complete evidence coverage is temporally selected",
+        y=0.98,
+    )
+    ax.xaxis.set_major_locator(mdates.MonthLocator(interval=1))
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%b\n%Y"))
+    ax.legend(
+        loc="lower center",
+        ncol=4,
+        bbox_to_anchor=(0.5, 1.01),
+    )
+    fig.subplots_adjust(left=0.09, right=0.985, bottom=0.25, top=0.80)
+    monthly_path = figure_dir / "FigV2_D5_full_basic_monthly_coverage"
+    _save(fig, monthly_path)
+    _write_source_data(
+        monthly_path,
+        {"monthly_coverage": strata[strata["stratum"].eq("month")]},
+    )
+
+    fig, axes = plt.subplots(
+        1,
+        3,
+        figsize=(7.2, 3.05),
+        gridspec_kw={"width_ratios": [0.95, 1.35, 1.05]},
+    )
+    overall = balance[balance["group_type"].eq("overall")].copy()
+    metric_order = [
+        "D1_total",
+        "D2_total",
+        "missing_rate",
+        "process_floor_occupancy",
+        "D3_warn",
+        "raw_value_sensor_z",
+    ]
+    metric_labels = {
+        "D1_total": "D1 score",
+        "D2_total": "D2 score",
+        "missing_rate": "Missing rate",
+        "process_floor_occupancy": "Process floor",
+        "D3_warn": "D3 Warn",
+        "raw_value_sensor_z": "Raw value z",
+    }
+    overall = overall.set_index("metric").reindex(metric_order).dropna(
+        subset=["standardized_mean_difference"]
+    )
+    y = np.arange(len(overall))
+    colors = np.where(
+        overall["standardized_mean_difference"].ge(0),
+        BLUE,
+        ROSE,
+    )
+    axes[0].barh(
+        y,
+        overall["standardized_mean_difference"],
+        color=colors,
+        height=0.58,
+    )
+    axes[0].axvline(0, color=DARK, lw=0.8)
+    axes[0].axvline(0.10, color=GRAY, ls="--", lw=0.7)
+    axes[0].axvline(-0.10, color=GRAY, ls="--", lw=0.7)
+    axes[0].set_yticks(
+        y,
+        [metric_labels[value] for value in overall.index],
+    )
+    axes[0].invert_yaxis()
+    axes[0].set_xlabel("SMD (Full - Basic)")
+    axes[0].set_title("Overall balance")
+    _panel_label(axes[0], "a")
+
+    month_balance = balance[
+        balance["group_type"].eq("month")
+        & balance["metric"].isin(metric_order)
+    ].pivot(
+        index="metric",
+        columns="group_value",
+        values="standardized_mean_difference",
+    ).reindex(
+        index=metric_order,
+        columns=monthly.index,
+    )
+    month_balance = month_balance.dropna(how="all")
+    limit = max(
+        0.2,
+        float(np.nanquantile(np.abs(month_balance.to_numpy()), 0.95)),
+    )
+    balance_cmap = BALANCE_CMAP.copy()
+    balance_cmap.set_bad(LIGHT)
+    balance_values = month_balance.to_numpy(float)
+    image = axes[1].imshow(
+        np.ma.masked_invalid(balance_values),
+        aspect="auto",
+        cmap=balance_cmap,
+        vmin=-limit,
+        vmax=limit,
+        interpolation="nearest",
+    )
+    axes[1].set_yticks(
+        np.arange(len(month_balance)),
+        [metric_labels[value] for value in month_balance.index],
+    )
+    axes[1].set_xticks(
+        np.arange(len(month_balance.columns)),
+        [
+            pd.Timestamp(value).strftime("%Y-%m")
+            for value in month_balance.columns
+        ],
+        rotation=55,
+        ha="right",
+        fontsize=5.5,
+    )
+    axes[1].set_xlabel("Calendar month")
+    axes[1].set_title("Conditional balance")
+    for row_index, column_index in zip(
+        *np.where(~np.isfinite(balance_values))
+    ):
+        axes[1].add_patch(
+            Rectangle(
+                (column_index - 0.5, row_index - 0.5),
+                1,
+                1,
+                facecolor="none",
+                edgecolor=GRAY,
+                hatch="////",
+                lw=0.0,
+            )
+        )
+    colorbar = fig.colorbar(
+        image,
+        ax=axes[1],
+        fraction=0.047,
+        pad=0.03,
+    )
+    colorbar.set_label("SMD")
+    _panel_label(axes[1], "b")
+
+    selected = strata[
+        strata["coverage_class"].eq("full")
+        & strata["stratum"].isin(
+            ["active_regime_id", "ood_status", "support_level"]
+        )
+    ].copy()
+    selected["label"] = (
+        selected["stratum"]
+        .map(
+            {
+                "active_regime_id": "Regime ",
+                "ood_status": "",
+                "support_level": "Support ",
+            }
+        )
+        + selected["stratum_value"]
+    )
+    order = (
+        [f"Regime {value}" for value in ["0", "1", "2", "3"]]
+        + ["not_OOD", "OOD"]
+        + [f"Support {value}" for value in ["L1", "L2", "L3"]]
+    )
+    full_fraction = selected.set_index("label")[
+        "within_stratum_fraction"
+    ].to_dict()
+    selected = pd.DataFrame(
+        {
+            "label": order,
+            "within_stratum_fraction": [
+                float(full_fraction.get(label, 0.0))
+                for label in order
+            ],
+            "stratum": (
+                ["active_regime_id"] * 4
+                + ["ood_status"] * 2
+                + ["support_level"] * 3
+            ),
+        }
+    )
+    selected["display_label"] = selected["label"].replace(
+        {"not_OOD": "Not OOD"}
+    )
+    y = np.arange(len(selected))
+    colors = selected["stratum"].map(
+        {
+            "active_regime_id": BLUE_2,
+            "ood_status": ROSE,
+            "support_level": TEAL,
+        }
+    )
+    axes[2].barh(
+        y,
+        selected["within_stratum_fraction"],
+        color=colors,
+        height=0.58,
+    )
+    axes[2].set_yticks(y, selected["display_label"].astype(str))
+    axes[2].invert_yaxis()
+    axes[2].set_xlim(0, 1)
+    axes[2].set_xlabel("Full fraction within stratum")
+    axes[2].set_title("Coverage mechanism")
+    for row_index, value in enumerate(
+        selected["within_stratum_fraction"]
+    ):
+        if np.isclose(value, 0.0):
+            axes[2].text(
+                0.02,
+                row_index,
+                "0",
+                va="center",
+                ha="left",
+                fontsize=5.8,
+                color=DARK,
+            )
+    _panel_label(axes[2], "c")
+
+    fig.subplots_adjust(
+        left=0.09,
+        right=0.985,
+        bottom=0.28,
+        top=0.88,
+        wspace=0.58,
+    )
+    balance_path = figure_dir / "FigV2_D5_full_basic_conditional_balance"
+    _save(fig, balance_path)
+    _write_source_data(
+        balance_path,
+        {
+            "conditional_balance": balance,
+            "coverage_strata": strata,
+            "monthly_paired_CI": paired,
+        },
+    )
+    return [monthly_path, balance_path]
 
 
 def figure_composite(

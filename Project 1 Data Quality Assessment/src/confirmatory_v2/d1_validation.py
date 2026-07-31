@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import pickle
 import sys
 import warnings
@@ -17,6 +18,7 @@ from .common import (
     cluster_bootstrap_proportion,
     expand_window_end_gate,
     read_yaml,
+    sha256_file,
     wilson_interval,
 )
 
@@ -869,13 +871,18 @@ def _applicability_outputs(
             "locked_decision_thresholds"
         ]["D1_high_amplitude_sigma"]
     )
+    surface_config = design["detection_surface"]
+    minimum_clusters = int(
+        surface_config["minimum_independent_clusters_per_cell"]
+    )
+    target_recall = float(surface_config["target_recall"])
     for fault in ("spike", "step", "linear_drift"):
         fault_frame = valid[valid["fault_type"].eq(fault)].copy()
         specification = design["core_faults"][fault]
         amplitude_edges = np.linspace(
             float(specification["amplitude_sigma"][0]),
             float(specification["amplitude_sigma"][1]),
-            4,
+            int(surface_config["amplitude_bins"]) + 1,
         )
         duration_limits = next(
             value
@@ -885,7 +892,7 @@ def _applicability_outputs(
         duration_edges = np.geomspace(
             float(duration_limits[0]),
             float(duration_limits[1]),
-            5,
+            int(surface_config["duration_bins"]) + 1,
         )
         expanded = pd.concat(
             [
@@ -906,61 +913,103 @@ def _applicability_outputs(
             include_lowest=True,
             labels=False,
         )
-        for keys, group in expanded.dropna(
-            subset=["amplitude_bin", "duration_bin"]
-        ).groupby(
-            [
-                "analyte",
-                "route_scope",
-                "resolution_mode",
-                "amplitude_bin",
-                "duration_bin",
-            ],
-            sort=False,
-        ):
-            amp_index = int(keys[3])
-            duration_index = int(keys[4])
-            low, high = cluster_bootstrap_proportion(
-                group,
-                outcome_column="detected",
-                cluster_columns=["sensor_id", "base_window_onset"],
-                repetitions=repetitions,
-                rng=rng,
-            )
-            map_rows.append(
-                {
-                    "fault_type": fault,
-                    "analyte": keys[0],
-                    "route": keys[1],
-                    "resolution_mode": keys[2],
-                    "amplitude_bin": amp_index,
-                    "amplitude_low_sigma": amplitude_edges[amp_index],
-                    "amplitude_high_sigma": amplitude_edges[amp_index + 1],
-                    "amplitude_center_sigma": float(
-                        np.mean(amplitude_edges[amp_index : amp_index + 2])
-                    ),
-                    "duration_bin": duration_index,
-                    "duration_low": duration_edges[duration_index],
-                    "duration_high": duration_edges[duration_index + 1],
-                    "duration_center": float(
-                        np.sqrt(
-                            duration_edges[duration_index]
-                            * duration_edges[duration_index + 1]
+        dimensions = expanded[
+            ["analyte", "route_scope", "resolution_mode"]
+        ].drop_duplicates()
+        for dimension in dimensions.itertuples(index=False):
+            subset = expanded[
+                expanded["analyte"].eq(dimension.analyte)
+                & expanded["route_scope"].eq(dimension.route_scope)
+                & expanded["resolution_mode"].eq(dimension.resolution_mode)
+            ]
+            duration_unit = str(subset["duration_unit"].iloc[0])
+            for amp_index in range(len(amplitude_edges) - 1):
+                for duration_index in range(len(duration_edges) - 1):
+                    group = subset[
+                        subset["amplitude_bin"].eq(amp_index)
+                        & subset["duration_bin"].eq(duration_index)
+                    ]
+                    n_clusters = len(
+                        group[
+                            ["sensor_id", "base_window_onset"]
+                        ].drop_duplicates()
+                    )
+                    if group.empty:
+                        recall = low = high = np.nan
+                    else:
+                        recall = float(group["detected"].mean())
+                        low, high = cluster_bootstrap_proportion(
+                            group,
+                            outcome_column="detected",
+                            cluster_columns=["sensor_id", "base_window_onset"],
+                            repetitions=repetitions,
+                            rng=rng,
                         )
-                    ),
-                    "duration_unit": group["duration_unit"].iloc[0],
-                    "n_scenarios": len(group),
-                    "detection_probability": float(group["detected"].mean()),
-                    "ci95_low": low,
-                    "ci95_high": high,
-                    "ci_method": "cluster_bootstrap_sensor_plus_base_window",
-                }
-            )
-        high_frame = fault_frame[
-            fault_frame["amplitude_sigma"].ge(high_threshold)
+                    sufficient = n_clusters >= minimum_clusters
+                    if not sufficient:
+                        target_status = "insufficient"
+                        ci_target_status = "insufficient"
+                    else:
+                        target_status = (
+                            "meets_0.80" if recall >= target_recall else "below_0.80"
+                        )
+                        if low >= target_recall:
+                            ci_target_status = "ci_supports_0.80"
+                        elif high < target_recall:
+                            ci_target_status = "ci_excludes_0.80"
+                        else:
+                            ci_target_status = "ci_inconclusive"
+                    map_rows.append(
+                        {
+                            "fault_type": fault,
+                            "analyte": dimension.analyte,
+                            "route": dimension.route_scope,
+                            "resolution_mode": dimension.resolution_mode,
+                            "amplitude_bin": amp_index,
+                            "amplitude_low_sigma": amplitude_edges[amp_index],
+                            "amplitude_high_sigma": amplitude_edges[amp_index + 1],
+                            "amplitude_center_sigma": float(
+                                np.mean(
+                                    amplitude_edges[amp_index : amp_index + 2]
+                                )
+                            ),
+                            "duration_bin": duration_index,
+                            "duration_low": duration_edges[duration_index],
+                            "duration_high": duration_edges[duration_index + 1],
+                            "duration_center": float(
+                                np.sqrt(
+                                    duration_edges[duration_index]
+                                    * duration_edges[duration_index + 1]
+                                )
+                            ),
+                            "duration_unit": duration_unit,
+                            "n_scenarios": len(group),
+                            "n_independent_clusters": n_clusters,
+                            "minimum_independent_clusters": minimum_clusters,
+                            "detection_probability": recall,
+                            "ci95_low": low,
+                            "ci95_high": high,
+                            "cell_support": (
+                                "sufficient" if sufficient else "insufficient"
+                            ),
+                            "target_recall": target_recall,
+                            "target_status": target_status,
+                            "ci_target_status": ci_target_status,
+                            "display_policy": (
+                                "numeric"
+                                if sufficient
+                                else "gray_hatch_no_interpolation"
+                            ),
+                            "ci_method": (
+                                "cluster_bootstrap_sensor_plus_base_window"
+                            ),
+                        }
+                    )
+        high_frame = expanded[
+            expanded["amplitude_sigma"].ge(high_threshold)
         ]
         for keys, group in high_frame.groupby(
-            ["analyte", "route", "resolution_mode"],
+            ["analyte", "route_scope", "resolution_mode"],
             sort=False,
         ):
             low, high = cluster_bootstrap_proportion(
@@ -981,8 +1030,10 @@ def _applicability_outputs(
                     "event_recall": float(group["detected"].mean()),
                     "ci95_low": low,
                     "ci95_high": high,
-                    "locked_target": 0.80,
-                    "target_passed": float(group["detected"].mean()) >= 0.80,
+                    "locked_target": target_recall,
+                    "target_passed": (
+                        float(group["detected"].mean()) >= target_recall
+                    ),
                 }
             )
     for fault in ("spike", "hard_freeze"):
@@ -999,34 +1050,93 @@ def _applicability_outputs(
             include_lowest=True,
             labels=False,
         )
-        for keys, group in fault_frame.dropna(subset=["duration_bin"]).groupby(
-            ["analyte", "resolution_mode", "duration_bin"],
-            sort=False,
-        ):
-            bin_index = int(keys[2])
-            low, high = cluster_bootstrap_proportion(
-                group,
-                outcome_column="detected",
-                cluster_columns=["sensor_id", "base_window_onset"],
-                repetitions=repetitions,
-                rng=rng,
+        expanded = pd.concat(
+            [
+                fault_frame.assign(route_scope=fault_frame["route"]),
+                fault_frame.assign(route_scope="all_routes"),
+            ],
+            ignore_index=True,
+        )
+        dimensions = expanded[
+            ["analyte", "route_scope", "resolution_mode"]
+        ].drop_duplicates()
+        for dimension in dimensions.itertuples(index=False):
+            subset = expanded[
+                expanded["analyte"].eq(dimension.analyte)
+                & expanded["route_scope"].eq(dimension.route_scope)
+                & expanded["resolution_mode"].eq(dimension.resolution_mode)
+            ].copy()
+            subset["duration_bin"] = pd.cut(
+                subset["duration"],
+                bins=edges,
+                include_lowest=True,
+                labels=False,
             )
-            duration_rows.append(
-                {
-                    "fault_type": fault,
-                    "analyte": keys[0],
-                    "resolution_mode": keys[1],
-                    "duration_bin": bin_index,
-                    "duration_center": float(
-                        np.sqrt(edges[bin_index] * edges[bin_index + 1])
-                    ),
-                    "duration_unit": group["duration_unit"].iloc[0],
-                    "n_scenarios": len(group),
-                    "event_recall": float(group["detected"].mean()),
-                    "ci95_low": low,
-                    "ci95_high": high,
-                }
-            )
+            for bin_index in range(len(edges) - 1):
+                group = subset[subset["duration_bin"].eq(bin_index)]
+                n_clusters = len(
+                    group[
+                        ["sensor_id", "base_window_onset"]
+                    ].drop_duplicates()
+                )
+                if group.empty:
+                    recall = low = high = np.nan
+                else:
+                    recall = float(group["detected"].mean())
+                    low, high = cluster_bootstrap_proportion(
+                        group,
+                        outcome_column="detected",
+                        cluster_columns=["sensor_id", "base_window_onset"],
+                        repetitions=repetitions,
+                        rng=rng,
+                    )
+                sufficient = n_clusters >= minimum_clusters
+                duration_rows.append(
+                    {
+                        "fault_type": fault,
+                        "analyte": dimension.analyte,
+                        "route": dimension.route_scope,
+                        "resolution_mode": dimension.resolution_mode,
+                        "duration_bin": bin_index,
+                        "duration_low": edges[bin_index],
+                        "duration_high": edges[bin_index + 1],
+                        "duration_center": float(
+                            np.sqrt(edges[bin_index] * edges[bin_index + 1])
+                        ),
+                        "duration_unit": (
+                            str(subset["duration_unit"].iloc[0])
+                            if not subset.empty
+                            else "unknown"
+                        ),
+                        "n_scenarios": len(group),
+                        "n_independent_clusters": n_clusters,
+                        "minimum_independent_clusters": minimum_clusters,
+                        "event_recall": recall,
+                        "ci95_low": low,
+                        "ci95_high": high,
+                        "cell_support": (
+                            "sufficient" if sufficient else "insufficient"
+                        ),
+                        "target_recall": target_recall,
+                        "target_status": (
+                            "insufficient"
+                            if not sufficient
+                            else (
+                                "meets_0.80"
+                                if recall >= target_recall
+                                else "below_0.80"
+                            )
+                        ),
+                        "amplitude_axis": (
+                            "not_defined_for_hard_freeze"
+                            if fault == "hard_freeze"
+                            else "marginalized_over_injected_amplitude"
+                        ),
+                        "ci_method": (
+                            "cluster_bootstrap_sensor_plus_base_window"
+                        ),
+                    }
+                )
     return (
         pd.DataFrame(map_rows),
         pd.DataFrame(high_rows),
@@ -1034,10 +1144,136 @@ def _applicability_outputs(
     )
 
 
+def _reuse_locked_trial_outputs(
+    output_dir: Path,
+    *,
+    design: dict,
+    repetitions: int,
+) -> dict[str, pd.DataFrame]:
+    registry = read_yaml(PROJECT_ROOT / "dimension_registry.yaml")
+    source_relative = registry["aggregation_contract"][
+        "confirmatory_run_location"
+    ]
+    source_dir = PROJECT_ROOT / source_relative
+    if source_dir.resolve() == output_dir.resolve():
+        raise RuntimeError("Locked D1 trial source cannot be the active output directory")
+    manifest_path = source_dir / "run_manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    if (
+        design["trial_reuse"]["require_completed_manifest"]
+        and not str(manifest.get("status", "")).startswith("completed")
+    ):
+        raise RuntimeError("Locked D1 trial source manifest is not completed")
+    manifest_artifacts = {
+        row["relative_path"]: row["sha256"]
+        for row in manifest["artifacts"]
+    }
+    required_names = [
+        "D1_injection_trials",
+        "D1_injection_summary",
+        "D1_injection_stratified",
+        "D1_raw_endpoint_trials",
+        "D1_raw_endpoint_summary",
+        "D1_raw_route_concordance",
+        "D1_frozen_whitener_audit",
+        "D1_design_audit",
+        "D1_excluded_injection_trials",
+        "D1_existing_peer_model_audit",
+        "D1_existing_DO24_peer_controls",
+        "D1_existing_DO24_peer_control_summary",
+    ]
+    outputs: dict[str, pd.DataFrame] = {}
+    audit_rows = []
+    for name in required_names:
+        relative_path = f"{name}.parquet"
+        path = source_dir / relative_path
+        observed_hash = sha256_file(path)
+        expected_hash = manifest_artifacts.get(relative_path)
+        verified = observed_hash == expected_hash
+        if design["trial_reuse"]["require_sha256_match"] and not verified:
+            raise RuntimeError(f"Locked D1 source hash mismatch: {relative_path}")
+        outputs[name] = pd.read_parquet(path)
+        audit_rows.append(
+            {
+                "source_run_id": manifest["run_id"],
+                "source_relative_path": relative_path,
+                "expected_sha256": expected_hash,
+                "observed_sha256": observed_hash,
+                "sha256_verified": verified,
+                "regenerated": False,
+                "postprocessing_role": (
+                    "frozen_existing_trial_source"
+                    if name == "D1_injection_trials"
+                    else "frozen_existing_validation_evidence"
+                ),
+            }
+        )
+    trials = outputs["D1_injection_trials"].copy()
+    applicability, high_amplitude, duration_response = _applicability_outputs(
+        trials,
+        design=design,
+        repetitions=repetitions,
+        rng=np.random.default_rng(20260729),
+    )
+    outputs.update(
+        {
+            "D1_applicability_map": applicability,
+            "D1_detection_surface": applicability,
+            "D1_high_amplitude_summary": high_amplitude,
+            "D1_duration_response": duration_response,
+            "D1_trial_reuse_audit": pd.DataFrame(audit_rows),
+        }
+    )
+    for name, frame in outputs.items():
+        frame.to_parquet(output_dir / f"{name}.parquet", index=False)
+    excluded = outputs["D1_excluded_injection_trials"]
+    with pd.ExcelWriter(
+        output_dir / "D1_detection_surface_source.xlsx",
+        engine="openpyxl",
+    ) as writer:
+        applicability.to_excel(
+            writer,
+            sheet_name="detection_surface",
+            index=False,
+        )
+        duration_response.to_excel(
+            writer,
+            sheet_name="freeze_duration",
+            index=False,
+        )
+        outputs["D1_raw_route_concordance"].to_excel(
+            writer,
+            sheet_name="route_raw_agreement",
+            index=False,
+        )
+        outputs["D1_raw_endpoint_summary"].to_excel(
+            writer,
+            sheet_name="raw_endpoint_summary",
+            index=False,
+        )
+        excluded.to_excel(writer, sheet_name="exclusions", index=False)
+        outputs["D1_trial_reuse_audit"].to_excel(
+            writer,
+            sheet_name="trial_reuse_audit",
+            index=False,
+        )
+    excluded.to_excel(
+        output_dir / "D1_exclusions_detail.xlsx",
+        index=False,
+    )
+    return outputs
+
+
 def run_d1_validation(output_dir: Path, d3_gate: pd.DataFrame) -> dict[str, pd.DataFrame]:
     design = read_yaml(CONFIG_ROOT / "validation_design.yaml")["D1"]
     sap = read_yaml(CONFIG_ROOT / "statistical_analysis_plan_v2.yaml")
     repetitions = int(sap["uncertainty"]["repetitions"])
+    if design["trial_reuse"]["enabled"]:
+        return _reuse_locked_trial_outputs(
+            output_dir,
+            design=design,
+            repetitions=repetitions,
+        )
     with (D1_ROOT / "v11_state.pkl").open("rb") as handle:
         state = pickle.load(handle)
     with (
@@ -1273,6 +1509,7 @@ def run_d1_validation(output_dir: Path, d3_gate: pd.DataFrame) -> dict[str, pd.D
         "D1_injection_summary": summary,
         "D1_injection_stratified": stratified,
         "D1_applicability_map": applicability,
+        "D1_detection_surface": applicability,
         "D1_high_amplitude_summary": high_amplitude,
         "D1_duration_response": duration_response,
         "D1_raw_endpoint_trials": raw_audit,
@@ -1293,4 +1530,29 @@ def run_d1_validation(output_dir: Path, d3_gate: pd.DataFrame) -> dict[str, pd.D
     }
     for name, frame in outputs.items():
         frame.to_parquet(output_dir / f"{name}.parquet", index=False)
+    with pd.ExcelWriter(
+        output_dir / "D1_detection_surface_source.xlsx",
+        engine="openpyxl",
+    ) as writer:
+        applicability.to_excel(writer, sheet_name="detection_surface", index=False)
+        duration_response.to_excel(
+            writer,
+            sheet_name="freeze_duration",
+            index=False,
+        )
+        raw_concordance.to_excel(
+            writer,
+            sheet_name="route_raw_agreement",
+            index=False,
+        )
+        raw_summary.to_excel(
+            writer,
+            sheet_name="raw_endpoint_summary",
+            index=False,
+        )
+        excluded.to_excel(writer, sheet_name="exclusions", index=False)
+    excluded.to_excel(
+        output_dir / "D1_exclusions_detail.xlsx",
+        index=False,
+    )
     return outputs

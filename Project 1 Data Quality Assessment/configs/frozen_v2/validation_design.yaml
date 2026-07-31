@@ -38,6 +38,20 @@ D1:
   degraded_resolution:
     multiplier: 2.0
     role: exploratory_paired_sensitivity
+  trial_reuse:
+    enabled: true
+    source_registry: dimension_registry.confirmatory_run_location
+    require_completed_manifest: true
+    require_sha256_match: true
+    regenerate_injections: false
+    inference_role: frozen_existing_trial_postprocessing
+  detection_surface:
+    amplitude_bins: 3
+    duration_bins: 4
+    minimum_independent_clusters_per_cell: 5
+    target_recall: 0.80
+    sparse_cell_policy: gray_hatch_no_interpolation
+    hard_freeze_axis: duration_only_amplitude_not_defined
 D2:
   qfa_window_hours: [3, 6, 9, 12]
   primary_qfa_window_hours: 6
@@ -45,6 +59,21 @@ D2:
   primary_hard_rle_minutes: 15
   gap_break_multipliers: [0.8, 1.0, 1.2]
   one_at_a_time: true
+  process_floor_contract:
+    sensors: [DO_1_4, DO_2_4]
+    required_scenarios:
+      - true_low_oxygen_floor
+      - digital_lock
+      - low_oxygen_small_fluctuation
+      - response_recovery_after_floor
+      - missing_and_long_gap_not_exempt
+    qfa_window_hours: 6
+    hard_rle_minutes: 15
+    semantic_fields:
+      - availability_mode
+      - process_zone
+      - process_floor_threshold
+      - response_loss_enabled
 D3:
   hard_instrument_range_perturbation: none
   soft_boundary_multipliers: [0.8, 0.9, 1.0, 1.1, 1.2]
@@ -55,6 +84,22 @@ D4:
   target_faults: [drift, step, freeze]
   peer_faults: [drift, step, freeze]
   common_process_controls: [equal_amplitude, unequal_amplitude, opposite_direction]
+  common_process_roles:
+    equal_amplitude:
+      scenario_id: common_equal
+      statistical_role: common_process_negative_control
+      endpoint: conditional_new_FAR
+      contributes_to_common_process_FAR: true
+    unequal_amplitude:
+      scenario_id: common_unequal
+      statistical_role: positive_asymmetry_stress_test
+      endpoint: asymmetry_detection_rate
+      contributes_to_common_process_FAR: false
+    opposite_direction:
+      scenario_id: opposite_direction
+      statistical_role: strong_positive_asymmetry_stress_test
+      endpoint: asymmetry_detection_rate
+      contributes_to_common_process_FAR: false
   lag_minutes: [0, 10, 30, 60, 180]
   spike_role: secondary_D1_owned
 D5:
@@ -74,6 +119,32 @@ D5:
   test_windows_per_fold: 10
   test_window_hours: 24
   threshold_calibration: training_only_empirical_risk_reference
+  paired_ablation_delta:
+    reference_variant: full_reference
+    metrics: [AUROC, AUPRC, Top1]
+    resampling_unit: blocked_future_month
+  coverage_selection:
+    coverage_classes: [full, basic, limited, insufficient]
+    strata:
+      - month
+      - sensor_id
+      - analyte
+      - process_position
+      - line_id
+      - active_regime_id
+      - ood_status
+      - support_level
+    balance_metrics:
+      - D1_total
+      - D2_total
+      - missing_rate
+      - process_floor_occupancy
+      - D3_warn
+      - raw_value_sensor_z
+    conditional_groups: [month, sensor_id, active_regime_id, month_sensor]
+    minimum_hours_per_coverage_group: 24
+    material_smd_threshold: 0.10
+    inference_role: aggregation_selection_audit_not_D5_score_input
 composite:
   node_dimensions: [D1, D2, D5]
   pair_components: [node_target, node_reference, D4_raw]

@@ -25,6 +25,7 @@ analysis_units:
   D3_primary: sensor_window_and_independent_warning_event
   D4_primary: shared_timestamp_clustered_pair_window
   D5_primary: independent_injected_24h_window
+  D5_coverage_selection: sensor_hour_conditioned_by_calendar_month_sensor_and_regime
   composite_primary: joint_time_block
   non_independent_units:
     - overlapping_minutes
@@ -70,6 +71,8 @@ primary_endpoints:
     - swap_top1
     - common_mode_far
     - zone_coherent_far
+    - full_basic_coverage_selection
+    - paired_outer_fold_ablation_delta
   composite:
     - equal_weight_node_score
     - equal_weight_pair_score
@@ -79,10 +82,12 @@ primary_endpoints:
 
 minimum_support:
   D1_trials_per_core_fault: 120
+  D1_detection_surface_independent_clusters_per_cell: 5
   D2_events_for_confirmatory_event_stability: 20
   D3_events_for_confirmatory_event_stability: 20
   D4_independent_windows_per_core_scenario: 80
   D5_swap_trials: 60
+  D5_balance_hours_per_coverage_group: 24
   minimum_distinct_outer_test_blocks: 3
   below_minimum_policy: descriptive_only
   D5_v2_3_node_support:
@@ -117,6 +122,10 @@ uncertainty:
     method: cluster_bootstrap
     cluster: [timestamp]
     repetitions: 2000
+  D5_coverage_selection_ci:
+    method: paired_calendar_month_cluster_bootstrap
+    cluster: [month]
+    repetitions: 2000
 
 multiplicity:
   primary_endpoints: effect_size_and_95ci_no_significance_gate
@@ -146,6 +155,7 @@ locked_decision_thresholds:
   D5_swap_top1_min: 0.80
   D5_common_mode_far_max: 0.10
   D5_zone_coherent_far_max: 0.10
+  D5_coverage_material_smd: 0.10
   composite_bottleneck_primary_hours: 3
   composite_bottleneck_sensitivity_hours: 2
 
@@ -161,9 +171,11 @@ injection_domain_contract:
     role: concordance_and_transport_audit
   resolution_2x:
     role: exploratory_only_until_instrument_metadata_confirmation
+  detector_threshold_retuning_on_confirmatory_trials: prohibited
 
 composite_reporting:
   primary_coverage_class: full
   extension_coverage_class: basic
   limited_formal_comparison: prohibited
   mixed_full_basic_plant_median_as_primary: prohibited
+  full_coverage_generalization_to_all_sensor_hours: prohibited_without_coverage_selection_evidence

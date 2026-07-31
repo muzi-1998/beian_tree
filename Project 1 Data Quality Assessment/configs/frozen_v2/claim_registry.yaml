@@ -2,7 +2,7 @@ schema_version: ww-dqs-claim-registry-v2.0
 claims:
   - claim_id: C-D1-MECH
     dimension: D1
-    claim: Four core fault mechanisms have measurable amplitude-duration applicability boundaries.
+    claim: Spike, step and drift have measurable amplitude-duration applicability boundaries; hard freeze has a duration-only boundary because amplitude is not defined.
     evidence_required: route_level_applicability_design_plus_raw_domain_frozen_transform_audit
     current_execution_status: executable_with_current_data
     external_data_required: false
@@ -16,6 +16,12 @@ claims:
     dimension: D2
     claim: QFA, hard RLE and gap mappings are stable across the prespecified OAT grid.
     evidence_required: full_sensor_hour_rescoring_for_each_oat_level
+    current_execution_status: executable_with_current_data
+    external_data_required: false
+  - claim_id: C-D2-FLOOR
+    dimension: D2
+    claim: Post-anoxic process-floor semantics distinguish numerical resolution limitation from hard digital lock without exempting missingness or long gaps.
+    evidence_required: five_scenario_contract_plus_parallel_position4_semantic_equivalence
     current_execution_status: executable_with_current_data
     external_data_required: false
   - claim_id: C-D2-CAUSE
@@ -39,7 +45,7 @@ claims:
   - claim_id: C-D4-MECH
     dimension: D4
     claim: Pair evidence differentiates unilateral target, unilateral peer, common-process and lagged changes.
-    evidence_required: four_class_controlled_injection
+    evidence_required: unilateral_faults_plus_equal_common_negative_control_and_two_separate_asymmetry_positive_controls
     current_execution_status: executable_with_current_data
     external_data_required: false
   - claim_id: C-D4-FIELD
@@ -52,6 +58,12 @@ claims:
     dimension: D5
     claim: Regime-conditioned ordinal structure provides report-grade retrospective evidence.
     evidence_required: blocked_validation_outer_refit_ablation_coverage_and_negative_controls
+    current_execution_status: executable_with_current_data
+    external_data_required: false
+  - claim_id: C-D5-COVERAGE
+    dimension: D5
+    claim: Full composite coverage is characterized as a complete-evidence subset and is not automatically generalized to Basic or unavailable sensor-hours.
+    evidence_required: stratified_coverage_selection_audit_conditional_balance_and_month_block_uncertainty
     current_execution_status: executable_with_current_data
     external_data_required: false
   - claim_id: C-D5-ACTION

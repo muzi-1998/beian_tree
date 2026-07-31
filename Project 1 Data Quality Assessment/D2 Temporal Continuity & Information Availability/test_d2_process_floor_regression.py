@@ -11,7 +11,11 @@ from src.d2_availability.process_floor import route_availability_evidence
 from src.utils.config_loader import load_config
 
 
-def _run(values: list[float]) -> pd.DataFrame:
+def _run(
+    values: list[float | None],
+    *,
+    long_gap_positions: tuple[int, ...] = (),
+) -> pd.DataFrame:
     idx = pd.date_range("2026-01-01", periods=len(values), freq="1min")
     s = pd.Series(values, index=idx, dtype=float)
     missing = s.isna()
@@ -22,10 +26,13 @@ def _run(values: list[float]) -> pd.DataFrame:
     q75 = s.rolling("30min", min_periods=15).quantile(0.75)
     q25 = s.rolling("30min", min_periods=15).quantile(0.25)
     iqr = (q75 - q25).fillna(1.0)
+    long_gap = pd.Series(False, index=idx)
+    if long_gap_positions:
+        long_gap.iloc[list(long_gap_positions)] = True
     return route_availability_evidence(
         aligned_value=s,
         missing=missing,
-        long_gap=pd.Series(False, index=idx),
+        long_gap=long_gap,
         rle_run_min=hard_rle,
         hard_rle_run_min=hard_rle,
         rolling_iqr=iqr,
@@ -66,6 +73,19 @@ def test_normal_response_recovers_immediately_after_leaving_floor():
     assert not out["sensor_freeze"].iloc[20]
     assert not out["floor_occupancy"].iloc[-20:].any()
     assert not out["qfa_unavailable"].iloc[-20:].any()
+
+
+def test_missing_and_long_gap_are_not_exempted_by_process_floor():
+    values = (
+        [0.04, 0.05] * 4
+        + [None] * 6
+        + [0.04, 0.05] * 5
+        + [0.05, 0.06] * 5
+    )
+    out = _run(values, long_gap_positions=tuple(range(24, 30)))
+    assert out["qfa_unavailable"].iloc[8:14].all()
+    assert out["qfa_unavailable"].iloc[24:30].all()
+    assert not out["sensor_freeze"].iloc[8:14].any()
 
 
 def test_both_post_anoxic_do_channels_use_process_floor_route():

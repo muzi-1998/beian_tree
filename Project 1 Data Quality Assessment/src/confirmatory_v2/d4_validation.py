@@ -425,6 +425,58 @@ def _orp_shrinkage_sensitivity() -> pd.DataFrame:
 def run_d4_validation(output_dir: Path) -> dict[str, pd.DataFrame]:
     trials, cfg = _mechanism_trials()
     summary = _mechanism_summary(trials, float(cfg.classification["asymmetry_max"]))
+    design = read_yaml(CONFIG_ROOT / "validation_design.yaml")["D4"]
+    role_rows = []
+    for control_name, contract in design["common_process_roles"].items():
+        role_rows.append(
+            {
+                "control_name": control_name,
+                "scenario": contract["scenario_id"],
+                "statistical_role": contract["statistical_role"],
+                "contract_endpoint": contract["endpoint"],
+                "contributes_to_common_process_FAR": bool(
+                    contract["contributes_to_common_process_FAR"]
+                ),
+            }
+        )
+    role_contract = pd.DataFrame(role_rows)
+    role_contract = role_contract.merge(
+        summary[
+            summary["scenario"].isin(role_contract["scenario"])
+        ],
+        on="scenario",
+        how="left",
+        validate="one_to_one",
+    )
+    role_contract["endpoint_matches_contract"] = (
+        role_contract["metric"].eq(role_contract["contract_endpoint"])
+    )
+    role_contract["role_contract_passed"] = (
+        role_contract["endpoint_matches_contract"]
+        & (
+            role_contract["contributes_to_common_process_FAR"]
+            == role_contract["scenario"].eq("common_equal")
+        )
+    )
+    summary = summary.merge(
+        role_contract[
+            [
+                "scenario",
+                "statistical_role",
+                "contributes_to_common_process_FAR",
+            ]
+        ],
+        on="scenario",
+        how="left",
+    )
+    summary["statistical_role"] = summary["statistical_role"].fillna(
+        "fault_or_lag_validation"
+    )
+    summary["contributes_to_common_process_FAR"] = (
+        summary["contributes_to_common_process_FAR"]
+        .fillna(False)
+        .astype(bool)
+    )
     lag = (
         trials[trials["scenario"].str.startswith("lag_")]
         .assign(lag_minutes=lambda frame: frame["scenario"].str.split("_").str[1].astype(int))
@@ -445,6 +497,7 @@ def run_d4_validation(output_dir: Path) -> dict[str, pd.DataFrame]:
     outputs = {
         "D4_mechanism_trials": trials,
         "D4_mechanism_summary": summary,
+        "D4_common_change_contract": role_contract,
         "D4_lag_response": lag,
         "D4_ORP_shrinkage_sensitivity": shrinkage,
     }

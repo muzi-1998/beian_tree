@@ -20,6 +20,7 @@ def build_execution_report(
     d4: dict[str, pd.DataFrame],
     d5: dict[str, pd.DataFrame],
     composite: dict[str, pd.DataFrame],
+    coverage_selection: dict[str, pd.DataFrame],
 ) -> Path:
     d1_summary = d1["D1_injection_summary"]
     d2_summary = d2["D2_oat_summary"]
@@ -29,6 +30,12 @@ def build_execution_report(
     d5_outer = d5["D5_outer_refit_summary"]
     d1_raw = d1["D1_raw_endpoint_summary"]
     d1_high = d1["D1_high_amplitude_summary"]
+    d2_floor_checks = d2["D2_process_floor_contract_checks"]
+    d4_control_contract = d4["D4_common_change_contract"]
+    d5_paired = d5["D5_outer_refit_paired_delta_summary"]
+    coverage_summary = coverage_selection[
+        "D5_coverage_selection_summary"
+    ].set_index("indicator")["value"]
     gate_counts = d3["D3_safety_gate"]["D3_gate_status"].value_counts()
     node = composite["WWDQS_node_scores"]
     pair = composite["WWDQS_pair_scores"]
@@ -102,10 +109,19 @@ def build_execution_report(
             f"{len(high_primary)} analyte-route strata met the 0.80 recall target. "
             "The amplitude-duration maps retain low-recall regions instead of pooling them away.",
             "",
+            "Spike and Step thresholds were not lowered after observing these results. "
+            "Any revised detector would require a new development set and an untouched "
+            "or external validation set; the present package treats low recall as an "
+            "applicability boundary.",
+            "",
             "### D2",
             "",
             f"- Minimum channel-rank Spearman across OAT: {_format_metric(d2_summary['channel_rank_spearman'].min())}.",
             f"- Minimum event Jaccard across OAT: {_format_metric(d2_summary['event_jaccard'].min())}.",
+            f"- Process-floor contract checks passed: "
+            f"{int(d2_floor_checks['passed'].sum())}/{len(d2_floor_checks)}.",
+            "- DO_1_4 and DO_2_4 share the same process-floor semantics: low IQR is diagnostic, "
+            "hard digital lock remains unavailable, and missing/long-gap evidence is never exempted.",
             "",
             "### D3",
             "",
@@ -122,6 +138,14 @@ def build_execution_report(
         lines.append(
             f"- {row.scenario} / {row.metric}: {_format_metric(row.estimate)} "
             f"(pair-windows={n_value}, timestamp-clustered where applicable)."
+        )
+    lines.append("")
+    for row in d4_control_contract.itertuples(index=False):
+        lines.append(
+            f"- {row.scenario}: {row.statistical_role}; endpoint {row.contract_endpoint}; "
+            f"{'included' if row.contributes_to_common_process_FAR else 'excluded'} "
+            f"from common-process FAR; contract "
+            f"{'Pass' if row.role_contract_passed else 'Fail'}."
         )
     lines.extend(
         [
@@ -158,6 +182,35 @@ def build_execution_report(
     lines.extend(
         [
             "",
+            "Paired Full-minus-ablation future-month effects:",
+        ]
+    )
+    for row in d5_paired.itertuples(index=False):
+        lines.append(
+            f"- {row.ablation_variant} / {row.metric}: delta "
+            f"{_format_metric(row.mean_delta_full_minus_ablation)} "
+            f"(outer-month 95% CI {_format_metric(row.ci95_low)}-"
+            f"{_format_metric(row.ci95_high)}; positive in "
+            f"{row.positive_gain_fold_fraction:.1%} of folds)."
+        )
+    full_top1 = d5_outer[
+        d5_outer["variant"].eq("full_reference")
+        & d5_outer["metric"].eq("Top1")
+    ].iloc[0]
+    lines.extend(
+        [
+            "",
+            f"Full-model Top-1 localization is {_format_metric(full_top1['estimate'])} "
+            f"(95% CI {_format_metric(full_top1['ci95_low'])}-"
+            f"{_format_metric(full_top1['ci95_high'])}) and does not meet the "
+            "locked 0.80 criterion. This limits exact node localization and keeps "
+            "sensor-level hard Veto disabled; it does not invalidate report-grade "
+            "D5 detection or retrospective composite aggregation.",
+        ]
+    )
+    lines.extend(
+        [
+            "",
             "### Composite",
             "",
             f"- Full node-score rows: {int(node['Q_node_full'].notna().sum()):,}.",
@@ -172,6 +225,13 @@ def build_execution_report(
             f"- Full/basic pair rows: {int(pair['Q_pair_full'].notna().sum()):,}/"
             f"{int(pair['Q_pair_basic'].notna().sum()):,}.",
             "- D3 is not averaged into Q_node or Q_pair; Fail prevents a high-confidence grade and Warn is retained as an explicit label.",
+            f"- Coverage-selection audit: Full "
+            f"{int(coverage_summary['full_sensor_hours']):,} sensor-hours, Basic "
+            f"{int(coverage_summary['basic_sensor_hours']):,}; Basic OOD share "
+            f"{float(coverage_summary['basic_OOD_share']):.1%} versus Full "
+            f"{float(coverage_summary['full_OOD_share']):.1%}.",
+            "- Full is a complete-evidence, calendar/regime/support-selected estimand. "
+            "It is not generalized to all sensor-hours; Basic is reported separately.",
             "",
             "## Pending or disputed items",
             "",

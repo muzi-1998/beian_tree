@@ -21,6 +21,7 @@ from .common import (
     sha256_paths,
 )
 from .composite import run_composite
+from .coverage_selection import run_coverage_selection
 from .d1_validation import run_d1_validation
 from .d2_sensitivity import run_d2_sensitivity
 from .d3_safety_gate import run_d3_sensitivity
@@ -32,6 +33,7 @@ from .figures import (
     figure_d2,
     figure_d3,
     figure_d4_d5,
+    figure_d5_coverage_selection,
     write_figure_manifest,
 )
 from .framework import build_framework_figure
@@ -79,6 +81,10 @@ def run_confirmatory_v2() -> Path:
     d4 = run_d4_validation(output_dir)
     d5 = run_d5_validation(output_dir)
     composite = run_composite(output_dir, d3["D3_safety_gate"])
+    coverage_selection = run_coverage_selection(
+        output_dir,
+        composite["WWDQS_node_scores"],
+    )
 
     figure_dir = output_dir / "figures"
     figure_dir.mkdir(exist_ok=True)
@@ -89,11 +95,22 @@ def run_confirmatory_v2() -> Path:
         *figure_d2(d2, figure_dir),
         *figure_d3(d3, figure_dir),
         *figure_d4_d5(d4, d5, figure_dir),
+        *figure_d5_coverage_selection(coverage_selection, figure_dir),
         *figure_composite(composite, figure_dir),
     ]
     source_paths = sorted(output_dir.glob("*.parquet"))
     write_figure_manifest(figure_dir, figure_stems, source_paths, run_id)
-    build_execution_report(output_dir, run_id, d1, d2, d3, d4, d5, composite)
+    build_execution_report(
+        output_dir,
+        run_id,
+        d1,
+        d2,
+        d3,
+        d4,
+        d5,
+        composite,
+        coverage_selection,
+    )
 
     manifest = {
         "schema_version": "ww-dqs-confirmatory-run-v2.0",
