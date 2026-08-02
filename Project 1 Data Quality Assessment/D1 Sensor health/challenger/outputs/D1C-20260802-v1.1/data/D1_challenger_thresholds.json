@@ -1,0 +1,42 @@
+{
+  "minute_glr:challenger": {
+    "threshold": 50.59070282452609,
+    "n_events": 27,
+    "exposure_sensor_days": 682.0583333333334,
+    "far": 0.039586056911065766,
+    "far_ci95_low": 0.026087460943122805,
+    "far_ci95_high": 0.0575956344572123,
+    "threshold_gate_failed": false,
+    "merge_gap": "0 days 00:15:00"
+  },
+  "minute_glr:baseline_fixed_far": {
+    "threshold": 23.95586430745349,
+    "n_events": 31,
+    "exposure_sensor_days": 682.0583333333334,
+    "far": 0.04545065793492736,
+    "far_ci95_low": 0.03088151694621699,
+    "far_ci95_high": 0.06451358095458418,
+    "threshold_gate_failed": false,
+    "merge_gap": "0 days 00:15:00"
+  },
+  "hourly_glr:challenger": {
+    "threshold": 11.543084473324873,
+    "n_events": 25,
+    "exposure_sensor_days": 550.7083333333333,
+    "far": 0.04539608080502384,
+    "far_ci95_low": 0.029377949939313298,
+    "far_ci95_high": 0.06701357045779896,
+    "threshold_gate_failed": false,
+    "merge_gap": "0 days 06:00:00"
+  },
+  "hourly_glr:baseline_fixed_far": {
+    "threshold": 0.78582282214632,
+    "n_events": 1,
+    "exposure_sensor_days": 550.7083333333333,
+    "far": 0.0018158432322009535,
+    "far_ci95_low": 4.597317028243604e-05,
+    "far_ci95_high": 0.01011723094367357,
+    "threshold_gate_failed": false,
+    "merge_gap": "0 days 06:00:00"
+  }
+}
