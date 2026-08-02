@@ -1,0 +1,55 @@
+schema_version: ww-dqs-framework-design-v1.0
+message: Independent quality dimensions feed coverage-stratified node and pair products while D3 remains a non-compensatory safety gate.
+audience: environmental process monitoring and data-quality researchers
+reading_order: left_to_right_then_top_to_bottom
+canvas:
+  backend: scientific_illustrator_powerpoint
+  aspect_ratio: 16:9
+  width_points: 960
+  height_points: 540
+  outer_margin_points: 32
+layout:
+  hierarchy_levels: 3
+  connector_lane_gap_points: 12
+  node_corner_radius: native_rounded_rectangle
+  stroke_width_points: 1.0
+  palette:
+    input: "#E8EDF5"
+    transform: "#D7E4F2"
+    dynamic_dimension: "#DDE8F4"
+    safety_gate: "#F6E3B7"
+    aggregation: "#E8D9E2"
+    supported: "#DDECDD"
+    pending: "#F4E6C7"
+    prohibited: "#EBD6D6"
+    stroke: "#4D4D4D"
+regions:
+  - {id: input, bounds: [40, 84, 122, 70]}
+  - {id: temporal_base, bounds: [200, 76, 142, 86]}
+  - {id: dimensions, bounds: [378, 55, 542, 116]}
+  - {id: aggregation, bounds: [416, 226, 456, 118]}
+  - {id: plant_summary, bounds: [548, 365, 220, 62]}
+  - {id: claim_boundary, bounds: [52, 462, 856, 48]}
+objects:
+  visual_dimension_order: [D1, D2, D5, D4, D3]
+  order_rationale: keep node-score inputs contiguous, isolate pair evidence, and place the non-compensatory gate at the boundary
+  dimension_roles:
+    D1: Sensor health
+    D2: Continuity and availability
+    D3: Independent Safety Gate
+    D4: Pair temporal consistency
+    D5: Topological structure
+  node_product: D1 + D2 + D5, reported separately as Full and Basic
+  pair_product: target node + peer node + independent D4_raw
+  plant_product: coverage-stratified retrospective summary without A-E grades
+claim_boundary:
+  supported: retrospective within-plant mechanism and temporal robustness
+  pending: field truth, prospective period and external-plant validation
+  prohibited: deployment effectiveness, learned optimal weights and broad transportability
+acceptance:
+  editable_native_objects_only: true
+  raster_objects_allowed: false
+  minimum_layout_confidence: 0.95
+  no_text_overflow: true
+  no_connector_crossings: true
+  no_unresolved_hard_audit_findings: true

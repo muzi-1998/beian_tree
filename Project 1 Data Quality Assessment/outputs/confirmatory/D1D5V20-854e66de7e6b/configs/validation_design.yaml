@@ -1,0 +1,89 @@
+schema_version: ww-dqs-validation-design-v2.0
+random_seed: 20260727
+D1:
+  core_faults:
+    spike:
+      target_trials: 144
+      duration_minutes: [1, 10]
+      amplitude_sigma: [0.5, 3.0]
+    step:
+      target_trials: 192
+      duration_hours: [0.5, 48.0]
+      amplitude_sigma: [0.5, 3.0]
+    linear_drift:
+      target_trials: 192
+      duration_hours: [12.0, 168.0]
+      amplitude_sigma: [0.5, 3.0]
+    hard_freeze:
+      target_trials: 144
+      duration_minutes: [15, 1440]
+  supplementary_faults:
+    quantization: descriptive_only
+    dropout: descriptive_only
+  baseline_minimum_D1: 4.5
+  baseline_D2_usable_tags: [train_ok]
+  baseline_D3_disallowed_gate: [Fail]
+  primary_injection_design: detector_route_level
+  route_domains:
+    spike: decomposition_residual_detector_input
+    step: routed_hourly_step_detector_input
+    linear_drift: hourly_measurement_fixed_pls_route
+    hard_freeze: raw_minute_measurement
+  raw_domain_frozen_transform_audit:
+    enabled: true
+    scenarios_per_fault: 64
+    resolution_mode: original
+    preprocessing_fit_end: "2025-10-31 23:59:59"
+    transform_policy: fit_or_derive_from_pre_injection_data_once_then_freeze
+  degraded_resolution:
+    multiplier: 2.0
+    role: exploratory_paired_sensitivity
+D2:
+  qfa_window_hours: [3, 6, 9, 12]
+  primary_qfa_window_hours: 6
+  hard_rle_minutes: [10, 15, 20, 30]
+  primary_hard_rle_minutes: 15
+  gap_break_multipliers: [0.8, 1.0, 1.2]
+  one_at_a_time: true
+D3:
+  hard_instrument_range_perturbation: none
+  soft_boundary_multipliers: [0.8, 0.9, 1.0, 1.1, 1.2]
+  rate_threshold_quantile_labels: [P90, P95, P97_5]
+  rate_threshold_multipliers: [0.8, 1.0, 1.2]
+D4:
+  windows_per_pair: 18
+  target_faults: [drift, step, freeze]
+  peer_faults: [drift, step, freeze]
+  common_process_controls: [equal_amplitude, unequal_amplitude, opposite_direction]
+  lag_minutes: [0, 10, 30, 60, 180]
+  spike_role: secondary_D1_owned
+D5:
+  locked_top1_threshold: 0.80
+  component_ablations: [gradient, rank, rep, profile]
+  structural_outer_refits:
+    - full_reference
+    - no_exogenous_context
+    - no_regime_conditioning
+    - no_hysteresis
+  outer_unit: blocked_future_month
+  k_selection:
+    candidates: [2, 3, 4, 5]
+    criterion: training_only_silhouette
+    maximum_rows: 6000
+    tie_break: lower_k
+  test_windows_per_fold: 10
+  test_window_hours: 24
+  threshold_calibration: training_only_empirical_risk_reference
+composite:
+  node_dimensions: [D1, D2, D5]
+  pair_components: [node_target, node_reference, D4_raw]
+  D3_role: independent_non_compensatory_gate
+  main_weighting: equal
+  learned_weights: prohibited_without_external_criterion
+  coverage_reporting:
+    primary: full
+    extension: basic
+    excluded_from_formal_comparison: [limited, insufficient]
+  bottleneck:
+    primary_persistence_hours: 3
+    sensitivity_persistence_hours: 2

@@ -94,3 +94,16 @@ line-art figures.
 For a main manuscript, Figs. 1, 5, 7, 9 and 12 carry the strongest sequence.
 Mapping, calibration and detailed event-concordance panels are better suited to
 Methods or Supplementary Information.
+
+## v2.0 confirmatory addendum
+
+Run `D1D5V20-a2b2bef69861` performs full sensor-hour one-at-a-time rescoring for
+QFA windows 3/6/9/12 h, process-floor hard RLE 10/15/20/30 min and gap-mapping
+multipliers 0.8/1.0/1.2. Channel-rank Spearman is at least 0.996 for every
+variant. The 6 h primary QFA setting is stable; 3 h and 12 h event Jaccard
+values are 0.731 and 0.721 and therefore fail the prespecified 0.75 sensitivity
+criterion. This is reported as window-length sensitivity, not used to retune
+the primary setting.
+
+The D2 score remains independent of D1. SCADA communication, network-alarm and
+planned-shutdown logs are still required to assign outage causes.

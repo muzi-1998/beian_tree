@@ -1,0 +1,59 @@
+schema_version: ww-dqs-figure-contract-v2.0
+backend: python
+font_family: Arial
+axes_linewidth_pt: 0.8
+panel_labels: lowercase_parenthesized
+ticks:
+  open_axes: outward
+  full_frame_axes: inward
+  top_and_right_ticks_only_when_labeled: false
+score_scale: [1.0, 5.0]
+rate_scale_policy: use_one_of_fraction_or_percent_per_figure
+palette_policy: colorblind_safe_restrained_cross_figure_consistency
+annotation_policy:
+  avoid_data_overlap: true
+  fallback_background_alpha: 0.70
+  direct_labels_preferred: true
+statistics:
+  show_effect_size: true
+  show_95ci: true
+  state_analysis_unit: true
+  state_block_length: true
+main_figure_groups:
+  - overall_framework_and_claim_boundary
+  - D1_amplitude_duration_applicability
+  - D2_rank_and_event_OAT
+  - D3_safety_gate_composition
+  - D4_mechanism_and_D5_detection_localization
+  - composite_full_basic_coverage
+supplementary_figure_groups:
+  - D1_fault_specific_detection_surfaces
+  - D1_route_raw_agreement
+  - D2_process_floor_contract_trajectories
+  - D4_common_change_control_roles
+  - D5_coverage_selection_and_paired_ablation
+framework:
+  designer: scientific_illustrator
+  editable_source: pptx
+  reading_order: left_to_right
+  raster_evidence: none
+exports:
+  - svg
+  - pdf
+  - png_600dpi
+  - tiff_600dpi
+source_data:
+  one_file_per_figure: true
+  allowed_formats: [csv, parquet, xlsx]
+lineage:
+  required_fields:
+    - run_id
+    - data_sha256
+    - config_sha256
+    - script_sha256
+    - code_commit
+forbidden_canvas_text:
+  - Figure X
+  - final
+  - draft
+  - implementation note

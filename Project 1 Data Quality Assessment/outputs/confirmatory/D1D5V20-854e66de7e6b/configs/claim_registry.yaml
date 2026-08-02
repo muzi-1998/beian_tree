@@ -1,0 +1,74 @@
+schema_version: ww-dqs-claim-registry-v2.0
+claims:
+  - claim_id: C-D1-MECH
+    dimension: D1
+    claim: Four core fault mechanisms have measurable amplitude-duration applicability boundaries.
+    evidence_required: route_level_applicability_design_plus_raw_domain_frozen_transform_audit
+    current_execution_status: executable_with_current_data
+    external_data_required: false
+  - claim_id: C-D1-FIELD
+    dimension: D1
+    claim: Detected and recovered episodes correspond to real maintenance-confirmed sensor faults.
+    evidence_required: blinded_maintenance_or_operator_adjudication
+    current_execution_status: pending_external_records
+    external_data_required: true
+  - claim_id: C-D2-STABILITY
+    dimension: D2
+    claim: QFA, hard RLE and gap mappings are stable across the prespecified OAT grid.
+    evidence_required: full_sensor_hour_rescoring_for_each_oat_level
+    current_execution_status: executable_with_current_data
+    external_data_required: false
+  - claim_id: C-D2-CAUSE
+    dimension: D2
+    claim: Availability events can be assigned to sensor, network or planned downtime causes.
+    evidence_required: scada_communication_and_maintenance_logs
+    current_execution_status: pending_external_records
+    external_data_required: true
+  - claim_id: C-D3-GATE
+    dimension: D3
+    claim: Instrument-range failures are non-compensatory and soft/rate evidence remains warning-only.
+    evidence_required: verified_instrument_register_and_versioned_threshold_sources
+    current_execution_status: executable_with_current_data
+    external_data_required: false
+  - claim_id: C-D3-PRECISION
+    dimension: D3
+    claim: Soft and rate warnings have field-confirmed event precision.
+    evidence_required: independent_event_adjudication
+    current_execution_status: pending_expert_adjudication
+    external_data_required: true
+  - claim_id: C-D4-MECH
+    dimension: D4
+    claim: Pair evidence differentiates unilateral target, unilateral peer, common-process and lagged changes.
+    evidence_required: four_class_controlled_injection
+    current_execution_status: executable_with_current_data
+    external_data_required: false
+  - claim_id: C-D4-FIELD
+    dimension: D4
+    claim: Pair events identify real synchronization failures in field operation.
+    evidence_required: independently_adjudicated_paired_events
+    current_execution_status: pending_external_records
+    external_data_required: true
+  - claim_id: C-D5-SCORE
+    dimension: D5
+    claim: Regime-conditioned ordinal structure provides report-grade retrospective evidence.
+    evidence_required: blocked_validation_outer_refit_ablation_coverage_and_negative_controls
+    current_execution_status: executable_with_current_data
+    external_data_required: false
+  - claim_id: C-D5-ACTION
+    dimension: D5
+    claim: Node-specific hard Veto is action-grade.
+    evidence_required: locked_top1_at_least_0_80_and_node_level_l3
+    current_execution_status: failed_locked_threshold
+    external_data_required: false
+  - claim_id: C-COMP-RETRO
+    dimension: composite
+    claim: Transparent equal-weight node and pair products can summarize retrospective evidence with coverage and uncertainty.
+    evidence_required: prespecified_equal_weight_joint_block_bootstrap_and_ablation
+    current_execution_status: executable_with_current_data
+    external_data_required: false
+  - claim_id: C-COMP-UTILITY
+    dimension: composite
+    claim: WW-DQS improves modelling, control or maintenance outcomes.
+    evidence_required: independent_downstream_or_operational_criterion
+    current_execution_status: pending_external_criterion
+    external_data_required: true
