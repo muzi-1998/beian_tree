@@ -2,7 +2,7 @@
 # 映射函数 + 子分权重 + 短长断点策略(P2 外置:替代 ENG_DEFAULTS 硬编码)
 # 各厂可有自己的初始值;运行时仍由 d2_calibration.yaml 覆盖关键阈值。
 
-mapping_version: d2_v1_process_floor_r1
+mapping_version: d2_v2_hard_availability_r1
 
 # ─── 子分到 1-5 分的分段映射(工程初始值) ───
 piecewise_breaks:
@@ -36,11 +36,14 @@ Q_GS_components:
 # ─── Q_FA 主+辅证据规则 ───
 Q_FA_rule:
   main_metric:        info_empty_cov
+  production_semantics: missing_long_gap_or_hard_observed_stasis
   aggravation:
     metric:           response_loss_rate
     trigger_above:    0.30
     main_threshold:   4.0    # 仅当 Q_main ≤ 4 时才下调
     downgrade_amount: 1
+    production_enabled: false
+    role: diagnostic_only_owned_by_D1_sensor_health
 
 # ─── D2 主聚合(方案 v2.0 §4.2 锁定值) ───
 aggregation:
@@ -84,17 +87,23 @@ imputation:
   long_action:          no_impute
   ledger_required:      true
 
-# ─── 冻结检测阈值(D1-D2 分流) ───
+# ─── 信息停滞阈值(D1-D2 分流) ───
 freeze_detection:
-  tau_rle_D2_min:    3
-  tau_rle_D1_min:    15
+  tau_rle_D2_min:    3     # soft-stasis diagnostic only
+  tau_rle_D1_min:    15    # hard observed-value stasis; production Q_FA
   tau_iqr_DO:        0.02
   tau_iqr_ORP:       1.0
 
 process_floor_policy:
   qfa_window: freeze_window
-  production_evidence: [missing, long_gap, sensor_freeze]
+  production_evidence: [missing, long_gap, hard_observed_stasis]
   hard_rle_min: 15
   low_iqr_diagnostic_only: true
   floor_occupancy_diagnostic_only: true
   response_loss_requires_comparable_peer: true
+
+standard_availability_policy:
+  production_evidence: [missing, long_gap, hard_observed_stasis]
+  soft_rle_diagnostic_only: true
+  low_iqr_diagnostic_only: true
+  response_loss_diagnostic_only: true

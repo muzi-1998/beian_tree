@@ -69,7 +69,7 @@ class GapSeverityScorer:
 
 
 class FreezeAvailabilityScorer:
-    """Q_FA:主证据 info_empty + 辅助证据 response_loss 加重融合。"""
+    """Q_FA: hard information loss; response loss is diagnostic by default."""
     def __init__(self, cfg: D2Config):
         self.cfg = cfg
         self.b   = cfg.mapping.piecewise_breaks["Q_FA"]
@@ -84,8 +84,12 @@ class FreezeAvailabilityScorer:
         Q_main = piecewise_score(st["info_empty_cov"], self.b["info_empty_cov"])
         Q_FA   = Q_main.copy()
         rl_aligned = rl_rate.reindex(Q_main.index).fillna(0.0)
+        production_enabled = bool(
+            self.rule["aggravation"].get("production_enabled", False)
+        )
         downgrade = (
             allow_response_loss
+            & production_enabled
             & (rl_aligned > self.rule["aggravation"]["trigger_above"])
             & (Q_main <= self.rule["aggravation"]["main_threshold"])
         )

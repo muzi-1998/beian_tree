@@ -61,7 +61,9 @@ def test_p0b_safety_floor_metadata_present(calib):
         assert isinstance(val, dict), \
             f"{key} should be dict with metadata after P0-B, got {type(val).__name__}"
         assert "source" in val
-        assert val["source"] in ("floor_applied", "benchmark", "benchmark_p99")
+        assert val["source"] in (
+            "floor_applied", "benchmark", "benchmark_p99", "prespecified_engineering"
+        )
 
 
 def test_p0_veto_rate_reasonable(state):
@@ -182,6 +184,15 @@ def test_d1_d2_freeze_threshold_separation():
     # 这两个阈值在 ENG_DEFAULTS 中
     tau_d2, tau_d1 = 3, 15
     assert tau_d2 < tau_d1, "D2 阈值必须严格小于 D1 阈值"
+
+
+def test_calibration_uses_development_only(state, calib):
+    assert calib["calibration_basis"] == "blocked_development_reference_v2"
+    bench = calib["benchmark_windows"]
+    assert pd.Timestamp(bench["fit_end"]) < pd.Timestamp(
+        calib["validation_periods"]["internal_validation"]["start"]
+    )
+    assert state["calibration_id"] == calib["calibration_id"]
 
 
 if __name__ == "__main__":

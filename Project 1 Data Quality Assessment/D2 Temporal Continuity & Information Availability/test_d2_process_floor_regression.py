@@ -82,6 +82,31 @@ def test_missing_and_long_gap_are_not_exempted_by_process_floor():
         + [0.04, 0.05] * 5
         + [0.05, 0.06] * 5
     )
+
+
+def _run_standard(values: list[float | None]) -> pd.DataFrame:
+    idx = pd.date_range("2026-01-01", periods=len(values), freq="1min")
+    s = pd.Series(values, index=idx, dtype=float)
+    missing = s.isna()
+    observed_diff = s.diff().abs().fillna(1.0)
+    same = observed_diff.lt(0.5) & ~missing & ~missing.shift(1, fill_value=True)
+    groups = same.ne(same.shift(fill_value=False)).cumsum()
+    rle = same.astype(int) * (same.groupby(groups).cumcount() + 1)
+    q75 = s.rolling("30min", min_periods=15).quantile(0.75)
+    q25 = s.rolling("30min", min_periods=15).quantile(0.25)
+    iqr = (q75 - q25).fillna(2.0)
+    return route_availability_evidence(
+        aligned_value=s,
+        missing=missing,
+        long_gap=pd.Series(False, index=idx),
+        rle_run_min=rle,
+        hard_rle_run_min=rle,
+        rolling_iqr=iqr,
+        low_iqr_threshold=1.0,
+        lenient_rle_min=3,
+        hard_rle_min=15,
+        availability_mode="standard",
+    )
     out = _run(values, long_gap_positions=tuple(range(24, 30)))
     assert out["qfa_unavailable"].iloc[8:14].all()
     assert out["qfa_unavailable"].iloc[24:30].all()
@@ -96,3 +121,17 @@ def test_both_post_anoxic_do_channels_use_process_floor_route():
         assert sensor.process_zone == "post_anoxic"
         assert sensor.process_floor_threshold == 0.20
         assert sensor.response_loss_enabled is False
+
+
+def test_standard_soft_stasis_is_diagnostic_not_production_unavailability():
+    out = _run_standard(([100.0, 100.5, 100.0, 100.5] * 10))
+    assert out["soft_stasis"].iloc[-20:].all()
+    assert not out["sensor_freeze"].any()
+    assert not out["qfa_unavailable"].any()
+
+
+def test_standard_hard_stasis_remains_production_unavailability():
+    out = _run_standard([100.0] * 30)
+    assert out["sensor_freeze"].iloc[-1]
+    assert out["qfa_unavailable"].iloc[-1]
+    assert not out["qfa_unavailable"].iloc[10]

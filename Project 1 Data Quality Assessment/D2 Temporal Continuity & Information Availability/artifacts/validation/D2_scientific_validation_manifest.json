@@ -1,0 +1,18 @@
+{
+  "schema_version": "d2-scientific-validation-v1",
+  "run_id": "D2V2_20260804_1823",
+  "calibration_id": "NorthBank_D2_v2_20260804",
+  "external_site_validation": "deferred",
+  "outputs": {
+    "D2_analyte_effects.parquet": "01e3179c78fa61c9839e008f1b38ea37b482f029fec579650e258738f7874665",
+    "D2_d1d2_circular_null.parquet": "4c7179109eb79202a10a167e0643db926faafe00795c212cd22e544486d98c1e",
+    "D2_d1d2_concordance.parquet": "d22e4729ba3941840dce6f101c8ef811bafda6bdafb67e88c9d59207ef374f4b",
+    "D2_d1d2_event_pairs.parquet": "0576b7699ef0f5dcf018f054180d520ffdfe3fd5b2221867afb1f95cb25540ed",
+    "D2_daily_summary.parquet": "35501b704249467312bf21c4c3a8251f47a865c18ca115b03a13bf62739795cd",
+    "D2_distribution_summary.parquet": "285822a5e0f9654d0c6e822be795818059d32b6b1c2c7aba986aa13aed249c7c",
+    "D2_scientific_validation_source_data.xlsx": "3e70c68106489862a6105916896828069f10b740bc3f58846b042874133da490",
+    "D2_threshold_sensitivity.parquet": "ebb6b391e42a861d05166979fc7c68e5671c5482a2d39f8f748c48d1b4eb18a7",
+    "D2_weight_lambda_scores.parquet": "b50aeed19ebc29572aa3262ae9a591a6d2ecd9f00ff086ab7762d2fcf4dd0180",
+    "D2_weight_lambda_summary.parquet": "26bca3df5d493ce37a0bca22d5692d40fca6452667dd1dd4b4e776f066b50353"
+  }
+}

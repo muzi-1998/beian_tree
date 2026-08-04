@@ -1,16 +1,16 @@
 """run_d2_pipeline.py
-D2 Temporal Continuity & Information Availability — V1 (single-plant)
+D2 Temporal Continuity & Information Availability — V2 (single-plant)
 
 Channels : 14 scored (DO_1_1..4, DO_2_1..4, ORP_1_1..3, ORP_2_1..3)
            4 support (QR/QIR — excluded from D2 main chain)
 Main window : 24 h trailing, step 1 h → hourly output
-Calibration : engineering defaults, updated from D1 benchmark windows (D1≥4.5, ≥24 h)
+Calibration : prespecified engineering mapping + development-only reference profile
 
-V1 outputs (artifacts/data/):
+V2 outputs (artifacts/data/):
   D2_main_scores_hourly.xlsx          – hourly Q_TI, Q_GS, Q_FA, D2_total, grade, usable_tag
   D2_preprocess_flags_hourly.xlsx     – hourly aggregated preprocess flags
   D2_gap_run_table.xlsx               – all gap events (start/end/duration/type/action)
-  D2_freeze_availability_events.xlsx  – info-empty events per channel
+  D2_freeze_availability_events.xlsx  – hard availability-loss events per channel
   D2_interpolation_ledger.xlsx        – imputed gap ledger (short gaps ≤ 5 min)
   D2_mapping_params.xlsx              – piecewise mapping parameters
   D2_sensor_availability_profile.xlsx – sensor-level long-term summary
@@ -46,7 +46,7 @@ from src.d2_availability.scorer import (
     TemporalIntegrityScorer,
 )
 from src.d2_availability.process_floor import route_availability_evidence
-_d2_cfg = _load_d2_config(_ROOT / "configs", version="v1")
+_d2_cfg = _load_d2_config(_ROOT / "configs", version="v2")
 
 # P2: channels sourced from d2_sensors.yaml
 SCORED_CHANNELS  = _d2_cfg.scored_channels
@@ -64,6 +64,14 @@ POOL_TOPOLOGY = {
         "process_zone": s.process_zone,
         "process_floor_threshold": s.process_floor_threshold,
         "response_loss_enabled": s.response_loss_enabled,
+        "response_loss_production_enabled": (
+            s.response_loss_enabled
+            and bool(
+                _d2_cfg.mapping.Q_FA_rule["aggravation"].get(
+                    "production_enabled", False
+                )
+            )
+        ),
         "response_loss_peers": s.response_loss_peers,
     }
     for sid, s in _d2_cfg.sensors.items()
@@ -98,8 +106,8 @@ ENG_DEFAULTS = {
     "long_gap_min_min":  _m.imputation["long_gap_min_min"],
 }
 
-CALIBRATION_ID = f"NorthBank_D2_v1_{datetime.now().strftime('%Y%m%d')}"
-RUN_ID         = f"D2V1_{datetime.now().strftime('%Y%m%d_%H%M')}"
+CALIBRATION_ID = f"NorthBank_D2_v2_{datetime.now().strftime('%Y%m%d')}"
+RUN_ID         = f"D2V2_{datetime.now().strftime('%Y%m%d_%H%M')}"
 INPUT_PROVENANCE = {"source": "uninitialised"}
 CACHE_KEY = "uninitialised"
 
@@ -122,6 +130,27 @@ def _sha256_paths(paths) -> str:
 
 def _cache_path(stem: str) -> Path:
     return CACHE / f"{stem}_{CACHE_KEY[:16]}.pkl"
+
+
+def _source_temporal_integrity_rates() -> dict[str, float]:
+    """Return source-file timestamp rates that have no channel-local location."""
+    audit = INPUT_PROVENANCE.get("contract", {}).get("timestamp_audit", {})
+    rows = sum(int(facts.get("rows", 0) or 0) for facts in audit.values())
+    duplicate = sum(
+        int(facts.get("duplicate_timestamp_rows", 0) or 0)
+        for facts in audit.values()
+    )
+    out_of_order = sum(
+        int(facts.get("out_of_order_transitions", 0) or 0)
+        for facts in audit.values()
+    )
+    if rows <= 0:
+        return {"duplicate_rate": 0.0, "out_of_order_rate": 0.0, "available": False}
+    return {
+        "duplicate_rate": duplicate / rows,
+        "out_of_order_rate": out_of_order / max(rows - len(audit), 1),
+        "available": True,
+    }
 
 
 def piecewise_score(x: pd.Series, breaks: list, reverse: bool = True) -> pd.Series:
@@ -192,6 +221,7 @@ def load_raw_excel() -> tuple[pd.DataFrame, pd.DataFrame]:
             _ROOT / "configs" / "d2_mapping.yaml",
             _ROOT / "configs" / "d2_sensors.yaml",
             _ROOT / "configs" / "d2_windows.yaml",
+            _ROOT / "configs" / "d2_study_design.yaml",
             _ROOT / "src" / "d2_availability" / "process_floor.py",
             _ROOT / "src" / "d2_availability" / "scorer.py",
             _ROOT / "src" / "utils" / "config_loader.py",
@@ -225,6 +255,7 @@ def load_raw_excel() -> tuple[pd.DataFrame, pd.DataFrame]:
         _ROOT / "configs" / "d2_mapping.yaml",
         _ROOT / "configs" / "d2_sensors.yaml",
         _ROOT / "configs" / "d2_windows.yaml",
+        _ROOT / "configs" / "d2_study_design.yaml",
         _ROOT / "src" / "d2_availability" / "process_floor.py",
         _ROOT / "src" / "d2_availability" / "scorer.py",
         _ROOT / "src" / "utils" / "config_loader.py",
@@ -334,6 +365,8 @@ def compute_preprocess_flags(df_raw: pd.DataFrame, df_aln: pd.DataFrame) -> dict
             "info_empty":         availability["qfa_unavailable"].astype(np.int8),
             "qfa_unavailable":    availability["qfa_unavailable"].astype(np.int8),
             "low_iqr_diagnostic": availability["low_iqr_diagnostic"].astype(np.int8),
+            "soft_rle_diagnostic": availability["soft_rle_diagnostic"].astype(np.int8),
+            "soft_stasis":        availability["soft_stasis"].astype(np.int8),
             "floor_occupancy":    availability["floor_occupancy"].astype(np.int8),
             "resolution_limited": availability["resolution_limited"].astype(np.int8),
             "sensor_freeze":      availability["sensor_freeze"].astype(np.int8),
@@ -433,18 +466,21 @@ def compute_window_stats(flags_all: dict) -> dict:
     MP = int(pd.Timedelta(W) / pd.Timedelta(_d2_cfg.time_grid["freq"]))
     W_FA = _d2_cfg.freeze_window.length
     MP_FA = int(pd.Timedelta(W_FA) / pd.Timedelta(_d2_cfg.time_grid["freq"]))
+    source_rates = _source_temporal_integrity_rates()
 
     for ch in SCORED_CHANNELS:
         fl = flags_all[ch]
 
         # Rolling means of binary flags
         miss_rate  = fl["missing"].rolling(W, min_periods=MP).mean()
-        dup_rate   = fl["duplicate"].rolling(W, min_periods=MP).mean()
-        oor_rate   = fl["out_of_order"].rolling(W, min_periods=MP).mean()
+        dup_rate   = pd.Series(source_rates["duplicate_rate"], index=fl.index)
+        oor_rate   = pd.Series(source_rates["out_of_order_rate"], index=fl.index)
         irr_rate   = fl["irregular_interval"].rolling(W, min_periods=MP).mean()
         ie_cov = fl["qfa_unavailable"].rolling(W_FA, min_periods=MP_FA).mean()
         fc_cov = fl["sensor_freeze"].rolling(W_FA, min_periods=MP_FA).mean()
         low_iqr_cov = fl["low_iqr_diagnostic"].rolling(W_FA, min_periods=MP_FA).mean()
+        soft_rle_cov = fl["soft_rle_diagnostic"].rolling(W_FA, min_periods=MP_FA).mean()
+        soft_stasis_cov = fl["soft_stasis"].rolling(W_FA, min_periods=MP_FA).mean()
         floor_cov = fl["floor_occupancy"].rolling(W_FA, min_periods=MP_FA).mean()
         resolution_cov = fl["resolution_limited"].rolling(W_FA, min_periods=MP_FA).mean()
 
@@ -472,6 +508,8 @@ def compute_window_stats(flags_all: dict) -> dict:
             "freeze_cand_cov": fc_cov,
             "sensor_freeze_cov": fc_cov,
             "low_iqr_cov":     low_iqr_cov,
+            "soft_rle_cov":    soft_rle_cov,
+            "soft_stasis_cov": soft_stasis_cov,
             "floor_occupancy": floor_cov,
             "resolution_limited": resolution_cov,
             "L_max_min":       L_max_roll,
@@ -547,10 +585,11 @@ def load_or_generate_calibration(stats_all: dict, flags_all: dict) -> dict:
     if calib_yaml.exists():
         with open(calib_yaml, "r", encoding="utf-8") as f:
             loaded = yaml.safe_load(f)
-        if (loaded.get("calibration_basis") == "D2_internal_engineering_v1" and
+        if (loaded.get("calibration_basis") == "blocked_development_reference_v2" and
                 loaded.get("mapping_version") == _d2_cfg.mapping.mapping_version and
+                loaded.get("study_design_version") == _d2_cfg.study_design.version and
                 loaded.get("input_hash") == INPUT_PROVENANCE.get("input_hash")):
-            log("[7] Loading current D2-internal calibration profile")
+            log("[7] Loading frozen development-only D2 reference profile")
             return loaded
         log("[7] Existing calibration predates the 1.1→D2 contract; regenerating")
 
@@ -558,11 +597,18 @@ def load_or_generate_calibration(stats_all: dict, flags_all: dict) -> dict:
     calib = {"calibration_id": CALIBRATION_ID, "plant_id": "NorthBank_LCH",
              "generated_date": datetime.now().strftime("%Y-%m-%d"),
              "effective_period": ["2025-08-01", "2026-04-13"],
-             "calibration_basis": "D2_internal_engineering_v1",
+             "calibration_basis": "blocked_development_reference_v2",
+             "study_design_version": _d2_cfg.study_design.version,
              "mapping_version": _d2_cfg.mapping.mapping_version,
              "input_hash": INPUT_PROVENANCE.get("input_hash")}
-    n_bench = 0
-    bench_stats = {}
+    development = _d2_cfg.study_design.periods["development"]
+    validation = _d2_cfg.study_design.periods["internal_validation"]
+    terminal = _d2_cfg.study_design.periods["terminal_test"]
+    bench_stats = {
+        ch: frame.loc[pd.Timestamp(development.start):pd.Timestamp(development.end)].copy()
+        for ch, frame in stats_all.items()
+    }
+    n_bench = min(len(frame) for frame in bench_stats.values())
 
     # Compute thresholds from benchmark stats (or fall back to engineering defaults)
     def get_percentiles(col, channels):
@@ -581,10 +627,23 @@ def load_or_generate_calibration(stats_all: dict, flags_all: dict) -> dict:
         return p if p is not None else fallback
 
     calib["benchmark_windows"] = {
-        "selection_rule": "not_used_for_mapping; D1 reserved for external concordance",
+        "selection_rule": "blocked_development_period_only; D1_not_used",
+        "fit_start": development.start,
+        "fit_end": development.end,
         "total_benchmark_hours": int(n_bench),
+        "total_reference_sensor_hours": int(sum(len(frame) for frame in bench_stats.values())),
     }
-    calib["thresholds"] = {
+    calib["validation_periods"] = {
+        "internal_validation": {"start": validation.start, "end": validation.end},
+        "terminal_test": {"start": terminal.start, "end": terminal.end},
+        "external_site_validation": _d2_cfg.study_design.external_site_validation,
+    }
+    calib["mapping_contract"] = {
+        "source": "configs/d2_mapping.yaml",
+        "fitted_from_observations": False,
+        "status": "prespecified_engineering_contract",
+    }
+    calib["descriptive_reference_percentiles"] = {
         "Q_temporal_integrity": {
             "missing_rate":    safe_pct("missing_rate",   SCORED_CHANNELS,
                                         {0.25: 0.001, 0.50: 0.003, 0.75: 0.008, 0.95: 0.02, 0.99: 0.05}),
@@ -607,7 +666,7 @@ def load_or_generate_calibration(stats_all: dict, flags_all: dict) -> dict:
             "tau_iqr_ORP":     ENG_DEFAULTS["tau_iqr_ORP"],
         },
     }
-    # P0-B: apply safety floor; bench P99 塌缩为 0 时主动回落工程默认值并留元数据
+    # Veto thresholds are prespecified engineering limits, not fitted quantiles.
     def _apply_floor(bench_p, floor):
         bench_p = float(bench_p) if bench_p is not None else 0.0
         if bench_p <= 0 or bench_p < floor:
@@ -616,13 +675,10 @@ def load_or_generate_calibration(stats_all: dict, flags_all: dict) -> dict:
         return {"value": bench_p, "source": "benchmark",
                 "bench_p": bench_p, "engineering_floor": floor}
 
-    _pL = (get_percentiles("L_max_min",      SCORED_CHANNELS) or {}).get(0.99, 0.0)
-    _pM = (get_percentiles("missing_rate",   SCORED_CHANNELS) or {}).get(0.99, 0.0)
-    _pI = (get_percentiles("irregular_rate", SCORED_CHANNELS) or {}).get(0.95, 0.0)
     calib["veto_thresholds"] = {
-        "L_max_minutes":  _apply_floor(_pL, 360),
-        "missing_rate":   _apply_floor(_pM, 0.15),
-        "irregular_rate": _apply_floor(_pI, 0.10),
+        "L_max_minutes":  {"value": 360, "source": "prespecified_engineering", "engineering_floor": 360},
+        "missing_rate":   {"value": 0.15, "source": "prespecified_engineering", "engineering_floor": 0.15},
+        "irregular_rate": {"value": 0.10, "source": "prespecified_engineering", "engineering_floor": 0.10},
     }
 
     # Variance benchmarks for response_loss (sensor-type level)
@@ -630,7 +686,9 @@ def load_or_generate_calibration(stats_all: dict, flags_all: dict) -> dict:
     for ch in SCORED_CHANNELS:
         s_type = POOL_TOPOLOGY[ch]["type"]
         if ch in flags_all:
-            all_vals = flags_all[ch]["aligned_value"].dropna()
+            fit_start = pd.Timestamp(development.start)
+            fit_end = pd.Timestamp(development.end)
+            all_vals = flags_all[ch]["aligned_value"].loc[fit_start:fit_end].dropna()
             if len(all_vals) > 1440:
                 var_series = all_vals.rolling(30).var().dropna()
                 bench_var[s_type][ch] = {
@@ -648,7 +706,10 @@ def load_or_generate_calibration(stats_all: dict, flags_all: dict) -> dict:
             "tier2": [],
             "tier3": [],
             "tier4": {"allowed": False, "reason": "QR_QIR_quality_unverified"},
-            "response_loss_enabled": sensor_meta.response_loss_enabled,
+            "response_loss_diagnostic_eligible": sensor_meta.response_loss_enabled,
+            "response_loss_production_enabled": POOL_TOPOLOGY[ch][
+                "response_loss_production_enabled"
+            ],
             "availability_mode": sensor_meta.availability_mode,
             "peer_qualification": "same_variable_same_process_position_parallel_pool",
         }
@@ -735,6 +796,12 @@ def compute_subscores(stats_all: dict, rl_all: dict, calib: dict) -> dict:
             "freeze_cand_cov": st["freeze_cand_cov"],
             "sensor_freeze_cov": st["sensor_freeze_cov"],
             "low_iqr_cov": st["low_iqr_cov"],
+            "soft_rle_cov": st.get(
+                "soft_rle_cov", pd.Series(0.0, index=st.index)
+            ),
+            "soft_stasis_cov": st.get(
+                "soft_stasis_cov", pd.Series(0.0, index=st.index)
+            ),
             "floor_occupancy": st["floor_occupancy"],
             "resolution_limited": st["resolution_limited"],
         })
@@ -811,8 +878,13 @@ def ie_breaks_ref():
 
 # ─── 10. Freeze availability events ───────────────────────────────────────────
 
-def extract_freeze_events(flags_all: dict, subs_all: dict) -> pd.DataFrame:
-    """V1+P1-C: info_empty events ≥10 min with D1 event linkage."""
+def extract_freeze_events(
+    flags_all: dict,
+    subs_all: dict,
+    *,
+    calibration_id: str | None = None,
+) -> pd.DataFrame:
+    """Extract production hard-availability events with descriptive D1 linkage."""
     # P1-C: load D1 event index (non-blocking)
     d1_events = None
     for p in [_D1 / "outputs" / "data" / "D1_event_windows.xlsx",
@@ -865,7 +937,7 @@ def extract_freeze_events(flags_all: dict, subs_all: dict) -> pd.DataFrame:
     ev_id = 0
     for ch in SCORED_CHANNELS:
         fl = flags_all[ch]
-        ie = fl["info_empty"].astype(bool)
+        ie = fl["qfa_unavailable"].astype(bool)
         in_ev = False
         ev_start = None
         for ts, val in ie.items():
@@ -886,9 +958,18 @@ def extract_freeze_events(flags_all: dict, subs_all: dict) -> pd.DataFrame:
                     q_final = float(sub_win["Q_FA"].mean())            if len(sub_win) else np.nan
                     rle_col = "hard_rle_run_min" if POOL_TOPOLOGY[ch]["availability_mode"] == "process_floor" else "rle_run_min"
                     rle_max = float(fl[rle_col].loc[ev_start:ts].max())
+                    event_slice = fl.loc[ev_start:ts]
+                    if event_slice["long_gap"].astype(bool).any():
+                        event_type = "long_gap"
+                    elif event_slice["missing"].astype(bool).any():
+                        event_type = "missing"
+                    else:
+                        event_type = "hard_observed_stasis"
                     d1_id, d1_ftype, rel = _link_d1(ev_start, ts, ch)
                     rows.append({
                         "event_id":               f"FAE_{ev_id:04d}",
+                        "event_type":             event_type,
+                        "evidence_class":          "production_hard_availability",
                         "sensor_id":              ch,
                         "start_ts":               ev_start,
                         "end_ts":                 ts,
@@ -896,14 +977,15 @@ def extract_freeze_events(flags_all: dict, subs_all: dict) -> pd.DataFrame:
                         "info_empty_coverage":    ie_cov,
                         "rle_max_min":            rle_max,
                         "response_loss_rate":     rl_rate,
-                        "response_loss_tier_used": 1 if POOL_TOPOLOGY[ch]["response_loss_enabled"] else 0,
+                        "response_loss_tier_used": 1 if POOL_TOPOLOGY[ch]["response_loss_production_enabled"] else 0,
+                        "response_loss_diagnostic_available": 1 if POOL_TOPOLOGY[ch]["response_loss_enabled"] else 0,
                         "Q_main_before_agg":      q_main,
                         "Q_freeze_avail_final":   q_final,
                         "linked_D1_event_id":     d1_id,    # P1-C
                         "linked_D1_fault_type":   d1_ftype, # P1-C 修订：D1 故障类型
                         "relation_to_D1":         rel,      # P1-C
                         "review_priority":        "high" if dur > 120 else "medium",
-                        "calibration_id":         CALIBRATION_ID,
+                        "calibration_id":         calibration_id or CALIBRATION_ID,
                     })
     return pd.DataFrame(rows)
 
@@ -959,7 +1041,8 @@ def build_sensor_profile(all_D2: dict, subs_all: dict) -> pd.DataFrame:
             "process_zone":           POOL_TOPOLOGY[ch]["process_zone"],
             "availability_mode":      POOL_TOPOLOGY[ch]["availability_mode"],
             "process_floor_threshold": POOL_TOPOLOGY[ch]["process_floor_threshold"],
-            "response_loss_enabled":  POOL_TOPOLOGY[ch]["response_loss_enabled"],
+            "response_loss_diagnostic_eligible": POOL_TOPOLOGY[ch]["response_loss_enabled"],
+            "response_loss_production_enabled": POOL_TOPOLOGY[ch]["response_loss_production_enabled"],
             "mean_D2":                float(d2.mean()),
             "median_D2":              float(d2.median()),
             "p05_D2":                 float(d2.quantile(0.05)),
@@ -977,13 +1060,15 @@ def build_sensor_profile(all_D2: dict, subs_all: dict) -> pd.DataFrame:
             "mean_resolution_limited": float(sub["resolution_limited"].mean()),
             "mean_sensor_freeze_cov": float(sub["sensor_freeze_cov"].mean()),
             "mean_low_iqr_cov":       float(sub["low_iqr_cov"].mean()),
+            "mean_soft_rle_cov":      float(sub["soft_rle_cov"].mean()),
+            "mean_soft_stasis_cov":   float(sub["soft_stasis_cov"].mean()),
             "max_L_max_min":          float(sub["L_max_min"].max()),
             "veto_rate":              float(all_D2[ch]["veto_flag"].mean()),
             "grade_A_rate":           float((all_D2[ch]["grade"] == "A").mean()),
             "grade_B_rate":           float((all_D2[ch]["grade"] == "B").mean()),
             "grade_C_rate":           float((all_D2[ch]["grade"] == "C").mean()),
             "grade_D_E_rate":         float((all_D2[ch]["grade"].isin(["D", "E"])).mean()),
-            "dominant_tier_used":     1 if POOL_TOPOLOGY[ch]["response_loss_enabled"] else 0,
+            "response_loss_diagnostic": 1 if POOL_TOPOLOGY[ch]["response_loss_enabled"] else 0,
             "calibration_id":         CALIBRATION_ID,
         })
     return pd.DataFrame(rows).sort_values("mean_D2", ascending=False)
@@ -1094,7 +1179,8 @@ def export_outputs(all_D2, subs_all, gap_df, freeze_events, ledger_df,
     flag_cols = [
         "missing_rate", "irregular_rate", "info_empty_cov",
         "sensor_freeze_cov", "low_iqr_cov", "floor_occupancy",
-        "resolution_limited", "L_max_min", "gap_run_count",
+        "soft_rle_cov", "soft_stasis_cov", "resolution_limited",
+        "L_max_min", "gap_run_count",
     ]
     flags_long = wide_to_long(subs_all, flag_cols)
     flags_long.insert(0, "sensor_id", flags_long.pop("sensor_id"))
@@ -1161,6 +1247,11 @@ def build_audit_log(calib: dict, n_hours: int, elapsed: float, veto_rate: dict) 
         ("run_id",             RUN_ID),
         ("calibration_id",     calib.get("calibration_id", CALIBRATION_ID)),
         ("mapping_version",    _d2_cfg.mapping.mapping_version),
+        ("study_design_version", _d2_cfg.study_design.version),
+        ("calibration_basis", calib.get("calibration_basis")),
+        ("temporal_integrity_source_scope", "source_file_global_plus_channel_missingness"),
+        ("response_loss_role", "diagnostic_only"),
+        ("external_site_validation", _d2_cfg.study_design.external_site_validation["status"]),
         ("qfa_window",         _d2_cfg.freeze_window.length),
         ("process_floor_channels", ",".join(
             ch for ch in SCORED_CHANNELS
@@ -1189,7 +1280,7 @@ def main():
     global CALIBRATION_ID
     t_total = time.time()
     log("=" * 72)
-    log("D2 Temporal Continuity & Information Availability  —  V1 Pipeline")
+    log("D2 Temporal Continuity & Information Availability  —  V2 Pipeline")
     log(f"Run ID: {RUN_ID}")
     log("=" * 72)
 
@@ -1243,8 +1334,10 @@ def main():
 
     # 10. Freeze availability events
     log("[10] Extracting freeze availability events...")
-    freeze_events = extract_freeze_events(flags_all, subs_all)
-    log(f"    {len(freeze_events)} events (≥10 min info_empty) across all channels")
+    freeze_events = extract_freeze_events(
+        flags_all, subs_all, calibration_id=CALIBRATION_ID
+    )
+    log(f"    {len(freeze_events)} production hard-availability events across all channels")
 
     # 11. Timestamp audit
     log("[11] Building timestamp audit...")
@@ -1304,7 +1397,7 @@ def main():
 
     elapsed = time.time() - t_total
     log(f"\n{'='*72}")
-    log(f"D2 V1 pipeline complete in {elapsed:.1f}s")
+    log(f"D2 V2 pipeline complete in {elapsed:.1f}s")
     log(f"{'='*72}")
     return state
 

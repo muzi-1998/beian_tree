@@ -42,6 +42,8 @@ def test_production_subscores_equal_modular_scorers():
         "freeze_cand_cov": 0.0,
         "sensor_freeze_cov": 0.0,
         "low_iqr_cov": 0.0,
+        "soft_rle_cov": 0.0,
+        "soft_stasis_cov": 0.0,
         "floor_occupancy": 0.0,
         "resolution_limited": 0.0,
         "L_max_min": [0, 10, 90, 500],
@@ -71,6 +73,8 @@ def test_qfa_uses_configured_six_hour_window(tmp_path):
         "qfa_unavailable": np.r_[np.ones(18 * 60), np.zeros(6 * 60)],
         "sensor_freeze": 0,
         "low_iqr_diagnostic": 0,
+        "soft_rle_diagnostic": 0,
+        "soft_stasis": 0,
         "floor_occupancy": 0,
         "resolution_limited": 0,
     }, index=idx)
@@ -101,3 +105,23 @@ def test_response_loss_peers_are_same_position_and_process_floor_is_disabled():
         assert sensor.availability_mode == "process_floor"
         assert not sensor.response_loss_enabled
         assert sensor.response_loss_peers == []
+
+
+def test_response_loss_is_diagnostic_only_in_production_qfa():
+    idx = pd.date_range("2026-01-02", periods=3, freq="1h")
+    stats = pd.DataFrame({"info_empty_cov": [0.10, 0.10, 0.10]}, index=idx)
+    response_loss = pd.Series([0.0, 0.5, 1.0], index=idx)
+    score, main = d2.FreezeAvailabilityScorer(d2._d2_cfg).score(
+        stats, response_loss, allow_response_loss=True
+    )
+    assert np.allclose(score, main)
+
+
+def test_study_periods_are_blocked_and_external_site_is_deferred():
+    design = d2._d2_cfg.study_design
+    development = design.periods["development"]
+    validation = design.periods["internal_validation"]
+    terminal = design.periods["terminal_test"]
+    assert pd.Timestamp(development.end) < pd.Timestamp(validation.start)
+    assert pd.Timestamp(validation.end) < pd.Timestamp(terminal.start)
+    assert design.external_site_validation["status"] == "deferred"

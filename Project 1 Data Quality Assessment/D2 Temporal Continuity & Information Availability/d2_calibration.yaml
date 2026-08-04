@@ -1,23 +1,42 @@
-calibration_id: NorthBank_D2_v1_20260722
+calibration_id: NorthBank_D2_v2_20260804
 plant_id: NorthBank_LCH
-generated_date: '2026-07-22'
+generated_date: '2026-08-04'
 effective_period:
 - '2025-08-01'
 - '2026-04-13'
-calibration_basis: D2_internal_engineering_v1
-mapping_version: d2_v1_process_floor_r1
-input_hash: 130ae2acfa72e20acb455f8117f26b2ca95c9c51db98d1bf92b4802c4b74f6f7
+calibration_basis: blocked_development_reference_v2
+study_design_version: d2_blocked_time_v1
+mapping_version: d2_v2_hard_availability_r1
+input_hash: 7ea42ecbec15d8a715422f8d7356c163572a647aa4aecb573932aaa4bcb3ccdd
 benchmark_windows:
-  selection_rule: not_used_for_mapping; D1 reserved for external concordance
-  total_benchmark_hours: 0
-thresholds:
+  selection_rule: blocked_development_period_only; D1_not_used
+  fit_start: '2025-08-01 00:00:00'
+  fit_end: '2025-12-31 23:59:00'
+  total_benchmark_hours: 3649
+  total_reference_sensor_hours: 51086
+validation_periods:
+  internal_validation:
+    start: '2026-01-01 00:00:00'
+    end: '2026-02-21 23:59:00'
+  terminal_test:
+    start: '2026-02-22 00:00:00'
+    end: '2026-04-13 23:59:00'
+  external_site_validation:
+    status: deferred
+    affects_current_release: false
+    permitted_claim: single_plant_retrospective_validation
+mapping_contract:
+  source: configs/d2_mapping.yaml
+  fitted_from_observations: false
+  status: prespecified_engineering_contract
+descriptive_reference_percentiles:
   Q_temporal_integrity:
     missing_rate:
-      0.25: 0.001
-      0.5: 0.003
-      0.75: 0.008
-      0.95: 0.02
-      0.99: 0.05
+      0.25: 0.0
+      0.5: 0.0
+      0.75: 0.0
+      0.95: 0.0006944444444444445
+      0.99: 0.0875
     duplicate_rate:
       0.25: 0.0
       0.5: 0.0
@@ -33,93 +52,90 @@ thresholds:
     irregular_rate:
       0.25: 0.0
       0.5: 0.0
-      0.75: 0.001
-      0.95: 0.002
-      0.99: 0.005
+      0.75: 0.0
+      0.95: 0.0006944444444444445
+      0.99: 0.00625
   Q_gap_severity:
     L_max_minutes:
-      0.25: 0
-      0.5: 1
-      0.75: 2
-      0.95: 5
-      0.99: 30
+      0.25: 0.0
+      0.5: 0.0
+      0.75: 0.0
+      0.95: 1.0
+      0.99: 80.0
     gap_run_count:
-      0.25: 0
-      0.5: 0
-      0.75: 1
-      0.95: 3
-      0.99: 8
+      0.25: 0.0
+      0.5: 0.0
+      0.75: 0.0
+      0.95: 1.0
+      0.99: 9.0
   Q_freeze_avail:
     info_empty_cov:
-      0.25: 0.01
-      0.5: 0.03
-      0.75: 0.08
-      0.95: 0.15
-      0.99: 0.3
+      0.25: 0.0
+      0.5: 0.0
+      0.75: 0.0
+      0.95: 0.0
+      0.99: 0.019861111111115153
     tau_rle_D2_min: 3
     tau_iqr_DO: 0.02
     tau_iqr_ORP: 1.0
 veto_thresholds:
   L_max_minutes:
     value: 360
-    source: floor_applied
-    bench_p: 0.0
+    source: prespecified_engineering
     engineering_floor: 360
   missing_rate:
     value: 0.15
-    source: floor_applied
-    bench_p: 0.0
+    source: prespecified_engineering
     engineering_floor: 0.15
   irregular_rate:
     value: 0.1
-    source: floor_applied
-    bench_p: 0.0
+    source: prespecified_engineering
     engineering_floor: 0.1
 bench_var:
   DO:
     DO_1_1:
-      P05: 0.0012368965517460166
-      P50: 0.009510919540185047
+      P05: 0.0010165517241988548
+      P50: 0.00495275862069631
     DO_1_2:
-      P05: 0.006034160919541139
-      P50: 0.03239643678158784
+      P05: 0.005013270114935041
+      P50: 0.025313678160880402
     DO_1_3:
-      P05: 0.005466781609172928
-      P50: 0.041591264367814726
+      P05: 0.004330511494254434
+      P50: 0.032057758620855636
     DO_1_4:
-      P05: 5.298850574344015e-05
-      P50: 9.712643677846246e-05
+      P05: 5.8505747125865586e-05
+      P50: 0.00010678160919484262
     DO_2_1:
-      P05: 0.0007034482758718714
-      P50: 0.006147586206923089
+      P05: 0.0005081609195387196
+      P50: 0.003614367816112795
     DO_2_2:
-      P05: 0.0014478160918878216
-      P50: 0.011930574712504319
+      P05: 0.0012248275861531381
+      P50: 0.00766160919533544
     DO_2_3:
-      P05: 0.010142988505762642
-      P50: 0.1485362068965317
+      P05: 0.007914201149432748
+      P50: 0.11270298850583063
     DO_2_4:
-      P05: 0.00012885057468660862
-      P50: 0.0035926436781039883
+      P05: 0.0001458620689624247
+      P50: 0.004342988505732684
   ORP:
     ORP_1_1:
-      P05: 0.6046209027901219
-      P50: 3.2217841958092155
+      P05: 0.7740064371834827
+      P50: 4.126630000399087
     ORP_1_2:
-      P05: 0.5333329885906906
-      P50: 6.256641953511141
+      P05: 0.6617370402632407
+      P50: 5.543314827015753
     ORP_1_3:
-      P05: 0.3419126178872635
-      P50: 31.294218968193555
+      P05: 0.24009011030775462
+      P50: 15.61991339205625
     ORP_2_1:
-      P05: 0.3969481597480707
-      P50: 2.0477495401709427
+      P05: 0.38431891948502844
+      P50: 1.530404884747374
     ORP_2_2:
-      P05: 0.26687540122267633
-      P50: 0.9071840218151068
+      P05: 0.3244956084145501
+      P50: 1.1080442525863199
     ORP_2_3:
-      P05: 0.16718574498261235
-      P50: 7.157674021635721
+      P05: 0.25784916428816357
+      P50: 16.56066459678486
 tier_availability:
   DO_1_1:
     tier1:
@@ -129,7 +145,8 @@ tier_availability:
     tier4:
       allowed: false
       reason: QR_QIR_quality_unverified
-    response_loss_enabled: true
+    response_loss_diagnostic_eligible: true
+    response_loss_production_enabled: false
     availability_mode: standard
     peer_qualification: same_variable_same_process_position_parallel_pool
   DO_1_2:
@@ -140,7 +157,8 @@ tier_availability:
     tier4:
       allowed: false
       reason: QR_QIR_quality_unverified
-    response_loss_enabled: true
+    response_loss_diagnostic_eligible: true
+    response_loss_production_enabled: false
     availability_mode: standard
     peer_qualification: same_variable_same_process_position_parallel_pool
   DO_1_3:
@@ -151,7 +169,8 @@ tier_availability:
     tier4:
       allowed: false
       reason: QR_QIR_quality_unverified
-    response_loss_enabled: true
+    response_loss_diagnostic_eligible: true
+    response_loss_production_enabled: false
     availability_mode: standard
     peer_qualification: same_variable_same_process_position_parallel_pool
   DO_1_4:
@@ -161,7 +180,8 @@ tier_availability:
     tier4:
       allowed: false
       reason: QR_QIR_quality_unverified
-    response_loss_enabled: false
+    response_loss_diagnostic_eligible: false
+    response_loss_production_enabled: false
     availability_mode: process_floor
     peer_qualification: same_variable_same_process_position_parallel_pool
   DO_2_1:
@@ -172,7 +192,8 @@ tier_availability:
     tier4:
       allowed: false
       reason: QR_QIR_quality_unverified
-    response_loss_enabled: true
+    response_loss_diagnostic_eligible: true
+    response_loss_production_enabled: false
     availability_mode: standard
     peer_qualification: same_variable_same_process_position_parallel_pool
   DO_2_2:
@@ -183,7 +204,8 @@ tier_availability:
     tier4:
       allowed: false
       reason: QR_QIR_quality_unverified
-    response_loss_enabled: true
+    response_loss_diagnostic_eligible: true
+    response_loss_production_enabled: false
     availability_mode: standard
     peer_qualification: same_variable_same_process_position_parallel_pool
   DO_2_3:
@@ -194,7 +216,8 @@ tier_availability:
     tier4:
       allowed: false
       reason: QR_QIR_quality_unverified
-    response_loss_enabled: true
+    response_loss_diagnostic_eligible: true
+    response_loss_production_enabled: false
     availability_mode: standard
     peer_qualification: same_variable_same_process_position_parallel_pool
   DO_2_4:
@@ -204,7 +227,8 @@ tier_availability:
     tier4:
       allowed: false
       reason: QR_QIR_quality_unverified
-    response_loss_enabled: false
+    response_loss_diagnostic_eligible: false
+    response_loss_production_enabled: false
     availability_mode: process_floor
     peer_qualification: same_variable_same_process_position_parallel_pool
   ORP_1_1:
@@ -215,7 +239,8 @@ tier_availability:
     tier4:
       allowed: false
       reason: QR_QIR_quality_unverified
-    response_loss_enabled: true
+    response_loss_diagnostic_eligible: true
+    response_loss_production_enabled: false
     availability_mode: standard
     peer_qualification: same_variable_same_process_position_parallel_pool
   ORP_1_2:
@@ -226,7 +251,8 @@ tier_availability:
     tier4:
       allowed: false
       reason: QR_QIR_quality_unverified
-    response_loss_enabled: true
+    response_loss_diagnostic_eligible: true
+    response_loss_production_enabled: false
     availability_mode: standard
     peer_qualification: same_variable_same_process_position_parallel_pool
   ORP_1_3:
@@ -237,7 +263,8 @@ tier_availability:
     tier4:
       allowed: false
       reason: QR_QIR_quality_unverified
-    response_loss_enabled: true
+    response_loss_diagnostic_eligible: true
+    response_loss_production_enabled: false
     availability_mode: standard
     peer_qualification: same_variable_same_process_position_parallel_pool
   ORP_2_1:
@@ -248,7 +275,8 @@ tier_availability:
     tier4:
       allowed: false
       reason: QR_QIR_quality_unverified
-    response_loss_enabled: true
+    response_loss_diagnostic_eligible: true
+    response_loss_production_enabled: false
     availability_mode: standard
     peer_qualification: same_variable_same_process_position_parallel_pool
   ORP_2_2:
@@ -259,7 +287,8 @@ tier_availability:
     tier4:
       allowed: false
       reason: QR_QIR_quality_unverified
-    response_loss_enabled: true
+    response_loss_diagnostic_eligible: true
+    response_loss_production_enabled: false
     availability_mode: standard
     peer_qualification: same_variable_same_process_position_parallel_pool
   ORP_2_3:
@@ -270,7 +299,8 @@ tier_availability:
     tier4:
       allowed: false
       reason: QR_QIR_quality_unverified
-    response_loss_enabled: true
+    response_loss_diagnostic_eligible: true
+    response_loss_production_enabled: false
     availability_mode: standard
     peer_qualification: same_variable_same_process_position_parallel_pool
 topology:

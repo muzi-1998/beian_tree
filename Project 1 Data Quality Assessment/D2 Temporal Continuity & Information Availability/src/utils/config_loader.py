@@ -15,6 +15,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Optional, Any
+import pandas as pd
 import yaml
 
 
@@ -42,6 +43,22 @@ class WindowSpec:
     length:  str          # pandas offset string e.g. "24h"
     step:    str
     purpose: str
+
+
+@dataclass(frozen=True)
+class StudyPeriod:
+    name:    str
+    start:   str
+    end:     str
+    purpose: str
+
+
+@dataclass(frozen=True)
+class StudyDesign:
+    version:                  str
+    periods:                  Dict[str, StudyPeriod]
+    external_site_validation: Dict[str, Any]
+    inference:                Dict[str, Any]
 
 
 @dataclass
@@ -72,6 +89,7 @@ class D2Config:
     enabled_windows:    List[str]
     time_grid:          Dict[str, Any]
     mapping:            MappingConfig
+    study_design:       StudyDesign
 
     @property
     def main_window(self) -> WindowSpec:
@@ -90,6 +108,7 @@ def load_config(config_dir: Path, version: str = "v1") -> D2Config:
     sensors_yaml = yaml.safe_load((config_dir / "d2_sensors.yaml").read_text(encoding="utf-8"))
     mapping_yaml = yaml.safe_load((config_dir / "d2_mapping.yaml").read_text(encoding="utf-8"))
     windows_yaml = yaml.safe_load((config_dir / "d2_windows.yaml").read_text(encoding="utf-8"))
+    study_yaml = yaml.safe_load((config_dir / "d2_study_design.yaml").read_text(encoding="utf-8"))
 
     # SensorMeta
     sensors = {}
@@ -132,6 +151,17 @@ def load_config(config_dir: Path, version: str = "v1") -> D2Config:
     enabled_key = f"enabled_in_{version}"
     enabled = windows_yaml.get(enabled_key, ["main_window"])
 
+    periods = {
+        name: StudyPeriod(name=name, **spec)
+        for name, spec in study_yaml["periods"].items()
+    }
+    study_design = StudyDesign(
+        version=study_yaml["study_design_version"],
+        periods=periods,
+        external_site_validation=study_yaml["external_site_validation"],
+        inference=study_yaml["inference"],
+    )
+
     # MappingConfig
     mapping = MappingConfig(
         piecewise_breaks=mapping_yaml["piecewise_breaks"],
@@ -158,6 +188,7 @@ def load_config(config_dir: Path, version: str = "v1") -> D2Config:
         enabled_windows=enabled,
         time_grid=windows_yaml["time_grid"],
         mapping=mapping,
+        study_design=study_design,
     )
     _validate(cfg)
     return cfg
@@ -208,7 +239,21 @@ def _validate(cfg: D2Config) -> None:
     assert fd["tau_rle_D2_min"] < fd["tau_rle_D1_min"], \
         f"D2 RLE threshold {fd['tau_rle_D2_min']} not strictly less than D1 {fd['tau_rle_D1_min']}"
 
-    # 9. Process-floor routing must be explicit and response-loss peers comparable.
+    # 9. Blocked study periods must be ordered, non-overlapping and bounded.
+    ordered_periods = [
+        cfg.study_design.periods[name]
+        for name in ("development", "internal_validation", "terminal_test")
+    ]
+    starts = [pd.Timestamp(period.start) for period in ordered_periods]
+    ends = [pd.Timestamp(period.end) for period in ordered_periods]
+    assert all(start <= end for start, end in zip(starts, ends)), \
+        "Study period start must not exceed its end"
+    assert all(ends[i] < starts[i + 1] for i in range(len(ends) - 1)), \
+        "Study periods must be ordered and non-overlapping"
+    assert starts[0] >= pd.Timestamp(cfg.time_grid["expected_start"])
+    assert ends[-1] <= pd.Timestamp(cfg.time_grid["expected_end"])
+
+    # 10. Process-floor routing must be explicit and response-loss peers comparable.
     for sid, sensor in cfg.sensors.items():
         assert sensor.availability_mode in {"standard", "process_floor"}, \
             f"{sid}: unsupported availability_mode={sensor.availability_mode}"

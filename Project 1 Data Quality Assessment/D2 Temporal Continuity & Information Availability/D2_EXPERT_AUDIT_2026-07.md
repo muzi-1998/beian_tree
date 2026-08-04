@@ -1,5 +1,9 @@
 # D2 Expert Audit (2026-07-22)
 
+> **Historical audit only.** This document was superseded on 2026-08-04 by
+> `D2_FINAL_SCIENTIFIC_REPORT_2026-08.md`. Retain it for provenance, but do not
+> cite its run ID, event counts or descriptive results as the current release.
+
 ## Architecture Decision
 
 D2 consumes the canonical 1-minute time base, raw observations and source audit

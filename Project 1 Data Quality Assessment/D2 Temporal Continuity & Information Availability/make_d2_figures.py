@@ -191,11 +191,11 @@ def save_fig(fig, name: str, pad: float = 2.0,
     else:
         fig.tight_layout(pad=pad)
     finalize_figure(fig)
-    for fmt in ("png", "svg", "pdf"):
+    for fmt in ("png", "svg", "pdf", "tiff"):
         p = FIGS / f"{name}.{fmt}"
         fig.savefig(p, dpi=DPI, bbox_inches="tight")
     plt.close(fig)
-    print(f"  [saved] {name}.png + .svg + .pdf")
+    print(f"  [saved] {name}.png + .svg + .pdf + .tiff")
 
 
 def load_state() -> dict:
@@ -330,9 +330,11 @@ def fig02_subscore_violins(state: dict):
     fig.subplots_adjust(wspace=0.24)
 
     for ax, (col, color, title), lbl in zip(axes, sub_cols, "ABC"):
-        data = [subs_all[ch][col].dropna().values
-                for ch in channels
-                if ch in subs_all and col in subs_all[ch].columns]
+        data = []
+        for ch in channels:
+            if ch in subs_all and col in subs_all[ch].columns:
+                series = subs_all[ch][col]
+                data.append(series.loc[series.notna()].values)
         positions = list(range(len(data)))
 
         parts = ax.violinplot(data, positions=positions, widths=0.72,
@@ -473,11 +475,12 @@ def fig04_gap_severity(state: dict):
         "long_gap":     PAL["orange"],
         "critical_gap": PAL["red_strong"],
     }
-    durations = gap_df["duration_min"].dropna()
+    durations = gap_df["duration_min"]
+    durations = durations.loc[durations.notna()].clip(lower=0.5)
     if "gap_type" in gap_df.columns and len(durations) and durations.max() > 0:
         for gtype, color in gap_type_colors.items():
-            sub = gap_df.loc[gap_df["gap_type"] == gtype,
-                              "duration_min"].dropna()
+            sub = gap_df.loc[gap_df["gap_type"] == gtype, "duration_min"]
+            sub = sub.loc[sub.notna()].clip(lower=0.5)
             if len(sub):
                 bins = np.logspace(np.log10(max(0.5, sub.min())),
                                    np.log10(sub.max() + 1), 18)
@@ -868,9 +871,12 @@ def fig08_d1_d2_relationship(state: dict):
         for ch in channels:
             if ch not in D1_v11.columns or ch not in D2_wide.columns:
                 continue
-            d1v = D1_v11.loc[common, ch].dropna()
-            d2v = D2_wide.loc[d1v.index, ch].dropna()
-            idx = d1v.index.intersection(d2v.index)
+            d1v = D1_v11.loc[common, ch]
+            d2v = D2_wide.loc[common, ch]
+            valid = d1v.notna() & d2v.notna()
+            d1v = d1v.loc[valid]
+            d2v = d2v.loc[valid]
+            idx = d1v.index
             if len(idx) < 2:
                 continue
             d1_parts.append(d1v.loc[idx].to_numpy())
@@ -1095,7 +1101,8 @@ def fig10_calibration_summary(state: dict):
         vals = []
         for ch in channels:
             if ch in subs_all and col in subs_all[ch].columns:
-                v = subs_all[ch][col].dropna().values
+                series = subs_all[ch][col]
+                v = series.loc[series.notna()].values
                 vals.append(v)
         if not vals:
             ax.set_visible(False)
@@ -1138,16 +1145,16 @@ def fig10_calibration_summary(state: dict):
     cal_src = calib.get("calibration_basis", "D2_internal_engineering_v1")
     bench = calib.get("benchmark_windows", {})
     n_bench = bench.get("total_benchmark_hours", 0)
-    period = calib.get("effective_period", ["N/A", "N/A"])
-    b_start, b_end = period[0], period[-1]
+    b_start = bench.get("fit_start", "N/A")
+    b_end = bench.get("fit_end", "N/A")
     run_dt = calib.get("generated_date", "N/A")
     mapping_version = calib.get("mapping_version", "N/A")
 
     info = (f"Calibration ID:\n  {cal_id}\n\n"
             f"Basis:\n  {cal_src}\n\n"
             f"Mapping:\n  {mapping_version}\n\n"
-            f"Effective period:\n  {b_start}\n  to {b_end}\n\n"
-            f"D1 fit hours: {n_bench}\n\n"
+            f"Development fit:\n  {b_start}\n  to {b_end}\n\n"
+            f"Benchmark hours: {n_bench}\n\n"
             f"Generated: {run_dt}")
     ax.text(0.05, 0.95, info, transform=ax.transAxes,
             fontsize=TK - 0.5, va="top", ha="left", family="monospace",

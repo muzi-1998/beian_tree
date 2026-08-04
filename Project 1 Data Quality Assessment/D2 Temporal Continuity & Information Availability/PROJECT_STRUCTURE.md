@@ -1,7 +1,7 @@
 # D2 Temporal Continuity & Information Availability — 项目结构
 
-> **最后更新：** 2026-07-22
-> **当前版本：** V1 + process-floor QFA R1 + B-1/B-2（nature-figure Python）
+> **最后更新：** 2026-08-04
+> **当前版本：** V2 confirmatory release（hard-availability QFA + blocked validation）
 > **维护规则：** 每次新增、移动或删除文件后同步更新本文件
 
 ---
@@ -37,6 +37,16 @@
 | 输出行数 | 6121 小时/通道（完整 24 h 暖机后）|
 | 配置驱动 | P2：所有阈值/权重/拓扑均来自 `configs/*.yaml` |
 
+### V2 冻结发布
+
+- 运行号：`D2V2_20260804_1823`
+- 校准号：`NorthBank_D2_v2_20260804`
+- Development：2025-08-01 至 2025-12-31
+- Internal validation：2026-01-01 至 2026-02-21
+- Terminal test：2026-02-22 至 2026-04-13
+- External-site validation：`deferred`；当前仅允许单厂回顾性主张
+- 生产 QFA：缺失、长断点、至少 15 min 硬观测锁死；soft RLE、低 IQR、process floor、resolution limit 和 response-loss 均仅诊断
+
 ---
 
 ## 完整目录树
@@ -45,10 +55,14 @@
 D2 Temporal Continuity & Information Availability/
 │
 ├── PROJECT_STRUCTURE.md            ← 本文件（项目结构说明，随改动更新）
+├── D2_FINAL_SCIENTIFIC_REPORT_2026-08.md ← V2 最终科学审查、结果与主张边界
 │
-├── run_d2_pipeline.py              ← 主流水线脚本（V1 + P0/P1/P2）
-├── make_d2_figures.py              ← SCI 级出图脚本（Fig01–10，PNG/SVG/PDF）
+├── run_d2_pipeline.py              ← V2 主流水线（评分、事件、审计与冻结状态）
+├── run_d2_scientific_validation.py ← 权重/阈值/低尾/效应量/D1-D2 空模型验证
+├── build_d2_release_manifest.py    ← 发布文件 SHA-256 清单生成器
+├── make_d2_figures.py              ← SCI 级出图脚本（Fig01–10）
 ├── make_d1d2_joint_figures.py      ← B-1/B-2 联合出图脚本（nature-skills 规范，Fig11–12）
+├── make_d2_scientific_figures.py   ← Nature 规范论文价值图（Fig13–16）
 ├── validate_d2_process_floor.py    ← 四类 process-floor 挑战验证与真实通道摘要
 ├── test_d2_p0p1_regression.py      ← P0/P1 回归测试
 ├── test_d2_contract_regression.py  ← 1.1→D2 契约与 scorer 一致性测试
@@ -61,7 +75,8 @@ D2 Temporal Continuity & Information Availability/
 ├── configs/                        ← P2 YAML 配置层（替代全部硬编码常量）
 │   ├── d2_mapping.yaml             ← 子分权重、分段断点、veto 规则、安全地板
 │   ├── d2_sensors.yaml             ← 14 通道定义、POOL_TOPOLOGY、传感器精度
-│   └── d2_windows.yaml             ← 多尺度窗口（1h/6h/24h/7d）及时间网格
+│   ├── d2_windows.yaml             ← 多尺度窗口（1h/6h/24h/7d）及时间网格
+│   └── d2_study_design.yaml        ← 阻断时间区块、cluster bootstrap 与外部验证状态
 │
 ├── src/                            ← P2 源码模块（供 run_d2_pipeline.py 导入）
 │   ├── __init__.py
@@ -81,7 +96,7 @@ D2 Temporal Continuity & Information Availability/
 │   │   ├── D2_preprocess_flags_hourly.xlsx     ← 小时级预处理标志聚合
 │   │   │                                         独立含 floor/resolution/freeze/QFA 字段
 │   │   ├── D2_gap_run_table.xlsx               ← 所有断点事件（起止时间/时长/类型）
-│   │   ├── D2_freeze_availability_events.xlsx  ← info_empty 事件（≥10 min，含 D1 链接）
+│   │   ├── D2_freeze_availability_events.xlsx  ← 生产硬可用性事件（含 D1 描述性链接）
 │   │   │                                         列：linked_D1_event_id / linked_D1_fault_type / relation_to_D1
 │   │   ├── D2_interpolation_ledger.xlsx        ← 短断点（≤5 min）线性插补台账
 │   │   ├── D2_mapping_params.xlsx              ← 分段映射参数（P1-B 含 P95_gap_min）
@@ -92,7 +107,8 @@ D2 Temporal Continuity & Information Availability/
 │   │   ├── D2_process_floor_validation.json    ← 机器可读验证摘要
 │   │   ├── D2_Fig05_source_data.xlsx           ← Fig05 四面板源数据
 │   │   └── D2_d1_linkage_manifest.json         ← D1 联动依赖与评分不变性哈希
-│   └── figures/                    ← SCI 级图表（PNG 600 DPI + 可编辑 SVG/PDF）
+│   ├── validation/                 ← Parquet/Excel 科学验证结果与哈希 manifest
+│   └── figures/                    ← Nature 图表（PNG/TIFF 600 DPI + 可编辑 SVG/PDF）
 │       ├── D2_Fig01_overview_heatmap.{png,svg,pdf}  ← D2 总评分热力图（14 ch × 日均）
 │       ├── D2_Fig02_subscore_violins.{png,svg,pdf}      ← Q_TI/Q_GS/Q_FA 小提琴图
 │       ├── D2_Fig03_missing_rate_timeline.{png,svg,pdf} ← 缺失率时间序列
@@ -104,7 +120,11 @@ D2 Temporal Continuity & Information Availability/
 │       ├── D2_Fig09_veto_analysis.{png,svg,pdf}         ← Veto 分析
 │       ├── D2_Fig10_calibration_summary.{png,svg,pdf}   ← 校准与 ECDF 概要
 │       ├── D2_Fig11_B1_event_cooccurrence.{png,svg,pdf} ← B-1 事件共现矩阵
-│       └── D2_Fig12_B2_d1d2_timeseries.{png,svg,pdf} ← B-2 D1–D2 时序对比
+│       ├── D2_Fig12_B2_d1d2_timeseries.{png,svg,pdf} ← B-2 D1–D2 时序对比
+│       ├── D2_Fig13_process_floor_contract.*       ← 工艺地板与硬不可用机制分离
+│       ├── D2_Fig14_aggregation_robustness.*       ← 权重、lambda 与映射稳健性
+│       ├── D2_Fig15_low_tail_reporting.*           ← 阻断阶段低尾风险
+│       └── D2_Fig16_d1_d2_construct_separation.*   ← D1-D2 构念区分与空模型
 │
 ├── artifacts_pre_p0p1/             ← P0+P1 补丁应用前的状态备份（只读存档）
 │   ├── d2_state.pkl                ← 补丁前完整状态（~228 MB）
@@ -201,14 +221,14 @@ python generate_d1_event_windows.py
 
 ### 完整流水线
 ```bash
-# 首次或清空缓存后运行（约 120~300 s）
+# 主评分、事件、审计与冻结状态
 python run_d2_pipeline.py
 
-# 生成 process-floor 四类挑战验证与真实通道摘要
+# process-floor 机制挑战与真实通道摘要
 python validate_d2_process_floor.py
 
-# 有缓存时运行（约 60 s）
-python run_d2_pipeline.py
+# 聚合、阈值、低尾、分析物效应及 D1-D2 空模型
+python run_d2_scientific_validation.py
 ```
 
 ### 生成图表
@@ -220,12 +240,18 @@ python make_d2_figures.py
 # Fig11–12（B-1 事件共现矩阵 + B-2 时序对比，需先完成 A-1 和完整流水线）
 python make_d1d2_joint_figures.py
 # 输出：artifacts/figures/D2_Fig11~12.{png,svg,pdf}
+
+# Fig13–16（论文价值图；同时输出 PNG/SVG/PDF/TIFF）
+python make_d2_scientific_figures.py
+
+# 冻结发布 SHA-256 清单
+python build_d2_release_manifest.py
 ```
 
 ### 回归测试
 ```bash
-# D2 回归 + 1.1 契约 + process-floor 测试（18/18 通过）
-pytest test_d2_p0p1_regression.py test_d2_contract_regression.py test_d2_process_floor_regression.py -v
+# D2 回归 + 1.1 契约 + process-floor 测试（24/24 通过）
+python -m pytest test_d2_contract_regression.py test_d2_p0p1_regression.py test_d2_process_floor_regression.py -q --import-mode=importlib
 
 # P2 单元测试（8/8 通过）
 pytest d2_fix_kit/p2_refactor/tests/test_scorer_unit.py -v
@@ -247,9 +273,9 @@ python run_d2_pipeline.py
 
 | 测试文件 | 测试数 | 通过 | 已知失败 | 说明 |
 |----------|--------|------|----------|------|
-| 三项生产/契约/process-floor 回归 | 18 | 18 | 0 | 含 6 h QFA、peer 拓扑资格与四类地板挑战 |
+| 三项生产/契约/process-floor 回归 | 24 | 24 | 0 | 含 6 h QFA、阻断时间设计、hard/soft 证据分离、peer 诊断资格与地板挑战 |
 | `d2_fix_kit/p2_refactor/tests/test_scorer_unit.py` | 8 | 8 | 0 | P2 Scorer 单元测试全部通过 |
-| **合计** | **25** | **25** | **0** | 分两组运行以避免同名 `src` 包冲突 |
+| **生产发布核验** | **24** | **24** | **0** | 发布命令显式限定生产测试，避免历史 `d2_fix_kit` 同名测试收集冲突 |
 
 ---
 
@@ -257,6 +283,7 @@ python run_d2_pipeline.py
 
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
+| 2026-08-04 | V2 confirmatory | 冻结 development/internal/terminal 时间区块；QFA 仅采用硬可用性证据；response-loss 降为诊断；完成 9 组权重/lambda、映射、低尾、ORP-DO、D1-D2 循环移位验证；新增 Fig13–16、最终科学报告与发布 manifest；外部厂验证明确暂缓 |
 | 2026-07-22 | process-floor QFA R1 | DO_1_4/DO_2_4 启用后缺氧地板专用路线；低 IQR 仅诊断；拆分 floor/resolution/freeze/QFA；QFA 修正为 6 h；后缺氧路线禁用 response-loss，标准路线仅允许平行池同位置 peer；四类挑战 4/4 通过；完整重跑 D2、12 张图与 D1 联动清单 |
 | 2026-07-10 | V1.1 contract | D2 主输入切换为 1.1 时间基座契约；逐通道缺失；整段长缺口不插值；24 h 完整暖机；D1 从校准中移除，仅作事件一致性；缓存绑定输入/配置/代码哈希；12 张图统一 PNG/SVG/PDF |
 | 2026-05-25 | V1 | 初始流水线完成；`run_d2_pipeline.py`（1132 行）、`make_d2_figures.py`（750 行）；10 张 SCI 图；9 张 Excel 输出 |
