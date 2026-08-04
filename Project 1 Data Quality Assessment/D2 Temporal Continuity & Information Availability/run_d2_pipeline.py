@@ -1,12 +1,12 @@
 """run_d2_pipeline.py
-D2 Temporal Continuity & Information Availability — V2 (single-plant)
+D2 Temporal Continuity & Information Availability — V3 (single-plant)
 
 Channels : 14 scored (DO_1_1..4, DO_2_1..4, ORP_1_1..3, ORP_2_1..3)
            4 support (QR/QIR — excluded from D2 main chain)
 Main window : 24 h trailing, step 1 h → hourly output
 Calibration : prespecified engineering mapping + development-only reference profile
 
-V2 outputs (artifacts/data/):
+V3 outputs (artifacts/data/):
   D2_main_scores_hourly.xlsx          – hourly Q_TI, Q_GS, Q_FA, D2_total, grade, usable_tag
   D2_preprocess_flags_hourly.xlsx     – hourly aggregated preprocess flags
   D2_gap_run_table.xlsx               – all gap events (start/end/duration/type/action)
@@ -46,6 +46,11 @@ from src.d2_availability.scorer import (
     TemporalIntegrityScorer,
 )
 from src.d2_availability.process_floor import route_availability_evidence
+from src.utils.timestamp_quality import (
+    audit_timestamp_sources,
+    source_for_channel,
+    verify_source_files,
+)
 _d2_cfg = _load_d2_config(_ROOT / "configs", version="v2")
 
 # P2: channels sourced from d2_sensors.yaml
@@ -82,13 +87,12 @@ POOL_TOPOLOGY = {
 _m = _d2_cfg.mapping
 ENG_DEFAULTS = {
     "missing_rate_breaks":    _m.piecewise_breaks["Q_TI"]["missing_rate"],
-    "irregular_rate_breaks":  _m.piecewise_breaks["Q_TI"]["irregular_rate"],
+    "true_irregular_rate_breaks": _m.piecewise_breaks["Q_TI"]["true_irregular_rate"],
     "L_max_breaks_min":       _m.piecewise_breaks["Q_GS"]["L_max_min"],
     "gap_count_breaks":       _m.piecewise_breaks["Q_GS"]["gap_run_count"],
     "info_empty_breaks":      _m.piecewise_breaks["Q_FA"]["info_empty_cov"],
     "veto_Lmax_min":          _m.safety_floor["L_max_minutes"],
     "veto_missing_rate":      _m.safety_floor["missing_rate"],
-    "veto_irregular_rate":    _m.safety_floor["irregular_rate"],
     # RLE thresholds (D2-lenient vs D1-strict)
     "tau_rle_D2_min":         _m.freeze_detection["tau_rle_D2_min"],
     "tau_rle_D1_min":         _m.freeze_detection["tau_rle_D1_min"],
@@ -106,9 +110,10 @@ ENG_DEFAULTS = {
     "long_gap_min_min":  _m.imputation["long_gap_min_min"],
 }
 
-CALIBRATION_ID = f"NorthBank_D2_v2_{datetime.now().strftime('%Y%m%d')}"
-RUN_ID         = f"D2V2_{datetime.now().strftime('%Y%m%d_%H%M')}"
+CALIBRATION_ID = f"NorthBank_D2_v3_{datetime.now().strftime('%Y%m%d')}"
+RUN_ID         = f"D2V3_{datetime.now().strftime('%Y%m%d_%H%M')}"
 INPUT_PROVENANCE = {"source": "uninitialised"}
+SOURCE_TIMESTAMP_AUDIT = {"events": pd.DataFrame(), "hourly": pd.DataFrame(), "summary": pd.DataFrame()}
 CACHE_KEY = "uninitialised"
 
 
@@ -132,47 +137,28 @@ def _cache_path(stem: str) -> Path:
     return CACHE / f"{stem}_{CACHE_KEY[:16]}.pkl"
 
 
-def _source_temporal_integrity_rates() -> dict[str, float]:
-    """Return source-file timestamp rates that have no channel-local location."""
-    audit = INPUT_PROVENANCE.get("contract", {}).get("timestamp_audit", {})
-    rows = sum(int(facts.get("rows", 0) or 0) for facts in audit.values())
-    duplicate = sum(
-        int(facts.get("duplicate_timestamp_rows", 0) or 0)
-        for facts in audit.values()
-    )
-    out_of_order = sum(
-        int(facts.get("out_of_order_transitions", 0) or 0)
-        for facts in audit.values()
-    )
-    if rows <= 0:
-        return {"duplicate_rate": 0.0, "out_of_order_rate": 0.0, "available": False}
-    return {
-        "duplicate_rate": duplicate / rows,
-        "out_of_order_rate": out_of_order / max(rows - len(audit), 1),
-        "available": True,
-    }
-
-
 def piecewise_score(x: pd.Series, breaks: list, reverse: bool = True) -> pd.Series:
     """Map a series to [1-5] using piecewise-linear function.
 
-    breaks: 4 thresholds defining 5 zones.
+    breaks: 5 thresholds defining a continuous 5-to-1 mapping.
     reverse=True: higher x → lower score (risk metric).
     """
-    x = x.copy().fillna(x.median())
+    x = x.copy()
     score = pd.Series(np.nan, index=x.index, dtype=float)
-    b0, b1, b2, b3 = breaks
+    b0, b1, b2, b3, b4 = breaks
     if reverse:
         score[x <= b0]              = 5.0
         score[(x > b0) & (x <= b1)] = 4.0 + (b1 - x[(x > b0) & (x <= b1)]) / (b1 - b0)
         score[(x > b1) & (x <= b2)] = 3.0 + (b2 - x[(x > b1) & (x <= b2)]) / (b2 - b1)
         score[(x > b2) & (x <= b3)] = 2.0 + (b3 - x[(x > b2) & (x <= b3)]) / (b3 - b2)
-        score[x > b3]               = 1.0
+        score[(x > b3) & (x <= b4)] = 1.0 + (b4 - x[(x > b3) & (x <= b4)]) / (b4 - b3)
+        score[x > b4]               = 1.0
     else:
-        score[x >= b3]              = 5.0
-        score[(x >= b2) & (x < b3)] = 4.0 + (x[(x >= b2) & (x < b3)] - b2) / (b3 - b2)
-        score[(x >= b1) & (x < b2)] = 3.0 + (x[(x >= b1) & (x < b2)] - b1) / (b2 - b1)
-        score[(x >= b0) & (x < b1)] = 2.0 + (x[(x >= b0) & (x < b1)] - b0) / (b1 - b0)
+        score[x >= b4]              = 5.0
+        score[(x >= b3) & (x < b4)] = 4.0 + (x[(x >= b3) & (x < b4)] - b3) / (b4 - b3)
+        score[(x >= b2) & (x < b3)] = 3.0 + (x[(x >= b2) & (x < b3)] - b2) / (b3 - b2)
+        score[(x >= b1) & (x < b2)] = 2.0 + (x[(x >= b1) & (x < b2)] - b1) / (b2 - b1)
+        score[(x >= b0) & (x < b1)] = 1.0 + (x[(x >= b0) & (x < b1)] - b0) / (b1 - b0)
         score[x < b0]               = 1.0
     return score.clip(1.0, 5.0)
 
@@ -193,7 +179,7 @@ def load_raw_excel() -> tuple[pd.DataFrame, pd.DataFrame]:
     Direct Excel loading remains an explicit compatibility fallback.  D2 never
     consumes 1.1 innovations or D1 scores as availability evidence.
     """
-    global INPUT_PROVENANCE, CACHE_KEY
+    global INPUT_PROVENANCE, SOURCE_TIMESTAMP_AUDIT, CACHE_KEY
     pq = _DECOMP / "outputs" / "parquet"
     contract_path = pq / "time_base_contract.json"
     if contract_path.exists():
@@ -225,9 +211,29 @@ def load_raw_excel() -> tuple[pd.DataFrame, pd.DataFrame]:
             _ROOT / "src" / "d2_availability" / "process_floor.py",
             _ROOT / "src" / "d2_availability" / "scorer.py",
             _ROOT / "src" / "utils" / "config_loader.py",
+            _ROOT / "src" / "utils" / "timestamp_quality.py",
             Path(__file__),
         ]
         CACHE_KEY = _sha256_paths(hash_paths)
+        raw_source_dir = _DECOMP / "Raw data"
+        verify_source_files(contract, raw_source_dir)
+        timestamp_cache = _cache_path("d2_source_timestamp_audit")
+        if timestamp_cache.exists():
+            with open(timestamp_cache, "rb") as handle:
+                SOURCE_TIMESTAMP_AUDIT = pickle.load(handle)
+        else:
+            ts_cfg = _d2_cfg.mapping.timestamp_quality
+            SOURCE_TIMESTAMP_AUDIT = audit_timestamp_sources(
+                contract,
+                raw_source_dir,
+                expected_start=pd.Timestamp(_d2_cfg.time_grid["expected_start"]),
+                expected_end=pd.Timestamp(_d2_cfg.time_grid["expected_end"]),
+                expected_interval_sec=float(ts_cfg["expected_interval_sec"]),
+                jitter_tolerance_sec=float(ts_cfg["jitter_tolerance_sec"]),
+                gap_interval_min_sec=float(ts_cfg["gap_interval_min_sec"]),
+            )
+            with open(timestamp_cache, "wb") as handle:
+                pickle.dump(SOURCE_TIMESTAMP_AUDIT, handle)
         INPUT_PROVENANCE = {
             "source": "1.1_time_base_contract",
             "contract_path": str(contract_path),
@@ -239,9 +245,9 @@ def load_raw_excel() -> tuple[pd.DataFrame, pd.DataFrame]:
 
     log("[1] 1.1 contract unavailable; loading legacy raw Excel sources")
     paths = [
-        _ROOT / "beian_min_1_DO_25-08-26-04.xlsx",
-        _ROOT / "beian_min_2_ORP-08-26-04.xlsx",
-        _ROOT / "beian_min_3_QR+QIR-08-26-04.xlsx",
+        _DECOMP / "Raw data" / "beian_min_1_DO_25-08-26-04.xlsx",
+        _DECOMP / "Raw data" / "beian_min_2_ORP-08-26-04.xlsx",
+        _DECOMP / "Raw data" / "beian_min_3_QR+QIR-08-26-04.xlsx",
     ]
     do, orp, flw = [pd.read_excel(p, index_col=0, parse_dates=True) for p in paths]
     df_raw = do.join(orp, how="outer").join(flw, how="outer")
@@ -259,6 +265,7 @@ def load_raw_excel() -> tuple[pd.DataFrame, pd.DataFrame]:
         _ROOT / "src" / "d2_availability" / "process_floor.py",
         _ROOT / "src" / "d2_availability" / "scorer.py",
         _ROOT / "src" / "utils" / "config_loader.py",
+        _ROOT / "src" / "utils" / "timestamp_quality.py",
         Path(__file__),
     ])
     INPUT_PROVENANCE = {"source": "legacy_excel_fallback", "input_hash": CACHE_KEY}
@@ -270,8 +277,9 @@ def load_raw_excel() -> tuple[pd.DataFrame, pd.DataFrame]:
 def compute_preprocess_flags(df_raw: pd.DataFrame, df_aln: pd.DataFrame) -> dict:
     """Return dict of {channel: flags_df} with minute-level boolean flags.
 
-    Flags: present_raw, missing, duplicate, out_of_order, imputed, long_gap,
-           info_empty, freeze_candidate, raw_value, aligned_value
+    Flags: present_raw, missing, value_gap_recovery, imputed, long_gap,
+           info_empty, freeze_candidate, raw_value, aligned_value. Raw-source
+           timestamp defects are audited before alignment in a separate table.
     """
     cache_path = _cache_path("d2_flags_min")
     if cache_path.exists():
@@ -289,18 +297,14 @@ def compute_preprocess_flags(df_raw: pd.DataFrame, df_aln: pd.DataFrame) -> dict
         # ── present_raw / missing / duplicate
         present_raw = df_aln[ch].notna().astype(bool)
         missing     = ~present_raw
-        duplicate   = pd.Series(False, index=grid, dtype=bool)
 
         # Source-order anomalies are retained in the 1.1 contract audit.  They
         # have no reliable minute location after canonical alignment.
-        out_of_order = pd.Series(False, index=grid, dtype=bool)
 
-        # ── irregular_interval (minutes where abs(interval) != 60s on grid)
-        #    after alignment, consecutive present rows are always 60s apart
-        #    irregular = rows directly after a missing-→-present transition
+        # Value-gap recovery after canonical alignment is a Q_GS diagnostic.
         was_missing  = missing.astype(int)
         gap_end_flag = (was_missing != was_missing.shift(1).fillna(0)).astype(bool) & ~missing
-        irregular_interval = gap_end_flag  # transition from missing back to present
+        value_gap_recovery = gap_end_flag
 
         # ── Short-gap imputation (≤ 5 min → linear interpolation)
         raw_vals = df_aln[ch].copy()
@@ -356,9 +360,7 @@ def compute_preprocess_flags(df_raw: pd.DataFrame, df_aln: pd.DataFrame) -> dict
         flags_all[ch] = pd.DataFrame({
             "present_raw":        present_raw.astype(np.int8),
             "missing":            missing.astype(np.int8),
-            "duplicate":          duplicate.astype(np.int8),
-            "out_of_order":       out_of_order.astype(np.int8),
-            "irregular_interval": irregular_interval.astype(np.int8),
+            "value_gap_recovery": value_gap_recovery.astype(np.int8),
             "imputed":            imputed_flag.astype(np.int8),
             "long_gap":           long_gap_flag.astype(np.int8),
             # Backward-compatible alias used by event extraction.
@@ -451,7 +453,8 @@ def compute_window_stats(flags_all: dict) -> dict:
     """Compute 24 h integrity/gap and configured 6 h QFA statistics.
 
     Returns dict[channel] = DataFrame (hourly index) with columns:
-        missing_rate, duplicate_rate, out_of_order_rate, irregular_rate,
+        missing_rate, duplicate_rate, out_of_order_rate, true_irregular_rate,
+        value_gap_recovery_rate, source_gap_recovery_rate,
         L_max_min, gap_run_count, info_empty_cov, freeze_cand_cov
     """
     cache_path = _cache_path("d2_win_stats")
@@ -466,16 +469,34 @@ def compute_window_stats(flags_all: dict) -> dict:
     MP = int(pd.Timedelta(W) / pd.Timedelta(_d2_cfg.time_grid["freq"]))
     W_FA = _d2_cfg.freeze_window.length
     MP_FA = int(pd.Timedelta(W_FA) / pd.Timedelta(_d2_cfg.time_grid["freq"]))
-    source_rates = _source_temporal_integrity_rates()
+    timestamp_hourly = SOURCE_TIMESTAMP_AUDIT.get("hourly", pd.DataFrame())
+    n_hours = int(pd.Timedelta(W) / pd.Timedelta("1h"))
 
     for ch in SCORED_CHANNELS:
         fl = flags_all[ch]
 
         # Rolling means of binary flags
         miss_rate  = fl["missing"].rolling(W, min_periods=MP).mean()
-        dup_rate   = pd.Series(source_rates["duplicate_rate"], index=fl.index)
-        oor_rate   = pd.Series(source_rates["out_of_order_rate"], index=fl.index)
-        irr_rate   = fl["irregular_interval"].rolling(W, min_periods=MP).mean()
+        value_gap_recovery_rate = fl["value_gap_recovery"].rolling(W, min_periods=MP).mean()
+        source = source_for_channel(ch)
+        if not timestamp_hourly.empty:
+            source_counts = timestamp_hourly.loc[
+                timestamp_hourly["source"].eq(source)
+            ].drop(columns="source")
+            rolling_counts = source_counts.rolling(n_hours, min_periods=n_hours).sum()
+            denominator = rolling_counts["valid_transition"].replace(0, np.nan)
+            dup_hourly = rolling_counts["duplicate"].div(denominator)
+            oor_hourly = rolling_counts["out_of_order"].div(denominator)
+            irregular_hourly = rolling_counts["true_irregular"].div(denominator)
+            source_gap_hourly = rolling_counts["gap_recovery"].div(denominator)
+        else:
+            empty_idx = pd.date_range(
+                fl.index.min().floor("h"), fl.index.max().floor("h"), freq="1h"
+            )
+            dup_hourly = pd.Series(np.nan, index=empty_idx)
+            oor_hourly = pd.Series(np.nan, index=empty_idx)
+            irregular_hourly = pd.Series(np.nan, index=empty_idx)
+            source_gap_hourly = pd.Series(np.nan, index=empty_idx)
         ie_cov = fl["qfa_unavailable"].rolling(W_FA, min_periods=MP_FA).mean()
         fc_cov = fl["sensor_freeze"].rolling(W_FA, min_periods=MP_FA).mean()
         low_iqr_cov = fl["low_iqr_diagnostic"].rolling(W_FA, min_periods=MP_FA).mean()
@@ -501,9 +522,7 @@ def compute_window_stats(flags_all: dict) -> dict:
         # Resample to hourly (take end-of-hour value)
         hourly = pd.DataFrame({
             "missing_rate":    miss_rate,
-            "duplicate_rate":  dup_rate,
-            "out_of_order_rate": oor_rate,
-            "irregular_rate":  irr_rate,
+            "value_gap_recovery_rate": value_gap_recovery_rate,
             "info_empty_cov":  ie_cov,
             "freeze_cand_cov": fc_cov,
             "sensor_freeze_cov": fc_cov,
@@ -516,6 +535,10 @@ def compute_window_stats(flags_all: dict) -> dict:
             "gap_run_count":   gap_run_cnt,
             "P95_gap_min":     p95_gap,
         }).resample("1h").last()
+        hourly["duplicate_rate"] = dup_hourly.reindex(hourly.index)
+        hourly["out_of_order_rate"] = oor_hourly.reindex(hourly.index)
+        hourly["true_irregular_rate"] = irregular_hourly.reindex(hourly.index)
+        hourly["source_gap_recovery_rate"] = source_gap_hourly.reindex(hourly.index)
 
         stats_all[ch] = hourly.dropna(subset=["missing_rate"])
 
@@ -585,7 +608,7 @@ def load_or_generate_calibration(stats_all: dict, flags_all: dict) -> dict:
     if calib_yaml.exists():
         with open(calib_yaml, "r", encoding="utf-8") as f:
             loaded = yaml.safe_load(f)
-        if (loaded.get("calibration_basis") == "blocked_development_reference_v2" and
+        if (loaded.get("calibration_basis") == "blocked_development_reference_v3" and
                 loaded.get("mapping_version") == _d2_cfg.mapping.mapping_version and
                 loaded.get("study_design_version") == _d2_cfg.study_design.version and
                 loaded.get("input_hash") == INPUT_PROVENANCE.get("input_hash")):
@@ -597,7 +620,7 @@ def load_or_generate_calibration(stats_all: dict, flags_all: dict) -> dict:
     calib = {"calibration_id": CALIBRATION_ID, "plant_id": "NorthBank_LCH",
              "generated_date": datetime.now().strftime("%Y-%m-%d"),
              "effective_period": ["2025-08-01", "2026-04-13"],
-             "calibration_basis": "blocked_development_reference_v2",
+             "calibration_basis": "blocked_development_reference_v3",
              "study_design_version": _d2_cfg.study_design.version,
              "mapping_version": _d2_cfg.mapping.mapping_version,
              "input_hash": INPUT_PROVENANCE.get("input_hash")}
@@ -647,10 +670,22 @@ def load_or_generate_calibration(stats_all: dict, flags_all: dict) -> dict:
         "Q_temporal_integrity": {
             "missing_rate":    safe_pct("missing_rate",   SCORED_CHANNELS,
                                         {0.25: 0.001, 0.50: 0.003, 0.75: 0.008, 0.95: 0.02, 0.99: 0.05}),
-            "duplicate_rate":  {0.25: 0.0, 0.50: 0.0, 0.75: 0.0, 0.95: 0.0, 0.99: 0.001},
-            "out_of_order_rate": {0.25: 0.0, 0.50: 0.0, 0.75: 0.0, 0.95: 0.001, 0.99: 0.005},
-            "irregular_rate":  safe_pct("irregular_rate", SCORED_CHANNELS,
-                                        {0.25: 0.0, 0.50: 0.0, 0.75: 0.001, 0.95: 0.002, 0.99: 0.005}),
+            "duplicate_rate": safe_pct(
+                "duplicate_rate", SCORED_CHANNELS,
+                {0.25: 0.0, 0.50: 0.0, 0.75: 0.0, 0.95: 0.0, 0.99: 0.0},
+            ),
+            "out_of_order_rate": safe_pct(
+                "out_of_order_rate", SCORED_CHANNELS,
+                {0.25: 0.0, 0.50: 0.0, 0.75: 0.0, 0.95: 0.0, 0.99: 0.0},
+            ),
+            "true_irregular_rate": safe_pct(
+                "true_irregular_rate", SCORED_CHANNELS,
+                {0.25: 0.0, 0.50: 0.0, 0.75: 0.001, 0.95: 0.002, 0.99: 0.005},
+            ),
+            "gap_recovery_rate_diagnostic": safe_pct(
+                "source_gap_recovery_rate", SCORED_CHANNELS,
+                {0.25: 0.0, 0.50: 0.0, 0.75: 0.001, 0.95: 0.002, 0.99: 0.005},
+            ),
         },
         "Q_gap_severity": {
             "L_max_minutes":  safe_pct("L_max_min",    SCORED_CHANNELS,
@@ -678,7 +713,6 @@ def load_or_generate_calibration(stats_all: dict, flags_all: dict) -> dict:
     calib["veto_thresholds"] = {
         "L_max_minutes":  {"value": 360, "source": "prespecified_engineering", "engineering_floor": 360},
         "missing_rate":   {"value": 0.15, "source": "prespecified_engineering", "engineering_floor": 0.15},
-        "irregular_rate": {"value": 0.10, "source": "prespecified_engineering", "engineering_floor": 0.10},
     }
 
     # Variance benchmarks for response_loss (sensor-type level)
@@ -766,6 +800,7 @@ def compute_subscores(stats_all: dict, rl_all: dict, calib: dict) -> dict:
         rl = rl_all.get(ch, pd.Series(0.0, index=st.index))
 
         Q_TI = ti_scorer.score(st)
+        Q_TI_observed_weight = ti_scorer.observed_weight(st)
         Q_GS = gs_scorer.score(st)
         sensor_meta = _d2_cfg.sensors[ch]
         Q_FA, Q_main = fa_scorer.score(
@@ -775,6 +810,18 @@ def compute_subscores(stats_all: dict, rl_all: dict, calib: dict) -> dict:
         )
         rl_aligned = rl.reindex(st.index).fillna(0.0)
         Q_miss = piecewise_score(st["missing_rate"], _d2_cfg.mapping.piecewise_breaks["Q_TI"]["missing_rate"])
+        Q_irregular = piecewise_score(
+            st["true_irregular_rate"],
+            _d2_cfg.mapping.piecewise_breaks["Q_TI"]["true_irregular_rate"],
+        )
+        Q_duplicate = piecewise_score(
+            st["duplicate_rate"],
+            _d2_cfg.mapping.piecewise_breaks["Q_TI"]["duplicate_rate"],
+        )
+        Q_out_of_order = piecewise_score(
+            st["out_of_order_rate"],
+            _d2_cfg.mapping.piecewise_breaks["Q_TI"]["out_of_order_rate"],
+        )
         Q_lmax = piecewise_score(st["L_max_min"], _d2_cfg.mapping.piecewise_breaks["Q_GS"]["L_max_min"])
 
         subs_all[ch] = pd.DataFrame({
@@ -782,13 +829,19 @@ def compute_subscores(stats_all: dict, rl_all: dict, calib: dict) -> dict:
             "Q_GS":          Q_GS,
             "Q_FA":          Q_FA,
             "Q_miss_comp":   Q_miss,
+            "Q_true_irregular_comp": Q_irregular,
+            "Q_duplicate_comp": Q_duplicate,
+            "Q_out_of_order_comp": Q_out_of_order,
+            "Q_TI_observed_weight": Q_TI_observed_weight,
             "Q_lmax_comp":   Q_lmax,
             "Q_main_FA":     Q_main,
             "rl_rate":       rl_aligned,
             "missing_rate":  st["missing_rate"],
             "duplicate_rate": st["duplicate_rate"],
             "out_of_order_rate": st["out_of_order_rate"],
-            "irregular_rate": st["irregular_rate"],
+            "true_irregular_rate": st["true_irregular_rate"],
+            "source_gap_recovery_rate": st["source_gap_recovery_rate"],
+            "value_gap_recovery_rate": st["value_gap_recovery_rate"],
             "L_max_min":     st["L_max_min"],
             "P95_gap_min":   st["P95_gap_min"],
             "gap_run_count": st["gap_run_count"],
@@ -993,38 +1046,27 @@ def extract_freeze_events(
 # ─── 11. Timestamp audit ──────────────────────────────────────────────────────
 
 def build_timestamp_audit(df_raw: pd.DataFrame, df_aln: pd.DataFrame) -> pd.DataFrame:
-    """Record timestamp alignment facts."""
-    raw_diffs = df_raw.index.to_series().diff().dt.total_seconds()
-    unusual   = raw_diffs[(raw_diffs != 60) & raw_diffs.notna()]
-    rows = []
-    for ts, diff in unusual.items():
-        rows.append({
-            "ts_raw":         ts,
-            "interval_sec":   diff,
-            "expected_sec":   60,
-            "deviation_sec":  diff - 60,
-            "gap_min":        (diff - 60) / 60,
-            "action":         "aligned_to_grid" if diff > 60 else "interval_compressed",
-            "aligned_ts":     ts.floor("min"),
-        })
-    audit_df = pd.DataFrame(rows)
+    """Return pre-alignment timestamp events, hourly evidence, and summary."""
+    audit_df = SOURCE_TIMESTAMP_AUDIT.get("events", pd.DataFrame()).copy()
+    hourly_df = SOURCE_TIMESTAMP_AUDIT.get("hourly", pd.DataFrame()).copy()
+    source_summary = SOURCE_TIMESTAMP_AUDIT.get("summary", pd.DataFrame()).copy()
     summary_rows = [
         ("input_source", INPUT_PROVENANCE.get("source")),
         ("grid_rows", len(df_aln)),
         ("grid_start", df_aln.index.min()),
         ("grid_end", df_aln.index.max()),
-        ("duplicate_after_canonicalisation", int(df_raw.index.duplicated().sum())),
-        ("intervals_ne_60s_after_canonicalisation", len(unusual)),
+        ("timestamp_audit_stage", "raw_source_order_before_sort_and_alignment"),
+        ("qti_unavailable_policy", "conditional_weight_normalisation"),
+        ("gap_recovery_role", "diagnostic_only_represented_by_Q_GS"),
     ]
-    contract = INPUT_PROVENANCE.get("contract", {})
-    for source, facts in contract.get("timestamp_audit", {}).items():
-        for key in ("rows", "invalid_timestamp_rows", "duplicate_timestamp_rows",
-                    "out_of_order_transitions", "timestamp_min", "timestamp_max"):
-            summary_rows.append((f"source_{source}_{key}", facts.get(key)))
+    for row in source_summary.to_dict("records"):
+        source = row.pop("source")
+        for key, value in row.items():
+            summary_rows.append((f"source_{source}_{key}", value))
     for ch in SCORED_CHANNELS:
         summary_rows.append((f"missing_cells_{ch}", int(df_aln[ch].isna().sum())))
     summary = pd.DataFrame(summary_rows, columns=["metric", "value"])
-    return audit_df, summary
+    return audit_df, hourly_df, summary
 
 
 # ─── 12. Sensor availability profile ──────────────────────────────────────────
@@ -1054,7 +1096,12 @@ def build_sensor_profile(all_D2: dict, subs_all: dict) -> pd.DataFrame:
             "mean_Q_TI":              float(sub["Q_TI"].mean()),
             "mean_Q_GS":              float(sub["Q_GS"].mean()),
             "mean_Q_FA":              float(sub["Q_FA"].mean()),
+            "mean_Q_TI_observed_weight": float(sub["Q_TI_observed_weight"].mean()),
             "mean_missing_rate":      float(sub["missing_rate"].mean()),
+            "mean_true_irregular_rate": float(sub["true_irregular_rate"].mean()),
+            "mean_duplicate_rate":    float(sub["duplicate_rate"].mean()),
+            "mean_out_of_order_rate": float(sub["out_of_order_rate"].mean()),
+            "mean_source_gap_recovery_rate": float(sub["source_gap_recovery_rate"].mean()),
             "mean_info_empty_cov":    float(sub["info_empty_cov"].mean()),
             "mean_floor_occupancy":   float(sub["floor_occupancy"].mean()),
             "mean_resolution_limited": float(sub["resolution_limited"].mean()),
@@ -1099,7 +1146,9 @@ def build_mapping_params(calib: dict) -> pd.DataFrame:
             "break_2":            breaks[1],
             "break_3":            breaks[2],
             "break_4":            breaks[3],
-            "score_zone_1_to_2":  f">{breaks[3]}",
+            "break_5":            breaks[4],
+            "score_zone_1":       f">{breaks[4]}",
+            "score_zone_1_to_2":  f"{breaks[3]}-{breaks[4]}",
             "score_zone_2_to_3":  f"{breaks[2]}-{breaks[3]}",
             "score_zone_3_to_4":  f"{breaks[1]}-{breaks[2]}",
             "score_zone_4_to_5":  f"≤{breaks[0]}",
@@ -1122,6 +1171,8 @@ def build_mapping_params(calib: dict) -> pd.DataFrame:
             "break_2": None,
             "break_3": None,
             "break_4": None,
+            "break_5": None,
+            "score_zone_1": None,
             "score_zone_1_to_2": None,
             "score_zone_2_to_3": None,
             "score_zone_3_to_4": None,
@@ -1142,7 +1193,7 @@ def build_mapping_params(calib: dict) -> pd.DataFrame:
 # ─── 14. Export outputs ───────────────────────────────────────────────────────
 
 def export_outputs(all_D2, subs_all, gap_df, freeze_events, ledger_df,
-                   audit_df, audit_summary, profile_df, mapping_df, calib,
+                   audit_df, audit_hourly, audit_summary, profile_df, mapping_df, calib,
                    audit_log_df=None):
     log("[14] Exporting outputs to artifacts/data/...")
     DATA = ART / "data"
@@ -1177,7 +1228,9 @@ def export_outputs(all_D2, subs_all, gap_df, freeze_events, ledger_df,
 
     # 2. D2_preprocess_flags_hourly.xlsx
     flag_cols = [
-        "missing_rate", "irregular_rate", "info_empty_cov",
+        "missing_rate", "true_irregular_rate", "duplicate_rate",
+        "out_of_order_rate", "source_gap_recovery_rate",
+        "value_gap_recovery_rate", "Q_TI_observed_weight", "info_empty_cov",
         "sensor_freeze_cov", "low_iqr_cov", "floor_occupancy",
         "soft_rle_cov", "soft_stasis_cov", "resolution_limited",
         "L_max_min", "gap_run_count",
@@ -1209,7 +1262,8 @@ def export_outputs(all_D2, subs_all, gap_df, freeze_events, ledger_df,
 
     # 8. D2_timestamp_audit.xlsx
     with pd.ExcelWriter(DATA / "D2_timestamp_audit.xlsx", engine="openpyxl") as w:
-        audit_df.to_excel(w, sheet_name="irregular_timestamps", index=False)
+        audit_df.to_excel(w, sheet_name="raw_timestamp_events", index=False)
+        audit_hourly.to_excel(w, sheet_name="hourly_source_counts")
         audit_summary.to_excel(w, sheet_name="summary", index=False)
     log("    [OK] D2_timestamp_audit.xlsx")
 
@@ -1280,7 +1334,7 @@ def main():
     global CALIBRATION_ID
     t_total = time.time()
     log("=" * 72)
-    log("D2 Temporal Continuity & Information Availability  —  V2 Pipeline")
+    log("D2 Temporal Continuity & Information Availability  —  V3 Pipeline")
     log(f"Run ID: {RUN_ID}")
     log("=" * 72)
 
@@ -1341,7 +1395,7 @@ def main():
 
     # 11. Timestamp audit
     log("[11] Building timestamp audit...")
-    audit_df, audit_summary = build_timestamp_audit(df_raw, df_aln)
+    audit_df, audit_hourly, audit_summary = build_timestamp_audit(df_raw, df_aln)
 
     # 12. Sensor profile
     log("[12] Building sensor availability profile...")
@@ -1370,7 +1424,7 @@ def main():
         veto_rate=veto_rate_per_ch,
     )
     export_outputs(all_D2, subs_all, gap_df, freeze_events, ledger_df,
-                   audit_df, audit_summary, profile_df, mapping_df, calib_raw,
+                   audit_df, audit_hourly, audit_summary, profile_df, mapping_df, calib_raw,
                    audit_log_df=audit_log_df)
 
     # Save state
@@ -1384,6 +1438,7 @@ def main():
         "ledger_df":    ledger_df,
         "profile_df":   profile_df,
         "mapping_df":   mapping_df,
+        "timestamp_audit": SOURCE_TIMESTAMP_AUDIT,
         "calib":        calib_raw,
         "rl_all":       rl_all,
         "scored_channels": SCORED_CHANNELS,
@@ -1397,7 +1452,7 @@ def main():
 
     elapsed = time.time() - t_total
     log(f"\n{'='*72}")
-    log(f"D2 V2 pipeline complete in {elapsed:.1f}s")
+    log(f"D2 V3 pipeline complete in {elapsed:.1f}s")
     log(f"{'='*72}")
     return state
 

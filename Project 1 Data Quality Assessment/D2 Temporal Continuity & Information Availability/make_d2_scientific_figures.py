@@ -1,4 +1,4 @@
-"""Nature-style confirmatory figures for the frozen D2 V2 release."""
+"""Nature-style confirmatory figures for the frozen D2 V3 release."""
 from __future__ import annotations
 
 import pickle
@@ -410,6 +410,121 @@ def figure16_construct_separation() -> None:
     save(fig, "D2_Fig16_d1_d2_construct_separation")
 
 
+def _continuous_piecewise(x: np.ndarray, breaks: list[float]) -> np.ndarray:
+    score = np.ones_like(x, dtype=float)
+    b0, b1, b2, b3, b4 = breaks
+    score[x <= b0] = 5.0
+    for high, low, left, right in (
+        (5, 4, b0, b1), (4, 3, b1, b2),
+        (3, 2, b2, b3), (2, 1, b3, b4),
+    ):
+        mask = x.gt(left) & x.le(right) if isinstance(x, pd.Series) else ((x > left) & (x <= right))
+        score[mask] = high - (high - low) * (x[mask] - left) / (right - left)
+    score[x > b4] = 1.0
+    return score
+
+
+def figure17_timestamp_qti(state: dict) -> None:
+    audit = state["timestamp_audit"]
+    summary = audit["summary"].copy()
+    qti = _read_validation("D2_qti_component_audit.parquet")
+    mapping = state["mapping_df"]
+
+    event_cols = ["true_irregular_count", "duplicate_count", "out_of_order_count", "gap_recovery_count"]
+    event_labels = ["True irregular", "Duplicate", "Out of order", "Gap recovery"]
+    source_order = [s for s in ("DO", "ORP", "FLOW") if s in set(summary["source"])]
+    event_table = summary.set_index("source").loc[source_order, event_cols]
+
+    weights = pd.DataFrame({
+        "component": ["Missing", "True irregular", "Duplicate", "Out of order"],
+        "weight": [0.65, 0.25, 0.05, 0.05],
+    })
+    deficit_cols = [
+        "weighted_deficit_missing", "weighted_deficit_true_irregular",
+        "weighted_deficit_duplicate", "weighted_deficit_out_of_order",
+    ]
+    deficit = qti.groupby("analyte", as_index=False)[deficit_cols].mean()
+
+    fig, axes = plt.subplots(2, 2, figsize=(7.2, 4.8))
+    fig.subplots_adjust(hspace=0.52, wspace=0.36)
+    ax_a, ax_b, ax_c, ax_d = axes.ravel()
+
+    x = np.arange(len(source_order))
+    width = 0.18
+    event_colors = [COLORS["teal"], COLORS["orange"], COLORS["violet"], COLORS["red"]]
+    for i, (column, label, color) in enumerate(zip(event_cols, event_labels, event_colors)):
+        values = event_table[column].to_numpy(dtype=float)
+        bars = ax_a.bar(x + (i - 1.5) * width, values, width, color=color, label=label)
+        ax_a.bar_label(bars, fmt="%.0f", fontsize=5.8, padding=1)
+    ax_a.set_xticks(x, source_order)
+    ax_a.set_ylabel("Raw-source event count")
+    ax_a.set_ylim(0, max(32, float(event_table.to_numpy().max()) * 1.18))
+    ax_a.set_title("Pre-alignment timestamp audit", pad=4)
+    ax_a.legend(loc="upper left", ncol=2, columnspacing=0.8, handlelength=1.1)
+    style(ax_a)
+    panel(ax_a, "a")
+
+    bars = ax_b.barh(weights["component"], weights["weight"],
+                     color=[COLORS["blue"], COLORS["teal"], COLORS["orange"], COLORS["violet"]])
+    ax_b.bar_label(bars, labels=[f"{value:.0%}" for value in weights["weight"]],
+                   fontsize=6, padding=2)
+    ax_b.set_xlim(0, 0.73)
+    ax_b.set_xlabel("Prespecified Q$_{TI}$ weight")
+    ax_b.set_title("Conditionally normalised evidence weights", pad=4)
+    ax_b.invert_yaxis()
+    style(ax_b)
+    panel(ax_b, "b")
+
+    components = ["Missing", "True irregular", "Duplicate", "Out of order"]
+    component_colors = [COLORS["blue"], COLORS["teal"], COLORS["orange"], COLORS["violet"]]
+    analytes = deficit["analyte"].tolist()
+    x = np.arange(len(analytes))
+    for i, (column, label, color) in enumerate(zip(deficit_cols, components, component_colors)):
+        ax_c.bar(x + (i - 1.5) * width, deficit[column], width, color=color, label=label)
+    ax_c.set_xticks(x, analytes)
+    ax_c.set_ylabel("Mean weighted score deficit")
+    ax_c.set_title("Attribution of Q$_{TI}$ loss", pad=4)
+    ax_c.legend(loc="upper right", ncol=2, columnspacing=0.7, handlelength=1.0)
+    style(ax_c)
+    panel(ax_c, "c")
+
+    qti_rows = mapping.loc[
+        mapping["subscore_name"].eq("Q_TI")
+        & mapping["mapping_type"].eq("piecewise_linear")
+    ]
+    curve_data = []
+    curve_labels = {
+        "missing_rate": "Missing",
+        "true_irregular_rate": "True irregular",
+        "duplicate_rate": "Duplicate",
+        "out_of_order_rate": "Out of order",
+    }
+    line_styles = ["-", "--", "-.", ":"]
+    for (_, row), line_style, color in zip(qti_rows.iterrows(), line_styles, component_colors):
+        breaks = [float(row[f"break_{i}"]) for i in range(1, 6)]
+        values = np.linspace(0, breaks[-1] * 1.12, 300)
+        scores = _continuous_piecewise(values, breaks)
+        label = curve_labels.get(row["input_metric"], row["input_metric"])
+        ax_d.plot(values * 100, scores, color=color, linestyle=line_style, linewidth=1.2, label=label)
+        curve_data.extend({"metric": label, "rate": v, "score": s} for v, s in zip(values, scores))
+    ax_d.set_xlabel("Observed rate (%)")
+    ax_d.set_ylabel("Component score")
+    ax_d.set_yticks([1, 2, 3, 4, 5])
+    ax_d.set_ylim(0.9, 5.1)
+    ax_d.set_title("Continuous tail mapping", pad=4)
+    ax_d.legend(loc="upper right")
+    style(ax_d)
+    panel(ax_d, "d")
+
+    source_book = VALIDATION / "D2_Fig17_timestamp_qti_source_data.xlsx"
+    with pd.ExcelWriter(source_book, engine="openpyxl") as writer:
+        event_table.reset_index().to_excel(writer, sheet_name="panel_a_events", index=False)
+        weights.to_excel(writer, sheet_name="panel_b_weights", index=False)
+        deficit.to_excel(writer, sheet_name="panel_c_deficits", index=False)
+        pd.DataFrame(curve_data).to_excel(writer, sheet_name="panel_d_mapping", index=False)
+    save(fig, "D2_Fig17_timestamp_qti_audit")
+
+
 def main() -> None:
     with (ROOT / "artifacts" / "d2_state.pkl").open("rb") as handle:
         state = pickle.load(handle)
@@ -418,6 +533,7 @@ def main() -> None:
     figure14_robustness()
     figure15_tail_risk()
     figure16_construct_separation()
+    figure17_timestamp_qti(state)
 
 
 if __name__ == "__main__":

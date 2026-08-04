@@ -73,6 +73,7 @@ class MappingConfig:
     imputation:         Dict[str, Any]
     freeze_detection:   Dict[str, Any]
     process_floor_policy: Dict[str, Any]
+    timestamp_quality:  Dict[str, Any]
     mapping_version:    str
 
 
@@ -174,6 +175,7 @@ def load_config(config_dir: Path, version: str = "v1") -> D2Config:
         imputation=mapping_yaml["imputation"],
         freeze_detection=mapping_yaml["freeze_detection"],
         process_floor_policy=mapping_yaml["process_floor_policy"],
+        timestamp_quality=mapping_yaml["timestamp_quality"],
         mapping_version=mapping_yaml["mapping_version"],
     )
 
@@ -231,8 +233,14 @@ def _validate(cfg: D2Config) -> None:
     # 7. piecewise_breaks 必须严格递增
     for sub, metrics in cfg.mapping.piecewise_breaks.items():
         for m, brks in metrics.items():
+            assert len(brks) == 5, \
+                f"{sub}.{m} must define five thresholds: {brks}"
             assert all(brks[i] < brks[i+1] for i in range(len(brks)-1)), \
                 f"{sub}.{m} breaks not strictly increasing: {brks}"
+
+    expected_qti = {"missing", "true_irregular", "duplicate", "out_of_order"}
+    assert set(cfg.mapping.Q_TI_weights) == expected_qti, \
+        f"Q_TI components must be {sorted(expected_qti)}"
 
     # 8. tau_RLE_D2 < tau_RLE_D1
     fd = cfg.mapping.freeze_detection

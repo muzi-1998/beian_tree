@@ -20,15 +20,16 @@ from ..utils.config_loader import D2Config
 # ─── 基础映射函数 ─────────────────────────────────────────────────────────────
 
 def piecewise_score(x: pd.Series, breaks: list) -> pd.Series:
-    """分段线性,异常越强 → 分数越低。breaks 为 4 个递增阈值,定义 5 个区间。"""
-    x = x.copy().fillna(x.median())
+    """连续分段映射；5 个递增阈值使 5 分平滑下降至 1 分。"""
+    x = x.copy()
     s = pd.Series(np.nan, index=x.index, dtype=float)
-    b0, b1, b2, b3 = breaks
+    b0, b1, b2, b3, b4 = breaks
     s[x <= b0]              = 5.0
     m = (x > b0) & (x <= b1); s[m] = 4.0 + (b1 - x[m]) / (b1 - b0)
     m = (x > b1) & (x <= b2); s[m] = 3.0 + (b2 - x[m]) / (b2 - b1)
     m = (x > b2) & (x <= b3); s[m] = 2.0 + (b3 - x[m]) / (b3 - b2)
-    s[x > b3]               = 1.0
+    m = (x > b3) & (x <= b4); s[m] = 1.0 + (b4 - x[m]) / (b4 - b3)
+    s[x > b4]               = 1.0
     return s.clip(1.0, 5.0)
 
 
@@ -42,14 +43,31 @@ class TemporalIntegrityScorer:
         self.w = cfg.mapping.Q_TI_weights
 
     def score(self, st: pd.DataFrame) -> pd.Series:
-        Q_m  = piecewise_score(st["missing_rate"],      self.b["missing_rate"])
-        Q_d  = piecewise_score(st["duplicate_rate"],    self.b["duplicate_rate"])
-        Q_o  = piecewise_score(st["out_of_order_rate"], self.b["out_of_order"])
-        Q_i  = piecewise_score(st["irregular_rate"],    self.b["irregular_rate"])
-        return (self.w["missing"]      * Q_m +
-                self.w["duplicate"]    * Q_d +
-                self.w["out_of_order"] * Q_o +
-                self.w["irregular"]    * Q_i).clip(1, 5)
+        components = pd.DataFrame({
+            "missing": piecewise_score(st["missing_rate"], self.b["missing_rate"]),
+            "true_irregular": piecewise_score(
+                st["true_irregular_rate"], self.b["true_irregular_rate"]
+            ),
+            "duplicate": piecewise_score(st["duplicate_rate"], self.b["duplicate_rate"]),
+            "out_of_order": piecewise_score(
+                st["out_of_order_rate"], self.b["out_of_order_rate"]
+            ),
+        })
+        weights = pd.Series(self.w, dtype=float).reindex(components.columns)
+        observed = components.notna()
+        denominator = observed.mul(weights, axis=1).sum(axis=1)
+        numerator = components.mul(weights, axis=1).sum(axis=1, min_count=1)
+        return numerator.div(denominator.where(denominator > 0)).clip(1, 5)
+
+    def observed_weight(self, st: pd.DataFrame) -> pd.Series:
+        available = pd.DataFrame({
+            "missing": st["missing_rate"].notna(),
+            "true_irregular": st["true_irregular_rate"].notna(),
+            "duplicate": st["duplicate_rate"].notna(),
+            "out_of_order": st["out_of_order_rate"].notna(),
+        })
+        weights = pd.Series(self.w, dtype=float).reindex(available.columns)
+        return available.mul(weights, axis=1).sum(axis=1)
 
 
 class GapSeverityScorer:
@@ -139,11 +157,6 @@ class D2Aggregator:
         m  = st["missing_rate"] > vM
         D2_total[m] = D2_total[m].clip(upper=self.veto["missing_p99"]["upper_cap"])
         veto_flag[m] = True; veto_reason[m] = veto_reason[m] + "missing_p99|"
-
-        vI = self._veto_value("irregular_rate")
-        m  = st["irregular_rate"] > vI
-        D2_total[m] = D2_total[m].clip(upper=self.veto["irregular_p95"]["upper_cap"])
-        veto_flag[m] = True; veto_reason[m] = veto_reason[m] + "irregular_p95|"
 
         m  = Q_FA <= self.veto["freeze_severe"]["threshold"]
         D2_total[m] = D2_total[m].clip(upper=self.veto["freeze_severe"]["upper_cap"])

@@ -1,13 +1,13 @@
-calibration_id: NorthBank_D2_v2_20260804
+calibration_id: NorthBank_D2_v3_20260804
 plant_id: NorthBank_LCH
 generated_date: '2026-08-04'
 effective_period:
 - '2025-08-01'
 - '2026-04-13'
-calibration_basis: blocked_development_reference_v2
+calibration_basis: blocked_development_reference_v3
 study_design_version: d2_blocked_time_v1
-mapping_version: d2_v2_hard_availability_r1
-input_hash: 7ea42ecbec15d8a715422f8d7356c163572a647aa4aecb573932aaa4bcb3ccdd
+mapping_version: d2_v3_source_timestamp_qti_r1
+input_hash: c492b1f1079e81d4de557fcea966741f4a8f4fe39769e2d1504718f11896a8db
 benchmark_windows:
   selection_rule: blocked_development_period_only; D1_not_used
   fit_start: '2025-08-01 00:00:00'
@@ -42,19 +42,25 @@ descriptive_reference_percentiles:
       0.5: 0.0
       0.75: 0.0
       0.95: 0.0
-      0.99: 0.001
+      0.99: 0.0
     out_of_order_rate:
       0.25: 0.0
       0.5: 0.0
       0.75: 0.0
-      0.95: 0.001
-      0.99: 0.005
-    irregular_rate:
+      0.95: 0.0
+      0.99: 0.0
+    true_irregular_rate:
       0.25: 0.0
       0.5: 0.0
       0.75: 0.0
-      0.95: 0.0006944444444444445
-      0.99: 0.00625
+      0.95: 0.0
+      0.99: 0.0
+    gap_recovery_rate_diagnostic:
+      0.25: 0.0
+      0.5: 0.0
+      0.75: 0.0
+      0.95: 0.0
+      0.99: 0.00757002271006813
   Q_gap_severity:
     L_max_minutes:
       0.25: 0.0
@@ -87,10 +93,6 @@ veto_thresholds:
     value: 0.15
     source: prespecified_engineering
     engineering_floor: 0.15
-  irregular_rate:
-    value: 0.1
-    source: prespecified_engineering
-    engineering_floor: 0.1
 bench_var:
   DO:
     DO_1_1:

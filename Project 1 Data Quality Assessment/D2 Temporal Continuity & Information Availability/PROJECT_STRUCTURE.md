@@ -1,7 +1,7 @@
 # D2 Temporal Continuity & Information Availability — 项目结构
 
 > **最后更新：** 2026-08-04
-> **当前版本：** V2 confirmatory release（hard-availability QFA + blocked validation）
+> **当前版本：** V3 confirmatory release（raw-source timestamp QTI + hard-availability QFA + blocked validation）
 > **维护规则：** 每次新增、移动或删除文件后同步更新本文件
 
 ---
@@ -37,9 +37,13 @@
 | 输出行数 | 6121 小时/通道（完整 24 h 暖机后）|
 | 配置驱动 | P2：所有阈值/权重/拓扑均来自 `configs/*.yaml` |
 
-### V2 冻结发布
+### V3 冻结发布
 
-- 运行号：`D2V2_20260804_1823`
+- 运行号：`D2V3_20260804_1939`
+- 映射版本：`d2_v3_source_timestamp_qti_r1`
+- QTI：原始时间戳排序前审计；missing/true irregular/duplicate/out-of-order 权重为 0.65/0.25/0.05/0.05，并按可观测证据条件归一化
+- gap recovery：仅作为 QGS 诊断，不在 QTI 重复扣分
+- 分段映射：五阈值连续下降，移除旧最高断点 2→1 硬突跳
 - 校准号：`NorthBank_D2_v2_20260804`
 - Development：2025-08-01 至 2025-12-31
 - Internal validation：2026-01-01 至 2026-02-21
@@ -55,9 +59,9 @@
 D2 Temporal Continuity & Information Availability/
 │
 ├── PROJECT_STRUCTURE.md            ← 本文件（项目结构说明，随改动更新）
-├── D2_FINAL_SCIENTIFIC_REPORT_2026-08.md ← V2 最终科学审查、结果与主张边界
+├── D2_FINAL_SCIENTIFIC_REPORT_2026-08.md ← V3 最终科学审查、结果与主张边界
 │
-├── run_d2_pipeline.py              ← V2 主流水线（评分、事件、审计与冻结状态）
+├── run_d2_pipeline.py              ← V3 主流水线（评分、事件、原始时间戳审计与冻结状态）
 ├── run_d2_scientific_validation.py ← 权重/阈值/低尾/效应量/D1-D2 空模型验证
 ├── build_d2_release_manifest.py    ← 发布文件 SHA-256 清单生成器
 ├── make_d2_figures.py              ← SCI 级出图脚本（Fig01–10）
@@ -82,7 +86,8 @@ D2 Temporal Continuity & Information Availability/
 │   ├── __init__.py
 │   ├── utils/
 │   │   ├── __init__.py
-│   │   └── config_loader.py        ← D2Config dataclass + load_config() + _validate()
+│   │   ├── config_loader.py        ← D2Config dataclass + load_config() + _validate()
+│   │   └── timestamp_quality.py    ← 原始时间戳哈希核验、排序前事件分类与小时定位
 │   └── d2_availability/
 │       ├── __init__.py
 │       ├── process_floor.py        ← 标准与 process-floor QFA 证据分流
@@ -101,7 +106,7 @@ D2 Temporal Continuity & Information Availability/
 │   │   ├── D2_interpolation_ledger.xlsx        ← 短断点（≤5 min）线性插补台账
 │   │   ├── D2_mapping_params.xlsx              ← 分段映射参数（P1-B 含 P95_gap_min）
 │   │   ├── D2_sensor_availability_profile.xlsx ← 传感器长期可用性摘要
-│   │   ├── D2_timestamp_audit.xlsx             ← 时间戳对齐审计
+│   │   ├── D2_timestamp_audit.xlsx             ← 原始时间戳排序前事件、小时计数与哈希审计
 │   │   ├── D2_audit_log.xlsx                   ← 运行元数据 + 输入文件 SHA16（P1-E）
 │   │   ├── D2_process_floor_validation.xlsx    ← 四类挑战与真实通道验证数据
 │   │   ├── D2_process_floor_validation.json    ← 机器可读验证摘要
@@ -124,7 +129,8 @@ D2 Temporal Continuity & Information Availability/
 │       ├── D2_Fig13_process_floor_contract.*       ← 工艺地板与硬不可用机制分离
 │       ├── D2_Fig14_aggregation_robustness.*       ← 权重、lambda 与映射稳健性
 │       ├── D2_Fig15_low_tail_reporting.*           ← 阻断阶段低尾风险
-│       └── D2_Fig16_d1_d2_construct_separation.*   ← D1-D2 构念区分与空模型
+│       ├── D2_Fig16_d1_d2_construct_separation.*   ← D1-D2 构念区分与空模型
+│       └── D2_Fig17_timestamp_qti_audit.*          ← 原始时间戳审计、QTI 权重与损失归因
 │
 ├── artifacts_pre_p0p1/             ← P0+P1 补丁应用前的状态备份（只读存档）
 │   ├── d2_state.pkl                ← 补丁前完整状态（~228 MB）
@@ -283,6 +289,7 @@ python run_d2_pipeline.py
 
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
+| 2026-08-04 | V3 source-timestamp QTI | 从 1.1 原始 Excel 排序前审计 duplicate/out-of-order/true-irregular；gap recovery 与 QTI 解耦；QTI 改为 0.65/0.25/0.05/0.05 条件归一化；四阈值映射升级为五阈值连续映射；新增 Fig17、阈值退化参考、28 项顶层回归测试 |
 | 2026-08-04 | V2 confirmatory | 冻结 development/internal/terminal 时间区块；QFA 仅采用硬可用性证据；response-loss 降为诊断；完成 9 组权重/lambda、映射、低尾、ORP-DO、D1-D2 循环移位验证；新增 Fig13–16、最终科学报告与发布 manifest；外部厂验证明确暂缓 |
 | 2026-07-22 | process-floor QFA R1 | DO_1_4/DO_2_4 启用后缺氧地板专用路线；低 IQR 仅诊断；拆分 floor/resolution/freeze/QFA；QFA 修正为 6 h；后缺氧路线禁用 response-loss，标准路线仅允许平行池同位置 peer；四类挑战 4/4 通过；完整重跑 D2、12 张图与 D1 联动清单 |
 | 2026-07-10 | V1.1 contract | D2 主输入切换为 1.1 时间基座契约；逐通道缺失；整段长缺口不插值；24 h 完整暖机；D1 从校准中移除，仅作事件一致性；缓存绑定输入/配置/代码哈希；12 张图统一 PNG/SVG/PDF |

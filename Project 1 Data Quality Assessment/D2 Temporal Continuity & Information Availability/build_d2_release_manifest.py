@@ -1,4 +1,4 @@
-"""Build a SHA-256 manifest for the frozen D2 V2 release."""
+"""Build a SHA-256 manifest for the frozen D2 V3 release."""
 from __future__ import annotations
 
 import hashlib
@@ -29,6 +29,7 @@ ROOT_FILES = (
     "test_d2_contract_regression.py",
     "test_d2_p0p1_regression.py",
     "test_d2_process_floor_regression.py",
+    "test_d2_timestamp_qti_regression.py",
 )
 
 
@@ -79,7 +80,7 @@ def main() -> None:
     repository_records = [file_record(path) for path in repository_files()]
     local_records = [file_record(path) for path in local_submission_files()]
     payload = {
-        "schema_version": "d2-release-manifest-v1",
+        "schema_version": "d2-release-manifest-v2",
         "generated_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "run_id": validation_manifest["run_id"],
         "calibration_id": calibration["calibration_id"],
@@ -89,10 +90,11 @@ def main() -> None:
             "external_site_validation"
         ],
         "verification": {
-            "production_tests": "24 passed",
+            "production_tests": "28 passed",
             "test_command": (
                 "python -m pytest test_d2_contract_regression.py "
                 "test_d2_p0p1_regression.py test_d2_process_floor_regression.py "
+                "test_d2_timestamp_qti_regression.py "
                 "-q --import-mode=importlib"
             ),
             "process_floor_challenges": "5/5 passed",

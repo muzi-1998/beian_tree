@@ -1,4 +1,4 @@
-"""Confirmatory scientific validation for the frozen D2 V2 release."""
+"""Confirmatory scientific validation for the frozen D2 V3 release."""
 from __future__ import annotations
 
 import copy
@@ -59,6 +59,10 @@ def _long_state(state: dict, cfg) -> pd.DataFrame:
         subs = state["subs_all"][sensor_id]
         for column in (
             "missing_rate", "L_max_min", "P95_gap_min", "gap_run_count",
+            "true_irregular_rate", "duplicate_rate", "out_of_order_rate",
+            "source_gap_recovery_rate", "value_gap_recovery_rate",
+            "Q_TI_observed_weight", "Q_miss_comp", "Q_true_irregular_comp",
+            "Q_duplicate_comp", "Q_out_of_order_comp",
             "info_empty_cov", "sensor_freeze_cov", "low_iqr_cov",
             "soft_rle_cov", "soft_stasis_cov", "floor_occupancy",
             "resolution_limited", "rl_rate",
@@ -461,12 +465,90 @@ def d1_d2_concordance(base: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame, p
     return summary, pairs, null_frame
 
 
+def qti_component_audit(state: dict, cfg) -> pd.DataFrame:
+    """Expose hourly Q_TI observability and weighted score deficits."""
+    weights = cfg.mapping.Q_TI_weights
+    frames = []
+    component_columns = {
+        "missing": "Q_miss_comp",
+        "true_irregular": "Q_true_irregular_comp",
+        "duplicate": "Q_duplicate_comp",
+        "out_of_order": "Q_out_of_order_comp",
+    }
+    for sensor_id in state["scored_channels"]:
+        subs = state["subs_all"][sensor_id]
+        frame = pd.DataFrame({
+            "timestamp": subs.index,
+            "sensor_id": sensor_id,
+            "analyte": sensor_id.split("_")[0],
+            "phase": _phase(subs.index, cfg).to_numpy(),
+            "Q_TI": subs["Q_TI"].to_numpy(),
+            "observed_weight": subs["Q_TI_observed_weight"].to_numpy(),
+            "source_gap_recovery_rate": subs["source_gap_recovery_rate"].to_numpy(),
+            "value_gap_recovery_rate": subs["value_gap_recovery_rate"].to_numpy(),
+        })
+        for component, score_col in component_columns.items():
+            values = subs[score_col]
+            frame[f"Q_{component}"] = values.to_numpy()
+            frame[f"weighted_deficit_{component}"] = (
+                weights[component] * (5.0 - values)
+            ).to_numpy()
+        frames.append(frame)
+    return pd.concat(frames, ignore_index=True)
+
+
+def qti_threshold_reference(state: dict, cfg) -> pd.DataFrame:
+    """Development-only threshold reference; never replaces production mapping."""
+    development = cfg.study_design.periods["development"]
+    metrics = (
+        "missing_rate", "true_irregular_rate", "duplicate_rate", "out_of_order_rate"
+    )
+    rows = []
+    for sensor_id in state["scored_channels"]:
+        subs = state["subs_all"][sensor_id].loc[
+            pd.Timestamp(development.start):pd.Timestamp(development.end)
+        ]
+        high_quality = subs.loc[subs["Q_GS"].ge(4.5) & subs["Q_FA"].ge(4.5)]
+        for metric in metrics:
+            values = high_quality[metric].dropna()
+            quantiles = values.quantile([0.75, 0.90, 0.95, 0.99]) if len(values) else pd.Series(dtype=float)
+            production = cfg.mapping.piecewise_breaks["Q_TI"][metric]
+            unique_n = int(values.nunique())
+            rows.append({
+                "sensor_id": sensor_id,
+                "analyte": sensor_id.split("_")[0],
+                "metric": metric,
+                "development_start": development.start,
+                "development_end": development.end,
+                "candidate_high_quality_rule": "Q_GS>=4.5 and Q_FA>=4.5",
+                "support_n": int(len(values)),
+                "unique_value_n": unique_n,
+                "q75": quantiles.get(0.75, np.nan),
+                "q90": quantiles.get(0.90, np.nan),
+                "q95": quantiles.get(0.95, np.nan),
+                "q99": quantiles.get(0.99, np.nan),
+                "production_b0": production[0],
+                "production_b1": production[1],
+                "production_b2": production[2],
+                "production_b3": production[3],
+                "production_b4": production[4],
+                "degenerate_reference": bool(unique_n < 5),
+                "decision": "sensitivity_only_not_adopted",
+                "reason": (
+                    "zero_or_sparse_empirical_support_requires_engineering_floor"
+                    if unique_n < 5 else
+                    "independent_SAP_lock_required_before_production_use"
+                ),
+            })
+    return pd.DataFrame(rows)
+
+
 def _write_manifest(state: dict, outputs: list[Path]) -> Path:
     records = {}
     for path in sorted(outputs):
         records[str(path.relative_to(OUTPUT)).replace("\\", "/")] = hashlib.sha256(path.read_bytes()).hexdigest()
     manifest = {
-        "schema_version": "d2-scientific-validation-v1",
+        "schema_version": "d2-scientific-validation-v2",
         "run_id": state["run_id"],
         "calibration_id": state["calibration_id"],
         "external_site_validation": "deferred",
@@ -486,6 +568,8 @@ def main() -> Path:
     threshold_summary = threshold_sensitivity(state, cfg)
     distributions, daily, effects = distribution_summary(base)
     concordance, pairs, null = d1_d2_concordance(base)
+    qti_audit = qti_component_audit(state, cfg)
+    qti_thresholds = qti_threshold_reference(state, cfg)
     outputs = {
         "D2_weight_lambda_scores.parquet": weight_scores,
         "D2_weight_lambda_summary.parquet": weight_summary,
@@ -496,6 +580,8 @@ def main() -> Path:
         "D2_d1d2_concordance.parquet": concordance,
         "D2_d1d2_event_pairs.parquet": pairs,
         "D2_d1d2_circular_null.parquet": null,
+        "D2_qti_component_audit.parquet": qti_audit,
+        "D2_qti_threshold_reference.parquet": qti_thresholds,
     }
     written = []
     for filename, frame in outputs.items():
@@ -510,6 +596,15 @@ def main() -> Path:
         effects.to_excel(writer, sheet_name="analyte_effects", index=False)
         concordance.to_excel(writer, sheet_name="D1_D2_concordance", index=False)
         pairs.to_excel(writer, sheet_name="event_pairs", index=False)
+        qti_audit.groupby(["sensor_id", "analyte"], as_index=False).agg(
+            Q_TI_mean=("Q_TI", "mean"),
+            observed_weight_mean=("observed_weight", "mean"),
+            missing_deficit=("weighted_deficit_missing", "mean"),
+            irregular_deficit=("weighted_deficit_true_irregular", "mean"),
+            duplicate_deficit=("weighted_deficit_duplicate", "mean"),
+            out_of_order_deficit=("weighted_deficit_out_of_order", "mean"),
+        ).to_excel(writer, sheet_name="QTI_component_audit", index=False)
+        qti_thresholds.to_excel(writer, sheet_name="QTI_threshold_reference", index=False)
     written.append(workbook)
     manifest = _write_manifest(state, written)
     print(json.dumps({

@@ -132,11 +132,11 @@ CH_LSTYLE = ["-"] * 4 + ["--"] * 4 + ["-"] * 3 + ["--"] * 3
 
 # Engineering defaults (mirrors run_d2_pipeline.ENG_DEFAULTS)
 ENG = {
-    "missing_rate_breaks":    [0.005, 0.02,  0.05,  0.15],
-    "irregular_rate_breaks":  [0.005, 0.02,  0.05,  0.10],
-    "L_max_breaks_min":       [5,     15,    60,    360],
-    "gap_count_breaks":       [2,     5,     15,    40],
-    "info_empty_breaks":      [0.02,  0.08,  0.20,  0.50],
+    "missing_rate_breaks":       [0.005, 0.02, 0.05, 0.15, 0.25],
+    "true_irregular_rate_breaks": [0.005, 0.02, 0.05, 0.10, 0.15],
+    "L_max_breaks_min":          [5, 15, 60, 360, 660],
+    "gap_count_breaks":          [2, 5, 15, 40, 65],
+    "info_empty_breaks":         [0.02, 0.08, 0.20, 0.50, 0.80],
 }
 
 
@@ -232,11 +232,12 @@ def _piecewise(x: np.ndarray, breaks: list) -> np.ndarray:
     b = breaks
     for s_hi, s_lo, lo, hi in [(5, 4, b[0], b[1]),
                                 (4, 3, b[1], b[2]),
-                                (3, 2, b[2], b[3])]:
+                                (3, 2, b[2], b[3]),
+                                (2, 1, b[3], b[4])]:
         m = (x > lo) & (x <= hi)
         s[m] = s_hi - (s_hi - s_lo) * (x[m] - lo) / (hi - lo)
     s[x <= b[0]] = 5.0
-    s[x >  b[3]] = 1.0
+    s[x >  b[4]] = 1.0
     return np.clip(s, 1.0, 5.0)
 
 
@@ -665,8 +666,8 @@ def fig06_mapping_curves(state: dict):
     labels = {
         "missing_rate": ("Missing rate", True),
         "duplicate_rate": ("Duplicate rate", True),
-        "out_of_order": ("Out-of-order rate", True),
-        "irregular_rate": ("Irregular rate", True),
+        "out_of_order_rate": ("Out-of-order rate", True),
+        "true_irregular_rate": ("True irregular rate", True),
         "L_max_min": ("L$_{max}$ (min)", False),
         "P95_gap_min": ("P95 gap (min)", False),
         "gap_run_count": ("Gap count", False),
@@ -678,7 +679,7 @@ def fig06_mapping_curves(state: dict):
     for _, row in piecewise_rows.iterrows():
         metric = row["input_metric"]
         label, pct = labels.get(metric, (metric, False))
-        breaks = [row[f"break_{i}"] for i in range(1, 5)]
+        breaks = [row[f"break_{i}"] for i in range(1, 6)]
         metrics.append((label, breaks, row["subscore_name"], sub_color[row["subscore_name"]], pct))
 
     # Zone colours: score 5→1 (best to worst)
@@ -694,17 +695,19 @@ def fig06_mapping_curves(state: dict):
         ax    = axes_flat[i]
         b     = breaks
         scale = 100.0 if pct else 1.0
-        x_raw = np.linspace(0, b[3] * 1.6, 600)
+        x_raw = np.linspace(0, b[4] * 1.25, 600)
         y     = _piecewise(x_raw, b)
         x_d   = x_raw * scale
 
         # Score-zone background
-        bds = [0, b[0]*scale, b[1]*scale, b[2]*scale, b[3]*scale, b[3]*scale*1.6]
-        for zi in range(5):
-            ax.axvspan(bds[zi], bds[zi+1], alpha=0.12, color=zone_clr[zi])
+        bds = [0, b[0]*scale, b[1]*scale, b[2]*scale, b[3]*scale,
+               b[4]*scale, b[4]*scale*1.25]
+        zone_fill = zone_clr + [zone_clr[-1]]
+        for zi in range(6):
+            ax.axvspan(bds[zi], bds[zi+1], alpha=0.12, color=zone_fill[zi])
 
         ax.plot(x_d, y, color=color, lw=LWM)
-        for bk, sc in zip(b, [5, 4, 3, 2]):
+        for bk, sc in zip(b, [5, 4, 3, 2, 1]):
             ax.plot(bk * scale, sc, "o", color=color, ms=3.5, zorder=5)
             ax.axvline(bk * scale, color=PAL["neutral_mid"],
                        lw=0.4, ls=":", alpha=0.45)
@@ -1077,7 +1080,8 @@ def fig10_calibration_summary(state: dict):
 
     metric_defs = [
         ("missing_rate",   "Missing Rate",   True,  ENG["missing_rate_breaks"]),
-        ("irregular_rate", "Irregular Rate", True,  ENG["irregular_rate_breaks"]),
+        ("true_irregular_rate", "True Irregular Rate", True,
+         ENG["true_irregular_rate_breaks"]),
         ("L_max_min",      "L$_{max}$",      False, ENG["L_max_breaks_min"]),
         ("gap_run_count",  "Gap Count",      False, ENG["gap_count_breaks"]),
         ("info_empty_cov", "Info-Empty",     True,  ENG["info_empty_breaks"]),
@@ -1111,6 +1115,27 @@ def fig10_calibration_summary(state: dict):
         all_v = all_v[np.isfinite(all_v)]
         scale = 100.0 if pct else 1.0
         all_v_d = all_v * scale
+
+        if len(all_v_d) and np.allclose(all_v_d, all_v_d[0]):
+            constant = float(all_v_d[0])
+            ax.axvline(constant, color=PAL["blue_main"], lw=LWM)
+            ax.text(
+                0.50, 0.50,
+                f"No observed variation\n(all values = {constant:.1f})",
+                transform=ax.transAxes, ha="center", va="center",
+                fontsize=FS, color=PAL["neutral_dark"],
+                bbox=dict(facecolor="white", edgecolor=PAL["neutral_light"], alpha=0.88),
+            )
+            unit = " (%)" if pct else ""
+            ax.set_xlabel(f"{label}{unit}", fontsize=FS)
+            ax.set_ylabel("Cumulative probability (%)", fontsize=FS)
+            ax.set_ylim(0, 101)
+            ax.set_xlim(left=min(-0.02 * max(eng_brk) * scale, constant - 0.1),
+                        right=max(eng_brk) * scale * 1.05)
+            ax.set_title(f"{label} ECDF", fontsize=TS - 0.5, pad=3)
+            apply_publication_style(ax, font_size=FS)
+            add_panel_label(ax, "ABCDE"[i], x=-0.14)
+            continue
 
         ordered = np.sort(all_v_d)
         cumulative = np.arange(1, len(ordered) + 1) / len(ordered) * 100

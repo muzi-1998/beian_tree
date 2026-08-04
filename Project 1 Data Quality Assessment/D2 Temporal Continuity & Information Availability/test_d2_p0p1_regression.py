@@ -44,7 +44,7 @@ def calib():
 def test_p0a_veto_thresholds_not_degenerate(calib):
     """P0-A: veto_thresholds 中三项不得为退化的 0.0 值。"""
     vt = calib["veto_thresholds"]
-    for key in ["L_max_minutes", "missing_rate", "irregular_rate"]:
+    for key in ["L_max_minutes", "missing_rate"]:
         val = vt[key]
         if isinstance(val, dict):
             v = val["value"]
@@ -56,7 +56,7 @@ def test_p0a_veto_thresholds_not_degenerate(calib):
 def test_p0b_safety_floor_metadata_present(calib):
     """P0-B: veto_thresholds 字段升级为 dict,含 source 字段。"""
     vt = calib["veto_thresholds"]
-    for key in ["L_max_minutes", "missing_rate", "irregular_rate"]:
+    for key in ["L_max_minutes", "missing_rate"]:
         val = vt[key]
         assert isinstance(val, dict), \
             f"{key} should be dict with metadata after P0-B, got {type(val).__name__}"
@@ -187,7 +187,7 @@ def test_d1_d2_freeze_threshold_separation():
 
 
 def test_calibration_uses_development_only(state, calib):
-    assert calib["calibration_basis"] == "blocked_development_reference_v2"
+    assert calib["calibration_basis"] == "blocked_development_reference_v3"
     bench = calib["benchmark_windows"]
     assert pd.Timestamp(bench["fit_end"]) < pd.Timestamp(
         calib["validation_periods"]["internal_validation"]["start"]

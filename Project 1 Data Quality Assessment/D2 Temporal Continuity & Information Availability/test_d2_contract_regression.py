@@ -37,7 +37,9 @@ def test_production_subscores_equal_modular_scorers():
         "missing_rate": [0.0, 0.01, 0.06, 0.2],
         "duplicate_rate": [0.0, 0.002, 0.02, 0.1],
         "out_of_order_rate": [0.0, 0.002, 0.02, 0.1],
-        "irregular_rate": [0.0, 0.01, 0.06, 0.2],
+        "true_irregular_rate": [0.0, 0.01, 0.06, 0.2],
+        "source_gap_recovery_rate": 0.0,
+        "value_gap_recovery_rate": 0.0,
         "info_empty_cov": [0.0, 0.05, 0.25, 0.6],
         "freeze_cand_cov": 0.0,
         "sensor_freeze_cov": 0.0,
@@ -67,9 +69,7 @@ def test_qfa_uses_configured_six_hour_window(tmp_path):
     idx = pd.date_range("2026-01-01", periods=24 * 60, freq="1min")
     base = pd.DataFrame({
         "missing": 0,
-        "duplicate": 0,
-        "out_of_order": 0,
-        "irregular_interval": 0,
+        "value_gap_recovery": 0,
         "qfa_unavailable": np.r_[np.ones(18 * 60), np.zeros(6 * 60)],
         "sensor_freeze": 0,
         "low_iqr_diagnostic": 0,

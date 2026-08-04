@@ -1,11 +1,11 @@
 # D2 Temporal Continuity & Information Availability
 
-## V2 最终科学审查报告
+## V3 最终科学审查报告
 
 **冻结日期：** 2026-08-04
-**运行号：** `D2V2_20260804_1823`
-**校准号：** `NorthBank_D2_v2_20260804`
-**映射版本：** `d2_v2_hard_availability_r1`
+**运行号：** `D2V3_20260804_1939`
+**校准号：** `NorthBank_D2_v3_20260804`
+**映射版本：** `d2_v3_source_timestamp_qti_r1`
 **研究设计：** `d2_blocked_time_v1`
 
 ## 1. 专家结论
@@ -19,6 +19,7 @@ D2 已完成单厂回顾性研究范围内的科学收口，可以进入 D1-D5 �
 3. QFA 的生产证据仅包括缺失、长断点和至少 15 min 的硬观测锁死。
 4. 预设聚合权重与 `lambda` 的合理扰动不改变通道排序，并仅在极端设置下轻度改变事件边界。
 5. D1 与 D2 在时间上存在高于机会水平的共现，但绝对重叠很低，支持二者作为独立评价维度。
+6. QTI 的重复、乱序和真正不规则采样均在原始时间戳排序与对齐前审计，不再由对齐后的常数 0 代理。
 
 当前证据不支持以下主张：
 
@@ -43,6 +44,20 @@ D2 已完成单厂回顾性研究范围内的科学收口，可以进入 D1-D5 �
 映射断点、Veto 阈值及聚合权重来自预设工程合同，并非从当前全期数据拟合。开发期共含 3649 个有效小时、51086 个传感器小时；验证期和末端测试期未参与参数选择。
 
 因此，论文中应使用 `temporally blocked internal validation`，不能写成 `external independent calibration`。
+
+### 2.2 QTI 时间戳合同
+
+QTI 采用 `missing/true irregular/duplicate/out-of-order = 0.65/0.25/0.05/0.05`。各项只在当前 24 h 窗内真正可观测时进入分母；不可观测不按 5 分处理。三个原始源文件均通过 1.1 合同 SHA-256 核验，排序前审计结果为：
+
+| 原始源 | 有效相邻间隔 | 真正不规则 | 重复 | 乱序 | 长间隔恢复 |
+|---|---:|---:|---:|---:|---:|
+| DO | 367155 | 0 | 0 | 0 | 27 |
+| ORP | 367155 | 0 | 0 | 0 | 27 |
+| FLOW | 367155 | 0 | 0 | 0 | 27 |
+
+`true irregular` 仅指正时间间隔小于 120 s 且偏离 60 s 超过 5 s；大于等于 120 s 的长间隔恢复单独输出，继续由 QGS 的缺失时长与断点次数表征，不在 QTI 重复扣分。所有评分窗的 QTI 可观测权重均为 1.0；QTI 加权损失全部来自 missing，其他三项为 0。这解释了当前 QTI 高分，但不构成跨厂时间戳性能主张。
+
+原四阈值映射已扩展为五阈值连续映射，旧最高断点处不再从 2 分直接跳至 1 分。按开发期候选高质量窗计算的 duplicate、乱序和 true-irregular 分位数均退化为 0，因此自适应分位数阈值仅作为敏感性输出，未替换预设生产合同。
 
 ## 3. QFA 语义与 process-floor 合同
 
@@ -83,10 +98,10 @@ response-loss 在配置、评分器、校准表、事件表和传感器画像中
 
 - 所有组合的通道排序 Spearman rho 点估计均为 1.000；
 - 95% CI 下界最低为 0.978；
-- 低分小时 Jaccard 为 0.919-1.000；
-- 低分事件 Jaccard 为 0.820-1.000；
-- 极端的等权、`lambda = 0.90` 对事件边界影响最大；
-- 低分小时率仅在 1.043%-1.187% 之间变化。
+- 低分小时 Jaccard 为 0.939-1.000；
+- 低分事件 Jaccard 均为 1.000；
+- 事件身份稳定，权重主要轻度改变事件内低分小时边界；
+- 低分小时率仅在 1.119%-1.220% 之间变化。
 
 因此，QFA 权重 0.40 可以保留。其合理性来自硬可用性事件的不可替代性和稳健性结果，而不是“冻结比其他维度更重要”的先验断言。由于低 IQR、soft RLE 和 response-loss 已退出生产评分，QFA 与 D1 的冻结/健康检测不构成数值重复。
 
@@ -98,12 +113,12 @@ D2 分数高度集中在 5 分，按中位数、IQR 或 P05 展示会产生明�
 
 | 分析物 | QTI | QGS | QFA | D2 total |
 |---|---:|---:|---:|---:|
-| DO | 0.327% | 1.146% | 0.778% | 1.203% |
-| ORP | 0.327% | 1.157% | 0.572% | 1.046% |
+| DO | 0.850% | 1.146% | 0.778% | 1.211% |
+| ORP | 0.847% | 1.157% | 0.572% | 1.056% |
 
 ORP 的 soft-stasis 诊断占比为 20.43%，高于 DO 的 10.25%；但修正生产语义后，ORP 的 QFA 低分率、总低分率和 Veto 率均不高于 DO。旧版本中 ORP 低分偏多主要来自低 IQR/短 RLE 被误当成硬不可用，而不是 ORP 本身质量必然更差。
 
-QTI/QGS 映射断点乘以 0.8、1.0 和 1.2 后，低分率变化小于 0.005 个百分点，说明二者低方差主要源于数据中时间戳完整性较高，而不是单一映射选择造成。
+QTI/QGS 映射断点乘以 0.8、1.0 和 1.2 后，D2 低分率变化不超过 0.021 个百分点，说明低方差主要源于时间戳完整性较高，而不是单一映射选择造成。
 
 ## 6. 工艺地板阈值的可迁移性
 
@@ -128,7 +143,7 @@ QTI/QGS 映射断点乘以 0.8、1.0 和 1.2 后，低分率变化小于 0.005 �
 
 ## 8. 图组评价与论文取舍
 
-新增 Fig. 13-16 均由 Python/matplotlib 生成，采用 Arial、统一轴线、向外刻度、`(a)`-`(d)` 面板标签、可编辑 SVG/PDF、600 dpi PNG/TIFF，并提供源数据。
+新增 Fig. 13-17 均由 Python/matplotlib 生成，采用 Arial、统一轴线、向外刻度、`(a)`-`(d)` 面板标签、可编辑 SVG/PDF、600 dpi PNG/TIFF，并提供源数据。
 
 | 图 | 论文价值 | 建议位置 |
 |---|---|---|
@@ -136,6 +151,7 @@ QTI/QGS 映射断点乘以 0.8、1.0 和 1.2 后，低分率变化小于 0.005 �
 | Fig. 14 aggregation robustness | 证明权重、lambda 和映射扰动稳健 | 主文或扩展数据 |
 | Fig. 15 low-tail reporting | 避免中位数天花板，展示真正风险负担 | 主文 |
 | Fig. 16 D1-D2 construct separation | 证明维度相关但不重复 | 主文 |
+| Fig. 17 timestamp/QTI audit | 证明原始时间戳审计、条件权重及损失归因 | 扩展数据或方法 |
 | Fig. 01 overview | 全通道时间概览 | 主文背景或扩展数据 |
 | Fig. 05 availability evidence | 详细机制拆分 | 扩展数据 |
 | Fig. 02 violins | 天花板明显，信息量较低 | 补充材料 |
@@ -153,7 +169,9 @@ QTI/QGS 映射断点乘以 0.8、1.0 和 1.2 后，低分率变化小于 0.005 �
 - `artifacts/data/D2_main_scores_hourly.xlsx`：最终小时级评分；
 - `artifacts/data/D2_process_floor_casebook.xlsx`：机制挑战和真实通道案例；
 - `artifacts/validation/`：权重、阈值、分布、效应量、D1-D2 空模型及图源数据；
-- `artifacts/figures/D2_Fig13-16.*`：新增论文图；
+- `artifacts/validation/D2_qti_component_audit.parquet`：小时级 QTI 可观测性与损失归因；
+- `artifacts/validation/D2_qti_threshold_reference.parquet`：开发期自适应阈值参考及退化标记；
+- `artifacts/figures/D2_Fig13-17.*`：新增论文图；
 - `artifacts/D2_release_manifest.json`：发布文件 SHA-256 清单。
 
 复现顺序：
@@ -166,7 +184,7 @@ python make_d2_figures.py
 python make_d1d2_joint_figures.py
 python make_d2_scientific_figures.py
 python build_d2_release_manifest.py
-python -m pytest test_d2_contract_regression.py test_d2_p0p1_regression.py test_d2_process_floor_regression.py -q --import-mode=importlib
+python -m pytest test_d2_contract_regression.py test_d2_p0p1_regression.py test_d2_process_floor_regression.py test_d2_timestamp_qti_regression.py -q --import-mode=importlib
 ```
 
 ## 10. 剩余工作
