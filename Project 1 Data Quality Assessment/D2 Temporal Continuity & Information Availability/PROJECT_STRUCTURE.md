@@ -74,9 +74,11 @@ D2 Temporal Continuity & Information Availability/
 - `D2_qha_window_sensitivity.parquet`：真实数据 3/6/9/12 h 事件稳健性；
 - `D2_evidence_redundancy_*.parquet`：相关性与证据消融；
 - `D2_low_tail_burden.parquet`：每 1000 sensor-hours 低尾负担；
+- `D2_low_tail_event_summary.parquet`：分阶段事件率、cluster 95% CI 和持续时间；
+- `D2_veto_reason_summary.parquet`：分阶段 Veto 原因组成；
 - `D2_sensitive_diagnostic_summary.parquet`：Strict/Sensitive 分层摘要；
-- `D2_d1d2_*.parquet`：事件匹配与循环移位空模型；
-- `D2_*_source_data.xlsx`：Fig. 14、15、17、18 的绘图源数据；
+- `D2_d1d2_*.parquet`：事件匹配、全期与阶段约束循环移位空模型；
+- `D2_*_source_data.xlsx`：Fig. 13、14、15、17、18 的绘图源数据；
 - `D2_scientific_validation_manifest.json` 和 `D2_full_pipeline_injection_manifest.json`。
 
 ## 图组取舍
@@ -85,6 +87,8 @@ D2 Temporal Continuity & Information Availability/
 - 方法或扩展数据：Fig. 01、Fig. 05、Fig. 17；
 - 补充材料：Fig. 02-04、Fig. 06-12；
 - Fig. 02 因天花板效应明显，不作为主要科学证据。
+
+正文图的规范文件名为 `D2_Fig13_process_floor_contract`、`D2_Fig14_evidence_hierarchy_ablation`、`D2_Fig15_low_tail_reporting`、`D2_Fig16_limited_event_concordance` 和 `D2_Fig18_full_pipeline_validation`。
 
 ## 维护规则
 

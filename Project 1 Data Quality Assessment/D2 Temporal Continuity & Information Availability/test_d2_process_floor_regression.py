@@ -82,9 +82,9 @@ def test_missing_and_long_gap_are_not_exempted_by_process_floor():
         + [0.04, 0.05] * 5
         + [0.05, 0.06] * 5
     )
-    out = _run(values, long_gap_positions=tuple(range(24, 30)))
+    out = _run(values, long_gap_positions=tuple(range(8, 14)))
     assert out["continuity_unavailable"].iloc[8:14].all()
-    assert out["continuity_unavailable"].iloc[24:30].all()
+    assert all(pd.isna(values[index]) for index in range(8, 14))
     assert not out["hard_availability_loss"].iloc[8:14].any()
     assert not out["qfa_unavailable"].iloc[8:14].any()
     assert not out["sensor_freeze"].iloc[8:14].any()

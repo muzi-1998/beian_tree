@@ -12,6 +12,10 @@ import yaml
 ROOT = Path(__file__).resolve().parent
 ARTIFACTS = ROOT / "artifacts"
 OUTPUT = ARTIFACTS / "D2_release_manifest.json"
+DEPRECATED_FIGURE_STEMS = {
+    "D2_Fig14_aggregation_robustness",
+    "D2_Fig16_d1_d2_construct_separation",
+}
 
 ROOT_FILES = (
     ".gitignore",
@@ -64,7 +68,11 @@ def repository_files() -> list[Path]:
 
 
 def local_submission_files() -> list[Path]:
-    files = list((ARTIFACTS / "figures").glob("*.tiff"))
+    files = [
+        path
+        for path in (ARTIFACTS / "figures").glob("*.tiff")
+        if path.stem not in DEPRECATED_FIGURE_STEMS
+    ]
     state = ARTIFACTS / "d2_state.pkl"
     if state.exists():
         files.append(state)

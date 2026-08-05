@@ -1,4 +1,4 @@
-"""Confirmatory scientific validation for the frozen D2 V3 release."""
+"""Confirmatory scientific validation for the frozen D2 V4 release."""
 from __future__ import annotations
 
 import copy
@@ -47,7 +47,9 @@ PAIR_COLUMNS = (
 def _phase(index: pd.DatetimeIndex, cfg) -> pd.Series:
     result = pd.Series("outside_contract", index=index, dtype=object)
     for name, period in cfg.study_design.periods.items():
-        result.loc[pd.Timestamp(period.start):pd.Timestamp(period.end)] = name
+        start = pd.Timestamp(period.start)
+        end = pd.Timestamp(period.end)
+        result.iloc[np.flatnonzero((index >= start) & (index <= end))] = name
     return result
 
 
@@ -187,6 +189,29 @@ def _bootstrap_binary(clustered: pd.DataFrame, rng, repeats: int) -> tuple[float
         denominator = sampled[:, 1].sum()
         values.append(sampled[:, 0].sum() / denominator if denominator else 1.0)
     return _percentile_ci(values)
+
+
+def _bootstrap_rate(clustered: pd.DataFrame, rng, repeats: int) -> tuple[float, float]:
+    values = []
+    array = clustered[["events", "sensor_hours"]].to_numpy(dtype=float)
+    for _ in range(repeats):
+        sampled = array[rng.integers(0, len(array), size=len(array))].sum(axis=0)
+        values.append(sampled[0] / sampled[1] * 1000 if sampled[1] else np.nan)
+    return _percentile_ci(values)
+
+
+def _binary_association(left: pd.Series, right: pd.Series) -> tuple[float, float]:
+    a = left.astype(bool).to_numpy()
+    b = right.astype(bool).to_numpy()
+    n11 = float(np.logical_and(a, b).sum())
+    n10 = float(np.logical_and(a, ~b).sum())
+    n01 = float(np.logical_and(~a, b).sum())
+    n00 = float(np.logical_and(~a, ~b).sum())
+    denominator = np.sqrt((n11 + n10) * (n01 + n00) * (n11 + n01) * (n10 + n00))
+    phi = (n11 * n00 - n10 * n01) / denominator if denominator else np.nan
+    union = n11 + n10 + n01
+    jaccard = n11 / union if union else 1.0
+    return float(phi), float(jaccard)
 
 
 def _bootstrap_event_jaccard(
@@ -414,7 +439,9 @@ def distribution_summary(base: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame
     return summary, daily, pd.DataFrame(effects)
 
 
-def d1_d2_concordance(base: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+def d1_d2_concordance(
+    base: pd.DataFrame, cfg
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     d2 = pd.read_excel(ROOT / "artifacts" / "data" / "D2_freeze_availability_events.xlsx")
     d1 = pd.read_excel(PROJECT / "D1 Sensor health" / "outputs" / "data" / "D1_event_windows.xlsx", sheet_name="all_events")
     d2 = d2.rename(columns={"start_ts": "start", "end_ts": "end"})
@@ -443,16 +470,42 @@ def d1_d2_concordance(base: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame, p
     observed = observed_intersection / max(observed_union, 1)
     rng = np.random.default_rng(20260804)
     minimum_shift = 24 * 7
+    phase_indices = {
+        name: np.flatnonzero(
+            (timeline >= pd.Timestamp(period.start))
+            & (timeline <= pd.Timestamp(period.end))
+        )
+        for name, period in cfg.study_design.periods.items()
+    }
     null = []
+    phase_null = []
     for replicate in range(2000):
         intersection = union = 0
+        phase_intersection = phase_union = 0
         for sensor_id in sensors:
             shift = int(rng.integers(minimum_shift, len(timeline) - minimum_shift))
             shifted = np.roll(d2_masks[sensor_id], shift)
             intersection += np.logical_and(d1_masks[sensor_id], shifted).sum()
             union += np.logical_or(d1_masks[sensor_id], shifted).sum()
+            constrained = np.zeros(len(timeline), dtype=bool)
+            for indices in phase_indices.values():
+                if not len(indices):
+                    continue
+                segment = d2_masks[sensor_id][indices]
+                lower = min(minimum_shift, max(1, len(indices) // 4))
+                upper = max(lower + 1, len(indices) - lower)
+                phase_shift = int(rng.integers(lower, upper)) if upper > lower else 1
+                constrained[indices] = np.roll(segment, phase_shift)
+            phase_intersection += np.logical_and(d1_masks[sensor_id], constrained).sum()
+            phase_union += np.logical_or(d1_masks[sensor_id], constrained).sum()
         null.append({"replicate": replicate + 1, "duration_jaccard": intersection / max(union, 1)})
+        phase_null.append({
+            "replicate": replicate + 1,
+            "duration_jaccard": phase_intersection / max(phase_union, 1),
+            "constraint": "within_locked_phase",
+        })
     null_frame = pd.DataFrame(null)
+    phase_null_frame = pd.DataFrame(phase_null)
     null_median = float(null_frame["duration_jaccard"].median())
     null_mean = float(null_frame["duration_jaccard"].mean())
     summary = pd.DataFrame([{
@@ -467,10 +520,16 @@ def d1_d2_concordance(base: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame, p
             observed / null_mean if null_mean > 0 else np.nan
         ),
         "circular_shift_p_upper": (1 + null_frame["duration_jaccard"].ge(observed).sum()) / (1 + len(null_frame)),
+        "phase_constrained_null_median": float(phase_null_frame["duration_jaccard"].median()),
+        "phase_constrained_null_mean": float(phase_null_frame["duration_jaccard"].mean()),
+        "phase_constrained_p_upper": (
+            1 + phase_null_frame["duration_jaccard"].ge(observed).sum()
+        ) / (1 + len(phase_null_frame)),
         "matching_tolerance": "1h",
         "null_model": "sensor_specific_circular_shift_minimum_7d",
+        "sensitivity_null_model": "sensor_specific_circular_shift_within_locked_phase",
     }])
-    return summary, pairs, null_frame
+    return summary, pairs, null_frame, phase_null_frame
 
 
 def qti_component_audit(state: dict, cfg) -> pd.DataFrame:
@@ -556,10 +615,25 @@ def evidence_redundancy_audit(
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """Quantify correlated evidence and prespecified leave-one-family-out effects."""
     component_cols = ["Q_TI", "Q_GS", "Q_HA"]
-    correlation = base[component_cols].corr().rename_axis("row").reset_index().melt(
-        id_vars="row", var_name="column", value_name="pearson_r"
-    )
     complete = base[component_cols].dropna()
+    pearson = complete.corr(method="pearson")
+    spearman = complete.corr(method="spearman")
+    correlation_rows = []
+    for row in component_cols:
+        for column in component_cols:
+            phi, jaccard = _binary_association(
+                complete[row].lt(3), complete[column].lt(3)
+            )
+            correlation_rows.append({
+                "row": row,
+                "column": column,
+                "pearson_r": float(pearson.loc[row, column]),
+                "spearman_rho": float(spearman.loc[row, column]),
+                "low_event_phi": phi,
+                "low_event_jaccard": jaccard,
+                "low_threshold": 3.0,
+            })
+    correlation = pd.DataFrame(correlation_rows)
     standardised = (complete - complete.mean()) / complete.std(ddof=0).replace(0, np.nan)
     eigenvalues = np.linalg.eigvalsh(standardised.corr().fillna(0).to_numpy())[::-1]
     effective_dimension = float(eigenvalues.sum() ** 2 / np.square(eigenvalues).sum())
@@ -635,14 +709,27 @@ def evidence_redundancy_audit(
             "reference_events": len(reference_events),
             "candidate_events": len(candidate_events),
         })
+    summary_frame = pd.DataFrame(summaries)
+    strict = summary_frame.loc[summary_frame["variant_id"].eq("strict_production")].iloc[0]
+    summary_frame["delta_candidate_events"] = summary_frame["candidate_events"] - strict["candidate_events"]
+    summary_frame["delta_low_hours_per_1000h"] = (
+        summary_frame["low_hours_per_1000h"] - strict["low_hours_per_1000h"]
+    )
+    summary_frame["delta_deficit_points_per_1000h"] = (
+        summary_frame["deficit_points_per_1000h"] - strict["deficit_points_per_1000h"]
+    )
     hierarchy = pd.DataFrame([
-        {"level": "source", "evidence": "Q_timestamp", "scope": "DO/ORP/FLOW source file", "production_role": "Q_TI"},
-        {"level": "channel", "evidence": "missing coverage", "scope": "sensor", "production_role": "Q_TI"},
-        {"level": "channel", "evidence": "gap duration/topology", "scope": "sensor", "production_role": "Q_GS"},
-        {"level": "channel", "evidence": "observed hard stasis", "scope": "sensor", "production_role": "Q_HA"},
-        {"level": "diagnostic", "evidence": "soft dynamics + comparable peer", "scope": "sensor", "production_role": "D2_Sensitive_risk"},
+        {"source": "Raw source", "target": "Timestamp audit", "role": "source_branch"},
+        {"source": "Timestamp audit", "target": "Q_TI", "role": "strict"},
+        {"source": "Raw source", "target": "Missing runs", "role": "source_branch"},
+        {"source": "Missing runs", "target": "Q_TI", "role": "shared_input"},
+        {"source": "Missing runs", "target": "Q_GS", "role": "shared_input"},
+        {"source": "Raw source", "target": "Observed values", "role": "source_branch"},
+        {"source": "Observed values", "target": "Q_HA", "role": "strict"},
+        {"source": "Raw source", "target": "Soft dynamics + peer", "role": "source_branch"},
+        {"source": "Soft dynamics + peer", "target": "Sensitive risk", "role": "diagnostic_only"},
     ])
-    return correlation, pd.DataFrame(summaries), hierarchy
+    return correlation, summary_frame, hierarchy
 
 
 def qha_window_sensitivity(state: dict, cfg) -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -671,6 +758,8 @@ def qha_window_sensitivity(state: dict, cfg) -> tuple[pd.DataFrame, pd.DataFrame
     scores = pd.concat(score_frames, ignore_index=True)
     reference = scores.loc[scores["window_h"].eq(6), ["timestamp", "sensor_id", "D2_total"]]
     reference_events = _extract_events(reference, "D2_total")
+    rng = np.random.default_rng(int(cfg.study_design.inference["random_seed"]) + 18)
+    repeats = int(cfg.study_design.inference["bootstrap_replicates"])
     summaries = []
     for window_h, candidate in scores.groupby("window_h"):
         merged = reference.merge(
@@ -680,20 +769,36 @@ def qha_window_sensitivity(state: dict, cfg) -> tuple[pd.DataFrame, pd.DataFrame
         ref_low = merged["D2_total_ref"].lt(3)
         alt_low = merged["D2_total_candidate"].lt(3)
         candidate_events = _extract_events(candidate, "D2_total")
-        event_jaccard, _ = _event_jaccard(reference_events, candidate_events)
+        event_jaccard, pairs = _event_jaccard(reference_events, candidate_events)
+        event_low, event_high = _bootstrap_event_jaccard(
+            reference_events, candidate_events, pairs, rng, repeats
+        )
+        merged["low"] = alt_low.astype(int)
+        merged["total"] = 1
+        merged["week"] = merged["timestamp"].dt.to_period("W").astype(str)
+        clustered = merged.groupby(["sensor_id", "week"], as_index=False).agg(
+            events=("low", "sum"), sensor_hours=("total", "sum")
+        )
+        low_rate_low, low_rate_high = _bootstrap_rate(clustered, rng, repeats)
         summaries.append({
             "window_h": window_h,
             "mean_Q_HA": float(candidate["Q_HA"].mean()),
             "low_hour_rate": float(alt_low.mean()),
             "low_hour_jaccard_vs_6h": float((ref_low & alt_low).sum() / max((ref_low | alt_low).sum(), 1)),
             "low_event_jaccard_vs_6h": event_jaccard,
+            "low_event_jaccard_ci95_low": event_low,
+            "low_event_jaccard_ci95_high": event_high,
             "candidate_events": len(candidate_events),
+            "low_hour_rate_ci95_low": low_rate_low / 1000,
+            "low_hour_rate_ci95_high": low_rate_high / 1000,
             "passes_prespecified_jaccard_0_75": bool(event_jaccard >= 0.75),
         })
     return scores, pd.DataFrame(summaries)
 
 
-def low_tail_burden(state: dict, cfg, base: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
+def low_tail_burden(
+    state: dict, cfg, base: pd.DataFrame
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     rows = []
     for keys, group in base.groupby(["phase", "sensor_id", "analyte"]):
         phase, sensor_id, analyte = keys
@@ -740,7 +845,66 @@ def low_tail_burden(state: dict, cfg, base: pd.DataFrame) -> tuple[pd.DataFrame,
     impact = impact.drop(columns=["event_id_score"], errors="ignore")
     impact["score_impact_duration_h"] = impact["duration_hours"]
     impact["raw_duration_h"] = impact["raw_duration_min"] / 60
-    return burden, impact
+
+    score_events = scored_events.copy()
+    score_events["phase"] = _phase(pd.DatetimeIndex(score_events["start"]), cfg).to_numpy()
+    score_events["analyte"] = score_events["sensor_id"].str.split("_").str[0]
+    score_events["month"] = score_events["start"].dt.to_period("M").astype(str)
+    exposure = base[["timestamp", "sensor_id", "analyte", "phase"]].copy()
+    exposure["month"] = exposure["timestamp"].dt.to_period("M").astype(str)
+    rng = np.random.default_rng(int(cfg.study_design.inference["random_seed"]) + 15)
+    repeats = int(cfg.study_design.inference["bootstrap_replicates"])
+    event_summary_rows = []
+    for phase in cfg.study_design.periods:
+        for analyte in ("DO", "ORP", "ALL"):
+            exp = exposure.loc[exposure["phase"].eq(phase)].copy()
+            events = score_events.loc[score_events["phase"].eq(phase)].copy()
+            if analyte != "ALL":
+                exp = exp.loc[exp["analyte"].eq(analyte)]
+                events = events.loc[events["analyte"].eq(analyte)]
+            clusters = exp.groupby(["sensor_id", "month"]).size().rename("sensor_hours").reset_index()
+            event_counts = events.groupby(["sensor_id", "month"]).size().rename("events")
+            clusters = clusters.join(event_counts, on=["sensor_id", "month"])
+            clusters["events"] = clusters["events"].fillna(0)
+            rate = len(events) / len(exp) * 1000 if len(exp) else np.nan
+            rate_low, rate_high = _bootstrap_rate(clusters, rng, repeats)
+            duration = events["duration_hours"]
+            event_summary_rows.append({
+                "phase": phase,
+                "analyte": analyte,
+                "n_events": int(len(events)),
+                "n_sensor_hours": int(len(exp)),
+                "events_per_1000h": float(rate),
+                "event_rate_ci95_low": rate_low,
+                "event_rate_ci95_high": rate_high,
+                "duration_median_h": float(duration.median()) if len(duration) else np.nan,
+                "duration_p95_h": float(duration.quantile(0.95)) if len(duration) else np.nan,
+                "duration_max_h": float(duration.max()) if len(duration) else np.nan,
+            })
+    event_summary = pd.DataFrame(event_summary_rows)
+
+    veto = base.loc[base["veto_flag"].astype(bool), ["phase", "veto_reason"]].copy()
+    veto["reason_group"] = np.select(
+        [
+            veto["veto_reason"].eq("L_max_p99|missing_p99"),
+            veto["veto_reason"].eq("missing_p99"),
+            veto["veto_reason"].eq("L_max_p99"),
+            veto["veto_reason"].str.contains("hard_stasis_severe", na=False),
+        ],
+        ["Gap + missing", "Missing only", "Gap only", "Hard stasis"],
+        default="Other",
+    )
+    veto_summary = veto.groupby(["phase", "reason_group"], as_index=False).size().rename(
+        columns={"size": "veto_hours"}
+    )
+    totals = veto_summary.groupby("phase")["veto_hours"].transform("sum")
+    veto_summary["veto_share"] = veto_summary["veto_hours"] / totals
+    phase_hours = base.groupby("phase").size()
+    veto_summary["veto_hours_per_1000h"] = veto_summary.apply(
+        lambda row: row["veto_hours"] / phase_hours.get(row["phase"], np.nan) * 1000,
+        axis=1,
+    )
+    return burden, impact, event_summary, veto_summary
 
 
 def sensitive_diagnostic_summary(state: dict) -> pd.DataFrame:
@@ -765,7 +929,7 @@ def _write_manifest(state: dict, outputs: list[Path]) -> Path:
     for path in sorted(outputs):
         records[str(path.relative_to(OUTPUT)).replace("\\", "/")] = hashlib.sha256(path.read_bytes()).hexdigest()
     manifest = {
-        "schema_version": "d2-scientific-validation-v2",
+        "schema_version": "d2-scientific-validation-v3",
         "run_id": state["run_id"],
         "calibration_id": state["calibration_id"],
         "external_site_validation": "deferred",
@@ -784,14 +948,14 @@ def main() -> Path:
     weight_scores, weight_summary = weight_lambda_sensitivity(state, cfg, base)
     threshold_summary = threshold_sensitivity(state, cfg)
     distributions, daily, effects = distribution_summary(base)
-    concordance, pairs, null = d1_d2_concordance(base)
+    concordance, pairs, null, phase_null = d1_d2_concordance(base, cfg)
     qti_audit = qti_component_audit(state, cfg)
     qti_thresholds = qti_threshold_reference(state, cfg)
     redundancy_corr, redundancy_ablation, hierarchy = evidence_redundancy_audit(
         state, cfg, base
     )
     window_scores, window_summary = qha_window_sensitivity(state, cfg)
-    burden, event_impact = low_tail_burden(state, cfg, base)
+    burden, event_impact, event_summary, veto_summary = low_tail_burden(state, cfg, base)
     sensitive_summary = sensitive_diagnostic_summary(state)
     outputs = {
         "D2_weight_lambda_scores.parquet": weight_scores,
@@ -803,6 +967,7 @@ def main() -> Path:
         "D2_d1d2_concordance.parquet": concordance,
         "D2_d1d2_event_pairs.parquet": pairs,
         "D2_d1d2_circular_null.parquet": null,
+        "D2_d1d2_phase_constrained_null.parquet": phase_null,
         "D2_qti_component_audit.parquet": qti_audit,
         "D2_qti_threshold_reference.parquet": qti_thresholds,
         "D2_evidence_redundancy_correlation.parquet": redundancy_corr,
@@ -812,6 +977,8 @@ def main() -> Path:
         "D2_qha_window_sensitivity.parquet": window_summary,
         "D2_low_tail_burden.parquet": burden,
         "D2_raw_vs_score_event_impact.parquet": event_impact,
+        "D2_low_tail_event_summary.parquet": event_summary,
+        "D2_veto_reason_summary.parquet": veto_summary,
         "D2_sensitive_diagnostic_summary.parquet": sensitive_summary,
     }
     written = []
@@ -827,6 +994,7 @@ def main() -> Path:
         effects.to_excel(writer, sheet_name="analyte_effects", index=False)
         concordance.to_excel(writer, sheet_name="D1_D2_concordance", index=False)
         pairs.to_excel(writer, sheet_name="event_pairs", index=False)
+        phase_null.to_excel(writer, sheet_name="D1_D2_phase_null", index=False)
         qti_audit.groupby(["sensor_id", "analyte"], as_index=False).agg(
             Q_TI_mean=("Q_TI", "mean"),
             observed_weight_mean=("observed_weight", "mean"),
@@ -842,6 +1010,8 @@ def main() -> Path:
         window_summary.to_excel(writer, sheet_name="QHA_window_sensitivity", index=False)
         burden.to_excel(writer, sheet_name="low_tail_burden", index=False)
         event_impact.to_excel(writer, sheet_name="raw_vs_score_impact", index=False)
+        event_summary.to_excel(writer, sheet_name="low_tail_events", index=False)
+        veto_summary.to_excel(writer, sheet_name="veto_reasons", index=False)
         sensitive_summary.to_excel(writer, sheet_name="sensitive_diagnostics", index=False)
     written.append(workbook)
     manifest = _write_manifest(state, written)

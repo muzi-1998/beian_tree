@@ -117,7 +117,7 @@ def gap_challenges() -> list[dict]:
     rows = []
     for sensor_id in ("DO_1_1", "ORP_1_1"):
         raw0 = baseline(sensor_id)
-        for duration in (2, 5, 6, 15, 30, 60, 360):
+        for duration in (2, 5, 6, 15, 20, 30, 60, 360):
             end = ONSET + pd.Timedelta(minutes=duration - 1)
             raw = raw0.loc[~raw0["timestamp"].between(ONSET, end)].copy()
             result = evaluate_raw_series(
@@ -146,7 +146,7 @@ def stasis_challenges() -> tuple[list[dict], list[dict]]:
     rows, sensitivity = [], []
     for sensor_id in ("DO_1_1", "ORP_1_1"):
         raw0 = baseline(sensor_id)
-        for duration in (10, 15, 20, 30, 60):
+        for duration in (10, 15, 20, 30, 45, 60, 90, 120, 180):
             end = ONSET + pd.Timedelta(minutes=duration - 1)
             raw = raw0.copy()
             mask = raw["timestamp"].between(ONSET, end)

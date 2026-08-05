@@ -21,7 +21,7 @@ LEGACY_JSON = ROOT / "artifacts" / "data" / "D2_process_floor_validation.json"
 
 SCENARIOS = {
     "true_low_oxygen_floor": [0.00, 0.01, 0.00, 0.02] * 20,
-    "digital_lock": [0.00] * 30,
+    "digital_lock": [0.00] * 60,
     "low_oxygen_small_fluctuation": [0.04, 0.05, 0.04, 0.06] * 20,
     "response_recovery_after_floor": [0.00] * 20 + [0.32, 0.38, 0.35, 0.42] * 10,
     "missing_and_long_gap_not_exempt": (
@@ -32,7 +32,7 @@ SCENARIOS = {
     ),
 }
 LONG_GAP_POSITIONS = {
-    "missing_and_long_gap_not_exempt": tuple(range(24, 30)),
+    "missing_and_long_gap_not_exempt": tuple(range(8, 14)),
 }
 
 
@@ -90,32 +90,32 @@ def _passes(name: str, frame: pd.DataFrame) -> bool:
             frame["floor_occupancy"].iloc[-30:].all()
             and frame["resolution_limited"].iloc[-30:].all()
             and not frame["sensor_freeze"].any()
-            and not frame["qfa_unavailable"].any()
+            and not frame["hard_availability_loss"].any()
         )
     if name == "digital_lock":
         return bool(
             frame["sensor_freeze"].iloc[-1]
-            and frame["qfa_unavailable"].iloc[-1]
+            and frame["hard_availability_loss"].iloc[-1]
             and not frame["sensor_freeze"].iloc[10]
         )
     if name == "low_oxygen_small_fluctuation":
         return bool(
             frame["resolution_limited"].iloc[-20:].all()
             and not frame["sensor_freeze"].any()
-            and not frame["qfa_unavailable"].any()
+            and not frame["hard_availability_loss"].any()
         )
     if name == "response_recovery_after_floor":
         return bool(
             frame["sensor_freeze"].iloc[18]
             and not frame["sensor_freeze"].iloc[20]
             and not frame["floor_occupancy"].iloc[-20:].any()
-            and not frame["qfa_unavailable"].iloc[-20:].any()
+            and not frame["hard_availability_loss"].iloc[-20:].any()
         )
     unavailable_evidence = frame["missing"] | frame["long_gap"]
     return bool(
         unavailable_evidence.any()
         and frame.loc[unavailable_evidence, "continuity_unavailable"].all()
-        and not frame.loc[unavailable_evidence, "qfa_unavailable"].any()
+        and not frame.loc[unavailable_evidence, "hard_availability_loss"].any()
         and not frame.loc[frame["missing"], "sensor_freeze"].any()
     )
 
@@ -143,7 +143,7 @@ def main() -> None:
             "floor_occupancy_pct": frame["floor_occupancy"].mean() * 100,
             "resolution_limited_pct": frame["resolution_limited"].mean() * 100,
             "sensor_freeze_pct": frame["sensor_freeze"].mean() * 100,
-            "qfa_unavailable_pct": frame["qfa_unavailable"].mean() * 100,
+            "qha_unavailable_pct": frame["hard_availability_loss"].mean() * 100,
         })
         tmp = frame.reset_index(names="timestamp")
         tmp.insert(0, "scenario", name)
@@ -159,12 +159,12 @@ def main() -> None:
             "floor_occupancy_pct": sub["floor_occupancy"].mean() * 100,
             "resolution_limited_pct": sub["resolution_limited"].mean() * 100,
             "sensor_freeze_pct": sub["sensor_freeze_cov"].mean() * 100,
-            "qfa_unavailable_pct": sub["hard_stasis_fraction_observed"].mean() * 100,
-            "freeze_severe_veto_pct": score["veto_reason"].str.contains(
+            "qha_unavailable_pct": sub["hard_stasis_fraction_observed"].mean() * 100,
+            "hard_stasis_severe_veto_pct": score["veto_reason"].str.contains(
                 "hard_stasis_severe", na=False
             ).mean() * 100,
             "total_veto_pct": score["veto_flag"].mean() * 100,
-            "mean_Q_FA": sub["Q_HA"].mean(),
+            "mean_Q_HA": sub["Q_HA"].mean(),
         })
 
     summary_df = pd.DataFrame(summary)
@@ -208,7 +208,9 @@ def main() -> None:
             }
         ]
     )
-    timeseries_df = pd.concat(timeseries, ignore_index=True)
+    timeseries_df = pd.concat(timeseries, ignore_index=True).drop(
+        columns=["qfa_unavailable"], errors="ignore"
+    )
     OUT_XLSX.parent.mkdir(parents=True, exist_ok=True)
     for workbook in (OUT_XLSX, LEGACY_XLSX):
         with pd.ExcelWriter(workbook, engine="openpyxl") as writer:
@@ -239,7 +241,7 @@ def main() -> None:
             )
 
     payload = {
-        "validation_version": "d2_process_floor_contract_r3_hard_only",
+        "validation_version": "d2_process_floor_contract_r4_hard_only",
         "qha_window": "6h",
         "hard_rle_min": 15,
         "all_contract_checks_passed": bool(contract_checks["passed"].all()),
