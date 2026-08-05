@@ -1,13 +1,13 @@
-calibration_id: NorthBank_D2_v3_20260804
+calibration_id: NorthBank_D2_v4_20260805
 plant_id: NorthBank_LCH
-generated_date: '2026-08-04'
+generated_date: '2026-08-05'
 effective_period:
 - '2025-08-01'
 - '2026-04-13'
-calibration_basis: blocked_development_reference_v3
+calibration_basis: blocked_development_reference_v4_hard_only
 study_design_version: d2_blocked_time_v1
-mapping_version: d2_v3_source_timestamp_qti_r1
-input_hash: c492b1f1079e81d4de557fcea966741f4a8f4fe39769e2d1504718f11896a8db
+mapping_version: d2_v4_strict_hard_availability_r1
+input_hash: 0a0ff628fd50ac1b65680d60f3f5b3e954222cf114f6039645ebe1f4d232213f
 benchmark_windows:
   selection_rule: blocked_development_period_only; D1_not_used
   fit_start: '2025-08-01 00:00:00'
@@ -74,13 +74,13 @@ descriptive_reference_percentiles:
       0.75: 0.0
       0.95: 1.0
       0.99: 9.0
-  Q_freeze_avail:
-    info_empty_cov:
+  Q_hard_availability:
+    hard_stasis_fraction_observed:
       0.25: 0.0
       0.5: 0.0
       0.75: 0.0
       0.95: 0.0
-      0.99: 0.019861111111115153
+      0.99: 0.0
     tau_rle_D2_min: 3
     tau_iqr_DO: 0.02
     tau_iqr_ORP: 1.0

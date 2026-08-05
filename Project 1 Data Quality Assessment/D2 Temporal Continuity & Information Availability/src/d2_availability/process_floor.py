@@ -22,9 +22,9 @@ def route_availability_evidence(
 ) -> pd.DataFrame:
     """Separate production information loss from sensor-health diagnostics.
 
-    Every channel uses missingness, long gaps and hard observed-value stasis
-    for production QFA. Low IQR and lenient RLE are retained as ``soft_stasis``
-    diagnostics; they cannot lower QFA or trigger a D2 Veto. Process-floor
+    Production Q_HA uses only resolution-equivalent persistent stasis while a
+    raw value is present. Missingness and long gaps remain continuity evidence
+    for Q_TI/Q_GS. Low IQR and lenient RLE are diagnostic-only. Process-floor
     channels additionally expose floor occupancy and resolution limitation.
     """
     missing = missing.astype(bool)
@@ -46,7 +46,9 @@ def route_availability_evidence(
     else:
         raise ValueError(f"Unsupported availability_mode: {availability_mode}")
 
-    qfa_unavailable = missing | long_gap | sensor_freeze
+    continuity_unavailable = missing | long_gap
+    hard_availability_loss = sensor_freeze
+    any_information_unavailable = continuity_unavailable | hard_availability_loss
 
     return pd.DataFrame(
         {
@@ -56,7 +58,11 @@ def route_availability_evidence(
             "floor_occupancy": floor_occupancy,
             "resolution_limited": resolution_limited,
             "sensor_freeze": sensor_freeze,
-            "qfa_unavailable": qfa_unavailable,
+            "hard_availability_loss": hard_availability_loss,
+            "continuity_unavailable": continuity_unavailable,
+            "any_information_unavailable": any_information_unavailable,
+            # Compatibility alias: Q_FA now has the same hard-only semantics as Q_HA.
+            "qfa_unavailable": hard_availability_loss,
         },
         index=aligned_value.index,
     ).astype(bool)

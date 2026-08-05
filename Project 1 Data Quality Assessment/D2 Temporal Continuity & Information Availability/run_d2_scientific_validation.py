@@ -23,19 +23,20 @@ if str(ROOT) not in sys.path:
 from src.d2_availability.scorer import (  # noqa: E402
     D2Aggregator,
     GapSeverityScorer,
+    HardAvailabilityScorer,
     TemporalIntegrityScorer,
 )
 from src.utils.config_loader import load_config  # noqa: E402
 
 
 WEIGHT_SETS = {
-    "equal": {"Q_TI": 1 / 3, "Q_GS": 1 / 3, "Q_FA": 1 / 3},
-    "primary_qfa_040": {"Q_TI": 0.30, "Q_GS": 0.30, "Q_FA": 0.40},
-    "qfa_enhanced_050": {"Q_TI": 0.25, "Q_GS": 0.25, "Q_FA": 0.50},
+    "equal": {"Q_TI": 1 / 3, "Q_GS": 1 / 3, "Q_HA": 1 / 3},
+    "primary_qha_040": {"Q_TI": 0.30, "Q_GS": 0.30, "Q_HA": 0.40},
+    "qha_enhanced_050": {"Q_TI": 0.25, "Q_GS": 0.25, "Q_HA": 0.50},
 }
 LAMBDAS = (0.50, 0.70, 0.90)
-PRIMARY_ID = "primary_qfa_040__lambda_070"
-METRICS = ("Q_TI", "Q_GS", "Q_FA", "D2_total")
+PRIMARY_ID = "primary_qha_040__lambda_070"
+METRICS = ("Q_TI", "Q_GS", "Q_HA", "D2_total")
 EVENT_COLUMNS = ("event_id", "sensor_id", "start", "end", "duration_hours")
 PAIR_COLUMNS = (
     "sensor_id", "reference_event_id", "candidate_event_id",
@@ -63,9 +64,12 @@ def _long_state(state: dict, cfg) -> pd.DataFrame:
             "source_gap_recovery_rate", "value_gap_recovery_rate",
             "Q_TI_observed_weight", "Q_miss_comp", "Q_true_irregular_comp",
             "Q_duplicate_comp", "Q_out_of_order_comp",
-            "info_empty_cov", "sensor_freeze_cov", "low_iqr_cov",
+            "info_empty_cov", "hard_stasis_fraction_observed",
+            "qha_observed_fraction", "sensor_freeze_cov", "low_iqr_cov",
             "soft_rle_cov", "soft_stasis_cov", "floor_occupancy",
-            "resolution_limited", "rl_rate",
+            "resolution_limited", "rl_rate", "intrinsic_soft_evidence",
+            "peer_response_loss_evidence", "soft_evidence_family_count",
+            "quasi_freeze_suspect", "D2_sensitive_risk",
         ):
             selected[column] = subs.get(column, pd.Series(0.0, index=selected.index))
         selected["phase"] = _phase(selected.index, cfg).to_numpy()
@@ -83,7 +87,7 @@ def _rescore(state: dict, cfg, weights: dict, lam: float) -> pd.DataFrame:
     for sensor_id in state["scored_channels"]:
         subs = state["subs_all"][sensor_id]
         scored = aggregator.aggregate(
-            subs["Q_TI"], subs["Q_GS"], subs["Q_FA"], subs
+            subs["Q_TI"], subs["Q_GS"], subs["Q_HA"], subs
         )
         frame = scored[["D2_total", "veto_flag", "veto_reason"]].copy()
         frame.insert(0, "sensor_id", sensor_id)
@@ -304,7 +308,7 @@ def threshold_sensitivity(state: dict, cfg) -> pd.DataFrame:
                 subs = state["subs_all"][sensor_id]
                 q_ti = ti.score(stats) if family == "Q_TI" else subs["Q_TI"]
                 q_gs = gs.score(stats) if family == "Q_GS" else subs["Q_GS"]
-                scored = aggregator.aggregate(q_ti, q_gs, subs["Q_FA"], stats)
+                scored = aggregator.aggregate(q_ti, q_gs, subs["Q_HA"], stats)
                 scores.append(scored["D2_total"].rename(sensor_id))
             long = pd.concat(scores, axis=1).stack()
             rows.append({
@@ -450,6 +454,7 @@ def d1_d2_concordance(base: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame, p
         null.append({"replicate": replicate + 1, "duration_jaccard": intersection / max(union, 1)})
     null_frame = pd.DataFrame(null)
     null_median = float(null_frame["duration_jaccard"].median())
+    null_mean = float(null_frame["duration_jaccard"].mean())
     summary = pd.DataFrame([{
         "D1_events": len(d1),
         "D2_hard_availability_events": len(d2),
@@ -457,7 +462,10 @@ def d1_d2_concordance(base: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame, p
         "event_jaccard": event_jaccard,
         "duration_jaccard_observed": observed,
         "duration_jaccard_null_median": null_median,
-        "duration_jaccard_enrichment": observed / null_median if null_median > 0 else np.nan,
+        "duration_jaccard_null_mean": null_mean,
+        "duration_jaccard_enrichment_vs_null_mean": (
+            observed / null_mean if null_mean > 0 else np.nan
+        ),
         "circular_shift_p_upper": (1 + null_frame["duration_jaccard"].ge(observed).sum()) / (1 + len(null_frame)),
         "matching_tolerance": "1h",
         "null_model": "sensor_specific_circular_shift_minimum_7d",
@@ -508,7 +516,7 @@ def qti_threshold_reference(state: dict, cfg) -> pd.DataFrame:
         subs = state["subs_all"][sensor_id].loc[
             pd.Timestamp(development.start):pd.Timestamp(development.end)
         ]
-        high_quality = subs.loc[subs["Q_GS"].ge(4.5) & subs["Q_FA"].ge(4.5)]
+        high_quality = subs.loc[subs["Q_GS"].ge(4.5) & subs["Q_HA"].ge(4.5)]
         for metric in metrics:
             values = high_quality[metric].dropna()
             quantiles = values.quantile([0.75, 0.90, 0.95, 0.99]) if len(values) else pd.Series(dtype=float)
@@ -520,7 +528,7 @@ def qti_threshold_reference(state: dict, cfg) -> pd.DataFrame:
                 "metric": metric,
                 "development_start": development.start,
                 "development_end": development.end,
-                "candidate_high_quality_rule": "Q_GS>=4.5 and Q_FA>=4.5",
+                "candidate_high_quality_rule": "Q_GS>=4.5 and Q_HA>=4.5",
                 "support_n": int(len(values)),
                 "unique_value_n": unique_n,
                 "q75": quantiles.get(0.75, np.nan),
@@ -540,6 +548,215 @@ def qti_threshold_reference(state: dict, cfg) -> pd.DataFrame:
                     "independent_SAP_lock_required_before_production_use"
                 ),
             })
+    return pd.DataFrame(rows)
+
+
+def evidence_redundancy_audit(
+    state: dict, cfg, base: pd.DataFrame
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    """Quantify correlated evidence and prespecified leave-one-family-out effects."""
+    component_cols = ["Q_TI", "Q_GS", "Q_HA"]
+    correlation = base[component_cols].corr().rename_axis("row").reset_index().melt(
+        id_vars="row", var_name="column", value_name="pearson_r"
+    )
+    complete = base[component_cols].dropna()
+    standardised = (complete - complete.mean()) / complete.std(ddof=0).replace(0, np.nan)
+    eigenvalues = np.linalg.eigvalsh(standardised.corr().fillna(0).to_numpy())[::-1]
+    effective_dimension = float(eigenvalues.sum() ** 2 / np.square(eigenvalues).sum())
+    correlation["effective_dimension_global"] = effective_dimension
+
+    variants = []
+    for sensor_id in state["scored_channels"]:
+        subs = state["subs_all"][sensor_id]
+        qti_without_missing = (
+            0.25 * subs["Q_true_irregular_comp"]
+            + 0.05 * subs["Q_duplicate_comp"]
+            + 0.05 * subs["Q_out_of_order_comp"]
+        ) / 0.35
+        candidates = {
+            "strict_production": (subs["Q_TI"], subs["Q_GS"], subs["Q_HA"]),
+            "without_QTI_missing": (qti_without_missing, subs["Q_GS"], subs["Q_HA"]),
+            "without_QGS": (subs["Q_TI"], pd.Series(np.nan, index=subs.index), subs["Q_HA"]),
+            "without_QHA": (subs["Q_TI"], subs["Q_GS"], pd.Series(np.nan, index=subs.index)),
+        }
+        aggregator = D2Aggregator(cfg, state["calib"])
+        for variant_id, (qti, qgs, qha) in candidates.items():
+            scored = aggregator.aggregate(qti, qgs, qha, subs)
+            frame = scored[["D2_total"]].rename(columns={"D2_total": "score"})
+            frame.insert(0, "sensor_id", sensor_id)
+            frame.insert(0, "timestamp", frame.index)
+            frame["variant_id"] = variant_id
+            variants.append(frame.reset_index(drop=True))
+    scores = pd.concat(variants, ignore_index=True)
+    reference = scores.loc[scores["variant_id"].eq("strict_production")].copy()
+    reference = reference.rename(columns={"score": "reference"})[
+        ["timestamp", "sensor_id", "reference"]
+    ]
+    reference_events = _extract_events(
+        reference.rename(columns={"reference": "D2_total"}), "D2_total"
+    )
+    rng = np.random.default_rng(int(cfg.study_design.inference["random_seed"]))
+    repeats = int(cfg.study_design.inference["bootstrap_replicates"])
+    summaries = []
+    for variant_id, candidate in scores.groupby("variant_id"):
+        merged = reference.merge(
+            candidate[["timestamp", "sensor_id", "score"]],
+            on=["timestamp", "sensor_id"], validate="one_to_one",
+        )
+        ref_low = merged["reference"].lt(3)
+        alt_low = merged["score"].lt(3)
+        merged["intersection"] = (ref_low & alt_low).astype(int)
+        merged["union"] = (ref_low | alt_low).astype(int)
+        merged["week"] = merged["timestamp"].dt.to_period("W").astype(str)
+        clusters = merged.groupby(["sensor_id", "week"], as_index=False)[
+            ["intersection", "union"]
+        ].sum()
+        hour_low, hour_high = _bootstrap_binary(clusters, rng, repeats)
+        candidate_events = _extract_events(
+            candidate.rename(columns={"score": "D2_total"}), "D2_total"
+        )
+        event_jaccard, pairs = _event_jaccard(reference_events, candidate_events)
+        event_low, event_high = _bootstrap_event_jaccard(
+            reference_events, candidate_events, pairs, rng, repeats
+        )
+        sensor_means = merged.groupby("sensor_id")[["reference", "score"]].mean()
+        summaries.append({
+            "variant_id": variant_id,
+            "mean_score": float(merged["score"].mean()),
+            "deficit_points_per_1000h": float((5 - merged["score"]).sum() / len(merged) * 1000),
+            "low_hours_per_1000h": float(alt_low.mean() * 1000),
+            "low_hour_jaccard": float(merged["intersection"].sum() / max(merged["union"].sum(), 1)),
+            "low_hour_ci95_low": hour_low,
+            "low_hour_ci95_high": hour_high,
+            "low_event_jaccard": event_jaccard,
+            "low_event_ci95_low": event_low,
+            "low_event_ci95_high": event_high,
+            "sensor_rank_spearman": _spearman_stat(sensor_means["reference"], sensor_means["score"]),
+            "reference_events": len(reference_events),
+            "candidate_events": len(candidate_events),
+        })
+    hierarchy = pd.DataFrame([
+        {"level": "source", "evidence": "Q_timestamp", "scope": "DO/ORP/FLOW source file", "production_role": "Q_TI"},
+        {"level": "channel", "evidence": "missing coverage", "scope": "sensor", "production_role": "Q_TI"},
+        {"level": "channel", "evidence": "gap duration/topology", "scope": "sensor", "production_role": "Q_GS"},
+        {"level": "channel", "evidence": "observed hard stasis", "scope": "sensor", "production_role": "Q_HA"},
+        {"level": "diagnostic", "evidence": "soft dynamics + comparable peer", "scope": "sensor", "production_role": "D2_Sensitive_risk"},
+    ])
+    return correlation, pd.DataFrame(summaries), hierarchy
+
+
+def qha_window_sensitivity(state: dict, cfg) -> tuple[pd.DataFrame, pd.DataFrame]:
+    score_frames = []
+    for window_h in (3, 6, 9, 12):
+        for sensor_id in state["scored_channels"]:
+            flags = state["flags_all"][sensor_id]
+            minutes = window_h * 60
+            hard = flags["sensor_freeze"].rolling(f"{window_h}h", min_periods=minutes).sum()
+            observed = flags["present_raw"].rolling(f"{window_h}h", min_periods=minutes).sum()
+            fraction = hard.div(observed.where(observed > 0)).resample("1h").last()
+            subs = state["subs_all"][sensor_id]
+            stats = state["stats_all"][sensor_id].copy()
+            stats["hard_stasis_fraction_observed"] = fraction.reindex(stats.index)
+            qha, _ = HardAvailabilityScorer(cfg).score(
+                stats, pd.Series(0.0, index=stats.index), allow_response_loss=False
+            )
+            scored = D2Aggregator(cfg, state["calib"]).aggregate(
+                subs["Q_TI"], subs["Q_GS"], qha, stats
+            )
+            frame = scored[["D2_total", "Q_HA"]].copy()
+            frame.insert(0, "sensor_id", sensor_id)
+            frame.insert(0, "timestamp", frame.index)
+            frame["window_h"] = window_h
+            score_frames.append(frame.reset_index(drop=True))
+    scores = pd.concat(score_frames, ignore_index=True)
+    reference = scores.loc[scores["window_h"].eq(6), ["timestamp", "sensor_id", "D2_total"]]
+    reference_events = _extract_events(reference, "D2_total")
+    summaries = []
+    for window_h, candidate in scores.groupby("window_h"):
+        merged = reference.merge(
+            candidate[["timestamp", "sensor_id", "D2_total"]],
+            on=["timestamp", "sensor_id"], suffixes=("_ref", "_candidate"),
+        )
+        ref_low = merged["D2_total_ref"].lt(3)
+        alt_low = merged["D2_total_candidate"].lt(3)
+        candidate_events = _extract_events(candidate, "D2_total")
+        event_jaccard, _ = _event_jaccard(reference_events, candidate_events)
+        summaries.append({
+            "window_h": window_h,
+            "mean_Q_HA": float(candidate["Q_HA"].mean()),
+            "low_hour_rate": float(alt_low.mean()),
+            "low_hour_jaccard_vs_6h": float((ref_low & alt_low).sum() / max((ref_low | alt_low).sum(), 1)),
+            "low_event_jaccard_vs_6h": event_jaccard,
+            "candidate_events": len(candidate_events),
+            "passes_prespecified_jaccard_0_75": bool(event_jaccard >= 0.75),
+        })
+    return scores, pd.DataFrame(summaries)
+
+
+def low_tail_burden(state: dict, cfg, base: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
+    rows = []
+    for keys, group in base.groupby(["phase", "sensor_id", "analyte"]):
+        phase, sensor_id, analyte = keys
+        n = len(group)
+        rows.append({
+            "phase": phase,
+            "sensor_id": sensor_id,
+            "analyte": analyte,
+            "n_sensor_hours": n,
+            "mean_D2_auxiliary": float(group["D2_total"].mean()),
+            "p01_D2": float(group["D2_total"].quantile(0.01)),
+            "deficit_points_per_1000h": float((5 - group["D2_total"]).sum() / n * 1000),
+            "low_hours_per_1000h": float(group["D2_total"].lt(3).mean() * 1000),
+            "veto_hours_per_1000h": float(group["veto_flag"].mean() * 1000),
+            "sensitive_suspect_hours_per_1000h": float(group["quasi_freeze_suspect"].mean() * 1000),
+        })
+    burden = pd.DataFrame(rows)
+
+    raw_events = []
+    gap = state["gap_df"].rename(columns={
+        "gap_id": "event_id", "sensor_scope": "sensor_id",
+        "start_ts": "start", "end_ts": "end", "duration_min": "raw_duration_min",
+    }).copy()
+    gap["event_type"] = "gap"
+    raw_events.append(gap[["event_id", "sensor_id", "start", "end", "raw_duration_min", "event_type"]])
+    hard = state["freeze_events"].rename(columns={
+        "start_ts": "start", "end_ts": "end", "duration_min": "raw_duration_min",
+    }).copy()
+    if len(hard):
+        hard["event_type"] = "hard_stasis"
+        raw_events.append(hard[["event_id", "sensor_id", "start", "end", "raw_duration_min", "event_type"]])
+    raw = pd.concat(raw_events, ignore_index=True)
+    raw["start"] = pd.to_datetime(raw["start"])
+    raw["end"] = pd.to_datetime(raw["end"])
+    scored_events = _extract_events(base, "D2_total")
+    pairs = _match_events(raw, scored_events, tolerance="24h")
+    impact = raw.merge(
+        pairs[["reference_event_id", "candidate_event_id", "overlap_hours", "separation_hours"]],
+        left_on="event_id", right_on="reference_event_id", how="left",
+    ).merge(
+        scored_events[["event_id", "duration_hours"]],
+        left_on="candidate_event_id", right_on="event_id", how="left", suffixes=("", "_score"),
+    )
+    impact = impact.drop(columns=["event_id_score"], errors="ignore")
+    impact["score_impact_duration_h"] = impact["duration_hours"]
+    impact["raw_duration_h"] = impact["raw_duration_min"] / 60
+    return burden, impact
+
+
+def sensitive_diagnostic_summary(state: dict) -> pd.DataFrame:
+    rows = []
+    for sensor_id in state["scored_channels"]:
+        sub = state["subs_all"][sensor_id]
+        rows.append({
+            "sensor_id": sensor_id,
+            "analyte": sensor_id.split("_")[0],
+            "soft_stasis_fraction": float(sub["soft_stasis_cov"].mean()),
+            "intrinsic_soft_hour_rate": float(sub["intrinsic_soft_evidence"].mean()),
+            "peer_response_loss_hour_rate": float(sub["peer_response_loss_evidence"].mean()),
+            "joint_soft_hour_rate": float(sub["soft_evidence_family_count"].ge(2).mean()),
+            "sustained_quasi_freeze_hour_rate": float(sub["quasi_freeze_suspect"].mean()),
+            "production_Q_HA_low_rate": float(sub["Q_HA"].lt(3).mean()),
+        })
     return pd.DataFrame(rows)
 
 
@@ -570,6 +787,12 @@ def main() -> Path:
     concordance, pairs, null = d1_d2_concordance(base)
     qti_audit = qti_component_audit(state, cfg)
     qti_thresholds = qti_threshold_reference(state, cfg)
+    redundancy_corr, redundancy_ablation, hierarchy = evidence_redundancy_audit(
+        state, cfg, base
+    )
+    window_scores, window_summary = qha_window_sensitivity(state, cfg)
+    burden, event_impact = low_tail_burden(state, cfg, base)
+    sensitive_summary = sensitive_diagnostic_summary(state)
     outputs = {
         "D2_weight_lambda_scores.parquet": weight_scores,
         "D2_weight_lambda_summary.parquet": weight_summary,
@@ -582,6 +805,14 @@ def main() -> Path:
         "D2_d1d2_circular_null.parquet": null,
         "D2_qti_component_audit.parquet": qti_audit,
         "D2_qti_threshold_reference.parquet": qti_thresholds,
+        "D2_evidence_redundancy_correlation.parquet": redundancy_corr,
+        "D2_evidence_redundancy_ablation.parquet": redundancy_ablation,
+        "D2_evidence_hierarchy.parquet": hierarchy,
+        "D2_qha_window_scores.parquet": window_scores,
+        "D2_qha_window_sensitivity.parquet": window_summary,
+        "D2_low_tail_burden.parquet": burden,
+        "D2_raw_vs_score_event_impact.parquet": event_impact,
+        "D2_sensitive_diagnostic_summary.parquet": sensitive_summary,
     }
     written = []
     for filename, frame in outputs.items():
@@ -605,12 +836,21 @@ def main() -> Path:
             out_of_order_deficit=("weighted_deficit_out_of_order", "mean"),
         ).to_excel(writer, sheet_name="QTI_component_audit", index=False)
         qti_thresholds.to_excel(writer, sheet_name="QTI_threshold_reference", index=False)
+        redundancy_corr.to_excel(writer, sheet_name="redundancy_corr", index=False)
+        redundancy_ablation.to_excel(writer, sheet_name="redundancy_ablation", index=False)
+        hierarchy.to_excel(writer, sheet_name="evidence_hierarchy", index=False)
+        window_summary.to_excel(writer, sheet_name="QHA_window_sensitivity", index=False)
+        burden.to_excel(writer, sheet_name="low_tail_burden", index=False)
+        event_impact.to_excel(writer, sheet_name="raw_vs_score_impact", index=False)
+        sensitive_summary.to_excel(writer, sheet_name="sensitive_diagnostics", index=False)
     written.append(workbook)
     manifest = _write_manifest(state, written)
     print(json.dumps({
         "run_id": state["run_id"],
         "calibration_id": state["calibration_id"],
         "weight_variants": len(weight_summary),
+        "redundancy_variants": len(redundancy_ablation),
+        "qha_windows": window_summary["window_h"].tolist(),
         "event_concordance": concordance.to_dict("records")[0],
         "manifest": str(manifest),
     }, indent=2, default=str))

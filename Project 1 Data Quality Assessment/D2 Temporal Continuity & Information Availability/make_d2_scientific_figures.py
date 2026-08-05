@@ -1,4 +1,4 @@
-"""Nature-style confirmatory figures for the frozen D2 V3 release."""
+"""Nature-style confirmatory figures for the D2 strict/sensitive release."""
 from __future__ import annotations
 
 import pickle
@@ -58,7 +58,7 @@ PHASE_LABELS = {
 METRIC_COLORS = {
     "Q_TI": COLORS["blue"],
     "Q_GS": COLORS["orange"],
-    "Q_FA": COLORS["violet"],
+    "Q_HA": COLORS["violet"],
     "D2_total": COLORS["black"],
 }
 
@@ -72,8 +72,8 @@ def style(ax, full_frame: bool = False) -> None:
         ax.spines["right"].set_visible(False)
 
 
-def panel(ax, letter: str) -> None:
-    ax.text(-0.11, 1.025, f"({letter})", transform=ax.transAxes,
+def panel(ax, letter: str, *, x: float = -0.10, y: float = 1.06) -> None:
+    ax.text(x, y, f"({letter})", transform=ax.transAxes,
             ha="right", va="bottom", fontsize=8, fontweight="bold",
             clip_on=False)
 
@@ -136,7 +136,7 @@ def figure13_process_floor() -> None:
         ("floor_occupancy_pct", "Floor occupancy", COLORS["blue_light"]),
         ("resolution_limited_pct", "Resolution limited", COLORS["teal"]),
         ("sensor_freeze_pct", "Hard freeze", COLORS["red"]),
-        ("qfa_unavailable_pct", "QFA unavailable", COLORS["orange"]),
+        ("qfa_unavailable_pct", "Hard unavailable", COLORS["orange"]),
     ]
     offsets = (-0.18, -0.06, 0.06, 0.18)
     for (column, label, color), offset in zip(metrics, offsets):
@@ -175,7 +175,7 @@ def figure13_process_floor() -> None:
         )
     ax_c.set(xlabel="Diagnostic floor threshold (mg L$^{-1}$)",
              ylabel="Floor occupancy (%)",
-             title="Threshold changes interpretation, not production QFA")
+             title="Threshold changes interpretation, not production QHA")
     ax_c.set_ylim(0, 100)
     ax_c.text(0.03, 0.08, "Production score unchanged",
               transform=ax_c.transAxes, color=COLORS["green"], fontsize=6.5,
@@ -400,7 +400,7 @@ def figure16_construct_separation() -> None:
              ylabel="Null replicates",
              title="Temporal overlap exceeds chance but remains small in absolute magnitude")
     ax_c.text(0.99, 0.92,
-              f"Enrichment = {concordance['duration_jaccard_enrichment']:.2f}×\n"
+              f"Null mean = {concordance['duration_jaccard_null_mean']:.4f}\n"
               f"Monte Carlo P = {concordance['circular_shift_p_upper']:.4f}",
               transform=ax_c.transAxes, ha="right", va="top",
               bbox={"facecolor": "white", "edgecolor": COLORS["grey_light"], "alpha": 0.88})
@@ -525,15 +525,244 @@ def figure17_timestamp_qti(state: dict) -> None:
     save(fig, "D2_Fig17_timestamp_qti_audit")
 
 
+def figure14_evidence_redundancy() -> None:
+    correlation = _read_validation("D2_evidence_redundancy_correlation.parquet")
+    ablation = _read_validation("D2_evidence_redundancy_ablation.parquet")
+    hierarchy = _read_validation("D2_evidence_hierarchy.parquet")
+    order = ["strict_production", "without_QTI_missing", "without_QGS", "without_QHA"]
+    labels = ["Strict", "QTI without\nmissing", "No QGS", "No QHA"]
+    ablation = ablation.set_index("variant_id").loc[order].reset_index()
+
+    fig = plt.figure(figsize=(7.2, 4.6))
+    grid = fig.add_gridspec(2, 2, height_ratios=(0.72, 1.28), hspace=0.44, wspace=0.58)
+    ax_a = fig.add_subplot(grid[0, :])
+    ax_b = fig.add_subplot(grid[1, 0])
+    ax_c = fig.add_subplot(grid[1, 1])
+
+    hierarchy_colors = [COLORS["teal"], COLORS["blue"], COLORS["orange"],
+                        COLORS["violet"], COLORS["grey_light"]]
+    role_labels = {
+        "Q_TI": "QTI",
+        "Q_GS": "QGS",
+        "Q_HA": "QHA",
+        "D2_Sensitive_risk": "Sensitive risk",
+    }
+    evidence_labels = {
+        "Q_timestamp": "Source timestamp",
+        "missing coverage": "Missing coverage",
+        "gap duration/topology": "Gap duration /\ntopology",
+        "observed hard stasis": "Observed hard\nstasis",
+        "soft dynamics + comparable peer": "Soft dynamics +\ncomparable peer",
+    }
+    for i, row in hierarchy.iterrows():
+        ax_a.scatter(i, 0, s=430, marker="s", color=hierarchy_colors[i],
+                     edgecolor="white", linewidth=1.0, zorder=3)
+        ax_a.text(i, 0.02, role_labels.get(row["production_role"], row["production_role"]),
+                  ha="center", va="center",
+                  fontsize=7, fontweight="bold")
+        ax_a.text(i, -0.20, evidence_labels.get(row["evidence"], row["evidence"]), ha="center",
+                  va="top", fontsize=6.2)
+        if i < len(hierarchy) - 1:
+            ax_a.annotate("", xy=(i + 0.68, 0), xytext=(i + 0.32, 0),
+                          arrowprops={"arrowstyle": "->", "lw": 0.8,
+                                      "color": COLORS["grey"]})
+    ax_a.set_xlim(-0.55, len(hierarchy) - 0.45)
+    ax_a.set_ylim(-0.48, 0.26)
+    ax_a.axis("off")
+    ax_a.set_title("Source timing, channel continuity and observed hard stasis remain explicit", pad=4)
+    panel(ax_a, "a")
+
+    matrix = correlation.pivot(index="row", columns="column", values="pearson_r").loc[
+        ["Q_TI", "Q_GS", "Q_HA"], ["Q_TI", "Q_GS", "Q_HA"]
+    ]
+    image = ax_b.imshow(matrix, cmap="RdBu_r", vmin=-1, vmax=1, aspect="equal")
+    for i in range(3):
+        for j in range(3):
+            value = matrix.iloc[i, j]
+            ax_b.text(j, i, f"{value:.2f}", ha="center", va="center",
+                      color="white" if abs(value) > 0.65 else COLORS["black"])
+    ax_b.set_xticks(range(3), ["QTI", "QGS", "QHA"])
+    ax_b.set_yticks(range(3), ["QTI", "QGS", "QHA"])
+    effective = correlation["effective_dimension_global"].iloc[0]
+    ax_b.set_title(f"Evidence correlation; effective dimension = {effective:.2f}")
+    cbar = fig.colorbar(image, ax=ax_b, fraction=0.047, pad=0.04)
+    cbar.set_label("r")
+    style(ax_b, full_frame=True)
+    panel(ax_b, "b", x=-0.22, y=1.10)
+
+    y = np.arange(len(ablation))[::-1]
+    for yi, (_, row) in zip(y, ablation.iterrows()):
+        color = COLORS["red"] if row["variant_id"] == "strict_production" else COLORS["blue"]
+        ax_c.plot([row["low_event_ci95_low"], row["low_event_ci95_high"]],
+                  [yi, yi], color=color, lw=1.1)
+        ax_c.plot(row["low_event_jaccard"], yi, "o", color=color, ms=4)
+    ax_c.set_yticks(y, labels)
+    ax_c.set_xlim(0, 1.03)
+    ax_c.axvline(1, color=COLORS["grey"], ls=":", lw=0.8)
+    ax_c.set_xlabel("Low-event Jaccard vs strict (cluster 95% CI)")
+    ax_c.set_title("Ablation tests event identity, not score spread")
+    style(ax_c)
+    panel(ax_c, "c", x=-0.22, y=1.10)
+
+    with pd.ExcelWriter(VALIDATION / "D2_Fig14_evidence_redundancy_source_data.xlsx",
+                        engine="openpyxl") as writer:
+        hierarchy.to_excel(writer, sheet_name="panel_a_hierarchy", index=False)
+        correlation.to_excel(writer, sheet_name="panel_b_correlation", index=False)
+        ablation.to_excel(writer, sheet_name="panel_c_ablation", index=False)
+    save(fig, "D2_Fig14_aggregation_robustness")
+
+
+def figure15_low_tail_burden() -> None:
+    burden = _read_validation("D2_low_tail_burden.parquet")
+    impact = _read_validation("D2_raw_vs_score_event_impact.parquet")
+    sensitive = _read_validation("D2_sensitive_diagnostic_summary.parquet")
+    phases = list(PHASE_LABELS)
+    sensors = sorted(burden["sensor_id"].unique())
+    matrix = burden.pivot(index="sensor_id", columns="phase", values="low_hours_per_1000h").reindex(
+        index=sensors, columns=phases
+    )
+
+    fig = plt.figure(figsize=(7.2, 5.2))
+    grid = fig.add_gridspec(2, 2, height_ratios=(1.25, 1.0), hspace=0.55, wspace=0.38)
+    ax_a = fig.add_subplot(grid[0, :])
+    ax_b = fig.add_subplot(grid[1, 0])
+    ax_c = fig.add_subplot(grid[1, 1])
+
+    vmax = max(float(np.nanmax(matrix.to_numpy())), 1.0)
+    image = ax_a.imshow(matrix, aspect="auto", cmap="Blues", vmin=0, vmax=vmax)
+    for i in range(matrix.shape[0]):
+        for j in range(matrix.shape[1]):
+            value = matrix.iloc[i, j]
+            ax_a.text(j, i, f"{value:.1f}", ha="center", va="center",
+                      color="white" if value > 0.58 * vmax else COLORS["black"], fontsize=5.8)
+    ax_a.set_xticks(range(len(phases)), [PHASE_LABELS[p] for p in phases])
+    ax_a.set_yticks(range(len(sensors)), sensors)
+    ax_a.set_title("Low-score burden exposes temporal and channel structure hidden by the 4.96 mean")
+    cbar = fig.colorbar(image, ax=ax_a, fraction=0.025, pad=0.02)
+    cbar.set_label("D2 < 3 hours per 1000 sensor-hours")
+    style(ax_a, full_frame=True)
+    panel(ax_a, "a")
+
+    phase_summary = burden.groupby("phase", as_index=False).agg(
+        deficit=("deficit_points_per_1000h", "median"),
+        veto=("veto_hours_per_1000h", "median"),
+    ).set_index("phase").loc[phases]
+    x = np.arange(len(phases))
+    ax_b.plot(x, phase_summary["deficit"], marker="o", color=COLORS["blue"],
+              lw=1.2, label="Score deficit")
+    ax_b.plot(x, phase_summary["veto"], marker="s", color=COLORS["red"],
+              lw=1.2, label="Veto hours")
+    ax_b.set_xticks(x, [PHASE_LABELS[p].replace(" ", "\n") for p in phases])
+    ax_b.set_ylabel("Burden per 1000 sensor-hours")
+    ax_b.set_title("Locked phases differ in low-tail burden")
+    ax_b.legend(loc="upper right")
+    style(ax_b)
+    panel(ax_b, "b")
+
+    diag = sensitive.groupby("analyte", as_index=False)[[
+        "intrinsic_soft_hour_rate", "joint_soft_hour_rate",
+        "sustained_quasi_freeze_hour_rate", "production_Q_HA_low_rate",
+    ]].mean()
+    labels = ["Intrinsic low\ndynamics", "Joint soft\nevidence",
+              "Sustained\nsuspect", "Production\nQHA < 3"]
+    width = 0.34
+    for i, (analyte, color) in enumerate((("DO", COLORS["blue"]), ("ORP", COLORS["red"]))):
+        row = diag.loc[diag["analyte"].eq(analyte)].iloc[0]
+        values = row.iloc[1:].to_numpy(dtype=float) * 100
+        ax_c.bar(np.arange(4) + (i - 0.5) * width, values, width=width,
+                 facecolor="white", edgecolor=color, linewidth=1.1, label=analyte)
+    ax_c.set_xticks(range(4), labels)
+    ax_c.set_ylabel("Sensor-hours (%)")
+    ax_c.set_title("Independent corroboration filters soft dynamics")
+    ax_c.legend(loc="upper right")
+    style(ax_c)
+    panel(ax_c, "c")
+
+    with pd.ExcelWriter(VALIDATION / "D2_Fig15_low_tail_source_data.xlsx",
+                        engine="openpyxl") as writer:
+        burden.to_excel(writer, sheet_name="panel_a_burden", index=False)
+        phase_summary.reset_index().to_excel(writer, sheet_name="panel_b_phase", index=False)
+        diag.to_excel(writer, sheet_name="panel_c_sensitive", index=False)
+        impact.to_excel(writer, sheet_name="event_duration_audit", index=False)
+    save(fig, "D2_Fig15_low_tail_reporting")
+
+
+def figure18_full_pipeline_validation() -> None:
+    response = _read_validation("D2_full_pipeline_injection_response.parquet")
+    windows = _read_validation("D2_qha_window_sensitivity.parquet")
+    fig, axes = plt.subplots(2, 2, figsize=(7.2, 5.0))
+    ax_a, ax_b, ax_c, ax_d = axes.ravel()
+
+    timestamp = response.loc[response["route"].eq("timestamp")]
+    for scenario, marker, color in (
+        ("duplicate", "o", COLORS["blue"]),
+        ("out_of_order", "s", COLORS["orange"]),
+    ):
+        sub = timestamp.loc[timestamp["scenario"].eq(scenario)].sort_values("severity")
+        ax_a.plot(sub["severity"] * 100, sub["relevant_deficit_auc"], marker=marker,
+                  ms=3.5, lw=1.1, color=color, label=scenario.replace("_", " ").title())
+    irregular = timestamp.loc[timestamp["scenario"].eq("irregular_interval_sec")].sort_values("severity")
+    ax_a.plot(irregular["severity"] - 60, irregular["relevant_deficit_auc"], marker="^",
+              ms=3.5, lw=1.1, color=COLORS["violet"], label="Interval offset (s)")
+    ax_a.set(xlabel="Injected rate (%) or interval offset (s)", ylabel="QTI deficit AUC",
+             title="Raw timestamp defects show dose response")
+    ax_a.legend(loc="upper left")
+    style(ax_a)
+    panel(ax_a, "a")
+
+    gaps = response.loc[response["scenario"].eq("single_gap_min")]
+    gap_curve = gaps.groupby("severity", as_index=False)["min_Q_GS"].mean().sort_values("severity")
+    ax_b.plot(gap_curve["severity"], gap_curve["min_Q_GS"], marker="o", ms=3.5,
+              lw=1.1, color=COLORS["blue"], label="DO and ORP coincide")
+    ax_b.set_xscale("log")
+    ax_b.set(xlabel="Single gap duration (min)", ylabel="Minimum QGS",
+             title="Gap duration is routed to continuity topology")
+    ax_b.set_ylim(0.8, 5.2)
+    ax_b.legend(loc="lower left")
+    style(ax_b)
+    panel(ax_b, "b")
+
+    stasis = response.loc[response["scenario"].eq("persistent_stasis_min")]
+    stasis_curve = stasis.groupby("severity", as_index=False)["min_Q_HA"].mean().sort_values("severity")
+    ax_c.plot(stasis_curve["severity"], stasis_curve["min_Q_HA"], marker="o", ms=3.5,
+              lw=1.1, color=COLORS["violet"], label="DO and ORP coincide")
+    ax_c.axvline(15, color=COLORS["grey"], ls="--", lw=0.8, label="Production threshold")
+    ax_c.set(xlabel="Observed persistent stasis (min)", ylabel="Minimum QHA",
+             title="Coverage deadband follows the persistence gate")
+    ax_c.set_ylim(0.8, 5.2)
+    ax_c.legend(loc="lower left")
+    style(ax_c)
+    panel(ax_c, "c")
+
+    ax_d.plot(windows["window_h"], windows["low_event_jaccard_vs_6h"],
+              color=COLORS["blue"], marker="o", lw=1.2, ms=4)
+    ax_d.axhline(0.75, color=COLORS["red"], ls="--", lw=0.8, label="Prespecified 0.75")
+    ax_d.axvline(6, color=COLORS["grey"], ls=":", lw=0.8)
+    ax_d.set(xlabel="QHA trailing window (h)", ylabel="Low-event Jaccard vs 6 h",
+             title="V4 window robustness is tested on the hard-only route")
+    ax_d.set_xticks([3, 6, 9, 12])
+    ax_d.set_ylim(0, 1.05)
+    ax_d.legend(loc="lower right")
+    style(ax_d)
+    panel(ax_d, "d")
+
+    with pd.ExcelWriter(VALIDATION / "D2_Fig18_full_pipeline_source_data.xlsx",
+                        engine="openpyxl") as writer:
+        response.to_excel(writer, sheet_name="panels_a_c_injection", index=False)
+        windows.to_excel(writer, sheet_name="panel_d_windows", index=False)
+    save(fig, "D2_Fig18_full_pipeline_validation")
+
+
 def main() -> None:
     with (ROOT / "artifacts" / "d2_state.pkl").open("rb") as handle:
         state = pickle.load(handle)
     print(f"run={state['run_id']} calibration={state['calibration_id']}")
     figure13_process_floor()
-    figure14_robustness()
-    figure15_tail_risk()
+    figure14_evidence_redundancy()
+    figure15_low_tail_burden()
     figure16_construct_separation()
     figure17_timestamp_qti(state)
+    figure18_full_pipeline_validation()
 
 
 if __name__ == "__main__":

@@ -86,7 +86,7 @@ def test_p0_veto_rate_reasonable(state):
         lmax_total += int(reasons.str.contains("L_max_p99", na=False).sum())
         miss_total += int(reasons.str.contains("missing_p99", na=False).sum())
         # 健康通道：剔除 freeze_severe 后的 veto 率 < 5%
-        non_freeze = (df["veto_flag"] == 1) & (~reasons.str.contains("freeze_severe", na=False))
+        non_freeze = (df["veto_flag"] == 1) & (~reasons.str.contains("hard_stasis_severe", na=False))
         if float(non_freeze.mean()) < 0.05:
             healthy_count += 1
 
@@ -170,11 +170,11 @@ def test_aggregation_weights_match_design(state):
     ch = list(state["all_D2"].keys())[0]
     df = state["all_D2"][ch]
     # 取首个 D2_base 非 NaN 行
-    valid = df.dropna(subset=["Q_TI", "Q_GS", "Q_FA", "D2_base"])
+    valid = df.dropna(subset=["Q_TI", "Q_GS", "Q_HA", "D2_base"])
     if len(valid) == 0:
         pytest.skip("No valid rows")
     row = valid.iloc[0]
-    expected = 0.30 * row["Q_TI"] + 0.30 * row["Q_GS"] + 0.40 * row["Q_FA"]
+    expected = 0.30 * row["Q_TI"] + 0.30 * row["Q_GS"] + 0.40 * row["Q_HA"]
     assert abs(row["D2_base"] - expected) < 0.01, \
         f"D2_base weights drifted: expected {expected:.3f}, got {row['D2_base']:.3f}"
 
@@ -187,7 +187,7 @@ def test_d1_d2_freeze_threshold_separation():
 
 
 def test_calibration_uses_development_only(state, calib):
-    assert calib["calibration_basis"] == "blocked_development_reference_v3"
+    assert calib["calibration_basis"] == "blocked_development_reference_v4_hard_only"
     bench = calib["benchmark_windows"]
     assert pd.Timestamp(bench["fit_end"]) < pd.Timestamp(
         calib["validation_periods"]["internal_validation"]["start"]

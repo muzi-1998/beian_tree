@@ -2,7 +2,7 @@
 # 映射函数 + 子分权重 + 短长断点策略(P2 外置:替代 ENG_DEFAULTS 硬编码)
 # 各厂可有自己的初始值;运行时仍由 d2_calibration.yaml 覆盖关键阈值。
 
-mapping_version: d2_v3_source_timestamp_qti_r1
+mapping_version: d2_v4_strict_hard_availability_r1
 
 timestamp_quality:
   expected_interval_sec: 60
@@ -22,8 +22,8 @@ piecewise_breaks:
     L_max_min:        [5,     15,    60,    360, 660]
     P95_gap_min:      [3,     8,     30,    120, 210]
     gap_run_count:    [2,     5,     15,    40, 65]
-  Q_FA:
-    info_empty_cov:   [0.02,  0.08,  0.20,  0.50, 0.80]
+  Q_HA:
+    hard_stasis_fraction_observed: [0.02, 0.08, 0.20, 0.50, 0.80]
 
 # ─── Q_TI 内部加权 ───
 Q_TI_components:
@@ -42,9 +42,10 @@ Q_GS_components:
     gap_run_count:  0.20
 
 # ─── Q_FA 主+辅证据规则 ───
-Q_FA_rule:
-  main_metric:        info_empty_cov
-  production_semantics: missing_long_gap_or_hard_observed_stasis
+Q_HA_rule:
+  main_metric: hard_stasis_fraction_observed
+  denominator: observed_raw_minutes
+  production_semantics: present_raw_and_resolution_equivalent_persistent_stasis
   aggravation:
     metric:           response_loss_rate
     trigger_above:    0.30
@@ -58,8 +59,9 @@ aggregation:
   weights:
     Q_TI: 0.30
     Q_GS: 0.30
-    Q_FA: 0.40
+    Q_HA: 0.40
   lambda_blend: 0.70
+  unavailable_subscore_policy: conditional_weight_normalisation
 
 # ─── Veto 上限 ───
 veto_rules:
@@ -71,9 +73,9 @@ veto_rules:
     upper_cap: 1.8
     metric:    missing_rate
     threshold_key: missing_rate
-  freeze_severe:
+  hard_stasis_severe:
     upper_cap: 2.5
-    metric:    Q_FA
+    metric:    Q_HA
     threshold: 2.0
     comparator: "<="
 
@@ -98,15 +100,26 @@ freeze_detection:
   tau_iqr_ORP:       1.0
 
 process_floor_policy:
-  qfa_window: freeze_window
-  production_evidence: [missing, long_gap, hard_observed_stasis]
+  qha_window: freeze_window
+  production_evidence: [present_raw_and_hard_observed_stasis]
   hard_rle_min: 15
   low_iqr_diagnostic_only: true
   floor_occupancy_diagnostic_only: true
   response_loss_requires_comparable_peer: true
 
 standard_availability_policy:
-  production_evidence: [missing, long_gap, hard_observed_stasis]
+  production_evidence: [present_raw_and_hard_observed_stasis]
   soft_rle_diagnostic_only: true
   low_iqr_diagnostic_only: true
   response_loss_diagnostic_only: true
+
+dynamic_information_sufficiency:
+  role: sensitive_diagnostic_only
+  independent_evidence_families:
+    intrinsic_low_dynamics: [low_iqr, soft_rle]
+    comparable_peer_response_loss: [response_loss]
+  intrinsic_window_fraction: 0.50
+  response_loss_rate: 0.30
+  minimum_independent_families: 2
+  persistence_hours: 2
+  production_score_penalty: none

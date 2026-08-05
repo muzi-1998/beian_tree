@@ -1,6 +1,6 @@
 {
-  "validation_version": "d2_process_floor_contract_r2",
-  "qfa_window": "6h",
+  "validation_version": "d2_process_floor_contract_r3_hard_only",
+  "qha_window": "6h",
   "hard_rle_min": 15,
   "all_contract_checks_passed": true,
   "all_challenges_passed": true,
@@ -43,7 +43,7 @@
       "floor_occupancy_pct": 82.35294117647058,
       "resolution_limited_pct": 41.17647058823529,
       "sensor_freeze_pct": 0.0,
-      "qfa_unavailable_pct": 35.294117647058826
+      "qfa_unavailable_pct": 0.0
     }
   ],
   "contract_checks": [
@@ -101,10 +101,10 @@
       "floor_occupancy_pct": 96.09395705131696,
       "resolution_limited_pct": 57.80541487411279,
       "sensor_freeze_pct": 0.011980613189565975,
-      "qfa_unavailable_pct": 0.38474105538310727,
-      "freeze_severe_veto_pct": 0.31040679627511847,
+      "qfa_unavailable_pct": 0.011984529062482976,
+      "freeze_severe_veto_pct": 0.0,
       "total_veto_pct": 0.9312203888253554,
-      "mean_Q_FA": 4.978304803741824
+      "mean_Q_FA": 4.998671412055952
     },
     {
       "sensor_id": "DO_2_4",
@@ -112,11 +112,11 @@
       "floor_occupancy_pct": 69.88654722358365,
       "resolution_limited_pct": 16.88395142405925,
       "sensor_freeze_pct": 0.25431574361487774,
-      "qfa_unavailable_pct": 0.6246256058378261,
-      "freeze_severe_veto_pct": 0.6208135925502369,
+      "qfa_unavailable_pct": 0.2543988669172523,
+      "freeze_severe_veto_pct": 0.31040679627511847,
       "total_veto_pct": 1.2416271851004739,
-      "mean_Q_FA": 4.966942886359648
+      "mean_Q_FA": 4.987280813253194
     }
   ],
-  "d2_run_id": "D2V3_20260804_1939"
+  "d2_run_id": "D2V4_20260805_1127"
 }

@@ -41,6 +41,8 @@ def test_production_subscores_equal_modular_scorers():
         "source_gap_recovery_rate": 0.0,
         "value_gap_recovery_rate": 0.0,
         "info_empty_cov": [0.0, 0.05, 0.25, 0.6],
+        "hard_stasis_fraction_observed": [0.0, 0.05, 0.25, 0.6],
+        "qha_observed_fraction": 1.0,
         "freeze_cand_cov": 0.0,
         "sensor_freeze_cov": 0.0,
         "low_iqr_cov": 0.0,
@@ -58,20 +60,22 @@ def test_production_subscores_equal_modular_scorers():
     produced = d2.compute_subscores(stats_all, rl_all, {})[d2.SCORED_CHANNELS[0]]
     ti = d2.TemporalIntegrityScorer(d2._d2_cfg).score(stats)
     gs = d2.GapSeverityScorer(d2._d2_cfg).score(stats)
-    fa, _ = d2.FreezeAvailabilityScorer(d2._d2_cfg).score(stats, rl_all[d2.SCORED_CHANNELS[0]])
+    ha, _ = d2.HardAvailabilityScorer(d2._d2_cfg).score(stats, rl_all[d2.SCORED_CHANNELS[0]])
 
     assert np.allclose(produced["Q_TI"], ti)
     assert np.allclose(produced["Q_GS"], gs)
-    assert np.allclose(produced["Q_FA"], fa)
+    assert np.allclose(produced["Q_HA"], ha)
+    assert np.allclose(produced["Q_FA"], ha)
 
 
-def test_qfa_uses_configured_six_hour_window(tmp_path):
+def test_qha_uses_configured_six_hour_observed_value_denominator(tmp_path):
     idx = pd.date_range("2026-01-01", periods=24 * 60, freq="1min")
     base = pd.DataFrame({
         "missing": 0,
         "value_gap_recovery": 0,
-        "qfa_unavailable": np.r_[np.ones(18 * 60), np.zeros(6 * 60)],
-        "sensor_freeze": 0,
+        "present_raw": 1,
+        "info_empty": 0,
+        "sensor_freeze": np.r_[np.ones(18 * 60), np.zeros(6 * 60)],
         "low_iqr_diagnostic": 0,
         "soft_rle_diagnostic": 0,
         "soft_stasis": 0,
@@ -87,7 +91,7 @@ def test_qfa_uses_configured_six_hour_window(tmp_path):
         d2.CACHE, d2.CACHE_KEY = old_cache, old_key
 
     assert d2._d2_cfg.freeze_window.length == "6h"
-    assert stats["DO_1_4"]["info_empty_cov"].iloc[-1] == 0.0
+    assert stats["DO_1_4"]["hard_stasis_fraction_observed"].iloc[-1] == 0.0
 
 
 def test_response_loss_peers_are_same_position_and_process_floor_is_disabled():
@@ -109,7 +113,7 @@ def test_response_loss_peers_are_same_position_and_process_floor_is_disabled():
 
 def test_response_loss_is_diagnostic_only_in_production_qfa():
     idx = pd.date_range("2026-01-02", periods=3, freq="1h")
-    stats = pd.DataFrame({"info_empty_cov": [0.10, 0.10, 0.10]}, index=idx)
+    stats = pd.DataFrame({"hard_stasis_fraction_observed": [0.10, 0.10, 0.10]}, index=idx)
     response_loss = pd.Series([0.0, 0.5, 1.0], index=idx)
     score, main = d2.FreezeAvailabilityScorer(d2._d2_cfg).score(
         stats, response_loss, allow_response_loss=True

@@ -136,7 +136,7 @@ ENG = {
     "true_irregular_rate_breaks": [0.005, 0.02, 0.05, 0.10, 0.15],
     "L_max_breaks_min":          [5, 15, 60, 360, 660],
     "gap_count_breaks":          [2, 5, 15, 40, 65],
-    "info_empty_breaks":         [0.02, 0.08, 0.20, 0.50, 0.80],
+    "hard_stasis_breaks":        [0.02, 0.08, 0.20, 0.50, 0.80],
 }
 
 
@@ -325,7 +325,7 @@ def fig02_subscore_violins(state: dict):
 
     sub_cols = [("Q_TI", C_QTI, "Q$_{TI}$  (Temporal Integrity)"),
                 ("Q_GS", C_QGS, "Q$_{GS}$  (Gap Severity)"),
-                ("Q_FA", C_QFA, "Q$_{FA}$  (Freeze / Availability)")]
+                ("Q_HA", C_QFA, "Q$_{HA}$  (Hard Availability)")]
 
     fig, axes = plt.subplots(1, 3, figsize=(7.2, 4.25), sharey=False)
     fig.subplots_adjust(wspace=0.24)
@@ -554,7 +554,7 @@ def fig05_freeze_availability(state: dict):
         ("floor_occupancy", "Floor\noccupancy", PAL["blue_light"]),
         ("resolution_limited", "Resolution\nlimited", PAL["teal"]),
         ("sensor_freeze_cov", "Hard sensor\nfreeze", PAL["red_strong"]),
-        ("info_empty_cov", "QFA\nunavailable", PAL["orange"]),
+        ("hard_stasis_fraction_observed", "Observed hard\nstasis", PAL["orange"]),
     ]
     x = np.arange(len(floor_chs)); width = 0.18
     profile_rows = []
@@ -572,7 +572,7 @@ def fig05_freeze_availability(state: dict):
         for ch, value in zip(floor_chs, vals):
             profile_rows.append({"sensor_id": ch, "metric": metric, "mean_pct": value})
     ax1.set_xticks(x)
-    ax1.set_xticklabels([c.replace("_", " ") for c in floor_chs])
+    ax1.set_xticklabels(floor_chs)
     ax1.set_ylabel("Time coverage (%)")
     ax1.set_ylim(0, 105)
     ax1.set_title("Post-anoxic evidence separation", pad=4)
@@ -589,10 +589,10 @@ def fig05_freeze_availability(state: dict):
         daily_floor[f"{ch}_resolution"] = subs_all[ch]["resolution_limited"].resample("D").mean() * 100
         ax2.plot(daily_floor[f"{ch}_floor"].index,
                  daily_floor[f"{ch}_floor"].values, color=ch_colors[ch], lw=1.0,
-                 label=f"{ch.replace('_', ' ')} floor")
+                 label=f"{ch} floor")
         ax2.plot(daily_floor[f"{ch}_resolution"].index,
                  daily_floor[f"{ch}_resolution"].values, color=ch_colors[ch], lw=0.9,
-                 ls="--", label=f"{ch.replace('_', ' ')} limited")
+                 ls="--", label=f"{ch} limited")
     ax2.set_ylabel("Daily coverage (%)")
     ax2.set_ylim(0, 105)
     ax2.set_title("Process floor vs limited resolution", pad=4)
@@ -604,18 +604,18 @@ def fig05_freeze_availability(state: dict):
     leg2.set_zorder(10)
     add_panel_label(ax2, "b", x=-0.12)
 
-    # (c) Only production QFA evidence can activate freeze_severe.
+    # (c) Only observed persistent stasis can activate the QHA veto.
     daily_qfa = {}
     for ch in floor_chs:
-        daily_qfa[ch] = subs_all[ch]["info_empty_cov"].resample("D").mean() * 100
+        daily_qfa[ch] = subs_all[ch]["hard_stasis_fraction_observed"].resample("D").mean() * 100
         ax3.plot(daily_qfa[ch].index, daily_qfa[ch].values,
-                 color=ch_colors[ch], lw=1.0, label=ch.replace("_", " "))
+                 color=ch_colors[ch], lw=1.0, label=ch)
     for thr in (2.0, 8.0, 20.0):
         ax3.axhline(thr, color=PAL["neutral_mid"], lw=0.45, ls=":", alpha=0.65)
     ymax = max(22.0, float(pd.DataFrame(daily_qfa).quantile(0.995).max() * 1.15))
     ax3.set_ylim(0, min(100, ymax))
-    ax3.set_ylabel("QFA unavailable (%)")
-    ax3.set_title("Hard QFA evidence (6 h window)", pad=4)
+    ax3.set_ylabel("Observed hard stasis (%)")
+    ax3.set_title("Hard-availability evidence (6 h window)", pad=4)
     ax3.legend(loc="upper left", fontsize=TK - 1, ncol=2, handlelength=1.2)
     apply_publication_style(ax3)
     add_panel_label(ax3, "c", x=-0.12)
@@ -624,7 +624,7 @@ def fig05_freeze_availability(state: dict):
     standard_daily = {}
     for label, chs, color in (("Standard DO", standard_do, C_DO),
                               ("ORP", standard_orp, C_ORP)):
-        frame = pd.DataFrame({ch: subs_all[ch]["info_empty_cov"] for ch in chs}).resample("D").mean() * 100
+        frame = pd.DataFrame({ch: subs_all[ch]["hard_stasis_fraction_observed"] for ch in chs}).resample("D").mean() * 100
         median = frame.median(axis=1)
         q25, q75 = frame.quantile(0.25, axis=1), frame.quantile(0.75, axis=1)
         ax4.fill_between(median.index, q25.values, q75.values, color=color, alpha=0.15)
@@ -633,7 +633,7 @@ def fig05_freeze_availability(state: dict):
         standard_daily[f"{label}_q25"] = q25
         standard_daily[f"{label}_q75"] = q75
     ax4.set_ylim(bottom=0)
-    ax4.set_ylabel("Info-empty (%)")
+    ax4.set_ylabel("Observed hard stasis (%)")
     ax4.set_title("Standard-route channel burden", pad=4)
     apply_publication_style(ax4)
     ax4.legend(loc="upper left", fontsize=TK - 1, ncol=2, handlelength=1.2,
@@ -671,9 +671,9 @@ def fig06_mapping_curves(state: dict):
         "L_max_min": ("L$_{max}$ (min)", False),
         "P95_gap_min": ("P95 gap (min)", False),
         "gap_run_count": ("Gap count", False),
-        "info_empty_cov": ("QFA unavailable coverage", True),
+        "hard_stasis_fraction_observed": ("Observed hard-stasis fraction", True),
     }
-    sub_color = {"Q_TI": C_QTI, "Q_GS": C_QGS, "Q_FA": C_QFA}
+    sub_color = {"Q_TI": C_QTI, "Q_GS": C_QGS, "Q_HA": C_QFA}
     metrics = []
     piecewise_rows = mapping[mapping["mapping_type"] == "piecewise_linear"]
     for _, row in piecewise_rows.iterrows():
@@ -717,7 +717,7 @@ def fig06_mapping_curves(state: dict):
         ax.set_ylabel("Score", fontsize=FS)
         ax.set_yticks([1, 2, 3, 4, 5])
         ax.set_ylim(0.8, 5.2)
-        sub_display = sub_lbl.replace("Q_TI", "Q$_{TI}$").replace("Q_GS", "Q$_{GS}$").replace("Q_FA", "Q$_{FA}$")
+        sub_display = sub_lbl.replace("Q_TI", "Q$_{TI}$").replace("Q_GS", "Q$_{GS}$").replace("Q_HA", "Q$_{HA}$")
         ax.set_title(f"{sub_display}: {label}", fontsize=TS - 1, pad=3)
         apply_publication_style(ax, font_size=FS)
         add_panel_label(ax, chr(ord("a") + i), x=-0.12)
@@ -733,7 +733,7 @@ def fig06_mapping_curves(state: dict):
          for i in range(5)]
         + [plt.Line2D([0], [0], color=C_QTI, lw=1.2, label="Q$_{TI}$ curve"),
            plt.Line2D([0], [0], color=C_QGS, lw=1.2, label="Q$_{GS}$ curve"),
-           plt.Line2D([0], [0], color=C_QFA, lw=1.2, label="Q$_{FA}$ curve"),
+           plt.Line2D([0], [0], color=C_QFA, lw=1.2, label="Q$_{HA}$ curve"),
            plt.Line2D([0], [0], marker="o", ms=4, color=PAL["neutral_mid"],
                       lw=0, label="Break-point")]
     )
@@ -1084,7 +1084,8 @@ def fig10_calibration_summary(state: dict):
          ENG["true_irregular_rate_breaks"]),
         ("L_max_min",      "L$_{max}$",      False, ENG["L_max_breaks_min"]),
         ("gap_run_count",  "Gap Count",      False, ENG["gap_count_breaks"]),
-        ("info_empty_cov", "Info-Empty",     True,  ENG["info_empty_breaks"]),
+        ("hard_stasis_fraction_observed", "Observed Hard Stasis", True,
+         ENG["hard_stasis_breaks"]),
     ]
 
     pct_lines = [

@@ -66,13 +66,14 @@ class MappingConfig:
     piecewise_breaks:   Dict[str, Dict[str, list]]
     Q_TI_weights:       Dict[str, float]
     Q_GS_weights:       Dict[str, float]
-    Q_FA_rule:          Dict[str, Any]
+    Q_HA_rule:          Dict[str, Any]
     aggregation:        Dict[str, Any]
     veto_rules:         Dict[str, Dict[str, Any]]
     safety_floor:       Dict[str, float]
     imputation:         Dict[str, Any]
     freeze_detection:   Dict[str, Any]
     process_floor_policy: Dict[str, Any]
+    dynamic_information_sufficiency: Dict[str, Any]
     timestamp_quality:  Dict[str, Any]
     mapping_version:    str
 
@@ -168,13 +169,14 @@ def load_config(config_dir: Path, version: str = "v1") -> D2Config:
         piecewise_breaks=mapping_yaml["piecewise_breaks"],
         Q_TI_weights=mapping_yaml["Q_TI_components"]["weights"],
         Q_GS_weights=mapping_yaml["Q_GS_components"]["weights"],
-        Q_FA_rule=mapping_yaml["Q_FA_rule"],
+        Q_HA_rule=mapping_yaml["Q_HA_rule"],
         aggregation=mapping_yaml["aggregation"],
         veto_rules=mapping_yaml["veto_rules"],
         safety_floor=mapping_yaml["safety_floor"],
         imputation=mapping_yaml["imputation"],
         freeze_detection=mapping_yaml["freeze_detection"],
         process_floor_policy=mapping_yaml["process_floor_policy"],
+        dynamic_information_sufficiency=mapping_yaml["dynamic_information_sufficiency"],
         timestamp_quality=mapping_yaml["timestamp_quality"],
         mapping_version=mapping_yaml["mapping_version"],
     )
@@ -210,7 +212,7 @@ def _validate(cfg: D2Config) -> None:
 
     # 3. D2 聚合权重和应为 1
     a = cfg.mapping.aggregation["weights"]
-    s = a["Q_TI"] + a["Q_GS"] + a["Q_FA"]
+    s = a["Q_TI"] + a["Q_GS"] + a["Q_HA"]
     assert abs(s - 1.0) < 1e-6, f"D2 weights sum {s} != 1.0"
 
     # 4. lambda 在 [0, 1]
@@ -242,10 +244,19 @@ def _validate(cfg: D2Config) -> None:
     assert set(cfg.mapping.Q_TI_weights) == expected_qti, \
         f"Q_TI components must be {sorted(expected_qti)}"
 
+    assert set(cfg.mapping.piecewise_breaks["Q_HA"]) == {
+        "hard_stasis_fraction_observed"
+    }, "Q_HA must be based only on observed hard-stasis coverage"
+
     # 8. tau_RLE_D2 < tau_RLE_D1
     fd = cfg.mapping.freeze_detection
     assert fd["tau_rle_D2_min"] < fd["tau_rle_D1_min"], \
         f"D2 RLE threshold {fd['tau_rle_D2_min']} not strictly less than D1 {fd['tau_rle_D1_min']}"
+
+    sensitive = cfg.mapping.dynamic_information_sufficiency
+    assert sensitive["role"] == "sensitive_diagnostic_only"
+    assert sensitive["minimum_independent_families"] >= 2
+    assert sensitive["persistence_hours"] >= 1
 
     # 9. Blocked study periods must be ordered, non-overlapping and bounded.
     ordered_periods = [

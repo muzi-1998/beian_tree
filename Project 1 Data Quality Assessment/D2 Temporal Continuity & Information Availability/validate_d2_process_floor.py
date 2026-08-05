@@ -114,7 +114,8 @@ def _passes(name: str, frame: pd.DataFrame) -> bool:
     unavailable_evidence = frame["missing"] | frame["long_gap"]
     return bool(
         unavailable_evidence.any()
-        and frame.loc[unavailable_evidence, "qfa_unavailable"].all()
+        and frame.loc[unavailable_evidence, "continuity_unavailable"].all()
+        and not frame.loc[unavailable_evidence, "qfa_unavailable"].any()
         and not frame.loc[frame["missing"], "sensor_freeze"].any()
     )
 
@@ -158,12 +159,12 @@ def main() -> None:
             "floor_occupancy_pct": sub["floor_occupancy"].mean() * 100,
             "resolution_limited_pct": sub["resolution_limited"].mean() * 100,
             "sensor_freeze_pct": sub["sensor_freeze_cov"].mean() * 100,
-            "qfa_unavailable_pct": sub["info_empty_cov"].mean() * 100,
+            "qfa_unavailable_pct": sub["hard_stasis_fraction_observed"].mean() * 100,
             "freeze_severe_veto_pct": score["veto_reason"].str.contains(
-                "freeze_severe", na=False
+                "hard_stasis_severe", na=False
             ).mean() * 100,
             "total_veto_pct": score["veto_flag"].mean() * 100,
-            "mean_Q_FA": sub["Q_FA"].mean(),
+            "mean_Q_FA": sub["Q_HA"].mean(),
         })
 
     summary_df = pd.DataFrame(summary)
@@ -238,8 +239,8 @@ def main() -> None:
             )
 
     payload = {
-        "validation_version": "d2_process_floor_contract_r2",
-        "qfa_window": "6h",
+        "validation_version": "d2_process_floor_contract_r3_hard_only",
+        "qha_window": "6h",
         "hard_rle_min": 15,
         "all_contract_checks_passed": bool(contract_checks["passed"].all()),
         "all_challenges_passed": bool(summary_df["passed"].all()),

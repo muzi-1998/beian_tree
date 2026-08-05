@@ -1,4 +1,4 @@
-"""Build a SHA-256 manifest for the frozen D2 V3 release."""
+"""Build a SHA-256 manifest for the frozen D2 V4 strict/sensitive release."""
 from __future__ import annotations
 
 import hashlib
@@ -20,6 +20,7 @@ ROOT_FILES = (
     "D2_EXPERT_AUDIT_2026-07.md",
     "d2_calibration.yaml",
     "run_d2_pipeline.py",
+    "run_d2_full_pipeline_validation.py",
     "run_d2_scientific_validation.py",
     "validate_d2_process_floor.py",
     "make_d2_figures.py",
@@ -30,6 +31,7 @@ ROOT_FILES = (
     "test_d2_p0p1_regression.py",
     "test_d2_process_floor_regression.py",
     "test_d2_timestamp_qti_regression.py",
+    "test_d2_full_pipeline_injection.py",
 )
 
 
@@ -80,7 +82,7 @@ def main() -> None:
     repository_records = [file_record(path) for path in repository_files()]
     local_records = [file_record(path) for path in local_submission_files()]
     payload = {
-        "schema_version": "d2-release-manifest-v2",
+        "schema_version": "d2-release-manifest-v4",
         "generated_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "run_id": validation_manifest["run_id"],
         "calibration_id": calibration["calibration_id"],
@@ -90,15 +92,18 @@ def main() -> None:
             "external_site_validation"
         ],
         "verification": {
-            "production_tests": "28 passed",
+            "production_tests": "32 passed",
             "test_command": (
                 "python -m pytest test_d2_contract_regression.py "
                 "test_d2_p0p1_regression.py test_d2_process_floor_regression.py "
                 "test_d2_timestamp_qti_regression.py "
+                "test_d2_full_pipeline_injection.py "
                 "-q --import-mode=importlib"
             ),
             "process_floor_challenges": "5/5 passed",
-            "figure_static_validation": "14/14 checks passed; 0 warnings",
+            "full_pipeline_monotonicity": "7/7 groups passed; baseline false positives 0",
+            "qha_window_robustness": "3/6/9/12 h all passed prespecified event Jaccard >= 0.75",
+            "figure_static_validation": "3 scripts x 14/14 checks passed; 0 warnings; 0 failures",
         },
         "repository_outputs": {
             "count": len(repository_records),

@@ -82,6 +82,12 @@ def test_missing_and_long_gap_are_not_exempted_by_process_floor():
         + [0.04, 0.05] * 5
         + [0.05, 0.06] * 5
     )
+    out = _run(values, long_gap_positions=tuple(range(24, 30)))
+    assert out["continuity_unavailable"].iloc[8:14].all()
+    assert out["continuity_unavailable"].iloc[24:30].all()
+    assert not out["hard_availability_loss"].iloc[8:14].any()
+    assert not out["qfa_unavailable"].iloc[8:14].any()
+    assert not out["sensor_freeze"].iloc[8:14].any()
 
 
 def _run_standard(values: list[float | None]) -> pd.DataFrame:
@@ -107,12 +113,6 @@ def _run_standard(values: list[float | None]) -> pd.DataFrame:
         hard_rle_min=15,
         availability_mode="standard",
     )
-    out = _run(values, long_gap_positions=tuple(range(24, 30)))
-    assert out["qfa_unavailable"].iloc[8:14].all()
-    assert out["qfa_unavailable"].iloc[24:30].all()
-    assert not out["sensor_freeze"].iloc[8:14].any()
-
-
 def test_both_post_anoxic_do_channels_use_process_floor_route():
     cfg = load_config(ROOT / "configs", version="v1")
     for sensor_id in ("DO_1_4", "DO_2_4"):
