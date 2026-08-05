@@ -691,129 +691,191 @@ def figure14_evidence_redundancy() -> None:
     save(fig, "D2_Fig14_evidence_hierarchy_ablation")
 
 
-def figure15_low_tail_burden() -> None:
+def figure15_channel_outcome_profile() -> None:
+    profile = _read_validation("D2_channel_outcome_profile.parquet").sort_values("display_order")
+    veto = _read_validation("D2_channel_veto_composition.parquet")
     burden = _read_validation("D2_low_tail_burden.parquet")
-    event_summary = _read_validation("D2_low_tail_event_summary.parquet")
-    veto_summary = _read_validation("D2_veto_reason_summary.parquet")
+    sensors = profile["sensor_id"].tolist()
     phases = list(PHASE_LABELS)
-    sensors = [
-        *[f"DO_1_{position}" for position in range(1, 5)],
-        *[f"DO_2_{position}" for position in range(1, 5)],
-        *[f"ORP_1_{position}" for position in range(1, 4)],
-        *[f"ORP_2_{position}" for position in range(1, 4)],
-    ]
-    matrix = burden.pivot(index="sensor_id", columns="phase", values="low_hours_per_1000h").reindex(
-        index=sensors, columns=phases
+    y = np.arange(len(sensors))
+
+    fig = plt.figure(figsize=(7.2, 8.4))
+    grid = fig.add_gridspec(
+        3, 2, height_ratios=(1.20, 1.05, 1.05), width_ratios=(1.08, 0.92),
+        hspace=0.68, wspace=0.36,
     )
+    ax_a = fig.add_subplot(grid[0, 0])
+    ax_b = fig.add_subplot(grid[0, 1], sharey=ax_a)
+    ax_c = fig.add_subplot(grid[1, 0])
+    ax_d = fig.add_subplot(grid[1, 1], sharey=ax_c)
+    ax_e = fig.add_subplot(grid[2, :])
 
-    fig = plt.figure(figsize=(7.2, 6.0))
-    grid = fig.add_gridspec(2, 3, height_ratios=(1.35, 1.0), hspace=0.58, wspace=0.42)
-    ax_a = fig.add_subplot(grid[0, :])
-    ax_b = fig.add_subplot(grid[1, 0])
-    ax_c = fig.add_subplot(grid[1, 1])
-    ax_d = fig.add_subplot(grid[1, 2])
+    for yi, row in profile.iterrows():
+        ax_a.plot([row["p05_D2_Strict"], row["p95_D2_Strict"]], [yi, yi],
+                  color=COLORS["blue_light"], lw=1.1, solid_capstyle="round")
+        ax_a.plot([row["q25_D2_Strict"], row["q75_D2_Strict"]], [yi, yi],
+                  color=COLORS["blue"], lw=3.0, solid_capstyle="round")
+        ax_a.plot(row["median_D2_Strict"], yi, "o", ms=3.5, mfc="white",
+                  mec=COLORS["blue"], mew=0.9, zorder=4)
+        ax_a.plot(row["mean_D2_Strict"], yi, "D", ms=2.8,
+                  color=COLORS["orange"], zorder=5)
+    threshold_spec = (
+        (4.5, "A/B 4.5", COLORS["teal"]),
+        (3.5, "B/C 3.5", COLORS["orange"]),
+        (2.5, "C/D 2.5", COLORS["red"]),
+    )
+    for threshold, label, color in threshold_spec:
+        ax_a.axvline(threshold, color=color, lw=0.65, ls="--", alpha=0.82)
+        ax_a.text(threshold, 0.985, label, transform=ax_a.get_xaxis_transform(),
+                  rotation=90, ha="right", va="top", fontsize=5.0, color=color)
+    ax_a.plot([], [], color=COLORS["blue_light"], lw=1.1, label="P05–P95")
+    ax_a.plot([], [], color=COLORS["blue"], lw=3.0, label="IQR")
+    ax_a.plot([], [], "o", ms=3.5, mfc="white", mec=COLORS["blue"], label="Median")
+    ax_a.plot([], [], "D", ms=2.8, color=COLORS["orange"], label="Mean")
+    ax_a.set_yticks(y, sensors)
+    ax_a.invert_yaxis()
+    ax_a.set_xlim(2.30, 5.08)
+    ax_a.set_xlabel("$D2_{Strict}$ score")
+    ax_a.set_title("Score distribution and lower-tail range")
+    ax_a.text(0.64, 0.08, "P05 = P95 = 5.0\nfor all channels",
+              transform=ax_a.transAxes, ha="center", va="bottom", fontsize=5.2,
+              color=COLORS["grey"],
+              bbox={"facecolor": "white", "edgecolor": "none", "alpha": 0.82,
+                    "pad": 1.0})
+    ax_a.legend(loc="lower left", ncol=2, handlelength=1.5,
+                columnspacing=0.8, handletextpad=0.4)
+    style(ax_a)
+    panel(ax_a, "a", x=-0.18)
 
+    grade_colors = {
+        "A": COLORS["blue"],
+        "B": COLORS["teal"],
+        "C": "#D8A03D",
+        "D": "#D66B4C",
+        "E": "#8F2D3F",
+    }
+    left = np.zeros(len(profile))
+    for grade in "ABCDE":
+        values = profile[f"grade_{grade}_pct"].to_numpy()
+        ax_b.barh(y, values, left=left, height=0.68, color=grade_colors[grade], label=grade)
+        left += values
+    for yi, row in profile.iterrows():
+        a_share = row["grade_A_pct"]
+        ax_b.text(a_share / 2, yi, f"{a_share:.1f}", color="white",
+                  ha="center", va="center", fontsize=5.1, fontweight="bold")
+        ax_b.text(101.0, yi, f"{100 - a_share:.1f}", ha="left", va="center",
+                  fontsize=5.1, color=COLORS["black"])
+    ax_b.text(101.0, -0.82, "B–E", ha="left", va="bottom", fontsize=5.0,
+              color=COLORS["grey"])
+    ax_b.set_xlim(0, 108)
+    ax_b.set_xticks([0, 50, 100])
+    ax_b.set_xlabel("Grade composition (%)")
+    ax_b.set_title("A–E outcome composition")
+    ax_b.tick_params(labelleft=False)
+    ax_b.legend(loc="lower center", bbox_to_anchor=(0.5, 1.10), ncol=5,
+                columnspacing=0.55, handlelength=0.9)
+    style(ax_b)
+    panel(ax_b, "b", x=-0.14)
+
+    low = profile["low_hours_per_1000h"].to_numpy()
+    veto_rate = profile["veto_hours_per_1000h"].to_numpy()
+    ax_c.hlines(y, np.minimum(low, veto_rate), np.maximum(low, veto_rate),
+                color=COLORS["grey_light"], lw=1.0)
+    ax_c.scatter(low, y - 0.12, color=COLORS["blue"], s=20,
+                 label="$D2_{Strict}<3$", zorder=3)
+    ax_c.scatter(veto_rate, y + 0.12, facecolor="white", edgecolor=COLORS["red"],
+                 linewidth=0.9, marker="s", s=20, label="Veto", zorder=3)
+    ax_c.set_yticks(y, sensors)
+    ax_c.invert_yaxis()
+    ax_c.set_xlim(0, max(low.max(), veto_rate.max()) * 1.17)
+    ax_c.set_xlabel("Hours per 1000 sensor-hours")
+    ax_c.set_title("Low-score and Veto burden")
+    ax_c.legend(loc="upper left", ncol=2, handletextpad=0.35, columnspacing=0.8)
+    style(ax_c)
+    panel(ax_c, "c", x=-0.18)
+
+    reason_order = ["Missing only", "Gap + missing", "Gap only", "Hard stasis", "Other"]
+    reason_labels = {
+        "Missing only": "Severe missing",
+        "Gap + missing": "Gap + missing",
+        "Gap only": "Severe gap",
+        "Hard stasis": "Hard availability loss",
+        "Other": "Other",
+    }
+    reason_colors = {
+        "Missing only": COLORS["blue"],
+        "Gap + missing": COLORS["orange"],
+        "Gap only": COLORS["teal"],
+        "Hard stasis": COLORS["violet"],
+        "Other": COLORS["grey"],
+    }
+    veto_matrix = veto.pivot_table(
+        index="sensor_id", columns="reason_group", values="veto_share_pct",
+        aggfunc="sum", fill_value=0,
+    ).reindex(index=sensors, columns=reason_order, fill_value=0)
+    left = np.zeros(len(sensors))
+    for reason in reason_order:
+        values = veto_matrix[reason].to_numpy()
+        if np.allclose(values, 0):
+            continue
+        ax_d.barh(y, values, left=left, height=0.68, color=reason_colors[reason],
+                  label=reason_labels[reason])
+        left += values
+    ax_d.set_xlim(0, 100)
+    ax_d.set_xticks([0, 50, 100])
+    ax_d.set_xlabel("Share of Veto hours (%)")
+    ax_d.set_title("Dominant limitation within Veto hours")
+    ax_d.tick_params(labelleft=False)
+    ax_d.legend(loc="lower center", bbox_to_anchor=(0.5, 1.10), ncol=2,
+                handlelength=0.9, columnspacing=0.65)
+    style(ax_d)
+    panel(ax_d, "d", x=-0.14)
+
+    matrix = burden.pivot(
+        index="sensor_id", columns="phase", values="low_hours_per_1000h"
+    ).reindex(index=sensors, columns=phases)
     vmax = max(float(np.nanmax(matrix.to_numpy())), 1.0)
-    image = ax_a.imshow(matrix, aspect="auto", cmap="Blues", vmin=0, vmax=vmax)
+    image = ax_e.imshow(matrix, aspect="auto", cmap="Blues", vmin=0, vmax=vmax)
     for i in range(matrix.shape[0]):
         for j in range(matrix.shape[1]):
             value = matrix.iloc[i, j]
             label = "0" if np.isclose(value, 0) else f"{value:.1f}"
-            ax_a.text(j, i, label, ha="center", va="center",
-                      color="white" if value > 0.58 * vmax else COLORS["black"], fontsize=5.8)
+            ax_e.text(j, i, label, ha="center", va="center", fontsize=5.5,
+                      color="white" if value > 0.58 * vmax else COLORS["black"])
     phase_dates = {
-        "development": "Aug-Dec 2025",
-        "internal_validation": "Jan-Feb 2026",
-        "terminal_test": "Feb-Apr 2026",
+        "development": "Aug–Dec 2025",
+        "internal_validation": "Jan–Feb 2026",
+        "terminal_test": "Feb–Apr 2026",
     }
     phase_hours = burden.groupby("phase")["n_sensor_hours"].median().reindex(phases)
-    ax_a.set_xticks(range(len(phases)), [
-        f"{PHASE_LABELS[p]}\n{phase_dates[p]}\nn={int(phase_hours[p])} h/channel"
-        for p in phases
+    ax_e.set_xticks(range(len(phases)), [
+        f"{PHASE_LABELS[phase]}\n{phase_dates[phase]}\nn={int(phase_hours[phase])} h/channel"
+        for phase in phases
     ])
-    ax_a.set_yticks(range(len(sensors)), sensors)
-    for boundary in (3.5, 7.5, 10.5):
-        ax_a.axhline(boundary, color="white", lw=1.4)
-    for center, label in ((1.5, "DO line 1"), (5.5, "DO line 2"),
-                          (9.0, "ORP line 1"), (12.0, "ORP line 2")):
-        ax_a.text(-0.12, center, label, transform=ax_a.get_yaxis_transform(),
-                  ha="right", va="center", fontsize=5.5, color=COLORS["grey"])
-    ax_a.set_title("Low-score hours reveal channel and phase structure")
-    cbar = fig.colorbar(image, ax=ax_a, fraction=0.025, pad=0.02)
-    cbar.set_label("D2 < 3 hours per 1000 sensor-hours")
-    style(ax_a, full_frame=True)
-    panel(ax_a, "a")
+    ax_e.set_yticks(range(len(sensors)), sensors)
+    ax_e.set_title("Stage-specific low-tail burden")
+    cbar = fig.colorbar(image, ax=ax_e, fraction=0.025, pad=0.018)
+    cbar.set_label("$D2_{Strict}<3$ hours per 1000 sensor-hours")
+    style(ax_e, full_frame=True)
+    ax_e.tick_params(axis="both", which="both", direction="in")
+    panel(ax_e, "e", x=-0.09)
 
-    x = np.arange(len(phases))
-    width = 0.34
-    for offset, (analyte, color) in zip((-width / 2, width / 2),
-                                        (("DO", COLORS["blue"]), ("ORP", COLORS["red"]))):
-        sub = event_summary.loc[event_summary["analyte"].eq(analyte)].set_index("phase").loc[phases]
-        values = sub["events_per_1000h"].to_numpy()
-        lower = values - sub["event_rate_ci95_low"].to_numpy()
-        upper = sub["event_rate_ci95_high"].to_numpy() - values
-        ax_b.bar(x + offset, values, width=width, facecolor="white", edgecolor=color,
-                 linewidth=1.1, label=analyte)
-        ax_b.errorbar(x + offset, values, yerr=np.vstack([lower, upper]), fmt="none",
-                      ecolor=color, elinewidth=0.8, capsize=2)
-    ax_b.set_xticks(x, ["Dev.", "Validation", "Terminal"])
-    ax_b.set_ylabel("Events per 1000 sensor-hours")
-    ax_b.set_title("Low-score event frequency")
-    ax_b.legend(loc="upper right")
-    style(ax_b)
-    panel(ax_b, "b")
-
-    duration = event_summary.loc[event_summary["analyte"].eq("ALL")].set_index("phase").loc[phases]
-    duration_columns = ["duration_median_h", "duration_p95_h", "duration_max_h"]
-    if (duration[duration_columns] <= 0).any().any():
-        raise ValueError("Event-duration summaries must be strictly positive before log scaling.")
-    for column, marker, color, label in (
-        ("duration_median_h", "o", COLORS["blue"], "Median"),
-        ("duration_p95_h", "^", COLORS["orange"], "P95"),
-        ("duration_max_h", "D", COLORS["red"], "Maximum"),
-    ):
-        ax_c.plot(x, duration[column], marker=marker, color=color, lw=1.0, ms=3.5, label=label)
-    ax_c.set_yscale("log")
-    ax_c.set_xticks(x, ["Dev.", "Validation", "Terminal"])
-    ax_c.set_ylabel("Event duration (h, log scale)")
-    ax_c.set_title("Event duration distribution")
-    ax_c.legend(loc="lower left")
-    style(ax_c)
-    panel(ax_c, "c")
-
-    reason_order = ["Missing only", "Gap + missing", "Gap only", "Hard stasis", "Other"]
-    reason_colors = [COLORS["blue"], COLORS["orange"], COLORS["teal"], COLORS["violet"], COLORS["grey"]]
-    bottom = np.zeros(len(phases))
-    totals = []
-    for phase in phases:
-        totals.append(int(veto_summary.loc[veto_summary["phase"].eq(phase), "veto_hours"].sum()))
-    for reason, color in zip(reason_order, reason_colors):
-        values = np.array([
-            veto_summary.loc[veto_summary["phase"].eq(phase)
-                             & veto_summary["reason_group"].eq(reason), "veto_share"].sum() * 100
-            for phase in phases
-        ])
-        if np.allclose(values, 0):
-            continue
-        ax_d.bar(x, values, bottom=bottom, color=color, width=0.68, label=reason)
-        bottom += values
-    for xi, total in zip(x, totals):
-        ax_d.text(xi, 102, f"n={total}", ha="center", va="bottom", fontsize=5.4)
-    ax_d.set_xticks(x, ["Dev.", "Validation", "Terminal"])
-    ax_d.set_ylim(0, 111)
-    ax_d.set_ylabel("Veto reason share (%)")
-    ax_d.set_title("Veto composition")
-    ax_d.legend(loc="upper center", bbox_to_anchor=(0.5, -0.22), ncol=2,
-                handlelength=1.0, columnspacing=0.7)
-    style(ax_d)
-    panel(ax_d, "d")
-
-    with pd.ExcelWriter(VALIDATION / "D2_Fig15_low_tail_source_data.xlsx",
-                        engine="openpyxl") as writer:
-        burden.to_excel(writer, sheet_name="panel_a_burden", index=False)
-        event_summary.to_excel(writer, sheet_name="panels_b_c_events", index=False)
-        veto_summary.to_excel(writer, sheet_name="panel_d_veto", index=False)
-    save(fig, "D2_Fig15_low_tail_reporting")
+    thresholds = pd.DataFrame({
+        "boundary": ["A/B", "B/C", "C/D", "D/E"],
+        "D2_Strict_threshold": [4.5, 3.5, 2.5, 1.5],
+    })
+    with pd.ExcelWriter(
+        VALIDATION / "D2_Fig15_channel_outcome_risk_source_data.xlsx",
+        engine="openpyxl",
+    ) as writer:
+        profile.to_excel(writer, sheet_name="panels_a_c_profile", index=False)
+        profile[["sensor_id", *[f"grade_{grade}_pct" for grade in "ABCDE"]]].to_excel(
+            writer, sheet_name="panel_b_grades", index=False
+        )
+        veto.to_excel(writer, sheet_name="panel_d_veto", index=False)
+        burden.to_excel(writer, sheet_name="panel_e_phase_burden", index=False)
+        thresholds.to_excel(writer, sheet_name="grade_contract", index=False)
+    save(fig, "D2_Fig15_channel_outcome_risk_profile")
 
 
 def figure18_full_pipeline_validation() -> None:
@@ -852,6 +914,8 @@ def figure18_full_pipeline_validation() -> None:
 
     gaps = response.loc[response["scenario"].eq("single_gap_min")]
     gap_curve = gaps.groupby("severity", as_index=False)["min_Q_GS"].mean().sort_values("severity")
+    if (gap_curve["severity"] <= 0).any():
+        raise ValueError("Gap durations must be strictly positive before log scaling.")
     ax_c.plot(gap_curve["severity"], gap_curve["min_Q_GS"], marker="o", ms=3.5,
               lw=1.1, color=COLORS["blue"], label="DO and ORP coincide")
     repeated = response.loc[response["scenario"].eq("ten_two_minute_gaps")]
@@ -927,7 +991,7 @@ def main() -> None:
     print(f"run={state['run_id']} calibration={state['calibration_id']}")
     figure13_process_floor()
     figure14_evidence_redundancy()
-    figure15_low_tail_burden()
+    figure15_channel_outcome_profile()
     figure16_construct_separation()
     figure17_timestamp_qti(state)
     figure18_full_pipeline_validation()

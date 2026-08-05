@@ -5,6 +5,8 @@
   "external_site_validation": "deferred",
   "outputs": {
     "D2_analyte_effects.parquet": "ac24354bd5dd40ca6018c957702637f095523433b25afa19b1e5d6377da74e35",
+    "D2_channel_outcome_profile.parquet": "5770cccfc057b8af6fc3bff2d0e9cd1a0de05a200770a43f293dfc8143978265",
+    "D2_channel_veto_composition.parquet": "2c89a086631556cded228dae40143513270b2fe51079da6ee800964139331eb0",
     "D2_d1d2_circular_null.parquet": "42ba8037968dc723a1c151d86a8180adcd800456ac3bafdff574b275e43447ca",
     "D2_d1d2_concordance.parquet": "705350f24e2bd67a05f8f76a3dd417bf6e0efbe696d236a0ef2d6a4ceba417d2",
     "D2_d1d2_event_pairs.parquet": "de67d46bea675ae4340b39277dbbef2436fce033eee8ac4e1030c95d6e90e6a9",
@@ -21,7 +23,7 @@
     "D2_qti_component_audit.parquet": "02d789f66eb3e46924575ee2d49750161c1c187b3111a8f6a91d2b577f47a59f",
     "D2_qti_threshold_reference.parquet": "34240588bb165158ed6afe1b8a7d54f996f29119eec6cf189cb3cd70d21b60be",
     "D2_raw_vs_score_event_impact.parquet": "fab9b3ef151f79f4f200c10a558d5ae91587b6ccfebe69abb8d89cd1e8bafa02",
-    "D2_scientific_validation_source_data.xlsx": "18f0e12cdc3c4546e9508ba19810983dc0caa0d0607f705191d6762d96a877c4",
+    "D2_scientific_validation_source_data.xlsx": "e2a61abb4a1de1fb16e205c2d3348d5b134f32eb86b7ca0a6e9f35c27e3332f3",
     "D2_sensitive_diagnostic_summary.parquet": "3db8a8ce38035c9fce04fb40d261ec56eaed464eb0ad71b5faf2f0151e7f153f",
     "D2_threshold_sensitivity.parquet": "92bf86a5579ac17d6c7a34162f51ff88b231b51fd651bb0728d60c00169f8679",
     "D2_veto_reason_summary.parquet": "c7c0e28800da9e61d5f023d0044ec1bab7e03289a5f8ac7740c9f14628324e38",

@@ -14,6 +14,7 @@ ARTIFACTS = ROOT / "artifacts"
 OUTPUT = ARTIFACTS / "D2_release_manifest.json"
 DEPRECATED_FIGURE_STEMS = {
     "D2_Fig14_aggregation_robustness",
+    "D2_Fig15_low_tail_reporting",
     "D2_Fig16_d1_d2_construct_separation",
 }
 
@@ -100,7 +101,7 @@ def main() -> None:
             "external_site_validation"
         ],
         "verification": {
-            "production_tests": "32 passed",
+            "production_tests": "33 passed",
             "test_command": (
                 "python -m pytest test_d2_contract_regression.py "
                 "test_d2_p0p1_regression.py test_d2_process_floor_regression.py "

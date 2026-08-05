@@ -82,6 +82,8 @@ D2 V4 已完成进入 D1-D5 子分项聚合所需的技术收口。三个正式�
 
 全分析物低分事件频率在 development、internal validation 和 terminal test 分别为 0.294、0.801 和 1.050 events/1000 sensor-hours。前两阶段事件持续时间中位数分别为 23 h 和 30 h；terminal test 中位数为 4 h、P95 和最大值均为 19 h。Veto 组成随阶段变化：development 几乎全部由 missing 驱动，internal validation 以 gap + missing 为主，terminal test 则出现更高比例的硬停滞。事件数、持续时间和 Veto 原因均按独立量纲展示，不再把 deficit points 与 hours 放在同一纵轴比较。
 
+通道级画像进一步显示，14 个通道的 `D2_Strict` 中位数、P05、IQR 和 P95 均为 5.0，Grade A 占 96.62%-98.04%，确认均值排序存在明显天花板限制。低分负担和 Veto 负担在每个通道上完全一致，为 9.31-12.58 h/1000 sensor-hours；这意味着当前正式低尾均由严重门控事件形成，而不是连续分数轻微下降。DO 第2线通道的 Veto 中约 25%-26% 来自 hard availability loss，其余通道主要由 severe missing、gap + missing 和 severe gap 构成。该结果支持将 Fig. 15 定位为“通道级结果与低尾风险画像”，而不是均值比较图。
+
 ## 6. 证据独立性与权重解释
 
 `Q_TI` 与 `Q_GS` 的小时级 Pearson `r`、Spearman `rho`、低分事件 `phi` 和低分事件 Jaccard 分别为 0.961、0.900、0.729 和 0.563，因为缺失比例与缺口严重度共享同一连续性背景；`Q_HA` 与二者的连续相关和低尾重叠均接近 0，有效证据维数为 1.86。
@@ -132,7 +134,7 @@ D1 有 81 个健康事件，D2 有 45 个硬可用性事件，仅 5 对在 +/-1 
 
 - Fig. 13 `D2_Fig13_process_floor_contract`：五类 process-floor 机制合同、15 min 资格门槛和现场证据分离；
 - Fig. 14 `D2_Fig14_evidence_hierarchy_ablation`：分支证据层级、连续/低尾关联与事件级消融；
-- Fig. 15 `D2_Fig15_low_tail_reporting`：分阶段低分热图、事件频率、持续时间和 Veto 组成；
+- Fig. 15 `D2_Fig15_channel_outcome_risk_profile`：通道级分布、A-E 等级构成、低分/Veto 负担、限制来源和阶段变化；
 - Fig. 16 `D2_Fig16_limited_event_concordance`：D1-D2 有限时间一致性及阶段约束空模型；
 - Fig. 18 `D2_Fig18_full_pipeline_validation`：时间戳、缺口拓扑、硬停滞和窗口稳健性全管线验证。
 

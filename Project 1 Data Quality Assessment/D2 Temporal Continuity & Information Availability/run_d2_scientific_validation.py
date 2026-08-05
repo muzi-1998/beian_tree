@@ -796,6 +796,19 @@ def qha_window_sensitivity(state: dict, cfg) -> tuple[pd.DataFrame, pd.DataFrame
     return scores, pd.DataFrame(summaries)
 
 
+def _veto_reason_group(reasons: pd.Series) -> np.ndarray:
+    return np.select(
+        [
+            reasons.eq("L_max_p99|missing_p99"),
+            reasons.eq("missing_p99"),
+            reasons.eq("L_max_p99"),
+            reasons.str.contains("hard_stasis_severe", na=False),
+        ],
+        ["Gap + missing", "Missing only", "Gap only", "Hard stasis"],
+        default="Other",
+    )
+
+
 def low_tail_burden(
     state: dict, cfg, base: pd.DataFrame
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
@@ -884,16 +897,7 @@ def low_tail_burden(
     event_summary = pd.DataFrame(event_summary_rows)
 
     veto = base.loc[base["veto_flag"].astype(bool), ["phase", "veto_reason"]].copy()
-    veto["reason_group"] = np.select(
-        [
-            veto["veto_reason"].eq("L_max_p99|missing_p99"),
-            veto["veto_reason"].eq("missing_p99"),
-            veto["veto_reason"].eq("L_max_p99"),
-            veto["veto_reason"].str.contains("hard_stasis_severe", na=False),
-        ],
-        ["Gap + missing", "Missing only", "Gap only", "Hard stasis"],
-        default="Other",
-    )
+    veto["reason_group"] = _veto_reason_group(veto["veto_reason"])
     veto_summary = veto.groupby(["phase", "reason_group"], as_index=False).size().rename(
         columns={"size": "veto_hours"}
     )
@@ -905,6 +909,53 @@ def low_tail_burden(
         axis=1,
     )
     return burden, impact, event_summary, veto_summary
+
+
+def channel_outcome_profile(base: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
+    rows = []
+    for (sensor_id, analyte), group in base.groupby(["sensor_id", "analyte"], sort=True):
+        score = group["D2_Strict"]
+        grade_share = group["grade"].value_counts(normalize=True).reindex(
+            list("ABCDE"), fill_value=0.0
+        )
+        rows.append({
+            "sensor_id": sensor_id,
+            "analyte": analyte,
+            "n_sensor_hours": int(len(group)),
+            "mean_D2_Strict": float(score.mean()),
+            "p05_D2_Strict": float(score.quantile(0.05)),
+            "q25_D2_Strict": float(score.quantile(0.25)),
+            "median_D2_Strict": float(score.median()),
+            "q75_D2_Strict": float(score.quantile(0.75)),
+            "p95_D2_Strict": float(score.quantile(0.95)),
+            "low_hours_per_1000h": float(score.lt(3.0).mean() * 1000),
+            "veto_hours_per_1000h": float(group["veto_flag"].astype(bool).mean() * 1000),
+            **{f"grade_{grade}_pct": float(grade_share[grade] * 100) for grade in "ABCDE"},
+        })
+    profile = pd.DataFrame(rows).sort_values(
+        ["median_D2_Strict", "p05_D2_Strict", "mean_D2_Strict", "sensor_id"],
+        ascending=[False, False, False, True],
+    ).reset_index(drop=True)
+    profile.insert(0, "display_order", np.arange(1, len(profile) + 1))
+
+    veto = base.loc[
+        base["veto_flag"].astype(bool), ["sensor_id", "analyte", "veto_reason"]
+    ].copy()
+    veto["reason_group"] = _veto_reason_group(veto["veto_reason"])
+    counts = veto.groupby(
+        ["sensor_id", "analyte", "reason_group"], as_index=False
+    ).size().rename(columns={"size": "veto_hours"})
+    exposure = base.groupby("sensor_id").size().rename("n_sensor_hours")
+    totals = counts.groupby("sensor_id")["veto_hours"].transform("sum")
+    counts["veto_share_pct"] = counts["veto_hours"] / totals * 100
+    counts["veto_hours_per_1000h"] = counts.apply(
+        lambda row: row["veto_hours"] / exposure[row["sensor_id"]] * 1000,
+        axis=1,
+    )
+    counts = counts.merge(
+        profile[["sensor_id", "display_order"]], on="sensor_id", how="left"
+    ).sort_values(["display_order", "reason_group"]).reset_index(drop=True)
+    return profile, counts
 
 
 def sensitive_diagnostic_summary(state: dict) -> pd.DataFrame:
@@ -956,6 +1007,7 @@ def main() -> Path:
     )
     window_scores, window_summary = qha_window_sensitivity(state, cfg)
     burden, event_impact, event_summary, veto_summary = low_tail_burden(state, cfg, base)
+    channel_profile, channel_veto = channel_outcome_profile(base)
     sensitive_summary = sensitive_diagnostic_summary(state)
     outputs = {
         "D2_weight_lambda_scores.parquet": weight_scores,
@@ -979,6 +1031,8 @@ def main() -> Path:
         "D2_raw_vs_score_event_impact.parquet": event_impact,
         "D2_low_tail_event_summary.parquet": event_summary,
         "D2_veto_reason_summary.parquet": veto_summary,
+        "D2_channel_outcome_profile.parquet": channel_profile,
+        "D2_channel_veto_composition.parquet": channel_veto,
         "D2_sensitive_diagnostic_summary.parquet": sensitive_summary,
     }
     written = []
@@ -1012,6 +1066,8 @@ def main() -> Path:
         event_impact.to_excel(writer, sheet_name="raw_vs_score_impact", index=False)
         event_summary.to_excel(writer, sheet_name="low_tail_events", index=False)
         veto_summary.to_excel(writer, sheet_name="veto_reasons", index=False)
+        channel_profile.to_excel(writer, sheet_name="channel_outcome", index=False)
+        channel_veto.to_excel(writer, sheet_name="channel_veto", index=False)
         sensitive_summary.to_excel(writer, sheet_name="sensitive_diagnostics", index=False)
     written.append(workbook)
     manifest = _write_manifest(state, written)

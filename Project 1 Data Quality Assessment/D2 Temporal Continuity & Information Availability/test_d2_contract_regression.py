@@ -11,6 +11,7 @@ for module_name in list(sys.modules):
 sys.path.insert(0, str(ROOT))
 
 import run_d2_pipeline as d2
+import run_d2_scientific_validation as science
 
 
 def test_preprocess_flags_are_channel_specific_and_long_gaps_are_not_part_filled(tmp_path):
@@ -129,3 +130,24 @@ def test_study_periods_are_blocked_and_external_site_is_deferred():
     assert pd.Timestamp(development.end) < pd.Timestamp(validation.start)
     assert pd.Timestamp(validation.end) < pd.Timestamp(terminal.start)
     assert design.external_site_validation["status"] == "deferred"
+
+
+def test_channel_outcome_profile_preserves_grade_and_veto_contract():
+    base = pd.DataFrame({
+        "sensor_id": ["DO_1_1"] * 4 + ["DO_2_1"] * 4,
+        "analyte": ["DO"] * 8,
+        "D2_Strict": [5.0, 5.0, 4.8, 4.6, 5.0, 4.0, 2.4, 1.8],
+        "grade": ["A", "A", "A", "A", "A", "B", "C", "D"],
+        "veto_flag": [0, 0, 0, 0, 0, 0, 1, 1],
+        "veto_reason": ["", "", "", "", "", "", "missing_p99", "hard_stasis_severe"],
+    })
+
+    profile, veto = science.channel_outcome_profile(base)
+    assert profile["sensor_id"].tolist() == ["DO_1_1", "DO_2_1"]
+    assert np.allclose(profile[[f"grade_{grade}_pct" for grade in "ABCDE"]].sum(axis=1), 100)
+    risk = profile.set_index("sensor_id").loc["DO_2_1"]
+    assert risk["low_hours_per_1000h"] == 500
+    assert risk["veto_hours_per_1000h"] == 500
+    shares = veto.loc[veto["sensor_id"].eq("DO_2_1")].set_index("reason_group")
+    assert shares.loc["Missing only", "veto_share_pct"] == 50
+    assert shares.loc["Hard stasis", "veto_share_pct"] == 50

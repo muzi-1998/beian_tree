@@ -76,6 +76,8 @@ D2 Temporal Continuity & Information Availability/
 - `D2_low_tail_burden.parquet`：每 1000 sensor-hours 低尾负担；
 - `D2_low_tail_event_summary.parquet`：分阶段事件率、cluster 95% CI 和持续时间；
 - `D2_veto_reason_summary.parquet`：分阶段 Veto 原因组成；
+- `D2_channel_outcome_profile.parquet`：通道级分位数、A-E 构成与低分/Veto 负担；
+- `D2_channel_veto_composition.parquet`：通道级 Veto 限制来源；
 - `D2_sensitive_diagnostic_summary.parquet`：Strict/Sensitive 分层摘要；
 - `D2_d1d2_*.parquet`：事件匹配、全期与阶段约束循环移位空模型；
 - `D2_*_source_data.xlsx`：Fig. 13、14、15、17、18 的绘图源数据；
@@ -88,7 +90,7 @@ D2 Temporal Continuity & Information Availability/
 - 补充材料：Fig. 02-04、Fig. 06-12；
 - Fig. 02 因天花板效应明显，不作为主要科学证据。
 
-正文图的规范文件名为 `D2_Fig13_process_floor_contract`、`D2_Fig14_evidence_hierarchy_ablation`、`D2_Fig15_low_tail_reporting`、`D2_Fig16_limited_event_concordance` 和 `D2_Fig18_full_pipeline_validation`。
+正文图的规范文件名为 `D2_Fig13_process_floor_contract`、`D2_Fig14_evidence_hierarchy_ablation`、`D2_Fig15_channel_outcome_risk_profile`、`D2_Fig16_limited_event_concordance` 和 `D2_Fig18_full_pipeline_validation`。
 
 ## 维护规则
 
@@ -104,3 +106,4 @@ D2 Temporal Continuity & Information Availability/
 |---|---|---|
 | 2026-08-04 | V3 | 原始时间戳 QTI、条件归一化、五阈值连续映射 |
 | 2026-08-05 | V4 | QHA hard-only；Strict/Sensitive 分层；独立证据族；full-pipeline 注入；窗口重验；低尾与证据消融；Fig. 13-18 重绘 |
+| 2026-08-05 | V4.1 | Fig. 15 重构为通道级 D2 结果、等级、Veto 来源和阶段风险画像；评分合同不变 |
