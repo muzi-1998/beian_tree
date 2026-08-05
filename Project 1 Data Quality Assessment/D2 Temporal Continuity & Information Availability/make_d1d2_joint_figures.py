@@ -159,11 +159,11 @@ def luminance(hex_color: str) -> float:
 def finalize(fig, stem: str, dpi: int = 600) -> None:
     plt.tight_layout(pad=1.5)
     finalize_figure(fig)
-    for fmt in ("png", "svg", "pdf"):
+    for fmt in ("png", "svg", "pdf", "tiff"):
         out = FIG_DIR / f"{stem}.{fmt}"
         fig.savefig(out, dpi=dpi, bbox_inches="tight")
     plt.close(fig)
-    print(f"  [OK] {stem}.png + .svg + .pdf")
+    print(f"  [OK] {stem}.png + .svg + .pdf + .tiff")
 
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -234,7 +234,10 @@ def make_b1(freeze_df: pd.DataFrame, D2: dict) -> None:
     # Panel C：event duration by relation
     dur_data   = {r: [] for r in REL_ORDER[:4]}   # excl no_d1_index
     for r in REL_ORDER[:4]:
-        dur_data[r] = freeze_df[freeze_df["relation_to_D1"]==r]["duration_min"].tolist()
+        duration = freeze_df.loc[
+            freeze_df["relation_to_D1"].eq(r), "duration_min"
+        ].clip(lower=1e-6)
+        dur_data[r] = duration.tolist()
 
     # ── 布局 ─────────────────────────────────────────────────────────────────
     fig = plt.figure(figsize=(7.2, 4.2))
@@ -262,8 +265,8 @@ def make_b1(freeze_df: pd.DataFrame, D2: dict) -> None:
     ax_a.set_yticks(y_pos)
     ax_a.set_yticklabels([ch.replace("_"," ") for ch in SCORED_CHANNELS],
                          fontsize=fs)
-    ax_a.set_xlabel("Number of D2 freeze events", fontsize=fs)
-    ax_a.set_title("D2 freeze event linkage to D1\n(per channel)", fontsize=fs+1)
+    ax_a.set_xlabel("Number of D2 hard-availability events", fontsize=fs)
+    ax_a.set_title("D2 hard-availability linkage to D1\n(per channel)", fontsize=fs+1)
     ax_a.legend(loc="lower right", fontsize=fs-1, frameon=False,
                 ncol=1, handlelength=1.2, handletextpad=0.4)
     apply_publication_style(ax_a, font_size=fs)
@@ -320,7 +323,7 @@ def make_b1(freeze_df: pd.DataFrame, D2: dict) -> None:
     ax_c.set_xticklabels([REL_LABELS[r] for r in rel_plot],
                          fontsize=fs-1, rotation=20, ha="right")
     ax_c.set_ylabel("Event duration (min)", fontsize=fs)
-    ax_c.set_title("D2 freeze event duration\nby D1 linkage type", fontsize=fs+1)
+    ax_c.set_title("D2 hard-availability duration\nby D1 linkage type", fontsize=fs+1)
     ax_c.set_yscale("log")
     apply_publication_style(ax_c, font_size=fs)
     add_panel_label(ax_c, "C")

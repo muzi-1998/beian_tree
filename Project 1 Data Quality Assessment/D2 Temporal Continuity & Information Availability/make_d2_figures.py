@@ -132,11 +132,11 @@ CH_LSTYLE = ["-"] * 4 + ["--"] * 4 + ["-"] * 3 + ["--"] * 3
 
 # Engineering defaults (mirrors run_d2_pipeline.ENG_DEFAULTS)
 ENG = {
-    "missing_rate_breaks":    [0.005, 0.02,  0.05,  0.15],
-    "irregular_rate_breaks":  [0.005, 0.02,  0.05,  0.10],
-    "L_max_breaks_min":       [5,     15,    60,    360],
-    "gap_count_breaks":       [2,     5,     15,    40],
-    "info_empty_breaks":      [0.02,  0.08,  0.20,  0.50],
+    "missing_rate_breaks":       [0.005, 0.02, 0.05, 0.15, 0.25],
+    "true_irregular_rate_breaks": [0.005, 0.02, 0.05, 0.10, 0.15],
+    "L_max_breaks_min":          [5, 15, 60, 360, 660],
+    "gap_count_breaks":          [2, 5, 15, 40, 65],
+    "hard_stasis_breaks":        [0.02, 0.08, 0.20, 0.50, 0.80],
 }
 
 
@@ -191,11 +191,11 @@ def save_fig(fig, name: str, pad: float = 2.0,
     else:
         fig.tight_layout(pad=pad)
     finalize_figure(fig)
-    for fmt in ("png", "svg", "pdf"):
+    for fmt in ("png", "svg", "pdf", "tiff"):
         p = FIGS / f"{name}.{fmt}"
         fig.savefig(p, dpi=DPI, bbox_inches="tight")
     plt.close(fig)
-    print(f"  [saved] {name}.png + .svg + .pdf")
+    print(f"  [saved] {name}.png + .svg + .pdf + .tiff")
 
 
 def load_state() -> dict:
@@ -232,11 +232,12 @@ def _piecewise(x: np.ndarray, breaks: list) -> np.ndarray:
     b = breaks
     for s_hi, s_lo, lo, hi in [(5, 4, b[0], b[1]),
                                 (4, 3, b[1], b[2]),
-                                (3, 2, b[2], b[3])]:
+                                (3, 2, b[2], b[3]),
+                                (2, 1, b[3], b[4])]:
         m = (x > lo) & (x <= hi)
         s[m] = s_hi - (s_hi - s_lo) * (x[m] - lo) / (hi - lo)
     s[x <= b[0]] = 5.0
-    s[x >  b[3]] = 1.0
+    s[x >  b[4]] = 1.0
     return np.clip(s, 1.0, 5.0)
 
 
@@ -324,15 +325,17 @@ def fig02_subscore_violins(state: dict):
 
     sub_cols = [("Q_TI", C_QTI, "Q$_{TI}$  (Temporal Integrity)"),
                 ("Q_GS", C_QGS, "Q$_{GS}$  (Gap Severity)"),
-                ("Q_FA", C_QFA, "Q$_{FA}$  (Freeze / Availability)")]
+                ("Q_HA", C_QFA, "Q$_{HA}$  (Hard Availability)")]
 
     fig, axes = plt.subplots(1, 3, figsize=(7.2, 4.25), sharey=False)
     fig.subplots_adjust(wspace=0.24)
 
     for ax, (col, color, title), lbl in zip(axes, sub_cols, "ABC"):
-        data = [subs_all[ch][col].dropna().values
-                for ch in channels
-                if ch in subs_all and col in subs_all[ch].columns]
+        data = []
+        for ch in channels:
+            if ch in subs_all and col in subs_all[ch].columns:
+                series = subs_all[ch][col]
+                data.append(series.loc[series.notna()].values)
         positions = list(range(len(data)))
 
         parts = ax.violinplot(data, positions=positions, widths=0.72,
@@ -473,11 +476,12 @@ def fig04_gap_severity(state: dict):
         "long_gap":     PAL["orange"],
         "critical_gap": PAL["red_strong"],
     }
-    durations = gap_df["duration_min"].dropna()
+    durations = gap_df["duration_min"]
+    durations = durations.loc[durations.notna()].clip(lower=0.5)
     if "gap_type" in gap_df.columns and len(durations) and durations.max() > 0:
         for gtype, color in gap_type_colors.items():
-            sub = gap_df.loc[gap_df["gap_type"] == gtype,
-                              "duration_min"].dropna()
+            sub = gap_df.loc[gap_df["gap_type"] == gtype, "duration_min"]
+            sub = sub.loc[sub.notna()].clip(lower=0.5)
             if len(sub):
                 bins = np.logspace(np.log10(max(0.5, sub.min())),
                                    np.log10(sub.max() + 1), 18)
@@ -550,7 +554,7 @@ def fig05_freeze_availability(state: dict):
         ("floor_occupancy", "Floor\noccupancy", PAL["blue_light"]),
         ("resolution_limited", "Resolution\nlimited", PAL["teal"]),
         ("sensor_freeze_cov", "Hard sensor\nfreeze", PAL["red_strong"]),
-        ("info_empty_cov", "QFA\nunavailable", PAL["orange"]),
+        ("hard_stasis_fraction_observed", "Observed hard\nstasis", PAL["orange"]),
     ]
     x = np.arange(len(floor_chs)); width = 0.18
     profile_rows = []
@@ -568,7 +572,7 @@ def fig05_freeze_availability(state: dict):
         for ch, value in zip(floor_chs, vals):
             profile_rows.append({"sensor_id": ch, "metric": metric, "mean_pct": value})
     ax1.set_xticks(x)
-    ax1.set_xticklabels([c.replace("_", " ") for c in floor_chs])
+    ax1.set_xticklabels(floor_chs)
     ax1.set_ylabel("Time coverage (%)")
     ax1.set_ylim(0, 105)
     ax1.set_title("Post-anoxic evidence separation", pad=4)
@@ -585,10 +589,10 @@ def fig05_freeze_availability(state: dict):
         daily_floor[f"{ch}_resolution"] = subs_all[ch]["resolution_limited"].resample("D").mean() * 100
         ax2.plot(daily_floor[f"{ch}_floor"].index,
                  daily_floor[f"{ch}_floor"].values, color=ch_colors[ch], lw=1.0,
-                 label=f"{ch.replace('_', ' ')} floor")
+                 label=f"{ch} floor")
         ax2.plot(daily_floor[f"{ch}_resolution"].index,
                  daily_floor[f"{ch}_resolution"].values, color=ch_colors[ch], lw=0.9,
-                 ls="--", label=f"{ch.replace('_', ' ')} limited")
+                 ls="--", label=f"{ch} limited")
     ax2.set_ylabel("Daily coverage (%)")
     ax2.set_ylim(0, 105)
     ax2.set_title("Process floor vs limited resolution", pad=4)
@@ -600,18 +604,18 @@ def fig05_freeze_availability(state: dict):
     leg2.set_zorder(10)
     add_panel_label(ax2, "b", x=-0.12)
 
-    # (c) Only production QFA evidence can activate freeze_severe.
+    # (c) Only observed persistent stasis can activate the QHA veto.
     daily_qfa = {}
     for ch in floor_chs:
-        daily_qfa[ch] = subs_all[ch]["info_empty_cov"].resample("D").mean() * 100
+        daily_qfa[ch] = subs_all[ch]["hard_stasis_fraction_observed"].resample("D").mean() * 100
         ax3.plot(daily_qfa[ch].index, daily_qfa[ch].values,
-                 color=ch_colors[ch], lw=1.0, label=ch.replace("_", " "))
+                 color=ch_colors[ch], lw=1.0, label=ch)
     for thr in (2.0, 8.0, 20.0):
         ax3.axhline(thr, color=PAL["neutral_mid"], lw=0.45, ls=":", alpha=0.65)
     ymax = max(22.0, float(pd.DataFrame(daily_qfa).quantile(0.995).max() * 1.15))
     ax3.set_ylim(0, min(100, ymax))
-    ax3.set_ylabel("QFA unavailable (%)")
-    ax3.set_title("Hard QFA evidence (6 h window)", pad=4)
+    ax3.set_ylabel("Observed hard stasis (%)")
+    ax3.set_title("Hard-availability evidence (6 h window)", pad=4)
     ax3.legend(loc="upper left", fontsize=TK - 1, ncol=2, handlelength=1.2)
     apply_publication_style(ax3)
     add_panel_label(ax3, "c", x=-0.12)
@@ -620,7 +624,7 @@ def fig05_freeze_availability(state: dict):
     standard_daily = {}
     for label, chs, color in (("Standard DO", standard_do, C_DO),
                               ("ORP", standard_orp, C_ORP)):
-        frame = pd.DataFrame({ch: subs_all[ch]["info_empty_cov"] for ch in chs}).resample("D").mean() * 100
+        frame = pd.DataFrame({ch: subs_all[ch]["hard_stasis_fraction_observed"] for ch in chs}).resample("D").mean() * 100
         median = frame.median(axis=1)
         q25, q75 = frame.quantile(0.25, axis=1), frame.quantile(0.75, axis=1)
         ax4.fill_between(median.index, q25.values, q75.values, color=color, alpha=0.15)
@@ -629,7 +633,7 @@ def fig05_freeze_availability(state: dict):
         standard_daily[f"{label}_q25"] = q25
         standard_daily[f"{label}_q75"] = q75
     ax4.set_ylim(bottom=0)
-    ax4.set_ylabel("Info-empty (%)")
+    ax4.set_ylabel("Observed hard stasis (%)")
     ax4.set_title("Standard-route channel burden", pad=4)
     apply_publication_style(ax4)
     ax4.legend(loc="upper left", fontsize=TK - 1, ncol=2, handlelength=1.2,
@@ -662,20 +666,20 @@ def fig06_mapping_curves(state: dict):
     labels = {
         "missing_rate": ("Missing rate", True),
         "duplicate_rate": ("Duplicate rate", True),
-        "out_of_order": ("Out-of-order rate", True),
-        "irregular_rate": ("Irregular rate", True),
+        "out_of_order_rate": ("Out-of-order rate", True),
+        "true_irregular_rate": ("True irregular rate", True),
         "L_max_min": ("L$_{max}$ (min)", False),
         "P95_gap_min": ("P95 gap (min)", False),
         "gap_run_count": ("Gap count", False),
-        "info_empty_cov": ("QFA unavailable coverage", True),
+        "hard_stasis_fraction_observed": ("Observed hard-stasis fraction", True),
     }
-    sub_color = {"Q_TI": C_QTI, "Q_GS": C_QGS, "Q_FA": C_QFA}
+    sub_color = {"Q_TI": C_QTI, "Q_GS": C_QGS, "Q_HA": C_QFA}
     metrics = []
     piecewise_rows = mapping[mapping["mapping_type"] == "piecewise_linear"]
     for _, row in piecewise_rows.iterrows():
         metric = row["input_metric"]
         label, pct = labels.get(metric, (metric, False))
-        breaks = [row[f"break_{i}"] for i in range(1, 5)]
+        breaks = [row[f"break_{i}"] for i in range(1, 6)]
         metrics.append((label, breaks, row["subscore_name"], sub_color[row["subscore_name"]], pct))
 
     # Zone colours: score 5→1 (best to worst)
@@ -691,17 +695,19 @@ def fig06_mapping_curves(state: dict):
         ax    = axes_flat[i]
         b     = breaks
         scale = 100.0 if pct else 1.0
-        x_raw = np.linspace(0, b[3] * 1.6, 600)
+        x_raw = np.linspace(0, b[4] * 1.25, 600)
         y     = _piecewise(x_raw, b)
         x_d   = x_raw * scale
 
         # Score-zone background
-        bds = [0, b[0]*scale, b[1]*scale, b[2]*scale, b[3]*scale, b[3]*scale*1.6]
-        for zi in range(5):
-            ax.axvspan(bds[zi], bds[zi+1], alpha=0.12, color=zone_clr[zi])
+        bds = [0, b[0]*scale, b[1]*scale, b[2]*scale, b[3]*scale,
+               b[4]*scale, b[4]*scale*1.25]
+        zone_fill = zone_clr + [zone_clr[-1]]
+        for zi in range(6):
+            ax.axvspan(bds[zi], bds[zi+1], alpha=0.12, color=zone_fill[zi])
 
         ax.plot(x_d, y, color=color, lw=LWM)
-        for bk, sc in zip(b, [5, 4, 3, 2]):
+        for bk, sc in zip(b, [5, 4, 3, 2, 1]):
             ax.plot(bk * scale, sc, "o", color=color, ms=3.5, zorder=5)
             ax.axvline(bk * scale, color=PAL["neutral_mid"],
                        lw=0.4, ls=":", alpha=0.45)
@@ -711,7 +717,7 @@ def fig06_mapping_curves(state: dict):
         ax.set_ylabel("Score", fontsize=FS)
         ax.set_yticks([1, 2, 3, 4, 5])
         ax.set_ylim(0.8, 5.2)
-        sub_display = sub_lbl.replace("Q_TI", "Q$_{TI}$").replace("Q_GS", "Q$_{GS}$").replace("Q_FA", "Q$_{FA}$")
+        sub_display = sub_lbl.replace("Q_TI", "Q$_{TI}$").replace("Q_GS", "Q$_{GS}$").replace("Q_HA", "Q$_{HA}$")
         ax.set_title(f"{sub_display}: {label}", fontsize=TS - 1, pad=3)
         apply_publication_style(ax, font_size=FS)
         add_panel_label(ax, chr(ord("a") + i), x=-0.12)
@@ -727,7 +733,7 @@ def fig06_mapping_curves(state: dict):
          for i in range(5)]
         + [plt.Line2D([0], [0], color=C_QTI, lw=1.2, label="Q$_{TI}$ curve"),
            plt.Line2D([0], [0], color=C_QGS, lw=1.2, label="Q$_{GS}$ curve"),
-           plt.Line2D([0], [0], color=C_QFA, lw=1.2, label="Q$_{FA}$ curve"),
+           plt.Line2D([0], [0], color=C_QFA, lw=1.2, label="Q$_{HA}$ curve"),
            plt.Line2D([0], [0], marker="o", ms=4, color=PAL["neutral_mid"],
                       lw=0, label="Break-point")]
     )
@@ -868,9 +874,12 @@ def fig08_d1_d2_relationship(state: dict):
         for ch in channels:
             if ch not in D1_v11.columns or ch not in D2_wide.columns:
                 continue
-            d1v = D1_v11.loc[common, ch].dropna()
-            d2v = D2_wide.loc[d1v.index, ch].dropna()
-            idx = d1v.index.intersection(d2v.index)
+            d1v = D1_v11.loc[common, ch]
+            d2v = D2_wide.loc[common, ch]
+            valid = d1v.notna() & d2v.notna()
+            d1v = d1v.loc[valid]
+            d2v = d2v.loc[valid]
+            idx = d1v.index
             if len(idx) < 2:
                 continue
             d1_parts.append(d1v.loc[idx].to_numpy())
@@ -1071,10 +1080,12 @@ def fig10_calibration_summary(state: dict):
 
     metric_defs = [
         ("missing_rate",   "Missing Rate",   True,  ENG["missing_rate_breaks"]),
-        ("irregular_rate", "Irregular Rate", True,  ENG["irregular_rate_breaks"]),
+        ("true_irregular_rate", "True Irregular Rate", True,
+         ENG["true_irregular_rate_breaks"]),
         ("L_max_min",      "L$_{max}$",      False, ENG["L_max_breaks_min"]),
         ("gap_run_count",  "Gap Count",      False, ENG["gap_count_breaks"]),
-        ("info_empty_cov", "Info-Empty",     True,  ENG["info_empty_breaks"]),
+        ("hard_stasis_fraction_observed", "Observed Hard Stasis", True,
+         ENG["hard_stasis_breaks"]),
     ]
 
     pct_lines = [
@@ -1095,7 +1106,8 @@ def fig10_calibration_summary(state: dict):
         vals = []
         for ch in channels:
             if ch in subs_all and col in subs_all[ch].columns:
-                v = subs_all[ch][col].dropna().values
+                series = subs_all[ch][col]
+                v = series.loc[series.notna()].values
                 vals.append(v)
         if not vals:
             ax.set_visible(False)
@@ -1104,6 +1116,27 @@ def fig10_calibration_summary(state: dict):
         all_v = all_v[np.isfinite(all_v)]
         scale = 100.0 if pct else 1.0
         all_v_d = all_v * scale
+
+        if len(all_v_d) and np.allclose(all_v_d, all_v_d[0]):
+            constant = float(all_v_d[0])
+            ax.axvline(constant, color=PAL["blue_main"], lw=LWM)
+            ax.text(
+                0.50, 0.50,
+                f"No observed variation\n(all values = {constant:.1f})",
+                transform=ax.transAxes, ha="center", va="center",
+                fontsize=FS, color=PAL["neutral_dark"],
+                bbox=dict(facecolor="white", edgecolor=PAL["neutral_light"], alpha=0.88),
+            )
+            unit = " (%)" if pct else ""
+            ax.set_xlabel(f"{label}{unit}", fontsize=FS)
+            ax.set_ylabel("Cumulative probability (%)", fontsize=FS)
+            ax.set_ylim(0, 101)
+            ax.set_xlim(left=min(-0.02 * max(eng_brk) * scale, constant - 0.1),
+                        right=max(eng_brk) * scale * 1.05)
+            ax.set_title(f"{label} ECDF", fontsize=TS - 0.5, pad=3)
+            apply_publication_style(ax, font_size=FS)
+            add_panel_label(ax, "ABCDE"[i], x=-0.14)
+            continue
 
         ordered = np.sort(all_v_d)
         cumulative = np.arange(1, len(ordered) + 1) / len(ordered) * 100
@@ -1138,16 +1171,16 @@ def fig10_calibration_summary(state: dict):
     cal_src = calib.get("calibration_basis", "D2_internal_engineering_v1")
     bench = calib.get("benchmark_windows", {})
     n_bench = bench.get("total_benchmark_hours", 0)
-    period = calib.get("effective_period", ["N/A", "N/A"])
-    b_start, b_end = period[0], period[-1]
+    b_start = bench.get("fit_start", "N/A")
+    b_end = bench.get("fit_end", "N/A")
     run_dt = calib.get("generated_date", "N/A")
     mapping_version = calib.get("mapping_version", "N/A")
 
     info = (f"Calibration ID:\n  {cal_id}\n\n"
             f"Basis:\n  {cal_src}\n\n"
             f"Mapping:\n  {mapping_version}\n\n"
-            f"Effective period:\n  {b_start}\n  to {b_end}\n\n"
-            f"D1 fit hours: {n_bench}\n\n"
+            f"Development fit:\n  {b_start}\n  to {b_end}\n\n"
+            f"Benchmark hours: {n_bench}\n\n"
             f"Generated: {run_dt}")
     ax.text(0.05, 0.95, info, transform=ax.transAxes,
             fontsize=TK - 0.5, va="top", ha="left", family="monospace",

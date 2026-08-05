@@ -38,7 +38,11 @@ def main() -> Path:
 
     with STATE_PATH.open("rb") as handle:
         state = pickle.load(handle)
-    events = extract_freeze_events(state["flags_all"], state["subs_all"])
+    events = extract_freeze_events(
+        state["flags_all"],
+        state["subs_all"],
+        calibration_id=state.get("calibration_id"),
+    )
     events.to_excel(EVENT_PATH, index=False)
 
     score_hash_after = sha256_file(SCORE_PATH)

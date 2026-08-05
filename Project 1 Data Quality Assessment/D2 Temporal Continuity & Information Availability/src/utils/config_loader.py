@@ -15,6 +15,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Optional, Any
+import pandas as pd
 import yaml
 
 
@@ -44,18 +45,36 @@ class WindowSpec:
     purpose: str
 
 
+@dataclass(frozen=True)
+class StudyPeriod:
+    name:    str
+    start:   str
+    end:     str
+    purpose: str
+
+
+@dataclass(frozen=True)
+class StudyDesign:
+    version:                  str
+    periods:                  Dict[str, StudyPeriod]
+    external_site_validation: Dict[str, Any]
+    inference:                Dict[str, Any]
+
+
 @dataclass
 class MappingConfig:
     piecewise_breaks:   Dict[str, Dict[str, list]]
     Q_TI_weights:       Dict[str, float]
     Q_GS_weights:       Dict[str, float]
-    Q_FA_rule:          Dict[str, Any]
+    Q_HA_rule:          Dict[str, Any]
     aggregation:        Dict[str, Any]
     veto_rules:         Dict[str, Dict[str, Any]]
     safety_floor:       Dict[str, float]
     imputation:         Dict[str, Any]
     freeze_detection:   Dict[str, Any]
     process_floor_policy: Dict[str, Any]
+    dynamic_information_sufficiency: Dict[str, Any]
+    timestamp_quality:  Dict[str, Any]
     mapping_version:    str
 
 
@@ -72,6 +91,7 @@ class D2Config:
     enabled_windows:    List[str]
     time_grid:          Dict[str, Any]
     mapping:            MappingConfig
+    study_design:       StudyDesign
 
     @property
     def main_window(self) -> WindowSpec:
@@ -90,6 +110,7 @@ def load_config(config_dir: Path, version: str = "v1") -> D2Config:
     sensors_yaml = yaml.safe_load((config_dir / "d2_sensors.yaml").read_text(encoding="utf-8"))
     mapping_yaml = yaml.safe_load((config_dir / "d2_mapping.yaml").read_text(encoding="utf-8"))
     windows_yaml = yaml.safe_load((config_dir / "d2_windows.yaml").read_text(encoding="utf-8"))
+    study_yaml = yaml.safe_load((config_dir / "d2_study_design.yaml").read_text(encoding="utf-8"))
 
     # SensorMeta
     sensors = {}
@@ -132,18 +153,31 @@ def load_config(config_dir: Path, version: str = "v1") -> D2Config:
     enabled_key = f"enabled_in_{version}"
     enabled = windows_yaml.get(enabled_key, ["main_window"])
 
+    periods = {
+        name: StudyPeriod(name=name, **spec)
+        for name, spec in study_yaml["periods"].items()
+    }
+    study_design = StudyDesign(
+        version=study_yaml["study_design_version"],
+        periods=periods,
+        external_site_validation=study_yaml["external_site_validation"],
+        inference=study_yaml["inference"],
+    )
+
     # MappingConfig
     mapping = MappingConfig(
         piecewise_breaks=mapping_yaml["piecewise_breaks"],
         Q_TI_weights=mapping_yaml["Q_TI_components"]["weights"],
         Q_GS_weights=mapping_yaml["Q_GS_components"]["weights"],
-        Q_FA_rule=mapping_yaml["Q_FA_rule"],
+        Q_HA_rule=mapping_yaml["Q_HA_rule"],
         aggregation=mapping_yaml["aggregation"],
         veto_rules=mapping_yaml["veto_rules"],
         safety_floor=mapping_yaml["safety_floor"],
         imputation=mapping_yaml["imputation"],
         freeze_detection=mapping_yaml["freeze_detection"],
         process_floor_policy=mapping_yaml["process_floor_policy"],
+        dynamic_information_sufficiency=mapping_yaml["dynamic_information_sufficiency"],
+        timestamp_quality=mapping_yaml["timestamp_quality"],
         mapping_version=mapping_yaml["mapping_version"],
     )
 
@@ -158,6 +192,7 @@ def load_config(config_dir: Path, version: str = "v1") -> D2Config:
         enabled_windows=enabled,
         time_grid=windows_yaml["time_grid"],
         mapping=mapping,
+        study_design=study_design,
     )
     _validate(cfg)
     return cfg
@@ -177,7 +212,7 @@ def _validate(cfg: D2Config) -> None:
 
     # 3. D2 聚合权重和应为 1
     a = cfg.mapping.aggregation["weights"]
-    s = a["Q_TI"] + a["Q_GS"] + a["Q_FA"]
+    s = a["Q_TI"] + a["Q_GS"] + a["Q_HA"]
     assert abs(s - 1.0) < 1e-6, f"D2 weights sum {s} != 1.0"
 
     # 4. lambda 在 [0, 1]
@@ -200,15 +235,44 @@ def _validate(cfg: D2Config) -> None:
     # 7. piecewise_breaks 必须严格递增
     for sub, metrics in cfg.mapping.piecewise_breaks.items():
         for m, brks in metrics.items():
+            assert len(brks) == 5, \
+                f"{sub}.{m} must define five thresholds: {brks}"
             assert all(brks[i] < brks[i+1] for i in range(len(brks)-1)), \
                 f"{sub}.{m} breaks not strictly increasing: {brks}"
+
+    expected_qti = {"missing", "true_irregular", "duplicate", "out_of_order"}
+    assert set(cfg.mapping.Q_TI_weights) == expected_qti, \
+        f"Q_TI components must be {sorted(expected_qti)}"
+
+    assert set(cfg.mapping.piecewise_breaks["Q_HA"]) == {
+        "hard_stasis_fraction_observed"
+    }, "Q_HA must be based only on observed hard-stasis coverage"
 
     # 8. tau_RLE_D2 < tau_RLE_D1
     fd = cfg.mapping.freeze_detection
     assert fd["tau_rle_D2_min"] < fd["tau_rle_D1_min"], \
         f"D2 RLE threshold {fd['tau_rle_D2_min']} not strictly less than D1 {fd['tau_rle_D1_min']}"
 
-    # 9. Process-floor routing must be explicit and response-loss peers comparable.
+    sensitive = cfg.mapping.dynamic_information_sufficiency
+    assert sensitive["role"] == "sensitive_diagnostic_only"
+    assert sensitive["minimum_independent_families"] >= 2
+    assert sensitive["persistence_hours"] >= 1
+
+    # 9. Blocked study periods must be ordered, non-overlapping and bounded.
+    ordered_periods = [
+        cfg.study_design.periods[name]
+        for name in ("development", "internal_validation", "terminal_test")
+    ]
+    starts = [pd.Timestamp(period.start) for period in ordered_periods]
+    ends = [pd.Timestamp(period.end) for period in ordered_periods]
+    assert all(start <= end for start, end in zip(starts, ends)), \
+        "Study period start must not exceed its end"
+    assert all(ends[i] < starts[i + 1] for i in range(len(ends) - 1)), \
+        "Study periods must be ordered and non-overlapping"
+    assert starts[0] >= pd.Timestamp(cfg.time_grid["expected_start"])
+    assert ends[-1] <= pd.Timestamp(cfg.time_grid["expected_end"])
+
+    # 10. Process-floor routing must be explicit and response-loss peers comparable.
     for sid, sensor in cfg.sensors.items():
         assert sensor.availability_mode in {"standard", "process_floor"}, \
             f"{sid}: unsupported availability_mode={sensor.availability_mode}"

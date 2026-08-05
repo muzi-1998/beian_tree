@@ -37,11 +37,17 @@ def test_production_subscores_equal_modular_scorers():
         "missing_rate": [0.0, 0.01, 0.06, 0.2],
         "duplicate_rate": [0.0, 0.002, 0.02, 0.1],
         "out_of_order_rate": [0.0, 0.002, 0.02, 0.1],
-        "irregular_rate": [0.0, 0.01, 0.06, 0.2],
+        "true_irregular_rate": [0.0, 0.01, 0.06, 0.2],
+        "source_gap_recovery_rate": 0.0,
+        "value_gap_recovery_rate": 0.0,
         "info_empty_cov": [0.0, 0.05, 0.25, 0.6],
+        "hard_stasis_fraction_observed": [0.0, 0.05, 0.25, 0.6],
+        "qha_observed_fraction": 1.0,
         "freeze_cand_cov": 0.0,
         "sensor_freeze_cov": 0.0,
         "low_iqr_cov": 0.0,
+        "soft_rle_cov": 0.0,
+        "soft_stasis_cov": 0.0,
         "floor_occupancy": 0.0,
         "resolution_limited": 0.0,
         "L_max_min": [0, 10, 90, 500],
@@ -54,23 +60,25 @@ def test_production_subscores_equal_modular_scorers():
     produced = d2.compute_subscores(stats_all, rl_all, {})[d2.SCORED_CHANNELS[0]]
     ti = d2.TemporalIntegrityScorer(d2._d2_cfg).score(stats)
     gs = d2.GapSeverityScorer(d2._d2_cfg).score(stats)
-    fa, _ = d2.FreezeAvailabilityScorer(d2._d2_cfg).score(stats, rl_all[d2.SCORED_CHANNELS[0]])
+    ha, _ = d2.HardAvailabilityScorer(d2._d2_cfg).score(stats, rl_all[d2.SCORED_CHANNELS[0]])
 
     assert np.allclose(produced["Q_TI"], ti)
     assert np.allclose(produced["Q_GS"], gs)
-    assert np.allclose(produced["Q_FA"], fa)
+    assert np.allclose(produced["Q_HA"], ha)
+    assert np.allclose(produced["Q_FA"], ha)
 
 
-def test_qfa_uses_configured_six_hour_window(tmp_path):
+def test_qha_uses_configured_six_hour_observed_value_denominator(tmp_path):
     idx = pd.date_range("2026-01-01", periods=24 * 60, freq="1min")
     base = pd.DataFrame({
         "missing": 0,
-        "duplicate": 0,
-        "out_of_order": 0,
-        "irregular_interval": 0,
-        "qfa_unavailable": np.r_[np.ones(18 * 60), np.zeros(6 * 60)],
-        "sensor_freeze": 0,
+        "value_gap_recovery": 0,
+        "present_raw": 1,
+        "info_empty": 0,
+        "sensor_freeze": np.r_[np.ones(18 * 60), np.zeros(6 * 60)],
         "low_iqr_diagnostic": 0,
+        "soft_rle_diagnostic": 0,
+        "soft_stasis": 0,
         "floor_occupancy": 0,
         "resolution_limited": 0,
     }, index=idx)
@@ -83,7 +91,7 @@ def test_qfa_uses_configured_six_hour_window(tmp_path):
         d2.CACHE, d2.CACHE_KEY = old_cache, old_key
 
     assert d2._d2_cfg.freeze_window.length == "6h"
-    assert stats["DO_1_4"]["info_empty_cov"].iloc[-1] == 0.0
+    assert stats["DO_1_4"]["hard_stasis_fraction_observed"].iloc[-1] == 0.0
 
 
 def test_response_loss_peers_are_same_position_and_process_floor_is_disabled():
@@ -101,3 +109,23 @@ def test_response_loss_peers_are_same_position_and_process_floor_is_disabled():
         assert sensor.availability_mode == "process_floor"
         assert not sensor.response_loss_enabled
         assert sensor.response_loss_peers == []
+
+
+def test_response_loss_is_diagnostic_only_in_production_qfa():
+    idx = pd.date_range("2026-01-02", periods=3, freq="1h")
+    stats = pd.DataFrame({"hard_stasis_fraction_observed": [0.10, 0.10, 0.10]}, index=idx)
+    response_loss = pd.Series([0.0, 0.5, 1.0], index=idx)
+    score, main = d2.FreezeAvailabilityScorer(d2._d2_cfg).score(
+        stats, response_loss, allow_response_loss=True
+    )
+    assert np.allclose(score, main)
+
+
+def test_study_periods_are_blocked_and_external_site_is_deferred():
+    design = d2._d2_cfg.study_design
+    development = design.periods["development"]
+    validation = design.periods["internal_validation"]
+    terminal = design.periods["terminal_test"]
+    assert pd.Timestamp(development.end) < pd.Timestamp(validation.start)
+    assert pd.Timestamp(validation.end) < pd.Timestamp(terminal.start)
+    assert design.external_site_validation["status"] == "deferred"

@@ -20,15 +20,16 @@ from ..utils.config_loader import D2Config
 # ─── 基础映射函数 ─────────────────────────────────────────────────────────────
 
 def piecewise_score(x: pd.Series, breaks: list) -> pd.Series:
-    """分段线性,异常越强 → 分数越低。breaks 为 4 个递增阈值,定义 5 个区间。"""
-    x = x.copy().fillna(x.median())
+    """连续分段映射；5 个递增阈值使 5 分平滑下降至 1 分。"""
+    x = x.copy()
     s = pd.Series(np.nan, index=x.index, dtype=float)
-    b0, b1, b2, b3 = breaks
+    b0, b1, b2, b3, b4 = breaks
     s[x <= b0]              = 5.0
     m = (x > b0) & (x <= b1); s[m] = 4.0 + (b1 - x[m]) / (b1 - b0)
     m = (x > b1) & (x <= b2); s[m] = 3.0 + (b2 - x[m]) / (b2 - b1)
     m = (x > b2) & (x <= b3); s[m] = 2.0 + (b3 - x[m]) / (b3 - b2)
-    s[x > b3]               = 1.0
+    m = (x > b3) & (x <= b4); s[m] = 1.0 + (b4 - x[m]) / (b4 - b3)
+    s[x > b4]               = 1.0
     return s.clip(1.0, 5.0)
 
 
@@ -42,14 +43,31 @@ class TemporalIntegrityScorer:
         self.w = cfg.mapping.Q_TI_weights
 
     def score(self, st: pd.DataFrame) -> pd.Series:
-        Q_m  = piecewise_score(st["missing_rate"],      self.b["missing_rate"])
-        Q_d  = piecewise_score(st["duplicate_rate"],    self.b["duplicate_rate"])
-        Q_o  = piecewise_score(st["out_of_order_rate"], self.b["out_of_order"])
-        Q_i  = piecewise_score(st["irregular_rate"],    self.b["irregular_rate"])
-        return (self.w["missing"]      * Q_m +
-                self.w["duplicate"]    * Q_d +
-                self.w["out_of_order"] * Q_o +
-                self.w["irregular"]    * Q_i).clip(1, 5)
+        components = pd.DataFrame({
+            "missing": piecewise_score(st["missing_rate"], self.b["missing_rate"]),
+            "true_irregular": piecewise_score(
+                st["true_irregular_rate"], self.b["true_irregular_rate"]
+            ),
+            "duplicate": piecewise_score(st["duplicate_rate"], self.b["duplicate_rate"]),
+            "out_of_order": piecewise_score(
+                st["out_of_order_rate"], self.b["out_of_order_rate"]
+            ),
+        })
+        weights = pd.Series(self.w, dtype=float).reindex(components.columns)
+        observed = components.notna()
+        denominator = observed.mul(weights, axis=1).sum(axis=1)
+        numerator = components.mul(weights, axis=1).sum(axis=1, min_count=1)
+        return numerator.div(denominator.where(denominator > 0)).clip(1, 5)
+
+    def observed_weight(self, st: pd.DataFrame) -> pd.Series:
+        available = pd.DataFrame({
+            "missing": st["missing_rate"].notna(),
+            "true_irregular": st["true_irregular_rate"].notna(),
+            "duplicate": st["duplicate_rate"].notna(),
+            "out_of_order": st["out_of_order_rate"].notna(),
+        })
+        weights = pd.Series(self.w, dtype=float).reindex(available.columns)
+        return available.mul(weights, axis=1).sum(axis=1)
 
 
 class GapSeverityScorer:
@@ -68,12 +86,12 @@ class GapSeverityScorer:
                 self.w["gap_run_count"] * Q_C).clip(1, 5)
 
 
-class FreezeAvailabilityScorer:
-    """Q_FA:主证据 info_empty + 辅助证据 response_loss 加重融合。"""
+class HardAvailabilityScorer:
+    """Q_HA: persistent stasis conditional on a raw observation being present."""
     def __init__(self, cfg: D2Config):
         self.cfg = cfg
-        self.b   = cfg.mapping.piecewise_breaks["Q_FA"]
-        self.rule = cfg.mapping.Q_FA_rule
+        self.b = cfg.mapping.piecewise_breaks["Q_HA"]
+        self.rule = cfg.mapping.Q_HA_rule
 
     def score(
         self,
@@ -81,16 +99,27 @@ class FreezeAvailabilityScorer:
         rl_rate: pd.Series,
         allow_response_loss: bool = True,
     ) -> Tuple[pd.Series, pd.Series]:
-        Q_main = piecewise_score(st["info_empty_cov"], self.b["info_empty_cov"])
-        Q_FA   = Q_main.copy()
+        metric = self.rule["main_metric"]
+        Q_main = piecewise_score(st[metric], self.b[metric])
+        Q_HA = Q_main.copy()
         rl_aligned = rl_rate.reindex(Q_main.index).fillna(0.0)
+        production_enabled = bool(
+            self.rule["aggravation"].get("production_enabled", False)
+        )
         downgrade = (
             allow_response_loss
+            & production_enabled
             & (rl_aligned > self.rule["aggravation"]["trigger_above"])
             & (Q_main <= self.rule["aggravation"]["main_threshold"])
         )
-        Q_FA[downgrade] = (Q_main[downgrade] - self.rule["aggravation"]["downgrade_amount"]).clip(lower=1.0)
-        return Q_FA, Q_main
+        Q_HA[downgrade] = (
+            Q_main[downgrade] - self.rule["aggravation"]["downgrade_amount"]
+        ).clip(lower=1.0)
+        return Q_HA, Q_main
+
+
+# Backward-compatible import name; all production semantics are Q_HA.
+FreezeAvailabilityScorer = HardAvailabilityScorer
 
 
 # ─── 主聚合器 ─────────────────────────────────────────────────────────────────
@@ -116,9 +145,14 @@ class D2Aggregator:
             return float(floor_v)
         return float(raw)
 
-    def aggregate(self, Q_TI, Q_GS, Q_FA, st: pd.DataFrame) -> pd.DataFrame:
-        D2_base = (self.w["Q_TI"]*Q_TI + self.w["Q_GS"]*Q_GS + self.w["Q_FA"]*Q_FA).clip(1, 5)
-        Q_min   = pd.concat([Q_TI, Q_GS, Q_FA], axis=1).min(axis=1)
+    def aggregate(self, Q_TI, Q_GS, Q_HA, st: pd.DataFrame) -> pd.DataFrame:
+        components = pd.DataFrame({"Q_TI": Q_TI, "Q_GS": Q_GS, "Q_HA": Q_HA})
+        weights = pd.Series(self.w, dtype=float).reindex(components.columns)
+        observed = components.notna()
+        denominator = observed.mul(weights, axis=1).sum(axis=1)
+        numerator = components.mul(weights, axis=1).sum(axis=1, min_count=1)
+        D2_base = numerator.div(denominator.where(denominator > 0)).clip(1, 5)
+        Q_min = components.min(axis=1, skipna=True)
         D2_pre  = (self.lam * D2_base + (1 - self.lam) * Q_min).clip(1, 5)
 
         D2_total = D2_pre.copy()
@@ -136,20 +170,17 @@ class D2Aggregator:
         D2_total[m] = D2_total[m].clip(upper=self.veto["missing_p99"]["upper_cap"])
         veto_flag[m] = True; veto_reason[m] = veto_reason[m] + "missing_p99|"
 
-        vI = self._veto_value("irregular_rate")
-        m  = st["irregular_rate"] > vI
-        D2_total[m] = D2_total[m].clip(upper=self.veto["irregular_p95"]["upper_cap"])
-        veto_flag[m] = True; veto_reason[m] = veto_reason[m] + "irregular_p95|"
-
-        m  = Q_FA <= self.veto["freeze_severe"]["threshold"]
-        D2_total[m] = D2_total[m].clip(upper=self.veto["freeze_severe"]["upper_cap"])
-        veto_flag[m] = True; veto_reason[m] = veto_reason[m] + "freeze_severe|"
+        hard_rule = self.veto["hard_stasis_severe"]
+        m = Q_HA <= hard_rule["threshold"]
+        D2_total[m] = D2_total[m].clip(upper=hard_rule["upper_cap"])
+        veto_flag[m] = True; veto_reason[m] = veto_reason[m] + "hard_stasis_severe|"
 
         veto_reason = veto_reason.str.rstrip("|")
         D2_total = D2_total.clip(1, 5)
 
         return pd.DataFrame({
-            "Q_TI": Q_TI, "Q_GS": Q_GS, "Q_FA": Q_FA,
+            "Q_TI": Q_TI, "Q_GS": Q_GS, "Q_HA": Q_HA,
+            "Q_FA": Q_HA,
             "D2_base": D2_base, "D2_pre": D2_pre, "D2_total": D2_total,
             "veto_flag": veto_flag.astype(int), "veto_reason": veto_reason,
         })

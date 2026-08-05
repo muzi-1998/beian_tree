@@ -1,0 +1,31 @@
+{
+  "schema_version": "d2-scientific-validation-v3",
+  "run_id": "D2V4_20260805_1127",
+  "calibration_id": "NorthBank_D2_v4_20260805",
+  "external_site_validation": "deferred",
+  "outputs": {
+    "D2_analyte_effects.parquet": "ac24354bd5dd40ca6018c957702637f095523433b25afa19b1e5d6377da74e35",
+    "D2_d1d2_circular_null.parquet": "42ba8037968dc723a1c151d86a8180adcd800456ac3bafdff574b275e43447ca",
+    "D2_d1d2_concordance.parquet": "705350f24e2bd67a05f8f76a3dd417bf6e0efbe696d236a0ef2d6a4ceba417d2",
+    "D2_d1d2_event_pairs.parquet": "de67d46bea675ae4340b39277dbbef2436fce033eee8ac4e1030c95d6e90e6a9",
+    "D2_d1d2_phase_constrained_null.parquet": "37b09cbd5a8d6f1d5114b1983247b9a7b382f02183eb35b4ef1d171bcceabf1d",
+    "D2_daily_summary.parquet": "28a38bb4ee841f2fc16b34aa759a4194c54cd6b216570c3b959c5fd4eabec823",
+    "D2_distribution_summary.parquet": "2fed9598813ee574408ac5ec7b2bdbad6d15259aeefb9007d2135467ff2e04ba",
+    "D2_evidence_hierarchy.parquet": "4658d1feca2465771c8ac68bd907d06d444aa5f03c0474db92a1c53b5f5b3842",
+    "D2_evidence_redundancy_ablation.parquet": "a3c113f0216a64bde870e00ce131d41a9945c3b2bc240b4aea09c8b6dc627479",
+    "D2_evidence_redundancy_correlation.parquet": "36f16dbc3e2204a58f6a5f7dca59df07040f1950cb8c4f5c92fd08ed28162534",
+    "D2_low_tail_burden.parquet": "12899ce5e4275cca5ca2c3ce64749edfd5caea60800c59183c650ddf7e59a5de",
+    "D2_low_tail_event_summary.parquet": "23757fb3a56208ee12faa2d5cf8e3b672f28d81773f40a7fc84d1fdbc2cbc2d6",
+    "D2_qha_window_scores.parquet": "a3a88bda6a1aee51fbd84112da98d918a1f761d89720971cb0e88f44b061ec8d",
+    "D2_qha_window_sensitivity.parquet": "bec7ae51fd8ebc5b440159e391d4ad298edbacd095d53e53f991488ab524d2b6",
+    "D2_qti_component_audit.parquet": "02d789f66eb3e46924575ee2d49750161c1c187b3111a8f6a91d2b577f47a59f",
+    "D2_qti_threshold_reference.parquet": "34240588bb165158ed6afe1b8a7d54f996f29119eec6cf189cb3cd70d21b60be",
+    "D2_raw_vs_score_event_impact.parquet": "fab9b3ef151f79f4f200c10a558d5ae91587b6ccfebe69abb8d89cd1e8bafa02",
+    "D2_scientific_validation_source_data.xlsx": "18f0e12cdc3c4546e9508ba19810983dc0caa0d0607f705191d6762d96a877c4",
+    "D2_sensitive_diagnostic_summary.parquet": "3db8a8ce38035c9fce04fb40d261ec56eaed464eb0ad71b5faf2f0151e7f153f",
+    "D2_threshold_sensitivity.parquet": "92bf86a5579ac17d6c7a34162f51ff88b231b51fd651bb0728d60c00169f8679",
+    "D2_veto_reason_summary.parquet": "c7c0e28800da9e61d5f023d0044ec1bab7e03289a5f8ac7740c9f14628324e38",
+    "D2_weight_lambda_scores.parquet": "f5941317f8bfa9a86eed58bcfaa8e1998439a89d23bedcec51c0d7bcf699e674",
+    "D2_weight_lambda_summary.parquet": "f82be897cd6c4ea082229e0575a2734c1035a3a9d35d2a5114c0fc6eb089046d"
+  }
+}
