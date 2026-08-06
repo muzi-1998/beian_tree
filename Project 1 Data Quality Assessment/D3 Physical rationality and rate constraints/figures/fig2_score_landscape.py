@@ -1,4 +1,5 @@
 """Figure 2: D3 score landscape across sensors and time."""
+# Shared Nature contract: Arial; font.size=7; svg.fonttype='none'; pdf.fonttype=42; .svg .pdf .tiff dpi=600.
 
 from __future__ import annotations
 
@@ -40,12 +41,12 @@ fig.colorbar(image, ax=ax, fraction=0.045, pad=0.03, label="D3")
 panel_label(ax, "(b)")
 
 ax = axes[1, 0]
-sample = scores.sample(min(9000, len(scores)), random_state=22)
-value_score = 0.5 * sample.Q_value_hard + 0.2 * sample.Q_value_soft
-scatter = ax.scatter(value_score, 0.3 * sample.Q_rate, c=sample.D3_total, cmap="viridis",
+display_data = scores
+value_score = 0.5 * display_data.Q_value_hard + 0.2 * display_data.Q_value_soft
+scatter = ax.scatter(value_score, 0.3 * display_data.Q_persistent_rate, c=display_data.D3_total, cmap="viridis",
                      vmin=1, vmax=5, s=5, alpha=0.35, linewidths=0, rasterized=True)
 ax.set(xlabel="Weighted value evidence", ylabel="Weighted rate evidence")
-ax.set_title("Evidence contribution space")
+ax.set_title(f"Evidence contribution space (n={len(display_data):,})")
 style_axis(ax, minor=True)
 fig.colorbar(scatter, ax=ax, fraction=0.045, pad=0.03, label="D3")
 panel_label(ax, "(c)")
@@ -54,7 +55,7 @@ ax = axes[1, 1]
 order = list(scores.groupby("sensor_id").D3_total.mean().sort_values().index)
 issue = pd.crosstab(scores.sensor_id, scores.dominant_physical_issue, normalize="index").reindex(order).fillna(0)
 left = np.zeros(len(issue))
-for key in ["hard_bound", "soft_bound", "rate", "none"]:
+for key in ["hard_bound", "soft_bound", "persistent_rate", "none"]:
     values = issue[key].to_numpy() if key in issue else np.zeros(len(issue))
     ax.barh(range(len(issue)), values, left=left, color=ISSUE_COLORS[key], label=key.replace("_", " "), height=0.72)
     left += values

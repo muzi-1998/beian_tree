@@ -41,7 +41,7 @@ def build_safety_gate() -> pd.DataFrame:
             how="left",
         )
     )
-    gate["D3_hard_fail"] = gate["out_of_instrument"].fillna(False).astype(bool)
+    gate["D3_hard_fail"] = gate["data_veto_flag"].fillna(False).astype(bool)
     gate["D3_soft_warning"] = (
         gate["hard_violation_count"].gt(0) | gate["soft_violation_count"].gt(0)
     )
@@ -49,15 +49,11 @@ def build_safety_gate() -> pd.DataFrame:
         gate["rate_soft_violation_rate"].gt(0)
         | gate["rate_hard_violation_rate"].gt(0)
     )
+    gate["D3_process_coherence_guard"] = gate[
+        "process_coherence_guarded_points"
+    ].gt(0)
     gate["D3_boundary_diagnostic"] = gate["boundary_sticking_rate"].ge(0.90)
-    gate["D3_gate_status"] = np.select(
-        [
-            gate["D3_hard_fail"],
-            gate["D3_soft_warning"] | gate["D3_rate_warning"],
-        ],
-        ["Fail", "Warn"],
-        default="Pass",
-    )
+    gate["D3_gate_status"] = gate["D3_gate_status"].fillna("NotEvaluated")
     gate["D3_total_legacy"] = gate["D3_total"]
     gate["threshold_source"] = np.select(
         [
@@ -68,7 +64,7 @@ def build_safety_gate() -> pd.DataFrame:
         [
             "verified_installation_register",
             "versioned_expert_operational_rule",
-            "versioned_robust_rate_rule",
+            "provisional_persistent_same_sign_rate_rule",
         ],
         default="none",
     )
@@ -105,6 +101,7 @@ def build_safety_gate() -> pd.DataFrame:
         "D3_soft_warning",
         "D3_rate_warning",
         "D3_boundary_diagnostic",
+        "D3_process_coherence_guard",
         "gate_reason",
         "threshold_source",
         "evidence_grade",

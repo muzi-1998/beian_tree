@@ -1,4 +1,4 @@
-# D3 v2.2 rules. D3 is independent of D1 and D2 scores.
+# D3 v2.3 rules. D3 is independent of D1 and D2 scores.
 
 veto:
   veto_1:
@@ -14,10 +14,18 @@ veto:
     cap: 1.5
     usable_tag: "invalid"
   veto_3:
-    name: "rate_persistent"
+    name: "persistent_rate"
     trigger:
       rate_hard_violation_min_gt: 30
     cap: 2.5
+
+decision_contract:
+  instrument_range: "data_quality_fail"
+  operational_hard_bound: "review_warning"
+  operational_soft_bound: "operational_warning"
+  persistent_rate: "operational_warning"
+  process_coherent_shock: "guarded_process_diagnostic"
+  provisional_operational_rules_exclude_training: false
 
 evidence:
   min_observations: 30

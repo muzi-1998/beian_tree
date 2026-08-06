@@ -46,7 +46,7 @@ class ThresholdStore:
         physical_bounds_cfg: dict,
         rate_limits_cfg: dict,
         benchmark: BenchmarkWindows,
-        version: str = "v2.2.1",
+        version: str = "v2.3.0",
     ) -> "ThresholdStore":
         bounds: list[PhysicalBound] = []
         threshold_number = 0
@@ -58,7 +58,7 @@ class ThresholdStore:
                 PhysicalBound(
                     threshold_id=f"T{threshold_number:04d}",
                     benchmark_version=benchmark.version,
-                    context_version="fixed_physical_contract_v2.2.1",
+                    context_version="physical_contract_v2.3.0",
                     version=version,
                     validator_passed=True,
                     **kwargs,
@@ -71,7 +71,7 @@ class ThresholdStore:
                 "sensor_scope": f"all_{sensor_type}",
                 "condition_scope": "all_observed_conditions",
                 "unit": config["unit"],
-                "source": "expert",
+                "source": "provisional_expert_prior",
                 "benchmark_window_ids": (),
             }
             append_bound(
@@ -109,13 +109,27 @@ class ThresholdStore:
                 benchmark_window_ids=(),
             )
 
+        for sensor, override in physical_bounds_cfg.get("sensor_overrides", {}).items():
+            sensor_type = sensor.split("_", 1)[0]
+            base = physical_bounds_cfg["sensors"][sensor_type]
+            append_bound(
+                sensor_type=sensor_type,
+                sensor_scope=sensor,
+                condition_scope=override.get("process_zone", "sensor_specific"),
+                bound_type="soft_value",
+                low=override.get("soft_low", base["soft_low"]),
+                high=override.get("soft_high", base["soft_high"]),
+                unit=base["unit"],
+                source=override.get("basis", "provisional_expert_prior"),
+                benchmark_window_ids=(),
+            )
         for sensor_type, config in rate_limits_cfg["rate_limits"].items():
             common = {
                 "sensor_type": sensor_type,
                 "sensor_scope": f"all_{sensor_type}",
                 "condition_scope": "contiguous_finite_observations",
                 "unit": config["unit"],
-                "source": "expert",
+                "source": "provisional_expert_prior",
                 "benchmark_window_ids": (),
             }
             append_bound(
@@ -158,15 +172,21 @@ class ThresholdStore:
                     "benchmark_quantile has empty benchmark_window_ids"
                 )
 
-    def hard_bounds(self, sensor_type: str) -> tuple[float, float]:
-        return self._value_bounds("hard_value", sensor_type)
+    def hard_bounds(self, sensor_type: str, sensor: str | None = None) -> tuple[float, float]:
+        return self._value_bounds("hard_value", sensor_type, sensor)
 
-    def soft_bounds(self, sensor_type: str) -> tuple[float, float]:
-        return self._value_bounds("soft_value", sensor_type)
+    def soft_bounds(self, sensor_type: str, sensor: str | None = None) -> tuple[float, float]:
+        return self._value_bounds("soft_value", sensor_type, sensor)
 
-    def _value_bounds(self, bound_type: str, sensor_type: str) -> tuple[float, float]:
+    def _value_bounds(
+        self, bound_type: str, sensor_type: str, sensor: str | None = None
+    ) -> tuple[float, float]:
+        if sensor is not None:
+            for bound in self._index_by_type.get(bound_type, []):
+                if bound.sensor_scope == sensor:
+                    return float(bound.low), float(bound.high)
         for bound in self._index_by_type.get(bound_type, []):
-            if bound.sensor_type == sensor_type:
+            if bound.sensor_type == sensor_type and bound.sensor_scope == f"all_{sensor_type}":
                 return float(bound.low), float(bound.high)
         raise KeyError(f"No {bound_type} bounds for {sensor_type}")
 

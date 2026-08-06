@@ -18,7 +18,7 @@ class D3Result:
     sensor_type: str
     Q_value_hard: float
     Q_value_soft: float
-    Q_rate: float
+    Q_persistent_rate: float
     D3_base: float
     D3_pre: float
     D3_total: float
@@ -28,9 +28,17 @@ class D3Result:
     observed_fraction: float
     veto_flag: bool
     veto_reason: str
+    data_veto_flag: bool
+    operational_warning_flag: bool
+    D3_gate_status: str
     process_coherent_shock: bool
     usable_tag: str
     dominant_physical_issue: str
+
+    @property
+    def Q_rate(self) -> float:
+        """Backward-compatible alias; the scientific construct is persistent rate."""
+        return self.Q_persistent_rate
 
 
 class D3Aggregator:
@@ -67,7 +75,7 @@ class D3Aggregator:
                 sensor_type=sensor_type,
                 Q_value_hard=float("nan"),
                 Q_value_soft=float("nan"),
-                Q_rate=float("nan"),
+                Q_persistent_rate=float("nan"),
                 D3_base=float("nan"),
                 D3_pre=float("nan"),
                 D3_total=float("nan"),
@@ -77,6 +85,9 @@ class D3Aggregator:
                 observed_fraction=float(observed_fraction),
                 veto_flag=False,
                 veto_reason="",
+                data_veto_flag=False,
+                operational_warning_flag=False,
+                D3_gate_status="NotEvaluated",
                 process_coherent_shock=bool(rate_evidence.shock_candidate),
                 usable_tag="not_evaluated",
                 dominant_physical_issue="insufficient_evidence",
@@ -86,7 +97,7 @@ class D3Aggregator:
         values = {
             "Q_value_hard": sub.Q_value_hard,
             "Q_value_soft": sub.Q_value_soft,
-            "Q_rate": sub.Q_rate,
+            "Q_persistent_rate": sub.Q_persistent_rate,
         }
         base = sum(w[name] * values[name] for name in w)
         lam = float(self.mapping["aggregation"]["lambda_base"])
@@ -113,23 +124,33 @@ class D3Aggregator:
         if rate_evidence.rate_hard_consec_max_min > v3["trigger"]["rate_hard_violation_min_gt"]:
             pre = min(pre, float(v3["cap"]))
             veto_flag = True
-            veto_reasons.append("rate_persistent")
+            veto_reasons.append("persistent_rate")
 
         total = float(np.clip(pre, 1.0, 5.0))
-        ut = self.rules["usable_tag_rules"]
-        if value_evidence.out_of_instrument or total < ut["invalid_caps_below"]:
+        data_veto = bool(value_evidence.out_of_instrument)
+        operational_warning = bool(
+            value_evidence.hard_violation_rate > 0
+            or value_evidence.soft_violation_rate > 0
+            or rate_evidence.rate_hard_violation_rate > 0
+            or rate_evidence.rate_soft_violation_rate > 0
+        )
+        if data_veto:
             usable = "invalid"
-        elif total < ut["review_only_below"]:
+            gate_status = "Fail"
+        elif value_evidence.hard_violation_rate > 0 or "persistent_rate" in veto_reasons:
             usable = "review_only"
-        elif total < ut["report_only_below"]:
-            usable = "report_only"
+            gate_status = "Warn"
+        elif operational_warning:
+            usable = "train_ok_with_operational_warning"
+            gate_status = "Warn"
         else:
             usable = "train_ok"
+            gate_status = "Pass"
 
         risks = {
             "hard_bound": value_evidence.hard_violation_rate,
             "soft_bound": value_evidence.soft_violation_rate,
-            "rate": rate_evidence.rate_hard_violation_rate,
+            "persistent_rate": rate_evidence.rate_hard_violation_rate,
         }
         dominant = max(risks, key=risks.get)
         if risks[dominant] < 0.005:
@@ -141,7 +162,7 @@ class D3Aggregator:
             sensor_type=sensor_type,
             Q_value_hard=float(sub.Q_value_hard),
             Q_value_soft=float(sub.Q_value_soft),
-            Q_rate=float(sub.Q_rate),
+            Q_persistent_rate=float(sub.Q_persistent_rate),
             D3_base=float(base),
             D3_pre=float(pre),
             D3_total=total,
@@ -151,6 +172,9 @@ class D3Aggregator:
             observed_fraction=float(observed_fraction),
             veto_flag=veto_flag,
             veto_reason=";".join(veto_reasons),
+            data_veto_flag=data_veto,
+            operational_warning_flag=operational_warning,
+            D3_gate_status=gate_status,
             process_coherent_shock=bool(rate_evidence.shock_candidate),
             usable_tag=usable,
             dominant_physical_issue=dominant,

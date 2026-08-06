@@ -1,4 +1,4 @@
-"""Validate, run, and render the complete D3 v2.2.1 project."""
+"""Validate, run, and render the complete D3 v2.3 project."""
 
 from __future__ import annotations
 
@@ -27,7 +27,7 @@ def main() -> None:
     started = time.time()
 
     run([sys.executable, "ci/check_d3_imports.py"])
-    run([sys.executable, "-m", "pytest", "tests/test_v22_contracts.py", "-q"])
+    run([sys.executable, "-m", "pytest", "tests/test_v23_contracts.py", "-q"])
 
     if not args.skip_pipeline:
         pipeline = [
@@ -46,18 +46,22 @@ def main() -> None:
         "fig1_framework_overview.py",
         "fig2_score_landscape.py",
         "fig3_evidence_coverage.py",
-        "fig4_rate_constraints.py",
+        "fig4_persistent_rate_construct.py",
         "fig5_boundary_fixed_threshold.py",
-        "fig6_events_profile.py",
+        "fig6_gate_and_directional_profile.py",
         "fig7_case_studies.py",
+        "fig8_boundary_rate_validation.py",
     ]
     for script in scripts:
         run([sys.executable, str(Path("figures") / script)])
 
-    print(f"D3 v2.2.1 complete in {time.time() - started:.1f} s")
+    run([sys.executable, "ci/audit_figure_bundle.py"])
+
+    print(f"D3 v2.3.0 complete in {time.time() - started:.1f} s")
     print(f"Data: {ROOT / 'outputs' / 'data'}")
     print(f"Figures: {ROOT / 'outputs' / 'figures'}")
     print(f"Manifest: {ROOT / 'outputs' / 'manifest' / 'run_manifest.json'}")
+    print(f"Figure audit: {ROOT / 'outputs' / 'reports' / 'nature_figure_bundle_audit.json'}")
 
 
 if __name__ == "__main__":

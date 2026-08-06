@@ -1,164 +1,331 @@
 {
-  "figure_dir": "D:\\004_git\\beian_tree\\Project 1 Data Quality Assessment\\D3 Physical rationality and rate constraints\\outputs\\figures",
-  "figures": 7,
-  "failed": 0,
-  "generated_at": "2026-07-27T05:05:00+00:00",
-  "nature_skill_version": "2.1.0",
-  "source_preflight": {
-    "backend": "python",
-    "shared_style_module_verified": true,
-    "static_validator_limitation": "per-script checks do not resolve _nature_style.py imports",
-    "rendered_bundle_visually_reviewed": true
-  },
-  "records": [
+  "audit_version": "d3-nature-figure-audit-v2.3.0",
+  "created_at_utc": "2026-08-06T05:33:47.135606+00:00",
+  "backend": "python",
+  "n_figures": 8,
+  "failures": [],
+  "warnings": [],
+  "passed": true,
+  "figures": [
     {
+      "script": "fig1_framework_overview.py",
       "stem": "fig1_framework_overview",
-      "png": true,
-      "svg": true,
-      "pdf": true,
-      "png_size_px": [
-        4188,
-        2928
-      ],
-      "png_nonblank": true,
-      "svg_text_elements": 77,
-      "svg_arial_declared": true,
-      "panel_labels": [
-        "(a)",
-        "(b)",
-        "(c)",
-        "(d)"
-      ],
-      "nonconforming_bare_panel_labels": [],
-      "fresh_vs_sources": true
+      "preflight_failures": 0,
+      "preflight_warnings": 0,
+      "exports": {
+        "svg": {
+          "exists": true,
+          "bytes": 47360,
+          "newer_than_source": true
+        },
+        "pdf": {
+          "exists": true,
+          "bytes": 52682,
+          "newer_than_source": true
+        },
+        "png": {
+          "exists": true,
+          "bytes": 542522,
+          "newer_than_source": true
+        },
+        "tiff": {
+          "exists": true,
+          "bytes": 1458236,
+          "newer_than_source": true
+        }
+      },
+      "png": {
+        "width_px": 4188,
+        "height_px": 2928,
+        "pixel_std": 60.4957275390625,
+        "nonwhite_fraction": 0.1786068444319184,
+        "nonblank": true
+      },
+      "svg": {
+        "arial_declared": true,
+        "editable_text": true,
+        "panel_a_present": true
+      }
     },
     {
+      "script": "fig2_score_landscape.py",
       "stem": "fig2_score_landscape",
-      "png": true,
-      "svg": true,
-      "pdf": true,
-      "png_size_px": [
-        4297,
-        3118
-      ],
-      "png_nonblank": true,
-      "svg_text_elements": 112,
-      "svg_arial_declared": true,
-      "panel_labels": [
-        "(a)",
-        "(b)",
-        "(c)",
-        "(d)"
-      ],
-      "nonconforming_bare_panel_labels": [],
-      "fresh_vs_sources": true
+      "preflight_failures": 0,
+      "preflight_warnings": 0,
+      "exports": {
+        "svg": {
+          "exists": true,
+          "bytes": 87275,
+          "newer_than_source": true
+        },
+        "pdf": {
+          "exists": true,
+          "bytes": 59553,
+          "newer_than_source": true
+        },
+        "png": {
+          "exists": true,
+          "bytes": 466098,
+          "newer_than_source": true
+        },
+        "tiff": {
+          "exists": true,
+          "bytes": 1400190,
+          "newer_than_source": true
+        }
+      },
+      "png": {
+        "width_px": 4297,
+        "height_px": 3118,
+        "pixel_std": 50.45085525512695,
+        "nonwhite_fraction": 0.26473860442037594,
+        "nonblank": true
+      },
+      "svg": {
+        "arial_declared": true,
+        "editable_text": true,
+        "panel_a_present": true
+      }
     },
     {
+      "script": "fig3_evidence_coverage.py",
       "stem": "fig3_evidence_coverage",
-      "png": true,
-      "svg": true,
-      "pdf": true,
-      "png_size_px": [
-        4268,
-        3145
-      ],
-      "png_nonblank": true,
-      "svg_text_elements": 96,
-      "svg_arial_declared": true,
-      "panel_labels": [
-        "(a)",
-        "(b)",
-        "(c)",
-        "(d)"
-      ],
-      "nonconforming_bare_panel_labels": [],
-      "fresh_vs_sources": true
+      "preflight_failures": 0,
+      "preflight_warnings": 0,
+      "exports": {
+        "svg": {
+          "exists": true,
+          "bytes": 63711,
+          "newer_than_source": true
+        },
+        "pdf": {
+          "exists": true,
+          "bytes": 50995,
+          "newer_than_source": true
+        },
+        "png": {
+          "exists": true,
+          "bytes": 483346,
+          "newer_than_source": true
+        },
+        "tiff": {
+          "exists": true,
+          "bytes": 1716708,
+          "newer_than_source": true
+        }
+      },
+      "png": {
+        "width_px": 4268,
+        "height_px": 3145,
+        "pixel_std": 84.3857192993164,
+        "nonwhite_fraction": 0.3063021591523714,
+        "nonblank": true
+      },
+      "svg": {
+        "arial_declared": true,
+        "editable_text": true,
+        "panel_a_present": true
+      }
     },
     {
-      "stem": "fig4_rate_constraints",
-      "png": true,
-      "svg": true,
-      "pdf": true,
-      "png_size_px": [
-        4157,
-        3145
-      ],
-      "png_nonblank": true,
-      "svg_text_elements": 92,
-      "svg_arial_declared": true,
-      "panel_labels": [
-        "(a)",
-        "(b)",
-        "(c)",
-        "(d)"
-      ],
-      "nonconforming_bare_panel_labels": [],
-      "fresh_vs_sources": true
+      "script": "fig4_persistent_rate_construct.py",
+      "stem": "fig4_persistent_rate_construct",
+      "preflight_failures": 0,
+      "preflight_warnings": 0,
+      "exports": {
+        "svg": {
+          "exists": true,
+          "bytes": 71735,
+          "newer_than_source": true
+        },
+        "pdf": {
+          "exists": true,
+          "bytes": 56082,
+          "newer_than_source": true
+        },
+        "png": {
+          "exists": true,
+          "bytes": 572730,
+          "newer_than_source": true
+        },
+        "tiff": {
+          "exists": true,
+          "bytes": 1146196,
+          "newer_than_source": true
+        }
+      },
+      "png": {
+        "width_px": 4189,
+        "height_px": 3171,
+        "pixel_std": 43.59239959716797,
+        "nonwhite_fraction": 0.06235813504140042,
+        "nonblank": true
+      },
+      "svg": {
+        "arial_declared": true,
+        "editable_text": true,
+        "panel_a_present": true
+      }
     },
     {
+      "script": "fig5_boundary_fixed_threshold.py",
       "stem": "fig5_boundary_fixed_threshold",
-      "png": true,
-      "svg": true,
-      "pdf": true,
-      "png_size_px": [
-        4099,
-        3257
-      ],
-      "png_nonblank": true,
-      "svg_text_elements": 90,
-      "svg_arial_declared": true,
-      "panel_labels": [
-        "(a)",
-        "(b)",
-        "(c)",
-        "(d)"
-      ],
-      "nonconforming_bare_panel_labels": [],
-      "fresh_vs_sources": true
+      "preflight_failures": 0,
+      "preflight_warnings": 0,
+      "exports": {
+        "svg": {
+          "exists": true,
+          "bytes": 69987,
+          "newer_than_source": true
+        },
+        "pdf": {
+          "exists": true,
+          "bytes": 52866,
+          "newer_than_source": true
+        },
+        "png": {
+          "exists": true,
+          "bytes": 394018,
+          "newer_than_source": true
+        },
+        "tiff": {
+          "exists": true,
+          "bytes": 1226302,
+          "newer_than_source": true
+        }
+      },
+      "png": {
+        "width_px": 4099,
+        "height_px": 3257,
+        "pixel_std": 57.32027053833008,
+        "nonwhite_fraction": 0.16456450171728385,
+        "nonblank": true
+      },
+      "svg": {
+        "arial_declared": true,
+        "editable_text": true,
+        "panel_a_present": true
+      }
     },
     {
-      "stem": "fig6_events_profile",
-      "png": true,
-      "svg": true,
-      "pdf": true,
-      "png_size_px": [
-        4301,
-        3309
-      ],
-      "png_nonblank": true,
-      "svg_text_elements": 95,
-      "svg_arial_declared": true,
-      "panel_labels": [
-        "(a)",
-        "(b)",
-        "(c)",
-        "(d)"
-      ],
-      "nonconforming_bare_panel_labels": [],
-      "fresh_vs_sources": true
+      "script": "fig6_gate_and_directional_profile.py",
+      "stem": "fig6_gate_and_directional_profile",
+      "preflight_failures": 0,
+      "preflight_warnings": 0,
+      "exports": {
+        "svg": {
+          "exists": true,
+          "bytes": 80086,
+          "newer_than_source": true
+        },
+        "pdf": {
+          "exists": true,
+          "bytes": 56217,
+          "newer_than_source": true
+        },
+        "png": {
+          "exists": true,
+          "bytes": 584116,
+          "newer_than_source": true
+        },
+        "tiff": {
+          "exists": true,
+          "bytes": 1675876,
+          "newer_than_source": true
+        }
+      },
+      "png": {
+        "width_px": 4258,
+        "height_px": 3387,
+        "pixel_std": 60.48272705078125,
+        "nonwhite_fraction": 0.28160195303708,
+        "nonblank": true
+      },
+      "svg": {
+        "arial_declared": true,
+        "editable_text": true,
+        "panel_a_present": true
+      }
     },
     {
+      "script": "fig7_case_studies.py",
       "stem": "fig7_case_studies",
-      "png": true,
-      "svg": true,
-      "pdf": true,
-      "png_size_px": [
-        4156,
-        4019
-      ],
-      "png_nonblank": true,
-      "svg_text_elements": 103,
-      "svg_arial_declared": true,
-      "panel_labels": [
-        "(a)",
-        "(b)",
-        "(c)",
-        "(d)",
-        "(e)",
-        "(f)"
-      ],
-      "nonconforming_bare_panel_labels": [],
-      "fresh_vs_sources": true
+      "preflight_failures": 0,
+      "preflight_warnings": 0,
+      "exports": {
+        "svg": {
+          "exists": true,
+          "bytes": 79588,
+          "newer_than_source": true
+        },
+        "pdf": {
+          "exists": true,
+          "bytes": 56047,
+          "newer_than_source": true
+        },
+        "png": {
+          "exists": true,
+          "bytes": 539344,
+          "newer_than_source": true
+        },
+        "tiff": {
+          "exists": true,
+          "bytes": 1781394,
+          "newer_than_source": true
+        }
+      },
+      "png": {
+        "width_px": 4156,
+        "height_px": 4019,
+        "pixel_std": 48.831581115722656,
+        "nonwhite_fraction": 0.4053905043440194,
+        "nonblank": true
+      },
+      "svg": {
+        "arial_declared": true,
+        "editable_text": true,
+        "panel_a_present": true
+      }
+    },
+    {
+      "script": "fig8_boundary_rate_validation.py",
+      "stem": "fig8_boundary_rate_validation",
+      "preflight_failures": 0,
+      "preflight_warnings": 0,
+      "exports": {
+        "svg": {
+          "exists": true,
+          "bytes": 60359,
+          "newer_than_source": true
+        },
+        "pdf": {
+          "exists": true,
+          "bytes": 61757,
+          "newer_than_source": true
+        },
+        "png": {
+          "exists": true,
+          "bytes": 603134,
+          "newer_than_source": true
+        },
+        "tiff": {
+          "exists": true,
+          "bytes": 1277220,
+          "newer_than_source": true
+        }
+      },
+      "png": {
+        "width_px": 4171,
+        "height_px": 3122,
+        "pixel_std": 49.50914764404297,
+        "nonwhite_fraction": 0.09586985332819531,
+        "nonblank": true
+      },
+      "svg": {
+        "arial_declared": true,
+        "editable_text": true,
+        "panel_a_present": true
+      }
     }
   ]
 }

@@ -1,4 +1,5 @@
 """Figure 5: fixed boundary diagnostics excluded from D3 scoring."""
+# Shared Nature contract: Arial; font.size=7; svg.fonttype='none'; pdf.fonttype=42; .svg .pdf .tiff dpi=600.
 
 from __future__ import annotations
 

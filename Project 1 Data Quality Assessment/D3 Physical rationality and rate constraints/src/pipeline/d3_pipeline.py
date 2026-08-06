@@ -90,13 +90,15 @@ class D3Pipeline:
                 sensor_type = self.sensor_meta[sensor]["type"]
                 values = window_df[sensor].to_numpy(dtype=float)
                 value_evidence = self.value_checkers[sensor_type].check(values, sensor, sensor_type)
-                neighbor_sync, parallel_sync = rate_context.get(sensor, (0.0, 0.0))
+                context = rate_context[sensor]
                 rate_evidence = self.rate_checker.check(
                     values,
                     sensor,
                     sensor_type,
-                    neighbor_sync_score=neighbor_sync,
-                    parallel_sync_score=parallel_sync,
+                    neighbor_sync_score=context.neighbor_sync_score,
+                    parallel_sync_score=context.parallel_sync_score,
+                    process_coherent_mask=context.coherent_mask,
+                    precomputed_rate=context.rate_series,
                 )
                 boundary = self.boundary_extractor.compute(values, sensor, sensor_type)
                 sub = self.scorer.map(value_evidence, rate_evidence)
@@ -117,7 +119,9 @@ class D3Pipeline:
                     "sensor_id": sensor,
                     "Q_value_hard": result.Q_value_hard,
                     "Q_value_soft": result.Q_value_soft,
+                    "Q_persistent_rate": result.Q_persistent_rate,
                     "Q_rate": result.Q_rate,
+                    "Q_rate_alias_status": "deprecated_alias_of_Q_persistent_rate",
                     "D3_base": result.D3_base,
                     "D3_total": result.D3_total,
                     "evidence_status": result.evidence_status,
@@ -127,7 +131,11 @@ class D3Pipeline:
                     "dominant_physical_issue": result.dominant_physical_issue,
                     "veto_flag": result.veto_flag,
                     "veto_reason": result.veto_reason,
+                    "data_veto_flag": result.data_veto_flag,
+                    "operational_warning_flag": result.operational_warning_flag,
+                    "D3_gate_status": result.D3_gate_status,
                     "process_coherent_shock": result.process_coherent_shock,
+                    "process_coherence_role": "attribution_guard_not_veto",
                     "boundary_diagnostic_only": True,
                     "threshold_version": THRESHOLD_VERSION,
                     "mapping_version": MAPPING_VERSION,
@@ -145,11 +153,23 @@ class D3Pipeline:
                     "soft_high": value_evidence.soft_high,
                     "hard_violation_count": value_evidence.hard_violation_count,
                     "soft_violation_count": value_evidence.soft_violation_count,
+                    "hard_low_violation_count": value_evidence.hard_low_violation_count,
+                    "hard_high_violation_count": value_evidence.hard_high_violation_count,
+                    "soft_low_violation_count": value_evidence.soft_low_violation_count,
+                    "soft_high_violation_count": value_evidence.soft_high_violation_count,
                     "hard_violation_rate": value_evidence.hard_violation_rate,
                     "soft_violation_rate": value_evidence.soft_violation_rate,
+                    "hard_low_violation_rate": value_evidence.hard_low_violation_rate,
+                    "hard_high_violation_rate": value_evidence.hard_high_violation_rate,
+                    "soft_low_violation_rate": value_evidence.soft_low_violation_rate,
+                    "soft_high_violation_rate": value_evidence.soft_high_violation_rate,
                     "max_violation_magnitude": value_evidence.max_violation_magnitude,
+                    "max_soft_low_exceedance": value_evidence.max_soft_low_exceedance,
+                    "max_soft_high_exceedance": value_evidence.max_soft_high_exceedance,
                     "out_of_instrument": value_evidence.out_of_instrument,
                     "consecutive_hard_max_min": value_evidence.consecutive_hard_max_min,
+                    "threshold_scope": value_evidence.threshold_scope,
+                    "operational_threshold_status": "provisional_expert_prior",
                     "threshold_version": THRESHOLD_VERSION,
                     "run_id": self.run_id,
                 })
@@ -161,14 +181,24 @@ class D3Pipeline:
                     "rate_utils_version": rate_evidence.rate_utils_version,
                     "rate_limit_soft": rate_evidence.rate_limit_soft,
                     "rate_limit_hard": rate_evidence.rate_limit_hard,
+                    "rate_soft_point_violation_rate": rate_evidence.rate_soft_point_violation_rate,
+                    "rate_hard_point_violation_rate": rate_evidence.rate_hard_point_violation_rate,
                     "rate_soft_violation_rate": rate_evidence.rate_soft_violation_rate,
                     "rate_hard_violation_rate": rate_evidence.rate_hard_violation_rate,
                     "rate_severity": rate_evidence.max_rate_severity,
                     "rate_hard_consec_max_min": rate_evidence.rate_hard_consec_max_min,
+                    "rate_hard_consec_raw_max_min": rate_evidence.rate_hard_consec_raw_max_min,
+                    "persistent_rate_event_count": rate_evidence.persistent_rate_event_count,
+                    "impulse_return_event_count": rate_evidence.impulse_return_event_count,
+                    "impulse_return_excluded_fraction": rate_evidence.impulse_return_excluded_fraction,
+                    "process_coherence_guarded_fraction": rate_evidence.process_coherence_guarded_fraction,
+                    "process_coherence_guarded_points": rate_evidence.process_coherence_guarded_points,
                     "neighbor_sync_score": rate_evidence.neighbor_sync_score,
                     "parallel_sync_score": rate_evidence.parallel_sync_score,
                     "process_coherent_shock": rate_evidence.shock_candidate,
-                    "diagnostic_only_sync": True,
+                    "process_coherence_role": "attribution_guard_not_veto",
+                    "rate_construct": "persistent_same_sign_rate",
+                    "rate_threshold_status": "provisional_expert_prior",
                     "rate_mapping_version": MAPPING_VERSION,
                     "run_id": self.run_id,
                 })
@@ -191,15 +221,19 @@ class D3Pipeline:
                     "run_id": self.run_id,
                 })
 
-                if result.evidence_status == "sufficient" and (result.D3_total < 3.0 or result.veto_flag):
+                if result.evidence_status == "sufficient" and (
+                    result.D3_total < 3.0 or result.veto_flag or result.process_coherent_shock
+                ):
                     if "instrument_range" in result.veto_reason:
                         event_type = "instrument_range"
                     elif "hard_violation" in result.veto_reason:
                         event_type = "hard_bound"
-                    elif "rate_persistent" in result.veto_reason or result.dominant_physical_issue == "rate":
-                        event_type = "rate_violation"
+                    elif "persistent_rate" in result.veto_reason or result.dominant_physical_issue == "persistent_rate":
+                        event_type = "persistent_rate"
                     elif result.dominant_physical_issue == "soft_bound":
                         event_type = "soft_bound"
+                    elif result.process_coherent_shock:
+                        event_type = "process_coherent_shock"
                     else:
                         event_type = "low_quality_window"
                     rows["events"].append({

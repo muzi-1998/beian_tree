@@ -56,10 +56,14 @@ def export_all(
 
 def build_profile_summary(results: dict) -> pd.DataFrame:
     scores = results["main_scores"]
+    value = results["value_bounds"]
+    rate = results["rate_constraint"]
     rows = []
     for sensor, group in scores.groupby("sensor_id"):
         evaluated = group[group["evidence_status"] == "sufficient"]
         issue = evaluated["dominant_physical_issue"]
+        value_sensor = value[value["sensor_id"] == sensor]
+        rate_sensor = rate[rate["sensor_id"] == sensor]
         rows.append({
             "sensor_id": sensor,
             "sensor_type": "DO" if sensor.startswith("DO") else "ORP",
@@ -71,9 +75,19 @@ def build_profile_summary(results: dict) -> pd.DataFrame:
             "median_D3": float(evaluated["D3_total"].median()),
             "min_D3": float(evaluated["D3_total"].min()),
             "hard_violation_dominant_rate": float((issue == "hard_bound").mean()),
-            "soft_violation_dominant_rate": float((issue == "soft_bound").mean()),
-            "rate_violation_dominant_rate": float((issue == "rate").mean()),
+            "soft_dominant_window_rate": float((issue == "soft_bound").mean()),
+            "persistent_rate_dominant_window_rate": float((issue == "persistent_rate").mean()),
+            "soft_low_exceedance_window_rate": float(value_sensor["soft_low_violation_rate"].gt(0).mean()),
+            "soft_high_exceedance_window_rate": float(value_sensor["soft_high_violation_rate"].gt(0).mean()),
+            "mean_soft_low_exceedance_rate": float(value_sensor["soft_low_violation_rate"].mean()),
+            "mean_soft_high_exceedance_rate": float(value_sensor["soft_high_violation_rate"].mean()),
+            "point_rate_excursion_window_rate": float(rate_sensor["rate_hard_point_violation_rate"].gt(0).mean()),
+            "persistent_rate_window_rate": float(rate_sensor["rate_hard_violation_rate"].gt(0).mean()),
+            "impulse_return_window_rate": float(rate_sensor["impulse_return_event_count"].gt(0).mean()),
+            "process_guard_window_rate": float(rate_sensor["process_coherence_guarded_points"].gt(0).mean()),
             "veto_rate": float(evaluated["veto_flag"].mean()),
+            "data_veto_rate": float(evaluated["data_veto_flag"].mean()),
+            "operational_warning_rate": float(evaluated["operational_warning_flag"].mean()),
             "process_coherent_shock_rate": float(evaluated["process_coherent_shock"].mean()),
             "dominant_issue": issue.mode().iloc[0] if len(issue) else "not_evaluated",
             "threshold_version_used": THRESHOLD_VERSION,

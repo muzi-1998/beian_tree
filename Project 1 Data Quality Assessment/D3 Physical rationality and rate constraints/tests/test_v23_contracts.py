@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from types import SimpleNamespace
+from copy import deepcopy
 
 import numpy as np
 import pandas as pd
@@ -9,8 +10,9 @@ import pytest
 import yaml
 
 from src.common.exceptions import ConfigValidationError
-from src.common.rate_utils import RATE_UTILS_VERSION, dx_dt_robust
+from src.common.rate_utils import RATE_UTILS_VERSION, _theil_sen_slope, dx_dt_robust
 from src.d3_physical.aggregator import D3Aggregator
+from src.d3_physical.rate_constraint_checker import RateConstraintChecker
 from src.d3_physical.scorer import D3ScoreMapper, SubScores, logistic_zero_anchored
 from src.d3_physical.threshold_store import PhysicalBound, ThresholdStore
 from src.d3_physical.value_range_checker import ValueRangeChecker
@@ -23,6 +25,16 @@ def _yaml(name: str) -> dict:
     return yaml.safe_load((ROOT / "configs" / name).read_text(encoding="utf-8"))
 
 
+def _thresholds() -> ThresholdStore:
+    benchmark = SimpleNamespace(_fixed_tails={}, version="benchmark@v2.2.0")
+    return ThresholdStore.build(
+        _yaml("d3_physical_bounds.yaml"),
+        _yaml("d3_rate_limits.yaml"),
+        benchmark,
+        version="v2.3.0",
+    )
+
+
 def test_zero_violation_maps_exactly_to_five():
     assert logistic_zero_anchored(0.0, x0=0.05, k=20.0) == pytest.approx(5.0)
     assert logistic_zero_anchored(0.5, x0=0.05, k=20.0) < 1.01
@@ -30,7 +42,9 @@ def test_zero_violation_maps_exactly_to_five():
 
 def test_boundary_is_not_part_of_d3_score():
     mapping = _yaml("d3_mapping.yaml")
-    assert set(mapping["aggregation"]["weights"]) == {"Q_value_hard", "Q_value_soft", "Q_rate"}
+    assert set(mapping["aggregation"]["weights"]) == {
+        "Q_value_hard", "Q_value_soft", "Q_persistent_rate"
+    }
     assert sum(mapping["aggregation"]["weights"].values()) == pytest.approx(1.0)
     assert mapping["diagnostics"]["boundary_behavior"]["included_in_score"] is False
 
@@ -44,6 +58,14 @@ def test_instrument_range_does_not_override_hard_tolerance():
         assert config["instrument_veto_range_high"] >= config["manufacturer_range_high"]
 
 
+def test_threshold_register_contains_one_instrument_veto_per_analyte():
+    registered = _thresholds().to_dataframe()
+    veto = registered.loc[registered["bound_type"] == "instrument_veto"]
+    assert len(veto) == 2
+    assert veto.set_index("sensor_type").loc["DO", ["low", "high"]].tolist() == [-0.2, 20.0]
+    assert veto.set_index("sensor_type").loc["ORP", ["low", "high"]].tolist() == [-1500.0, 1500.0]
+
+
 def test_orp_operational_excursion_is_not_an_instrument_range_failure():
     config = _yaml("d3_physical_bounds.yaml")
     benchmark = SimpleNamespace(
@@ -54,7 +76,7 @@ def test_orp_operational_excursion_is_not_an_instrument_range_failure():
         config,
         _yaml("d3_rate_limits.yaml"),
         benchmark,
-        version="v2.2.1",
+        version="v2.3.0",
     )
     bounds = config["sensors"]["ORP"]
     evidence = ValueRangeChecker(
@@ -74,6 +96,23 @@ def test_gap_safe_rate_does_not_bridge_missing_run():
     assert np.nanmax(np.abs(rate)) == pytest.approx(1.0)
     assert meta["n_runs"] == 2
     assert meta["version"] == RATE_UTILS_VERSION
+
+
+def test_vectorized_theil_sen_matches_reference_windows():
+    values = np.array([0.0, 0.2, 0.1, 0.8, 1.1, 1.0, 1.8, 2.0, 1.9])
+    rate, _ = dx_dt_robust(
+        values,
+        method="theil_sen",
+        smooth_window=5,
+        hampel_window=99,
+        hampel_n_sigmas=1e9,
+    )
+    expected = []
+    for index in range(len(values)):
+        low = max(0, index - 2)
+        high = min(len(values), index + 3)
+        expected.append(_theil_sen_slope(values[low:high]))
+    assert rate == pytest.approx(expected)
 
 
 def test_scorer_has_no_boundary_input():
@@ -116,8 +155,67 @@ def test_persistent_rate_veto_does_not_need_d1():
         pd.Timestamp("2025-08-01 02:00"), "DO_1_1", "DO", SubScores(5.0, 5.0, 2.8), value, rate, 120
     )
     assert result.veto_flag
-    assert result.veto_reason == "rate_persistent"
+    assert result.veto_reason == "persistent_rate"
     assert result.D3_total <= 2.5
+
+
+def test_do4_zero_deadband_exempts_resolution_noise_but_not_offset():
+    bounds = _yaml("d3_physical_bounds.yaml")["sensors"]["DO"]
+    checker = ValueRangeChecker(
+        _thresholds(),
+        bounds["instrument_veto_range_low"],
+        bounds["instrument_veto_range_high"],
+    )
+    within = checker.check(np.array([-0.03, -0.01, 0.00]), "DO_1_4", "DO")
+    offset = checker.check(np.array([-0.06, -0.08]), "DO_1_4", "DO")
+    hard = checker.check(np.array([-0.21]), "DO_1_4", "DO")
+    assert within.soft_low_violation_count == 0
+    assert within.threshold_scope == "sensor_override"
+    assert offset.soft_low_violation_count == 2
+    assert hard.hard_low_violation_count == 1
+
+
+def test_impulse_return_is_excluded_from_persistent_rate():
+    config = deepcopy(_yaml("d3_rate_limits.yaml"))
+    config["rate_estimator"]["method"] = "diff"
+    checker = RateConstraintChecker(_thresholds(), config)
+    values = np.full(120, 2.0)
+    values[60] = 4.0
+    evidence = checker.check(values, "DO_1_1", "DO")
+    assert evidence.impulse_return_event_count == 1
+    assert evidence.rate_hard_violation_rate == pytest.approx(0.0)
+    assert evidence.persistent_rate_event_count == 0
+
+
+def test_same_sign_ramp_triggers_persistent_rate_unless_process_guarded():
+    config = deepcopy(_yaml("d3_rate_limits.yaml"))
+    config["rate_estimator"]["method"] = "diff"
+    checker = RateConstraintChecker(_thresholds(), config)
+    values = np.full(120, 1.0)
+    values[50:81] = 1.0 + np.arange(31) * 0.6
+    values[81:] = values[80]
+    unguarded = checker.check(values, "DO_1_1", "DO")
+    guarded = checker.check(
+        values,
+        "DO_1_1",
+        "DO",
+        process_coherent_mask=np.ones(len(values), dtype=bool),
+    )
+    assert unguarded.rate_hard_violation_rate > 0
+    assert unguarded.rate_hard_consec_max_min >= 10
+    assert unguarded.persistent_rate_event_count == 1
+    assert guarded.rate_hard_violation_rate == pytest.approx(0.0)
+    assert guarded.process_coherence_guarded_points > 0
+
+
+def test_missing_recovery_jump_is_not_a_rate_event():
+    config = deepcopy(_yaml("d3_rate_limits.yaml"))
+    config["rate_estimator"]["method"] = "diff"
+    checker = RateConstraintChecker(_thresholds(), config)
+    values = np.r_[np.full(50, 2.0), np.full(10, np.nan), np.full(60, 6.0)]
+    evidence = checker.check(values, "DO_1_1", "DO")
+    assert evidence.rate_hard_point_violation_rate == pytest.approx(0.0)
+    assert evidence.rate_hard_violation_rate == pytest.approx(0.0)
 
 
 @pytest.mark.parametrize("source,ids", [("rolling_quantile", ("BW001",)), ("benchmark_quantile", ())])

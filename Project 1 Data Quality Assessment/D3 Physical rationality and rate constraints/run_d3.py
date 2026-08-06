@@ -1,4 +1,4 @@
-"""Run the independent D3 v2.2.1 physical-plausibility pipeline."""
+"""Run the independent D3 v2.3 physical-plausibility pipeline."""
 
 from __future__ import annotations
 
@@ -21,6 +21,7 @@ from src.data.input_loader import load_aligned_data, source_fingerprints
 from src.d3_physical.threshold_store import ThresholdStore
 from src.outputs.excel_exporter import build_profile_summary, export_all
 from src.pipeline.d3_pipeline import D3Pipeline
+from src.validation.d3_validation import run_validation
 from src.version import (
     BENCHMARK_VERSION,
     D3_VERSION,
@@ -48,6 +49,7 @@ def main(
     stride_min: int = 120,
     max_windows: int | None = None,
     subset_days: int | None = None,
+    skip_validation: bool = False,
 ):
     started = time.time()
     configs_dir = ROOT / "configs"
@@ -128,6 +130,19 @@ def main(
     output_dir = ROOT / paths_cfg["output"]["data"]
     exported = export_all(results, threshold_frame, mapping_cfg, profile, output_dir)
 
+    validation_paths = {}
+    if not skip_validation and max_windows is None and subset_days is None:
+        print("[F] Running boundary, persistence, and construct-validity audits...")
+        validation_paths = run_validation(
+            frame=frame,
+            results=results,
+            sensors=sensors,
+            sensor_meta=sensors_cfg["sensors"],
+            thresholds=thresholds,
+            configs=configs,
+            root=ROOT,
+        )
+
     scores = results["main_scores"]
     evaluated = scores[scores["evidence_status"] == "sufficient"]
     manifest = {
@@ -159,10 +174,21 @@ def main(
             "imputed_values_scored": False,
             "regime_labels_consumed": False,
         },
+        "scientific_contract": {
+            "instrument_range_role": "data_quality_fail",
+            "operational_bounds_role": "provisional_warning_only",
+            "rate_construct": "persistent_same_sign_rate",
+            "impulse_return_role": "D1_spike_owned_morphology_exclusion",
+            "process_coherence_role": "attribution_guard_not_veto",
+            "do4_zero_deadband_mg_L": -0.05,
+            "temperature_conditioned_DO_upper_bound": "pending_missing_temperature_pressure_salinity",
+            "position_conditioned_ORP_envelope": "diagnostic_only_pending_site_review",
+        },
         "source_inputs": source_meta,
         "config_sha256": config_hash,
         "code_sha256": code_hash,
         "exported_files": [path.name for path in exported],
+        "validation_files": [path.name for path in validation_paths.values()],
     }
     manifest_path = ROOT / paths_cfg["output"]["manifest"]
     manifest_path.parent.mkdir(parents=True, exist_ok=True)
@@ -177,5 +203,12 @@ if __name__ == "__main__":
     parser.add_argument("--stride-min", type=int, default=120)
     parser.add_argument("--max-windows", type=int)
     parser.add_argument("--subset-days", type=int)
+    parser.add_argument("--skip-validation", action="store_true")
     args = parser.parse_args()
-    main(args.window_min, args.stride_min, args.max_windows, args.subset_days)
+    main(
+        args.window_min,
+        args.stride_min,
+        args.max_windows,
+        args.subset_days,
+        args.skip_validation,
+    )

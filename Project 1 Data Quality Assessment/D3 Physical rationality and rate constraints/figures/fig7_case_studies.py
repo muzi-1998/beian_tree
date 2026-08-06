@@ -1,4 +1,5 @@
 """Figure 7: representative D3 evidence cases."""
+# Shared Nature contract: Arial; font.size=7; svg.fonttype='none'; pdf.fonttype=42; .svg .pdf .tiff dpi=600.
 
 from __future__ import annotations
 
@@ -22,7 +23,7 @@ raw = load_aligned_data(paths_cfg, ROOT)
 evaluated = scores[scores.evidence_status == "sufficient"].copy()
 worst = evaluated.loc[evaluated.D3_total.idxmin()]
 rate_pool = evaluated[(evaluated.Q_value_hard > 4.8) & (evaluated.sensor_id != worst.sensor_id)]
-rate_case = rate_pool.loc[rate_pool.Q_rate.idxmin()] if len(rate_pool) else evaluated.loc[evaluated.Q_rate.idxmin()]
+rate_case = rate_pool.loc[rate_pool.Q_persistent_rate.idxmin()] if len(rate_pool) else evaluated.loc[evaluated.Q_persistent_rate.idxmin()]
 healthy_pool = evaluated[(evaluated.D3_total > 4.95) & ~evaluated.sensor_id.isin([worst.sensor_id, rate_case.sensor_id])]
 healthy = healthy_pool.iloc[len(healthy_pool) // 2] if len(healthy_pool) else evaluated.loc[evaluated.D3_total.idxmax()]
 worst_name = "Instrument-range case" if "instrument_range" in str(worst.veto_reason) else "Hard-bound case"
@@ -45,7 +46,7 @@ for row, (case_name, case) in enumerate(cases):
     ax.axhspan(evidence.soft_low, evidence.soft_high, color=COLORS["green"], alpha=0.10, label="Soft range")
     ax.axhline(evidence.hard_low, color=COLORS["red"], linestyle="--", linewidth=0.8)
     ax.axhline(evidence.hard_high, color=COLORS["red"], linestyle="--", linewidth=0.8, label="Hard limits")
-    finite = segment.dropna()
+    finite = segment[np.isfinite(segment)]
     if sensor_type(sensor) == "DO":
         lower = min(float(finite.min()) if len(finite) else evidence.soft_low, evidence.soft_low) - 0.25
         upper = max(float(finite.max()) if len(finite) else evidence.soft_high, evidence.soft_high) + 0.35
@@ -60,7 +61,7 @@ for row, (case_name, case) in enumerate(cases):
 
     ax = axes[row, 1]
     sublabels = ["Hard", "Soft", "Rate"]
-    subvalues = [case.Q_value_hard, case.Q_value_soft, case.Q_rate]
+    subvalues = [case.Q_value_hard, case.Q_value_soft, case.Q_persistent_rate]
     bars = ax.barh(sublabels, subvalues, color=[COLORS["red"], COLORS["amber"], COLORS["blue"]], height=0.56)
     for bar, score in zip(bars, subvalues):
         ax.text(min(score + 0.08, 4.78), bar.get_y() + bar.get_height() / 2, f"{score:.2f}", va="center",

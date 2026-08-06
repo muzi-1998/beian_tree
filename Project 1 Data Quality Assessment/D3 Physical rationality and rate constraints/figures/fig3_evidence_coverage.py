@@ -1,4 +1,5 @@
 """Figure 3: evidence coverage and not-evaluated behavior."""
+# Shared Nature contract: Arial; font.size=7; svg.fonttype='none'; pdf.fonttype=42; .svg .pdf .tiff dpi=600.
 
 from __future__ import annotations
 

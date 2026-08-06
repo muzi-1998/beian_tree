@@ -73,6 +73,7 @@ ISSUE_COLORS = {
     "hard_bound": COLORS["red"],
     "soft_bound": COLORS["amber"],
     "rate": COLORS["blue"],
+    "persistent_rate": COLORS["blue"],
     "not_evaluated": COLORS["gray"],
 }
 
@@ -130,9 +131,15 @@ def annotation_box(alpha: float = 0.78) -> dict:
 
 def save_figure(fig, outdir: Path, stem: str) -> list[Path]:
     outdir.mkdir(parents=True, exist_ok=True)
-    paths = [outdir / f"{stem}.svg", outdir / f"{stem}.pdf", outdir / f"{stem}.png"]
+    paths = [
+        outdir / f"{stem}.svg",
+        outdir / f"{stem}.pdf",
+        outdir / f"{stem}.png",
+        outdir / f"{stem}.tiff",
+    ]
     fig.savefig(paths[0])
     fig.savefig(paths[1])
     fig.savefig(paths[2], dpi=600)
+    fig.savefig(paths[3], dpi=600, pil_kwargs={"compression": "tiff_lzw"})
     plt.close(fig)
     return paths

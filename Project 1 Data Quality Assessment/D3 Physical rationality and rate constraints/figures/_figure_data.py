@@ -10,6 +10,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "outputs" / "data"
+VALIDATION = ROOT / "outputs" / "validation"
 OUT = ROOT / "outputs" / "figures"
 
 
@@ -17,6 +18,14 @@ def read(name: str, **kwargs) -> pd.DataFrame:
     frame = pd.read_excel(DATA / name, **kwargs)
     if "ts" in frame:
         frame["ts"] = pd.to_datetime(frame["ts"])
+    return frame
+
+
+def read_validation(name: str, **kwargs) -> pd.DataFrame:
+    frame = pd.read_excel(VALIDATION / name, **kwargs)
+    for column in ("ts", "timestamp"):
+        if column in frame:
+            frame[column] = pd.to_datetime(frame[column])
     return frame
 
 

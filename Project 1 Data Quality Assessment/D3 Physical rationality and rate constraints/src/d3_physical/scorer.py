@@ -21,7 +21,12 @@ def logistic_zero_anchored(value: float, x0: float, k: float) -> float:
 class SubScores:
     Q_value_hard: float
     Q_value_soft: float
-    Q_rate: float
+    Q_persistent_rate: float
+
+    @property
+    def Q_rate(self) -> float:
+        """Backward-compatible alias; new outputs use Q_persistent_rate."""
+        return self.Q_persistent_rate
 
 
 class D3ScoreMapper:
@@ -31,7 +36,7 @@ class D3ScoreMapper:
     def map(self, value_evidence, rate_evidence) -> SubScores:
         ch = self.cfg["Q_value_hard"]
         cs = self.cfg["Q_value_soft"]
-        cr = self.cfg["Q_rate"]
+        cr = self.cfg["Q_persistent_rate"]
         return SubScores(
             Q_value_hard=logistic_zero_anchored(
                 value_evidence.hard_violation_rate, ch["x0"], ch["k"]
@@ -39,7 +44,7 @@ class D3ScoreMapper:
             Q_value_soft=logistic_zero_anchored(
                 value_evidence.soft_violation_rate, cs["x0"], cs["k"]
             ),
-            Q_rate=logistic_zero_anchored(
+            Q_persistent_rate=logistic_zero_anchored(
                 rate_evidence.rate_hard_violation_rate, cr["x0"], cr["k"]
             ),
         )

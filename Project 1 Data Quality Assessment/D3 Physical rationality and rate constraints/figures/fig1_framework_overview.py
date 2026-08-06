@@ -1,4 +1,5 @@
 """Figure 1: independent D3 evidence and dimensional ownership."""
+# Shared Nature contract: Arial; font.size=7; svg.fonttype='none'; pdf.fonttype=42; .svg .pdf .tiff dpi=600.
 
 from __future__ import annotations
 
@@ -31,8 +32,8 @@ fig, axes = plt.subplots(2, 2, figsize=(7.2, 5.2))
 fig.subplots_adjust(left=0.09, right=0.98, bottom=0.09, top=0.96, wspace=0.36, hspace=0.42)
 
 ax = axes[0, 0]
-labels = ["Hard value", "Soft value", "Rate"]
-values = [weights["Q_value_hard"], weights["Q_value_soft"], weights["Q_rate"]]
+labels = ["Hard value", "Soft value", "Persistent rate"]
+values = [weights["Q_value_hard"], weights["Q_value_soft"], weights["Q_persistent_rate"]]
 bars = ax.bar(labels, values, color=[COLORS["red"], COLORS["amber"], COLORS["blue"]], width=0.62)
 for bar, value in zip(bars, values):
     ax.text(bar.get_x() + bar.get_width() / 2, value + 0.018, f"{value:.2f}", ha="center")
@@ -47,7 +48,7 @@ x = np.linspace(0, 0.30, 400)
 for key, color, label in [
     ("Q_value_hard", COLORS["red"], "Hard value"),
     ("Q_value_soft", COLORS["amber"], "Soft value"),
-    ("Q_rate", COLORS["blue"], "Rate"),
+    ("Q_persistent_rate", COLORS["blue"], "Persistent rate"),
 ]:
     config = mapping[key]
     ax.plot(x, logistic_zero(x, config["x0"], config["k"]), color=color, label=label)

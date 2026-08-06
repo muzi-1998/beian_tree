@@ -39,6 +39,27 @@ def _theil_sen_slope(y: np.ndarray, dt_min: float = 1.0) -> float:
     return float(np.median(slopes)) if slopes else 0.0
 
 
+def _rolling_theil_sen(clean: np.ndarray, window: int, dt_min: float) -> np.ndarray:
+    """Vectorized interior Theil-Sen slopes with exact edge behavior."""
+    local = np.full(len(clean), np.nan, dtype=float)
+    half = window // 2
+    if len(clean) >= window:
+        windows = np.lib.stride_tricks.sliding_window_view(clean, window)
+        left, right = np.triu_indices(window, k=1)
+        slopes = (windows[:, right] - windows[:, left]) / (
+            (right - left)[None, :] * dt_min
+        )
+        local[half:half + len(windows)] = np.median(slopes, axis=1)
+    edge_indices = list(range(min(half, len(clean))))
+    edge_indices += list(range(max(half, len(clean) - half), len(clean)))
+    for index in sorted(set(edge_indices)):
+        low = max(0, index - half)
+        high = min(len(clean), index + half + 1)
+        if high - low >= 2:
+            local[index] = _theil_sen_slope(clean[low:high], dt_min=dt_min)
+    return local
+
+
 def dx_dt_robust(
     x: np.ndarray | pd.Series,
     method: str = "theil_sen",
@@ -86,17 +107,17 @@ def dx_dt_robust(
         if method == "diff":
             local[1:] = np.diff(clean) / dt_min
         elif method in {"rolling_linear", "theil_sen"}:
-            for i in range(len(clean)):
-                lo = max(0, i - half)
-                hi = min(len(clean), i + half + 1)
-                y = clean[lo:hi]
-                if len(y) < 2:
-                    continue
-                if method == "rolling_linear":
+            if method == "theil_sen":
+                local = _rolling_theil_sen(clean, w, dt_min)
+            else:
+                for i in range(len(clean)):
+                    lo = max(0, i - half)
+                    hi = min(len(clean), i + half + 1)
+                    y = clean[lo:hi]
+                    if len(y) < 2:
+                        continue
                     t = np.arange(len(y)) * dt_min
                     local[i] = np.polyfit(t, y, 1)[0]
-                else:
-                    local[i] = _theil_sen_slope(y, dt_min=dt_min)
         else:
             raise ValueError(f"Unknown rate method: {method}")
         rate[start:end] = local
