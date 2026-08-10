@@ -1,4 +1,4 @@
-"""Validate, run, and render the complete D3 v2.4 project."""
+"""Validate, run, and render the complete D3 v2.5 project."""
 
 from __future__ import annotations
 
@@ -27,7 +27,7 @@ def main() -> None:
     started = time.time()
 
     run([sys.executable, "ci/check_d3_imports.py"])
-    run([sys.executable, "-m", "pytest", "tests/test_v24_contracts.py", "-q"])
+    run([sys.executable, "-m", "pytest", "tests", "-q"])
 
     if not args.skip_pipeline:
         pipeline = [
@@ -52,13 +52,14 @@ def main() -> None:
         "fig7_case_studies.py",
         "fig8_boundary_rate_validation.py",
         "fig9_do4_zero_equivalence_contract.py",
+        "fig10_temperature_conditioned_do_upper.py",
     ]
     for script in scripts:
         run([sys.executable, str(Path("figures") / script)])
 
     run([sys.executable, "ci/audit_figure_bundle.py"])
 
-    print(f"D3 v2.4.0 complete in {time.time() - started:.1f} s")
+    print(f"D3 v2.5.0 complete in {time.time() - started:.1f} s")
     print(f"Data: {ROOT / 'outputs' / 'data'}")
     print(f"Figures: {ROOT / 'outputs' / 'figures'}")
     print(f"Manifest: {ROOT / 'outputs' / 'manifest' / 'run_manifest.json'}")

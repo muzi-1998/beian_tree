@@ -1,4 +1,4 @@
-"""Export the D3 v2.4 evidence, diagnostics, scores, and audit tables."""
+"""Export the D3 v2.5 evidence, diagnostics, scores, and audit tables."""
 
 from __future__ import annotations
 
@@ -81,6 +81,13 @@ def build_profile_summary(results: dict) -> pd.DataFrame:
             "soft_high_exceedance_window_rate": float(value_sensor["soft_high_violation_rate"].gt(0).mean()),
             "mean_soft_low_exceedance_rate": float(value_sensor["soft_low_violation_rate"].mean()),
             "mean_soft_high_exceedance_rate": float(value_sensor["soft_high_violation_rate"].mean()),
+            "mean_soft_high_exceedance_rate_evaluable": float(
+                value_sensor["soft_high_violation_rate_evaluable"].mean()
+            ),
+            "temperature_upper_mean_coverage": float(
+                value_sensor["soft_high_evaluable_fraction"].mean()
+            ),
+            "soft_high_scored": bool(value_sensor["soft_high_scored"].any()),
             "physical_low_window_rate": float(value_sensor["physical_low_violation_rate"].gt(0).mean()),
             "zero_equivalent_window_rate": float(value_sensor["zero_equivalent_rate"].gt(0).mean()),
             "zero_offset_warning_window_rate": float(value_sensor["zero_offset_warning_rate"].gt(0).mean()),

@@ -1,8 +1,8 @@
 {
-  "run_id": "RUN_D3_v2.4.0_20260810T013252Z_790fee40",
-  "d3_version": "v2.4.0",
-  "created_at_utc": "2026-08-10T01:32:52.746760+00:00",
-  "wall_time_s": 305.282751083374,
+  "run_id": "RUN_D3_v2.5.0_20260810T070618Z_1ca914b0",
+  "d3_version": "v2.5.0",
+  "created_at_utc": "2026-08-10T07:06:18.811133+00:00",
+  "wall_time_s": 183.02576565742493,
   "study_start": "2025-08-01 00:00:00",
   "study_end": "2026-04-13 23:59:00",
   "subset_days": null,
@@ -12,10 +12,10 @@
   "n_evaluated": 42840,
   "n_not_evaluated": 168,
   "n_events": 5620,
-  "mean_D3_evaluated": 4.865250623231726,
+  "mean_D3_evaluated": 4.854903100573727,
   "versions": {
     "mapping": "v2.4.0",
-    "threshold": "v2.4.0",
+    "threshold": "v2.5.0",
     "rate_utils": "rate_utils@v2.4.0",
     "benchmark": "benchmark@v2.2.0",
     "sensitivity": "interval-sensitivity@v1.0.0"
@@ -49,7 +49,27 @@
     "do4_physical_soft_low_mg_L": 0.0,
     "do4_zero_equivalence_low_mg_L": -0.05,
     "do4_operational_soft_high": "disabled_pending_time_blocked_template_validation",
-    "temperature_conditioned_DO_upper_bound": "pending_missing_temperature_pressure_salinity",
+    "temperature_conditioned_DO_upper_bound": "frozen_site_calibrated_operational_warning",
+    "temperature_covariate": "minute_influent_temperature_proxy",
+    "temperature_missing_policy": "not_evaluated_no_extrapolation",
+    "temperature_study_grid_coverage": 0.9901801215277778,
+    "temperature_thermodynamic_role": "normalizer_not_hard_saturation_limit",
+    "temperature_source_start": "2025-08-01 00:00:00",
+    "temperature_source_end": "2026-07-30 23:59:00",
+    "temperature_raw_missing_minutes": 4205,
+    "temperature_invalid_minutes": 8,
+    "aerobic_DO_alpha_by_position": {
+      "1": 0.2870480956,
+      "2": 0.3146109551,
+      "3": 0.4898265899
+    },
+    "aerobic_DO_temperature_scored_positions": [
+      "1",
+      "2"
+    ],
+    "aerobic_DO_temperature_diagnostic_only_positions": [
+      "3"
+    ],
     "position_conditioned_ORP_envelope": "diagnostic_only_pending_site_review"
   },
   "source_inputs": {
@@ -62,10 +82,15 @@
       "name": "beian_min_2_ORP-08-26-04.xlsx",
       "sha256": "44cd9b8501a6251347f5b741d1f02a57801450aa599f2559d66ec79272b25de5",
       "size_bytes": 16059938
+    },
+    "temperature_csv": {
+      "name": "整年对齐_分钟数据_2025-08-01_2026-07-30_01_influent+effluent.csv",
+      "sha256": "441d9dfd6d7273670ec11bd91588759f6784acfec78172b1ff2555d6fccc30af",
+      "size_bytes": 63041057
     }
   },
-  "config_sha256": "790fee40689939d2e2af510e88b4299bbf3fe75f6a5ece09dde236675db6728d",
-  "code_sha256": "40cf7559272e0ca588dd9fb6726e10e61aa73605706449bb9e84cff56fc08cc7",
+  "config_sha256": "1ca914b0e76c0615037edafc40be7e1fe78574abb93f93859825b07f8edd426b",
+  "code_sha256": "6d7e5fbc4a241e6bbe26e242bb1f518c315f2a9caa1b91d75e61ee56288c2645",
   "exported_files": [
     "D3_window_scores.xlsx",
     "D3_value_evidence.xlsx",
@@ -83,6 +108,8 @@
     "D3_weight_contract_sensitivity.xlsx",
     "D3_DO4_zero_equivalence_views.parquet",
     "D3_boundary_rate_validation_source.parquet",
-    "D3_validation_summary.json"
+    "D3_validation_summary.json",
+    "D3_temperature_conditioned_DO_upper.xlsx",
+    "D3_temperature_conditioned_DO_upper.parquet"
   ]
 }

@@ -6,7 +6,7 @@ sensors:
     hard_low: -0.2
     hard_high: 20.0
     soft_low: 0.0
-    soft_high: 8.0
+    soft_high: null
     soft_sensitivity_anchor: "lower"
     unit: "mg/L"
     manufacturer_range_low: 0.0
@@ -48,11 +48,47 @@ sensor_overrides:
     upper_bound_basis: "pending_post_anoxic_template_validation"
 
 operational_envelope_contract:
-  status: "provisional_expert_prior"
+  status: "mixed_frozen_site_calibration_and_provisional_expert_prior"
   score_role: "operational_warning_not_instrument_failure"
-  do_soft_high_8_mg_L:
-    status: "pending_temperature_pressure_salinity_validation"
-    seasonal_diagnostic_required: true
+  aerobic_do_temperature_conditioned_upper:
+    enabled: true
+    status: "frozen_time_blocked_site_calibration"
+    scope: "aerobic_DO_positions_1_to_3"
+    covariate: "minute_influent_temperature_proxy"
+    interpretation: "temperature_conditioned_operational_warning_not_thermodynamic_saturation_limit"
+    saturation_reference:
+      equation: "14.652-0.41022*T+0.007991*T^2-0.000077774*T^3"
+      medium: "freshwater"
+      pressure_assumption: "standard_atmosphere"
+      salinity_assumption: "zero"
+      valid_temperature_C: [0.0, 40.0]
+    calibration:
+      grouping: "longitudinal_position_across_parallel_lines"
+      start: "2025-08-01 00:00:00"
+      end_exclusive: "2026-02-01 00:00:00"
+      validation_start: "2026-02-01 00:00:00"
+      validation_end_exclusive: "2026-04-01 00:00:00"
+      terminal_start: "2026-04-01 00:00:00"
+      terminal_end_exclusive: "2026-04-14 00:00:00"
+      quality_filter: "D1_total,Q_spike,Q_step,Q_freeze,Q_regime,D2_Strict>=4.5_and_D2_usable"
+      DO_hourly_statistic: "mean"
+      estimator: "max(P99,median+3x1.4826MAD)_of_DO_over_Csat"
+      minimum_valid_temperature_minutes_per_hour: 30
+      minimum_calibration_sensor_hours: 720
+      alpha_by_position:
+        "1": 0.2870480956
+        "2": 0.3146109551
+        "3": 0.4898265899
+      calibration_support_sensor_hours:
+        "1": 1137
+        "2": 2238
+        "3": 2547
+      scored_positions: ["1", "2"]
+      diagnostic_only_positions: ["3"]
+      promotion_rule: "independent_validation_high_quality_warning_rate_le_0.02_per_sensor"
+      position_3_status: "diagnostic_only_failed_temporal_stability_DO_2_3"
+    runtime_missing_policy: "upper_component_not_evaluated_no_extrapolation"
+    external_validity_limit: "requires_in_basin_temperature_pressure_salinity_and_cross_plant_validation"
   orp_soft_range:
     status: "pending_position_and_regime_validation"
     position_groups: ["anaerobic", "anoxic_mid", "anoxic_end"]
@@ -72,5 +108,5 @@ sources:
     source_sha256: "2085f4de640aa0231f95e3abe370dec6d1da9c3daf064e6f05042e344ca58ea9"
     inspected_sheet_range: "Sheet1!A1:P34"
     reverified_at: "2026-07-27T00:00:00+08:00"
-version: "v2.4.0"
-effective_date: "2026-08-08"
+version: "v2.5.0"
+effective_date: "2026-08-10"

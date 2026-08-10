@@ -52,7 +52,7 @@ class ThresholdStore:
         physical_bounds_cfg: dict,
         rate_limits_cfg: dict,
         benchmark: BenchmarkWindows,
-        version: str = "v2.4.0",
+        version: str = "v2.5.0",
     ) -> "ThresholdStore":
         bounds: list[PhysicalBound] = []
         threshold_number = 0
@@ -64,7 +64,7 @@ class ThresholdStore:
                 PhysicalBound(
                     threshold_id=f"T{threshold_number:04d}",
                     benchmark_version=benchmark.version,
-                    context_version="physical_contract_v2.4.0",
+                    context_version="physical_contract_v2.5.0",
                     version=version,
                     validator_passed=True,
                     **kwargs,

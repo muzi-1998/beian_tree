@@ -1,4 +1,4 @@
-"""Generate D3 v2.4 boundary, persistence, and construct-validity evidence."""
+"""Generate D3 v2.5 boundary, persistence, and construct-validity evidence."""
 
 from __future__ import annotations
 
@@ -13,6 +13,7 @@ import pandas as pd
 from src.d3_physical.rate_constraint_checker import RateConstraintChecker
 from src.d3_physical.scorer import logistic_zero_anchored
 from src.pipeline.rate_context import compute_rate_context
+from src.validation.do_temperature_validation import build_temperature_envelope_audit
 from src.validation.interval_scaling import (
     INTERVAL_SCALING_VERSION,
     interval_warning_mask,
@@ -124,16 +125,18 @@ def _operational_diagnostics(
             if not len(sample):
                 continue
             if sensor.startswith("DO_") and not sensor.endswith("_4"):
+                meta = next(item for item in sensor_meta if item["id"] == sensor)
                 do_rows.append(
                     {
                         "sensor_id": sensor,
+                        "process_zone": meta["process_zone"],
+                        "position": meta["position"],
                         "season": season_name,
                         "n": len(sample),
                         "p95": float(sample.quantile(0.95)),
                         "p99": float(sample.quantile(0.99)),
                         "maximum": float(sample.max()),
-                        "above_8_rate": float(sample.gt(8.0).mean()),
-                        "upper_bound_role": "fixed_8_diagnostic_pending_dynamic_saturation_covariates",
+                        "distribution_role": "raw_context_only_temperature_envelope_audited_separately",
                     }
                 )
             else:
@@ -233,7 +236,7 @@ def _operational_diagnostics(
         )
     return {
         "directional_window_burden": directional,
-        "DO_seasonal_high_tail": pd.DataFrame(do_rows),
+        "DO_seasonal_raw_distribution": pd.DataFrame(do_rows),
         "ORP_position_season_envelope": pd.DataFrame(orp_rows),
         "DO4_zero_eq_sensitivity": pd.DataFrame(deadband_rows),
         "DO4_monthly_zero_stability": pd.DataFrame(monthly_rows),
@@ -426,6 +429,10 @@ def _threshold_sensitivity(
                         else physical_low
                     )
                     anchor_rule = thresholds.soft_sensitivity_anchor(sensor_type, sensor)
+                    if base_high is None and anchor_rule != "none":
+                        # Aerobic DO alpha sensitivity is evaluated in the
+                        # temperature-specific audit, not as a static interval.
+                        continue
                     low, high = scale_interval(
                         effective_low,
                         base_high,
@@ -818,6 +825,7 @@ def run_validation(
     thresholds,
     configs: dict,
     root: Path,
+    temperature_minute: pd.Series,
 ) -> dict[str, Path]:
     output = root / "outputs" / "validation"
     output.mkdir(parents=True, exist_ok=True)
@@ -827,6 +835,25 @@ def run_validation(
     do4_views = _do4_zero_views(frame)
     do4_candidate = _do4_candidate_upper_template(frame, root)
     operational["DO4_upper_candidate"] = do4_candidate
+    temperature_audit, _ = build_temperature_envelope_audit(
+        frame=frame,
+        temperature_minute=temperature_minute,
+        sensor_meta=sensor_meta,
+        physical_cfg=configs["physical_bounds"],
+        root=root,
+    )
+    temperature_path = output / "D3_temperature_conditioned_DO_upper.xlsx"
+    with pd.ExcelWriter(temperature_path) as writer:
+        for sheet in (
+            "source_audit",
+            "frozen_registry_check",
+            "phase_validation",
+            "alpha_sensitivity",
+            "exclusions",
+        ):
+            temperature_audit[sheet].to_excel(writer, sheet_name=sheet[:31], index=False)
+    temperature_detail_path = output / "D3_temperature_conditioned_DO_upper.parquet"
+    temperature_audit["hourly_detail"].to_parquet(temperature_detail_path, index=False)
     sensitivity_summary, sensitivity_detail = _threshold_sensitivity(
         frame,
         sensors,
@@ -893,7 +920,7 @@ def run_validation(
 
     d1_sha = hashlib.sha256(d1_path.read_bytes()).hexdigest() if d1_path.exists() else None
     summary = {
-        "validation_version": "v2.4.0",
+        "validation_version": "v2.5.0",
         "interval_sensitivity_version": INTERVAL_SCALING_VERSION,
         "rate_challenge_scenarios": int(len(challenge)),
         "rate_challenge_expected_matches": int(
@@ -907,6 +934,12 @@ def run_validation(
         "threshold_sensitivity_rows": int(len(sensitivity_summary)),
         "empirical_D1_D3_overlap_rows": int(len(overlap_aligned)),
         "D1_score_source_sha256": d1_sha,
+        "temperature_registry_all_match": bool(
+            temperature_audit["frozen_registry_check"]["registry_match"].all()
+        ),
+        "temperature_study_hour_coverage": float(
+            temperature_audit["source_audit"].iloc[0]["study_hour_coverage"]
+        ),
         "locked_conclusions": [
             "DO4 physical soft lower bound remains 0 mg/L; -0.05 mg/L is a separate provisional zero-equivalence tolerance.",
             "DO4 production upper warning is disabled pending a time-blocked post-anoxic template lock.",
@@ -914,9 +947,12 @@ def run_validation(
             "Coherent multi-sensor shocks are guarded as process attribution, not vetoed.",
             "Instrument-range failure is separated from provisional operating warnings.",
             "ORP sensitivity changes interval width around a fixed center through one canonical implementation.",
+            "Aerobic DO upper warnings use a frozen longitudinal-position template conditioned on a minute influent-temperature proxy.",
+            "Positions 1-2 are scored operational warnings; position 3 remains diagnostic-only after failed temporal transfer.",
+            "Missing temperature is not extrapolated and is reported as unevaluated upper-envelope evidence.",
         ],
         "pending_external_evidence": [
-            "temperature_pressure_salinity_for_dynamic_DO_saturation_bound",
+            "in_basin_temperature_pressure_salinity_for_thermodynamic_DO_saturation_interpretation",
             "manufacturer_accuracy_or_zero_oxygen_calibration_for_final_DO4_deadband",
             "independent_support_for_DO_2_4_post_anoxic_upper_template",
             "site_reviewed_ORP_position_regime_envelopes",
@@ -934,4 +970,6 @@ def run_validation(
         "do4_zero_views": do4_views_path,
         "source": source_path,
         "summary": summary_path,
+        "temperature_contract": temperature_path,
+        "temperature_detail": temperature_detail_path,
     }

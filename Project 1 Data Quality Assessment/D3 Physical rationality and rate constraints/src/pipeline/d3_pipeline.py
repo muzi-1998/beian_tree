@@ -10,6 +10,7 @@ import pandas as pd
 
 from src.d3_physical.aggregator import D3Aggregator
 from src.d3_physical.boundary_features import BoundaryFeatureExtractor
+from src.d3_physical.do_temperature_envelope import temperature_conditioned_upper
 from src.d3_physical.rate_constraint_checker import RateConstraintChecker
 from src.d3_physical.scorer import D3ScoreMapper
 from src.d3_physical.threshold_store import ThresholdStore
@@ -27,6 +28,7 @@ class D3Pipeline:
         thresholds: ThresholdStore,
         configs: dict,
         run_id: str,
+        temperature_c: pd.Series | None = None,
     ):
         self.df_main = df_main
         self.sensors = sensors
@@ -35,6 +37,14 @@ class D3Pipeline:
         self.thresholds = thresholds
         self.configs = configs
         self.run_id = run_id
+        self.temperature_c = (
+            temperature_c.reindex(df_main.index)
+            if temperature_c is not None
+            else pd.Series(np.nan, index=df_main.index, name="influent_temperature_C")
+        )
+        self.do_temperature_contract = configs["physical_bounds"][
+            "operational_envelope_contract"
+        ]["aerobic_do_temperature_conditioned_upper"]
 
         bounds_cfg = configs["physical_bounds"]["sensors"]
         self.value_checkers = {
@@ -89,7 +99,38 @@ class D3Pipeline:
                     continue
                 sensor_type = self.sensor_meta[sensor]["type"]
                 values = window_df[sensor].to_numpy(dtype=float)
-                value_evidence = self.value_checkers[sensor_type].check(values, sensor, sensor_type)
+                temperature_values = self.temperature_c.reindex(window_df.index).to_numpy(dtype=float)
+                dynamic_upper, upper_status = temperature_conditioned_upper(
+                    temperature_values,
+                    self.sensor_meta[sensor],
+                    self.do_temperature_contract,
+                )
+                position = str(self.sensor_meta[sensor]["position"])
+                score_dynamic_upper = (
+                    dynamic_upper is not None
+                    and position
+                    in self.do_temperature_contract["calibration"]["scored_positions"]
+                )
+                include_soft_high_in_score = (
+                    score_dynamic_upper if dynamic_upper is not None else True
+                )
+                if dynamic_upper is not None and upper_status in {
+                    "evaluated",
+                    "partially_evaluated",
+                }:
+                    upper_status = f"{upper_status}_{'scored' if score_dynamic_upper else 'diagnostic_only'}"
+                value_evidence = self.value_checkers[sensor_type].check(
+                    values,
+                    sensor,
+                    sensor_type,
+                    dynamic_soft_high=dynamic_upper,
+                    soft_high_mode=(
+                        "temperature_conditioned_influent_proxy"
+                        if dynamic_upper is not None
+                        else None
+                    ),
+                    score_soft_high=include_soft_high_in_score,
+                )
                 context = rate_context[sensor]
                 rate_evidence = self.rate_checker.check(
                     values,
@@ -130,6 +171,21 @@ class D3Pipeline:
                     "n_expected": result.n_expected,
                     "n_observed": result.n_observed,
                     "observed_fraction": result.observed_fraction,
+                    "temperature_upper_status": upper_status,
+                    "temperature_upper_evaluable_fraction": value_evidence.soft_high_evaluable_fraction,
+                    "D3_evidence_scope": (
+                        "full_temperature_conditioned_scored"
+                        if upper_status == "evaluated_scored"
+                        else "partial_temperature_conditioned_scored"
+                        if upper_status == "partially_evaluated_scored"
+                        else "temperature_conditioned_diagnostic_only"
+                        if upper_status == "evaluated_diagnostic_only"
+                        else "partial_temperature_conditioned_diagnostic_only"
+                        if upper_status == "partially_evaluated_diagnostic_only"
+                        else "partial_temperature_unavailable"
+                        if upper_status == "temperature_unavailable"
+                        else "not_applicable"
+                    ),
                     "dominant_physical_issue": result.dominant_physical_issue,
                     "veto_flag": result.veto_flag,
                     "veto_reason": result.veto_reason,
@@ -171,6 +227,17 @@ class D3Pipeline:
                     "hard_high_violation_rate": value_evidence.hard_high_violation_rate,
                     "soft_low_violation_rate": value_evidence.soft_low_violation_rate,
                     "soft_high_violation_rate": value_evidence.soft_high_violation_rate,
+                    "soft_high_violation_rate_evaluable": value_evidence.soft_high_violation_rate_evaluable,
+                    "soft_high_evaluable_count": value_evidence.soft_high_evaluable_count,
+                    "soft_high_evaluable_fraction": value_evidence.soft_high_evaluable_fraction,
+                    "soft_high_mode": value_evidence.soft_high_mode,
+                    "dynamic_soft_high_min": value_evidence.dynamic_soft_high_min,
+                    "dynamic_soft_high_median": value_evidence.dynamic_soft_high_median,
+                    "dynamic_soft_high_max": value_evidence.dynamic_soft_high_max,
+                    "soft_high_scored": value_evidence.soft_high_scored,
+                    "temperature_upper_diagnostic_warning": bool(
+                        value_evidence.soft_high_violation_count > 0
+                    ),
                     "physical_low_violation_rate": value_evidence.physical_low_violation_rate,
                     "zero_equivalent_rate": value_evidence.zero_equivalent_rate,
                     "zero_offset_warning_rate": value_evidence.zero_offset_warning_rate,
@@ -183,7 +250,11 @@ class D3Pipeline:
                     "consecutive_hard_max_min": value_evidence.consecutive_hard_max_min,
                     "threshold_scope": value_evidence.threshold_scope,
                     "soft_sensitivity_anchor": value_evidence.soft_sensitivity_anchor,
-                    "operational_threshold_status": "provisional_expert_prior",
+                    "operational_threshold_status": (
+                        "frozen_site_calibrated_temperature_conditioned_warning"
+                        if value_evidence.soft_high_mode == "temperature_conditioned_influent_proxy"
+                        else "provisional_expert_prior"
+                    ),
                     "threshold_version": THRESHOLD_VERSION,
                     "run_id": self.run_id,
                 })

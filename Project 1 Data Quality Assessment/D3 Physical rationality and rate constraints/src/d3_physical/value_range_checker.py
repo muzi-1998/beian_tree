@@ -48,6 +48,14 @@ class ValueEvidence:
     consecutive_hard_max_min: int
     threshold_scope: str
     soft_sensitivity_anchor: str
+    soft_high_mode: str
+    soft_high_evaluable_count: int
+    soft_high_evaluable_fraction: float
+    soft_high_violation_rate_evaluable: float
+    dynamic_soft_high_min: float
+    dynamic_soft_high_median: float
+    dynamic_soft_high_max: float
+    soft_high_scored: bool
 
 
 class ValueRangeChecker:
@@ -56,7 +64,15 @@ class ValueRangeChecker:
         self.instrument_low = instrument_low
         self.instrument_high = instrument_high
 
-    def check(self, x: np.ndarray, sensor: str, sensor_type: str) -> ValueEvidence:
+    def check(
+        self,
+        x: np.ndarray,
+        sensor: str,
+        sensor_type: str,
+        dynamic_soft_high: np.ndarray | None = None,
+        soft_high_mode: str | None = None,
+        score_soft_high: bool = True,
+    ) -> ValueEvidence:
         hard_low, hard_high = self.thresholds.hard_bounds(sensor_type, sensor)
         soft_low, soft_high = self.thresholds.soft_bounds(sensor_type, sensor)
         zero_equivalence_low = self.thresholds.zero_equivalence_low(sensor)
@@ -70,6 +86,15 @@ class ValueRangeChecker:
             else "sensor_type"
         )
         sensitivity_anchor = self.thresholds.soft_sensitivity_anchor(sensor_type, sensor)
+        if dynamic_soft_high is not None:
+            dynamic_soft_high = np.asarray(dynamic_soft_high, dtype=float)
+            if dynamic_soft_high.shape != np.asarray(x).shape:
+                raise ValueError("dynamic_soft_high must have the same shape as x")
+            active_high_mode = soft_high_mode or "dynamic"
+        elif soft_high is not None:
+            active_high_mode = soft_high_mode or "static"
+        else:
+            active_high_mode = "not_applicable"
         valid = np.isfinite(x)
         clean = x[valid]
         if not len(clean):
@@ -111,6 +136,14 @@ class ValueRangeChecker:
                 consecutive_hard_max_min=0,
                 threshold_scope=threshold_scope,
                 soft_sensitivity_anchor=sensitivity_anchor,
+                soft_high_mode=active_high_mode,
+                soft_high_evaluable_count=0,
+                soft_high_evaluable_fraction=np.nan,
+                soft_high_violation_rate_evaluable=np.nan,
+                dynamic_soft_high_min=np.nan,
+                dynamic_soft_high_median=np.nan,
+                dynamic_soft_high_max=np.nan,
+                soft_high_scored=bool(score_soft_high and active_high_mode != "not_applicable"),
             )
 
         hard_low_mask = clean < hard_low
@@ -120,11 +153,19 @@ class ValueRangeChecker:
             if effective_soft_low is not None
             else np.zeros(len(clean), dtype=bool)
         )
-        soft_high_mask = (
-            clean > soft_high
-            if soft_high is not None
-            else np.zeros(len(clean), dtype=bool)
-        )
+        if dynamic_soft_high is not None:
+            high_values = dynamic_soft_high[valid]
+            high_evaluable = np.isfinite(high_values)
+            soft_high_mask = high_evaluable & (clean > high_values)
+            finite_high = high_values[high_evaluable]
+        elif soft_high is not None:
+            high_evaluable = np.ones(len(clean), dtype=bool)
+            soft_high_mask = clean > soft_high
+            finite_high = np.full(len(clean), soft_high, dtype=float)
+        else:
+            high_evaluable = np.zeros(len(clean), dtype=bool)
+            soft_high_mask = np.zeros(len(clean), dtype=bool)
+            finite_high = np.array([], dtype=float)
         physical_low_mask = (
             clean < soft_low
             if soft_low is not None
@@ -139,7 +180,7 @@ class ValueRangeChecker:
             zero_offset_mask = (clean >= hard_low) & (clean < zero_equivalence_low)
             severe_negative_mask = clean < hard_low
         hard = hard_low_mask | hard_high_mask
-        soft = soft_low_mask | soft_high_mask
+        soft = soft_low_mask | (soft_high_mask if score_soft_high else False)
         hard_full = np.zeros(len(x), dtype=bool)
         hard_full[valid] = hard
         runs = self._run_lengths(hard_full)
@@ -181,9 +222,9 @@ class ValueRangeChecker:
                 else 0.0
             ),
             max_soft_high_exceedance=(
-                float(np.maximum(clean - soft_high, 0.0).max())
-                if soft_high is not None
-                else 0.0
+                float(np.maximum(clean[high_evaluable] - finite_high, 0.0).max())
+                if high_evaluable.any()
+                else np.nan
             ),
             max_physical_low_exceedance=(
                 float(np.maximum(soft_low - clean, 0.0).max())
@@ -192,8 +233,24 @@ class ValueRangeChecker:
             ),
             out_of_instrument=bool(((clean < self.instrument_low) | (clean > self.instrument_high)).any()),
             consecutive_hard_max_min=max(runs, default=0),
-            threshold_scope=threshold_scope,
+            threshold_scope=(
+                "temperature_conditioned_position_template"
+                if dynamic_soft_high is not None
+                else threshold_scope
+            ),
             soft_sensitivity_anchor=sensitivity_anchor,
+            soft_high_mode=active_high_mode,
+            soft_high_evaluable_count=int(high_evaluable.sum()),
+            soft_high_evaluable_fraction=float(high_evaluable.mean()),
+            soft_high_violation_rate_evaluable=(
+                float(soft_high_mask[high_evaluable].mean())
+                if high_evaluable.any()
+                else np.nan
+            ),
+            dynamic_soft_high_min=float(finite_high.min()) if len(finite_high) else np.nan,
+            dynamic_soft_high_median=float(np.median(finite_high)) if len(finite_high) else np.nan,
+            dynamic_soft_high_max=float(finite_high.max()) if len(finite_high) else np.nan,
+            soft_high_scored=bool(score_soft_high and active_high_mode != "not_applicable"),
         )
 
     @staticmethod

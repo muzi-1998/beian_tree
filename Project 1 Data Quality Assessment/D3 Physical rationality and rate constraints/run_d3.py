@@ -1,4 +1,4 @@
-"""Run the independent D3 v2.4 physical-plausibility pipeline."""
+"""Run the independent D3 v2.5 physical-plausibility pipeline."""
 
 from __future__ import annotations
 
@@ -17,7 +17,12 @@ ROOT = Path(__file__).parent.resolve()
 sys.path.insert(0, str(ROOT))
 
 from src.common.benchmark_windows import BenchmarkWindows
-from src.data.input_loader import load_aligned_data, source_fingerprints
+from src.data.input_loader import (
+    align_temperature_to_grid,
+    load_aligned_data,
+    load_temperature_proxy,
+    source_fingerprints,
+)
 from src.d3_physical.threshold_store import ThresholdStore
 from src.outputs.excel_exporter import build_profile_summary, export_all
 from src.pipeline.d3_pipeline import D3Pipeline
@@ -89,6 +94,15 @@ def main(
         end = frame.index[0] + pd.Timedelta(days=subset_days)
         frame = frame.loc[frame.index < end]
     print(f"  {len(frame):,} rows; {frame.index[0]} to {frame.index[-1]}")
+    temperature_minute = load_temperature_proxy(paths_cfg, ROOT)
+    temperature_c = align_temperature_to_grid(temperature_minute, frame.index)
+    print(
+        "  Temperature proxy: "
+        f"{temperature_minute.index.min()} to {temperature_minute.index.max()}; "
+        f"study-grid valid coverage={temperature_c.notna().mean():.1%}; "
+        f"raw missing={temperature_minute.attrs['raw_missing_count']:,}; "
+        f"invalid={temperature_minute.attrs['invalid_range_count']:,}"
+    )
 
     sensors = [item["id"] for item in sensors_cfg["sensors"]]
     missing_sensors = sorted(set(sensors) - set(frame.columns))
@@ -123,6 +137,7 @@ def main(
         thresholds,
         configs,
         run_id,
+        temperature_c=temperature_c,
     )
     results = pipeline.run(window_min, stride_min, max_windows=max_windows)
 
@@ -142,6 +157,7 @@ def main(
             thresholds=thresholds,
             configs=configs,
             root=ROOT,
+            temperature_minute=temperature_minute,
         )
 
     scores = results["main_scores"]
@@ -194,7 +210,34 @@ def main(
             "do4_physical_soft_low_mg_L": 0.0,
             "do4_zero_equivalence_low_mg_L": -0.05,
             "do4_operational_soft_high": "disabled_pending_time_blocked_template_validation",
-            "temperature_conditioned_DO_upper_bound": "pending_missing_temperature_pressure_salinity",
+            "temperature_conditioned_DO_upper_bound": "frozen_site_calibrated_operational_warning",
+            "temperature_covariate": "minute_influent_temperature_proxy",
+            "temperature_missing_policy": "not_evaluated_no_extrapolation",
+            "temperature_study_grid_coverage": float(temperature_c.notna().mean()),
+            "temperature_thermodynamic_role": "normalizer_not_hard_saturation_limit",
+            "temperature_source_start": str(temperature_minute.index.min()),
+            "temperature_source_end": str(temperature_minute.index.max()),
+            "temperature_raw_missing_minutes": int(
+                temperature_minute.attrs["raw_missing_count"]
+            ),
+            "temperature_invalid_minutes": int(
+                temperature_minute.attrs["invalid_range_count"]
+            ),
+            "aerobic_DO_alpha_by_position": physical_bounds_cfg[
+                "operational_envelope_contract"
+            ]["aerobic_do_temperature_conditioned_upper"]["calibration"][
+                "alpha_by_position"
+            ],
+            "aerobic_DO_temperature_scored_positions": physical_bounds_cfg[
+                "operational_envelope_contract"
+            ]["aerobic_do_temperature_conditioned_upper"]["calibration"][
+                "scored_positions"
+            ],
+            "aerobic_DO_temperature_diagnostic_only_positions": physical_bounds_cfg[
+                "operational_envelope_contract"
+            ]["aerobic_do_temperature_conditioned_upper"]["calibration"][
+                "diagnostic_only_positions"
+            ],
             "position_conditioned_ORP_envelope": "diagnostic_only_pending_site_review",
         },
         "source_inputs": source_meta,

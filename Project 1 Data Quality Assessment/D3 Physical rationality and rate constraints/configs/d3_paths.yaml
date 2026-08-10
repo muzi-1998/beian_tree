@@ -3,6 +3,18 @@
 input:
   do_xlsx: "../1.1 Decomposition/Raw data/beian_min_1_DO_25-08-26-04.xlsx"
   orp_xlsx: "../1.1 Decomposition/Raw data/beian_min_2_ORP-08-26-04.xlsx"
+  temperature_csv: "../1.1 Decomposition/Raw data/09_25.08.01-26.07.30_all data/整年对齐_分钟数据_2025-08-01_2026-07-30_01_influent+effluent.csv"
+
+temperature:
+  timestamp_column: "日期"
+  value_column: "进水温度（℃）"
+  datetime_format: "%Y-%m-%d %H:%M:%S"
+  unit: "degC"
+  valid_range_C: [0.0, 40.0]
+  alignment: "exact_minute_no_interpolation_no_extrapolation"
+  process_role: "minute_influent_temperature_proxy"
+  invalid_value_policy: "mask_outside_valid_range_and_audit"
+  calibration_hour_min_valid_minutes: 30
 
 time_grid:
   freq: "1min"
