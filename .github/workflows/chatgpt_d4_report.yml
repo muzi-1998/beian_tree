@@ -29,6 +29,17 @@ jobs:
       - name: Install document dependencies
         run: pip install python-docx pillow
 
+      - name: Correct panel-count wording
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('.chatgpt_d4_report/build_d4_figure_review.py')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace('FigD4_1–FigD4_8 的 19 个面板', 'FigD4_1–FigD4_8 的 20 个可视面板（其中 19 个带字母面板标签，FigD4_4 为单面板热图）')
+          s=s.replace("('Figure bundle','8 figures; 19 panels; repository PNG/SVG/PDF all passed QA')", "('Figure bundle','8 figures; 20 visual panels (19 letter-labelled + 1 single heatmap); repository PNG/SVG/PDF all passed QA')")
+          p.write_text(s,encoding='utf-8')
+          PY
+
       - name: Build report from repository-original figures
         run: python .chatgpt_d4_report/build_d4_figure_review.py
 
@@ -53,7 +64,7 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add deliverables/*.docx
           git diff --cached --quiet && exit 0
-          git commit -m 'Build D4 repository-original figure Word report'
+          git commit -m 'Rebuild D4 repository-original figure Word report'
           git push origin HEAD:${{ github.event.pull_request.head.ref }}
 
       - name: Upload report artifact
