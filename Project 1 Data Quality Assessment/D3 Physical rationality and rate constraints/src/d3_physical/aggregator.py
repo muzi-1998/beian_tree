@@ -19,6 +19,8 @@ class D3Result:
     Q_value_hard: float
     Q_value_soft: float
     Q_persistent_rate: float
+    Q_persistent_rate_soft_only: float
+    Q_persistent_rate_hard: float
     D3_base: float
     D3_pre: float
     D3_total: float
@@ -76,6 +78,8 @@ class D3Aggregator:
                 Q_value_hard=float("nan"),
                 Q_value_soft=float("nan"),
                 Q_persistent_rate=float("nan"),
+                Q_persistent_rate_soft_only=float("nan"),
+                Q_persistent_rate_hard=float("nan"),
                 D3_base=float("nan"),
                 D3_pre=float("nan"),
                 D3_total=float("nan"),
@@ -150,7 +154,10 @@ class D3Aggregator:
         risks = {
             "hard_bound": value_evidence.hard_violation_rate,
             "soft_bound": value_evidence.soft_violation_rate,
-            "persistent_rate": rate_evidence.rate_hard_violation_rate,
+            "persistent_rate": (
+                0.3 * rate_evidence.rate_soft_only_violation_rate
+                + 0.7 * rate_evidence.rate_hard_violation_rate
+            ),
         }
         dominant = max(risks, key=risks.get)
         if risks[dominant] < 0.005:
@@ -163,6 +170,8 @@ class D3Aggregator:
             Q_value_hard=float(sub.Q_value_hard),
             Q_value_soft=float(sub.Q_value_soft),
             Q_persistent_rate=float(sub.Q_persistent_rate),
+            Q_persistent_rate_soft_only=float(sub.Q_persistent_rate_soft_only),
+            Q_persistent_rate_hard=float(sub.Q_persistent_rate_hard),
             D3_base=float(base),
             D3_pre=float(pre),
             D3_total=total,

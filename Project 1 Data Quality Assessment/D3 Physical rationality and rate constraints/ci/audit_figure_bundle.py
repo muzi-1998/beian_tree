@@ -27,6 +27,7 @@ FIGURE_MAP = {
     "fig6_gate_and_directional_profile.py": "fig6_gate_and_directional_profile",
     "fig7_case_studies.py": "fig7_case_studies",
     "fig8_boundary_rate_validation.py": "fig8_boundary_rate_validation",
+    "fig9_do4_zero_equivalence_contract.py": "fig9_do4_zero_equivalence_contract",
 }
 
 
@@ -101,7 +102,7 @@ def main() -> None:
             }
         )
     payload = {
-        "audit_version": "d3-nature-figure-audit-v2.3.0",
+        "audit_version": "d3-nature-figure-audit-v2.4.0",
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
         "backend": "python",
         "n_figures": len(rows),

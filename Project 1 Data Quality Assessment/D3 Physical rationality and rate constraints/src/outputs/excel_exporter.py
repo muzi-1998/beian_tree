@@ -1,4 +1,4 @@
-"""Export the D3 v2.2 evidence, diagnostics, scores, and audit tables."""
+"""Export the D3 v2.4 evidence, diagnostics, scores, and audit tables."""
 
 from __future__ import annotations
 
@@ -81,8 +81,19 @@ def build_profile_summary(results: dict) -> pd.DataFrame:
             "soft_high_exceedance_window_rate": float(value_sensor["soft_high_violation_rate"].gt(0).mean()),
             "mean_soft_low_exceedance_rate": float(value_sensor["soft_low_violation_rate"].mean()),
             "mean_soft_high_exceedance_rate": float(value_sensor["soft_high_violation_rate"].mean()),
+            "physical_low_window_rate": float(value_sensor["physical_low_violation_rate"].gt(0).mean()),
+            "zero_equivalent_window_rate": float(value_sensor["zero_equivalent_rate"].gt(0).mean()),
+            "zero_offset_warning_window_rate": float(value_sensor["zero_offset_warning_rate"].gt(0).mean()),
+            "severe_negative_window_rate": float(value_sensor["severe_negative_rate"].gt(0).mean()),
             "point_rate_excursion_window_rate": float(rate_sensor["rate_hard_point_violation_rate"].gt(0).mean()),
-            "persistent_rate_window_rate": float(rate_sensor["rate_hard_violation_rate"].gt(0).mean()),
+            "persistent_soft_only_window_rate": float(rate_sensor["rate_soft_only_violation_rate"].gt(0).mean()),
+            "persistent_hard_window_rate": float(rate_sensor["rate_hard_violation_rate"].gt(0).mean()),
+            "persistent_rate_window_rate": float(
+                (
+                    rate_sensor["rate_soft_only_violation_rate"].gt(0)
+                    | rate_sensor["rate_hard_violation_rate"].gt(0)
+                ).mean()
+            ),
             "impulse_return_window_rate": float(rate_sensor["impulse_return_event_count"].gt(0).mean()),
             "process_guard_window_rate": float(rate_sensor["process_coherence_guarded_points"].gt(0).mean()),
             "veto_rate": float(evaluated["veto_flag"].mean()),

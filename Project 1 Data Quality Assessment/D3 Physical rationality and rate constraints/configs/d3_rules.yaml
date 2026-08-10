@@ -1,4 +1,4 @@
-# D3 v2.3 rules. D3 is independent of D1 and D2 scores.
+# D3 v2.4 rules. D3 is independent of D1 and D2 scores in production.
 
 veto:
   veto_1:
@@ -41,3 +41,5 @@ usable_tag_rules:
 boundary_sticking:
   threshold_relative_margin: 0.05   # within 5% of hard range
   score_inclusion: false
+
+version: "v2.4.0"

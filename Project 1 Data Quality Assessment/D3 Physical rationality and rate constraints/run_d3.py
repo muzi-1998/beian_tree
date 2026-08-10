@@ -1,4 +1,4 @@
-"""Run the independent D3 v2.3 physical-plausibility pipeline."""
+"""Run the independent D3 v2.4 physical-plausibility pipeline."""
 
 from __future__ import annotations
 
@@ -27,6 +27,7 @@ from src.version import (
     D3_VERSION,
     MAPPING_VERSION,
     RATE_UTILS_VERSION,
+    SENSITIVITY_VERSION,
     THRESHOLD_VERSION,
 )
 
@@ -165,6 +166,7 @@ def main(
             "threshold": THRESHOLD_VERSION,
             "rate_utils": RATE_UTILS_VERSION,
             "benchmark": BENCHMARK_VERSION,
+            "sensitivity": SENSITIVITY_VERSION,
         },
         "independence_contract": {
             "D1_score_consumed": False,
@@ -173,14 +175,25 @@ def main(
             "canonical_1_1_time_grid": True,
             "imputed_values_scored": False,
             "regime_labels_consumed": False,
+            "D1_D2_consumed_by_production_score": False,
+            "D1_D2_consumed_by_validation_candidate_filter": True,
         },
         "scientific_contract": {
             "instrument_range_role": "data_quality_fail",
             "operational_bounds_role": "provisional_warning_only",
-            "rate_construct": "persistent_same_sign_rate",
+            "rate_construct": "mutually_exclusive_soft_only_and_hard_persistent_same_sign_rate",
+            "rate_component_weights": {"soft_only": 0.30, "hard": 0.70},
+            "outer_aggregation_weights": {
+                "Q_value_hard": 0.50,
+                "Q_value_soft": 0.20,
+                "Q_persistent_rate": 0.30,
+            },
+            "candidate_0.45_0.35_0.20": "sensitivity_only_not_promoted",
             "impulse_return_role": "D1_spike_owned_morphology_exclusion",
             "process_coherence_role": "attribution_guard_not_veto",
-            "do4_zero_deadband_mg_L": -0.05,
+            "do4_physical_soft_low_mg_L": 0.0,
+            "do4_zero_equivalence_low_mg_L": -0.05,
+            "do4_operational_soft_high": "disabled_pending_time_blocked_template_validation",
             "temperature_conditioned_DO_upper_bound": "pending_missing_temperature_pressure_salinity",
             "position_conditioned_ORP_envelope": "diagnostic_only_pending_site_review",
         },

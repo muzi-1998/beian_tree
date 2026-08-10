@@ -1,4 +1,4 @@
-"""Rebuild D3 v2.3 validation products from frozen current scoring outputs."""
+"""Rebuild D3 v2.4 validation products from frozen current scoring outputs."""
 
 from __future__ import annotations
 
@@ -30,7 +30,7 @@ def main() -> dict[str, Path]:
     sensors = [item["id"] for item in sensors_cfg["sensors"]]
     frame = load_aligned_data(paths_cfg, ROOT)
     benchmark = BenchmarkWindows(frame, sensors, window_hours=24, target_n_windows=40).select()
-    thresholds = ThresholdStore.build(physical_cfg, rate_cfg, benchmark, version="v2.3.0")
+    thresholds = ThresholdStore.build(physical_cfg, rate_cfg, benchmark, version="v2.4.0")
     data = ROOT / "outputs" / "data"
     names = {
         "main_scores": "D3_window_scores.xlsx",

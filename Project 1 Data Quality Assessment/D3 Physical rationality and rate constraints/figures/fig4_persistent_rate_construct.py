@@ -19,7 +19,8 @@ profile = (
     rate.groupby("sensor_id", as_index=False)
     .agg(
         point_windows=("rate_hard_point_violation_rate", lambda x: 1000 * x.gt(0).mean()),
-        persistent_windows=("rate_hard_violation_rate", lambda x: 1000 * x.gt(0).mean()),
+        soft_only_windows=("rate_soft_only_violation_rate", lambda x: 1000 * x.gt(0).mean()),
+        hard_persistent_windows=("rate_hard_violation_rate", lambda x: 1000 * x.gt(0).mean()),
         impulse_windows=("impulse_return_event_count", lambda x: 1000 * x.gt(0).mean()),
         guard_windows=("process_coherence_guarded_points", lambda x: 1000 * x.gt(0).mean()),
     )
@@ -31,9 +32,10 @@ fig.subplots_adjust(left=0.11, right=0.98, bottom=0.10, top=0.96, wspace=0.38, h
 
 ax = axes[0, 0]
 y = np.arange(len(profile))
-ax.hlines(y, profile.persistent_windows, profile.point_windows, color=COLORS["light_gray"], lw=1.5)
+ax.hlines(y, profile.soft_only_windows, profile.point_windows, color=COLORS["light_gray"], lw=1.5)
 ax.scatter(profile.point_windows, y, s=18, color=COLORS["orange"], label="Point excursion")
-ax.scatter(profile.persistent_windows, y, s=18, color=COLORS["blue"], label="Persistent")
+ax.scatter(profile.soft_only_windows, y, s=18, color=COLORS["cyan"], label="Soft-only persistent")
+ax.scatter(profile.hard_persistent_windows, y, s=18, marker="s", color=COLORS["blue"], label="Hard persistent")
 ax.set_yticks(y, [short_sensor(sensor) for sensor in profile.sensor_id])
 ax.set(xlabel="Affected windows per 1,000", ylabel="")
 ax.legend(loc="lower right")

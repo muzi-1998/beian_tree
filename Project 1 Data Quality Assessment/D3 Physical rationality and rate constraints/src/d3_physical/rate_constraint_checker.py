@@ -22,16 +22,20 @@ class RateEvidence:
     n_rate_soft_point_violations: int
     n_rate_hard_point_violations: int
     n_rate_soft_violations: int
+    n_rate_soft_only_violations: int
     n_rate_hard_violations: int
     n_samples: int
     rate_soft_point_violation_rate: float
     rate_hard_point_violation_rate: float
     rate_soft_violation_rate: float
+    rate_soft_only_violation_rate: float
     rate_hard_violation_rate: float
     max_rate_severity: float
     rate_hard_consec_max_min: int
     rate_hard_consec_raw_max_min: int
     persistent_rate_event_count: int
+    persistent_soft_only_event_count: int
+    persistent_hard_event_count: int
     impulse_return_event_count: int
     impulse_return_excluded_fraction: float
     process_coherence_guarded_fraction: float
@@ -95,6 +99,26 @@ class RateConstraintChecker:
                 start = None
                 run_sign = 0.0
         return persistent, int(max_run), int(event_count)
+
+    @staticmethod
+    def _soft_only_episode_mask(
+        soft_persistent: np.ndarray,
+        hard_persistent: np.ndarray,
+    ) -> tuple[np.ndarray, int]:
+        """Keep complete soft episodes only when no hard-persistent core exists."""
+        soft_only = np.zeros(len(soft_persistent), dtype=bool)
+        event_count = 0
+        start = None
+        for index in range(len(soft_persistent) + 1):
+            active = index < len(soft_persistent) and soft_persistent[index]
+            if active and start is None:
+                start = index
+            elif not active and start is not None:
+                if not hard_persistent[start:index].any():
+                    soft_only[start:index] = True
+                    event_count += 1
+                start = None
+        return soft_only, event_count
 
     def _impulse_return_mask(
         self, x: np.ndarray, hard_limit: float, sensor_type: str
@@ -170,12 +194,17 @@ class RateConstraintChecker:
                 rate_utils_version=meta["version"],
                 rate_limit_soft=soft_lim, rate_limit_hard=hard_lim,
                 n_rate_soft_point_violations=0, n_rate_hard_point_violations=0,
-                n_rate_soft_violations=0, n_rate_hard_violations=0,
+                n_rate_soft_violations=0, n_rate_soft_only_violations=0,
+                n_rate_hard_violations=0,
                 n_samples=0, rate_soft_point_violation_rate=np.nan,
                 rate_hard_point_violation_rate=np.nan,
-                rate_soft_violation_rate=np.nan, rate_hard_violation_rate=np.nan,
+                rate_soft_violation_rate=np.nan,
+                rate_soft_only_violation_rate=np.nan,
+                rate_hard_violation_rate=np.nan,
                 max_rate_severity=np.nan, rate_hard_consec_max_min=0,
                 rate_hard_consec_raw_max_min=0, persistent_rate_event_count=0,
+                persistent_soft_only_event_count=0,
+                persistent_hard_event_count=0,
                 impulse_return_event_count=0, impulse_return_excluded_fraction=0.0,
                 process_coherence_guarded_fraction=0.0,
                 process_coherence_guarded_points=0,
@@ -192,8 +221,11 @@ class RateConstraintChecker:
         soft_persistent, _, soft_events = self._persistent_mask(
             rate, soft_lim, self.soft_same_sign_min, guarded_mask
         )
-        hard_persistent, hard_max, _ = self._persistent_mask(
+        hard_persistent, hard_max, hard_events = self._persistent_mask(
             rate, hard_lim, self.hard_same_sign_min, guarded_mask
+        )
+        soft_only_persistent, soft_only_events = self._soft_only_episode_mask(
+            soft_persistent, hard_persistent
         )
         # severity: rate / hard_limit
         severity = rate_clean / max(hard_lim, 1e-6)
@@ -209,11 +241,13 @@ class RateConstraintChecker:
             n_rate_soft_point_violations=int(soft_point.sum()),
             n_rate_hard_point_violations=hard_point_count,
             n_rate_soft_violations=int(soft_persistent.sum()),
+            n_rate_soft_only_violations=int(soft_only_persistent.sum()),
             n_rate_hard_violations=int(hard_persistent.sum()),
             n_samples=int(n),
             rate_soft_point_violation_rate=float(soft_point.sum() / n),
             rate_hard_point_violation_rate=float(hard_point_count / n),
             rate_soft_violation_rate=float(soft_persistent.sum() / n),
+            rate_soft_only_violation_rate=float(soft_only_persistent.sum() / n),
             rate_hard_violation_rate=float(hard_persistent.sum() / n),
             max_rate_severity=max_sev,
             rate_hard_consec_max_min=hard_max,
@@ -221,6 +255,8 @@ class RateConstraintChecker:
             # Hard-persistent events are a subset of soft-persistent events;
             # counting both would duplicate the same physical episode.
             persistent_rate_event_count=int(soft_events),
+            persistent_soft_only_event_count=int(soft_only_events),
+            persistent_hard_event_count=int(hard_events),
             impulse_return_event_count=impulse_events,
             impulse_return_excluded_fraction=float((impulse_mask & np.isfinite(rate)).sum() / n),
             process_coherence_guarded_fraction=float(coherent_hard.sum() / max(hard_point_count, 1)),

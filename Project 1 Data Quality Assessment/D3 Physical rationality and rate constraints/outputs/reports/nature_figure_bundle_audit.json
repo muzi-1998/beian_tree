@@ -1,8 +1,8 @@
 {
-  "audit_version": "d3-nature-figure-audit-v2.3.0",
-  "created_at_utc": "2026-08-06T05:33:47.135606+00:00",
+  "audit_version": "d3-nature-figure-audit-v2.4.0",
+  "created_at_utc": "2026-08-10T01:41:59.531630+00:00",
   "backend": "python",
-  "n_figures": 8,
+  "n_figures": 9,
   "failures": [],
   "warnings": [],
   "passed": true,
@@ -15,30 +15,30 @@
       "exports": {
         "svg": {
           "exists": true,
-          "bytes": 47360,
+          "bytes": 47371,
           "newer_than_source": true
         },
         "pdf": {
           "exists": true,
-          "bytes": 52682,
+          "bytes": 52696,
           "newer_than_source": true
         },
         "png": {
           "exists": true,
-          "bytes": 542522,
+          "bytes": 547741,
           "newer_than_source": true
         },
         "tiff": {
           "exists": true,
-          "bytes": 1458236,
+          "bytes": 1463686,
           "newer_than_source": true
         }
       },
       "png": {
         "width_px": 4188,
         "height_px": 2928,
-        "pixel_std": 60.4957275390625,
-        "nonwhite_fraction": 0.1786068444319184,
+        "pixel_std": 60.60612106323242,
+        "nonwhite_fraction": 0.17894127966451115,
         "nonblank": true
       },
       "svg": {
@@ -55,30 +55,30 @@
       "exports": {
         "svg": {
           "exists": true,
-          "bytes": 87275,
+          "bytes": 108813,
           "newer_than_source": true
         },
         "pdf": {
           "exists": true,
-          "bytes": 59553,
+          "bytes": 73784,
           "newer_than_source": true
         },
         "png": {
           "exists": true,
-          "bytes": 466098,
+          "bytes": 572481,
           "newer_than_source": true
         },
         "tiff": {
           "exists": true,
-          "bytes": 1400190,
+          "bytes": 1646072,
           "newer_than_source": true
         }
       },
       "png": {
         "width_px": 4297,
         "height_px": 3118,
-        "pixel_std": 50.45085525512695,
-        "nonwhite_fraction": 0.26473860442037594,
+        "pixel_std": 52.18172836303711,
+        "nonwhite_fraction": 0.2704180893243686,
         "nonblank": true
       },
       "svg": {
@@ -135,30 +135,30 @@
       "exports": {
         "svg": {
           "exists": true,
-          "bytes": 71735,
+          "bytes": 74638,
           "newer_than_source": true
         },
         "pdf": {
           "exists": true,
-          "bytes": 56082,
+          "bytes": 56747,
           "newer_than_source": true
         },
         "png": {
           "exists": true,
-          "bytes": 572730,
+          "bytes": 570923,
           "newer_than_source": true
         },
         "tiff": {
           "exists": true,
-          "bytes": 1146196,
+          "bytes": 1102602,
           "newer_than_source": true
         }
       },
       "png": {
-        "width_px": 4189,
+        "width_px": 4065,
         "height_px": 3171,
-        "pixel_std": 43.59239959716797,
-        "nonwhite_fraction": 0.06235813504140042,
+        "pixel_std": 44.76172637939453,
+        "nonwhite_fraction": 0.06613455349312244,
         "nonblank": true
       },
       "svg": {
@@ -175,30 +175,30 @@
       "exports": {
         "svg": {
           "exists": true,
-          "bytes": 69987,
+          "bytes": 69969,
           "newer_than_source": true
         },
         "pdf": {
           "exists": true,
-          "bytes": 52866,
+          "bytes": 52876,
           "newer_than_source": true
         },
         "png": {
           "exists": true,
-          "bytes": 394018,
+          "bytes": 395612,
           "newer_than_source": true
         },
         "tiff": {
           "exists": true,
-          "bytes": 1226302,
+          "bytes": 1226822,
           "newer_than_source": true
         }
       },
       "png": {
         "width_px": 4099,
         "height_px": 3257,
-        "pixel_std": 57.32027053833008,
-        "nonwhite_fraction": 0.16456450171728385,
+        "pixel_std": 57.321983337402344,
+        "nonwhite_fraction": 0.16459963163769173,
         "nonblank": true
       },
       "svg": {
@@ -215,30 +215,30 @@
       "exports": {
         "svg": {
           "exists": true,
-          "bytes": 80086,
+          "bytes": 80078,
           "newer_than_source": true
         },
         "pdf": {
           "exists": true,
-          "bytes": 56217,
+          "bytes": 56260,
           "newer_than_source": true
         },
         "png": {
           "exists": true,
-          "bytes": 584116,
+          "bytes": 578049,
           "newer_than_source": true
         },
         "tiff": {
           "exists": true,
-          "bytes": 1675876,
+          "bytes": 1714958,
           "newer_than_source": true
         }
       },
       "png": {
         "width_px": 4258,
         "height_px": 3387,
-        "pixel_std": 60.48272705078125,
-        "nonwhite_fraction": 0.28160195303708,
+        "pixel_std": 62.3802604675293,
+        "nonwhite_fraction": 0.3014573169065874,
         "nonblank": true
       },
       "svg": {
@@ -255,30 +255,30 @@
       "exports": {
         "svg": {
           "exists": true,
-          "bytes": 79588,
+          "bytes": 86408,
           "newer_than_source": true
         },
         "pdf": {
           "exists": true,
-          "bytes": 56047,
+          "bytes": 59954,
           "newer_than_source": true
         },
         "png": {
           "exists": true,
-          "bytes": 539344,
+          "bytes": 728898,
           "newer_than_source": true
         },
         "tiff": {
           "exists": true,
-          "bytes": 1781394,
+          "bytes": 1737702,
           "newer_than_source": true
         }
       },
       "png": {
         "width_px": 4156,
         "height_px": 4019,
-        "pixel_std": 48.831581115722656,
-        "nonwhite_fraction": 0.4053905043440194,
+        "pixel_std": 49.71676254272461,
+        "nonwhite_fraction": 0.24448960076786372,
         "nonblank": true
       },
       "svg": {
@@ -295,30 +295,70 @@
       "exports": {
         "svg": {
           "exists": true,
-          "bytes": 60359,
+          "bytes": 61371,
           "newer_than_source": true
         },
         "pdf": {
           "exists": true,
-          "bytes": 61757,
+          "bytes": 61904,
           "newer_than_source": true
         },
         "png": {
           "exists": true,
-          "bytes": 603134,
+          "bytes": 595388,
           "newer_than_source": true
         },
         "tiff": {
           "exists": true,
-          "bytes": 1277220,
+          "bytes": 1241546,
           "newer_than_source": true
         }
       },
       "png": {
-        "width_px": 4171,
-        "height_px": 3122,
-        "pixel_std": 49.50914764404297,
-        "nonwhite_fraction": 0.09586985332819531,
+        "width_px": 4168,
+        "height_px": 3177,
+        "pixel_std": 46.96916198730469,
+        "nonwhite_fraction": 0.0846182101802966,
+        "nonblank": true
+      },
+      "svg": {
+        "arial_declared": true,
+        "editable_text": true,
+        "panel_a_present": true
+      }
+    },
+    {
+      "script": "fig9_do4_zero_equivalence_contract.py",
+      "stem": "fig9_do4_zero_equivalence_contract",
+      "preflight_failures": 0,
+      "preflight_warnings": 0,
+      "exports": {
+        "svg": {
+          "exists": true,
+          "bytes": 65916,
+          "newer_than_source": true
+        },
+        "pdf": {
+          "exists": true,
+          "bytes": 58315,
+          "newer_than_source": true
+        },
+        "png": {
+          "exists": true,
+          "bytes": 569939,
+          "newer_than_source": true
+        },
+        "tiff": {
+          "exists": true,
+          "bytes": 1433892,
+          "newer_than_source": true
+        }
+      },
+      "png": {
+        "width_px": 4128,
+        "height_px": 3047,
+        "pixel_std": 44.12923049926758,
+        "nonwhite_fraction": 0.1591016421031743,
         "nonblank": true
       },
       "svg": {

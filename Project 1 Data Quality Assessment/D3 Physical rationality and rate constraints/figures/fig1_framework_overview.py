@@ -48,9 +48,9 @@ x = np.linspace(0, 0.30, 400)
 for key, color, label in [
     ("Q_value_hard", COLORS["red"], "Hard value"),
     ("Q_value_soft", COLORS["amber"], "Soft value"),
-    ("Q_persistent_rate", COLORS["blue"], "Persistent rate"),
+    ("Q_persistent_rate", COLORS["blue"], "Persistent rate components"),
 ]:
-    config = mapping[key]
+    config = mapping[key]["hard"] if key == "Q_persistent_rate" else mapping[key]
     ax.plot(x, logistic_zero(x, config["x0"], config["k"]), color=color, label=label)
 ax.scatter([0], [5], s=14, color=COLORS["black"], zorder=5)
 ax.text(0.012, 4.82, "Zero violations = 5", va="top")

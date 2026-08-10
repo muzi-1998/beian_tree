@@ -1,4 +1,4 @@
-# D3 v2.3.0: Physical Rationality and Persistent-Rate Constraints
+# D3 v2.4.0: Physical Rationality and Persistent-Rate Constraints
 
 D3 independently evaluates whether observed DO/ORP values and sustained temporal changes are physically plausible. It uses the section 1.1 canonical one-minute observation grid, but never consumes imputed values, D1/D2 scores, or external regime labels in production scoring.
 
@@ -14,24 +14,31 @@ D3 independently evaluates whether observed DO/ORP values and sustained temporal
 
 The supplementary plausibility score is:
 
+`Q_persistent_rate = 0.30 Q_soft-only + 0.70 Q_hard-persistent`
+
 `D3_base = 0.50 Q_value_hard + 0.20 Q_value_soft + 0.30 Q_persistent_rate`
 
 `D3_pre = 0.75 D3_base + 0.25 min(Q_value_hard, Q_value_soft, Q_persistent_rate)`
 
 `D3_total` is retained for descriptive analysis. Downstream aggregation must use `D3_gate_status`; it must not average the provisional operating score into the composite quality index.
 
+The proposed `0.45/0.35/0.20` rebalance remains sensitivity-only: it caused a large ORP3 soft-envelope reclassification without external labels. v2.4 therefore changes the rate construct but retains the frozen v2.3 outer weights.
+
 ## Threshold Status
 
 - Registered instrument ranges are `0-20 mg/L` for DO and `-1500 to 1500 mV` for ORP.
 - DO `0-8 mg/L`, ORP `-400 to 200 mV`, ORP hard operating range `-500 to 500 mV`, and all rate limits remain `provisional_expert_prior`.
-- `DO_1_4` and `DO_2_4` are explicit post-anoxic sensors. Their provisional soft lower edge is `-0.05 mg/L`, based on the observed `0.01 mg/L` resolution and evaluated at `0`, `-0.03`, `-0.05`, and `-0.10 mg/L`.
+- `DO_1_4` and `DO_2_4` are explicit post-anoxic sensors. Their physical soft lower boundary remains `0 mg/L`; `-0.05 mg/L` is a separate provisional zero-equivalence tolerance evaluated at `0`, `-0.03`, `-0.05`, and `-0.10 mg/L`.
+- DO4 values in `[-0.05, 0) mg/L` are retained as raw observations and flagged as zero-equivalent without reducing `Q_value_soft`; `[-0.20, -0.05) mg/L` is an offset warning and values below `-0.20 mg/L` remain severe.
+- DO4 does not inherit the aerobic `8 mg/L` upper warning. Production upper scoring is disabled until a time-blocked post-anoxic template has adequate independent support.
 - The DO soft upper boundary is not temperature-corrected because synchronized water temperature, pressure, and salinity are unavailable.
 - ORP position/season robust envelopes are exported as diagnostics only. They do not replace production thresholds before site review and independent event adjudication.
 
 ## Persistent-Rate Definition
 
 - Soft evidence requires a same-sign exceedance lasting at least 3 min.
-- Hard score evidence requires a same-sign exceedance lasting at least 10 min.
+- Soft-only evidence covers complete 3-9 min episodes that contain no hard-persistent core.
+- Hard score evidence requires a same-sign exceedance lasting at least 10 min; its points are not counted again as soft-only evidence.
 - The non-compensatory persistent-rate cap remains at more than 30 min.
 - A 1-3 min impulse-return that returns to its prior baseline is assigned to the D1 spike construct and excluded from D3 rate loss.
 - Missing-data recovery jumps are not bridged.
@@ -55,7 +62,7 @@ configs/             versioned thresholds, mappings, paths, and independence con
 src/                 evidence, scoring, guard, validation, pipeline, and export modules
 tests/               scientific-contract regression tests
 ci/                  forbidden-coupling and mapping checks
-figures/             Python scripts for eight publication figures
+figures/             Python scripts for nine publication figures
 outputs/data/        current scoring and evidence workbooks
 outputs/validation/  threshold, construct, overlap, and source-data audits
 outputs/figures/     editable SVG/PDF and 600-dpi PNG figures
@@ -87,6 +94,6 @@ python run_all.py --skip-pipeline
 
 Core outputs are `D3_window_scores.xlsx`, `D3_value_evidence.xlsx`, `D3_rate_evidence.xlsx`, `D3_boundary_diagnostics.xlsx`, `D3_threshold_library.xlsx`, `D3_physical_events.xlsx`, `D3_mapping_params.xlsx`, and `D3_sensor_summary.xlsx`.
 
-Validation outputs are `D3_operational_envelope_diagnostics.xlsx`, `D3_threshold_sensitivity.xlsx`, `D3_rate_construct_validation.xlsx`, `D3_boundary_rate_validation_source.parquet`, and `D3_validation_summary.json`.
+Validation outputs additionally include `D3_DO4_zero_equivalence_views.parquet` and `D3_weight_contract_sensitivity.xlsx`. The DO4 upper candidates use a frozen 70/30 temporal split and D1/D2 only as a validation filter; they are never consumed by production D3 scoring.
 
 The current project supports an internally consistent retrospective D3 gate and a defensible claim boundary. It does not yet support final universal operating thresholds, alarm precision/recall, dynamic oxygen-saturation limits, or a fully shared raw-domain D1-D3 injection claim.

@@ -1,8 +1,8 @@
 {
-  "run_id": "RUN_D3_v2.3.0_20260806T042658Z_eae96b72",
-  "d3_version": "v2.3.0",
-  "created_at_utc": "2026-08-06T04:26:58.080543+00:00",
-  "wall_time_s": 3767.1111257076263,
+  "run_id": "RUN_D3_v2.4.0_20260810T013252Z_790fee40",
+  "d3_version": "v2.4.0",
+  "created_at_utc": "2026-08-10T01:32:52.746760+00:00",
+  "wall_time_s": 305.282751083374,
   "study_start": "2025-08-01 00:00:00",
   "study_end": "2026-04-13 23:59:00",
   "subset_days": null,
@@ -11,13 +11,14 @@
   "n_sensor_windows": 43008,
   "n_evaluated": 42840,
   "n_not_evaluated": 168,
-  "n_events": 328,
-  "mean_D3_evaluated": 4.899292054694038,
+  "n_events": 5620,
+  "mean_D3_evaluated": 4.865250623231726,
   "versions": {
-    "mapping": "v2.3.0",
-    "threshold": "v2.3.0",
-    "rate_utils": "rate_utils@v2.3.0",
-    "benchmark": "benchmark@v2.2.0"
+    "mapping": "v2.4.0",
+    "threshold": "v2.4.0",
+    "rate_utils": "rate_utils@v2.4.0",
+    "benchmark": "benchmark@v2.2.0",
+    "sensitivity": "interval-sensitivity@v1.0.0"
   },
   "independence_contract": {
     "D1_score_consumed": false,
@@ -25,15 +26,29 @@
     "boundary_in_D3_score": false,
     "canonical_1_1_time_grid": true,
     "imputed_values_scored": false,
-    "regime_labels_consumed": false
+    "regime_labels_consumed": false,
+    "D1_D2_consumed_by_production_score": false,
+    "D1_D2_consumed_by_validation_candidate_filter": true
   },
   "scientific_contract": {
     "instrument_range_role": "data_quality_fail",
     "operational_bounds_role": "provisional_warning_only",
-    "rate_construct": "persistent_same_sign_rate",
+    "rate_construct": "mutually_exclusive_soft_only_and_hard_persistent_same_sign_rate",
+    "rate_component_weights": {
+      "soft_only": 0.3,
+      "hard": 0.7
+    },
+    "outer_aggregation_weights": {
+      "Q_value_hard": 0.5,
+      "Q_value_soft": 0.2,
+      "Q_persistent_rate": 0.3
+    },
+    "candidate_0.45_0.35_0.20": "sensitivity_only_not_promoted",
     "impulse_return_role": "D1_spike_owned_morphology_exclusion",
     "process_coherence_role": "attribution_guard_not_veto",
-    "do4_zero_deadband_mg_L": -0.05,
+    "do4_physical_soft_low_mg_L": 0.0,
+    "do4_zero_equivalence_low_mg_L": -0.05,
+    "do4_operational_soft_high": "disabled_pending_time_blocked_template_validation",
     "temperature_conditioned_DO_upper_bound": "pending_missing_temperature_pressure_salinity",
     "position_conditioned_ORP_envelope": "diagnostic_only_pending_site_review"
   },
@@ -49,8 +64,8 @@
       "size_bytes": 16059938
     }
   },
-  "config_sha256": "eae96b72c698c6174cf70fb4c58bdf647accb40acd44bb076a0f1d32dd47ff4e",
-  "code_sha256": "910ea924084fe71cf350f7b2844e7f187cd98c1342bf9aacb64805b180858431",
+  "config_sha256": "790fee40689939d2e2af510e88b4299bbf3fe75f6a5ece09dde236675db6728d",
+  "code_sha256": "40cf7559272e0ca588dd9fb6726e10e61aa73605706449bb9e84cff56fc08cc7",
   "exported_files": [
     "D3_window_scores.xlsx",
     "D3_value_evidence.xlsx",
@@ -65,6 +80,8 @@
     "D3_operational_envelope_diagnostics.xlsx",
     "D3_threshold_sensitivity.xlsx",
     "D3_rate_construct_validation.xlsx",
+    "D3_weight_contract_sensitivity.xlsx",
+    "D3_DO4_zero_equivalence_views.parquet",
     "D3_boundary_rate_validation_source.parquet",
     "D3_validation_summary.json"
   ]

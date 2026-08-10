@@ -7,6 +7,7 @@ sensors:
     hard_high: 20.0
     soft_low: 0.0
     soft_high: 8.0
+    soft_sensitivity_anchor: "lower"
     unit: "mg/L"
     manufacturer_range_low: 0.0
     manufacturer_range_high: 20.0
@@ -18,6 +19,7 @@ sensors:
     hard_high: 500.0
     soft_low: -400.0
     soft_high: 200.0
+    soft_sensitivity_anchor: "center"
     unit: "mV"
     manufacturer_range_low: -1500.0
     manufacturer_range_high: 1500.0
@@ -28,14 +30,22 @@ sensors:
 sensor_overrides:
   DO_1_4:
     process_zone: "post_anoxic"
-    soft_low: -0.05
-    zero_deadband_low: -0.05
-    basis: "resolution_derived_provisional_zero_deadband"
+    physical_soft_low: 0.0
+    zero_equivalence_low: -0.05
+    operational_soft_high: null
+    soft_sensitivity_anchor: "none"
+    physical_low_basis: "nonnegative_dissolved_oxygen_concentration"
+    zero_equivalence_basis: "resolution_derived_provisional_zero_point_tolerance"
+    upper_bound_basis: "pending_post_anoxic_template_validation"
   DO_2_4:
     process_zone: "post_anoxic"
-    soft_low: -0.05
-    zero_deadband_low: -0.05
-    basis: "resolution_derived_provisional_zero_deadband"
+    physical_soft_low: 0.0
+    zero_equivalence_low: -0.05
+    operational_soft_high: null
+    soft_sensitivity_anchor: "none"
+    physical_low_basis: "nonnegative_dissolved_oxygen_concentration"
+    zero_equivalence_basis: "resolution_derived_provisional_zero_point_tolerance"
+    upper_bound_basis: "pending_post_anoxic_template_validation"
 
 operational_envelope_contract:
   status: "provisional_expert_prior"
@@ -47,9 +57,12 @@ operational_envelope_contract:
     status: "pending_position_and_regime_validation"
     position_groups: ["anaerobic", "anoxic_mid", "anoxic_end"]
     position_conditioned_envelopes_role: "diagnostic_only_until_site_review"
-  do4_zero_deadband:
+  do4_zero_equivalence:
     provisional_value_mg_L: -0.05
     sensitivity_values_mg_L: [0.0, -0.03, -0.05, -0.10]
+    physical_soft_low_mg_L: 0.0
+    production_upper_bound: null
+    production_upper_bound_status: "disabled_pending_time_blocked_post_anoxic_template_validation"
     final_lock_requires: "manufacturer_accuracy_or_zero_oxygen_calibration"
 
 sources:
@@ -59,5 +72,5 @@ sources:
     source_sha256: "2085f4de640aa0231f95e3abe370dec6d1da9c3daf064e6f05042e344ca58ea9"
     inspected_sheet_range: "Sheet1!A1:P34"
     reverified_at: "2026-07-27T00:00:00+08:00"
-version: "v2.3.0"
-effective_date: "2026-08-06"
+version: "v2.4.0"
+effective_date: "2026-08-08"
