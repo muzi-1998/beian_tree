@@ -1,4 +1,4 @@
-"""Generate D3 v2.5 boundary, persistence, and construct-validity evidence."""
+"""Generate D3 v2.6 boundary, persistence, and construct-validity evidence."""
 
 from __future__ import annotations
 
@@ -36,6 +36,20 @@ def _persistent_rate_scores(evidence, mapping_cfg: dict) -> tuple[float, float, 
     weights = mapping["component_weights"]
     combined = weights["soft_only"] * q_soft_only + weights["hard"] * q_hard
     return float(q_soft_only), float(q_hard), float(combined)
+
+
+def _legacy_v23_rate_score(rate: float, rules_cfg: dict) -> float:
+    """Reconstruct v2.3 Q_rate from all hard point violations."""
+    config = rules_cfg.get("legacy_v2_3_rate_mapping", {"x0": 0.05, "k": 20.0})
+    return logistic_zero_anchored(rate, float(config["x0"]), float(config["k"]))
+
+
+def _operational_envelope_family(sensor: str) -> str:
+    if sensor.startswith("DO_") and not sensor.endswith("_4"):
+        return "aerobic_do"
+    if sensor.startswith("ORP_"):
+        return "orp"
+    return "dedicated_route"
 
 
 def _longest_true_run(mask: pd.Series) -> int:
@@ -124,7 +138,8 @@ def _operational_diagnostics(
             sample = values[season_labels == season_name].dropna()
             if not len(sample):
                 continue
-            if sensor.startswith("DO_") and not sensor.endswith("_4"):
+            family = _operational_envelope_family(sensor)
+            if family == "aerobic_do":
                 meta = next(item for item in sensor_meta if item["id"] == sensor)
                 do_rows.append(
                     {
@@ -139,7 +154,7 @@ def _operational_diagnostics(
                         "distribution_role": "raw_context_only_temperature_envelope_audited_separately",
                     }
                 )
-            else:
+            elif family == "orp":
                 median = float(sample.median())
                 mad_scale = float(1.4826 * (sample - median).abs().median())
                 meta = next(item for item in sensor_meta if item["id"] == sensor)
@@ -711,17 +726,21 @@ def _weight_contract_sensitivity(
     rate = results["rate_constraint"][[
         "ts",
         "sensor_id",
+        "rate_hard_point_violation_rate",
         "rate_hard_consec_max_min",
     ]]
     detail = scores.merge(value, on=["ts", "sensor_id"], how="left").merge(
         rate, on=["ts", "sensor_id"], how="left"
     )
     sufficient = detail["evidence_status"].eq("sufficient")
-    old_values = detail[["Q_value_hard", "Q_value_soft", "Q_persistent_rate_hard"]]
+    detail["Q_rate_v2_3_point"] = detail["rate_hard_point_violation_rate"].map(
+        lambda value: _legacy_v23_rate_score(value, rules_cfg)
+    )
+    old_values = detail[["Q_value_hard", "Q_value_soft", "Q_rate_v2_3_point"]]
     old_base = (
         0.50 * old_values["Q_value_hard"]
         + 0.20 * old_values["Q_value_soft"]
-        + 0.30 * old_values["Q_persistent_rate_hard"]
+        + 0.30 * old_values["Q_rate_v2_3_point"]
     )
     old_pre = 0.75 * old_base + 0.25 * old_values.min(axis=1)
     v1 = rules_cfg["veto"]["veto_1"]
@@ -846,14 +865,16 @@ def run_validation(
     with pd.ExcelWriter(temperature_path) as writer:
         for sheet in (
             "source_audit",
+            "saturation_reference_check",
             "frozen_registry_check",
             "phase_validation",
+            "cross_line_transfer",
             "alpha_sensitivity",
             "exclusions",
         ):
             temperature_audit[sheet].to_excel(writer, sheet_name=sheet[:31], index=False)
     temperature_detail_path = output / "D3_temperature_conditioned_DO_upper.parquet"
-    temperature_audit["hourly_detail"].to_parquet(temperature_detail_path, index=False)
+    temperature_audit["minute_detail"].to_parquet(temperature_detail_path, index=False)
     sensitivity_summary, sensitivity_detail = _threshold_sensitivity(
         frame,
         sensors,
@@ -920,7 +941,7 @@ def run_validation(
 
     d1_sha = hashlib.sha256(d1_path.read_bytes()).hexdigest() if d1_path.exists() else None
     summary = {
-        "validation_version": "v2.5.0",
+        "validation_version": "v2.6.0",
         "interval_sensitivity_version": INTERVAL_SCALING_VERSION,
         "rate_challenge_scenarios": int(len(challenge)),
         "rate_challenge_expected_matches": int(
@@ -937,8 +958,8 @@ def run_validation(
         "temperature_registry_all_match": bool(
             temperature_audit["frozen_registry_check"]["registry_match"].all()
         ),
-        "temperature_study_hour_coverage": float(
-            temperature_audit["source_audit"].iloc[0]["study_hour_coverage"]
+        "temperature_study_minute_coverage": float(
+            temperature_audit["source_audit"].iloc[0]["study_minute_coverage"]
         ),
         "locked_conclusions": [
             "DO4 physical soft lower bound remains 0 mg/L; -0.05 mg/L is a separate provisional zero-equivalence tolerance.",
@@ -948,8 +969,13 @@ def run_validation(
             "Instrument-range failure is separated from provisional operating warnings.",
             "ORP sensitivity changes interval width around a fixed center through one canonical implementation.",
             "Aerobic DO upper warnings use a frozen longitudinal-position template conditioned on a minute influent-temperature proxy.",
+            "Calibration, validation, and production scoring use the same minute-level DO/Csat estimand with calendar-day cluster bootstrap uncertainty.",
+            "The validation-only benchmark filter includes the frozen D1 Q_drift component; no independent D1 saturation/floor sheet exists to add.",
             "Positions 1-2 are scored operational warnings; position 3 remains diagnostic-only after failed temporal transfer.",
+            "Cross-line leave-one-line-out transfer is diagnostic and reveals directional asymmetry rather than being used to widen the pooled template.",
+            "Terminal-test exceedances remain locked forward-test evidence and never trigger retrospective alpha refitting.",
             "Missing temperature is not extrapolated and is reported as unevaluated upper-envelope evidence.",
+            "Benson-Krause freshwater solubility is used only as a USGS-traceable monotonic temperature normalizer.",
         ],
         "pending_external_evidence": [
             "in_basin_temperature_pressure_salinity_for_thermodynamic_DO_saturation_interpretation",

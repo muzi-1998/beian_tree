@@ -1,4 +1,4 @@
-"""Run the independent D3 v2.5 physical-plausibility pipeline."""
+"""Run the independent D3 v2.6 physical-plausibility pipeline."""
 
 from __future__ import annotations
 
@@ -215,6 +215,12 @@ def main(
             "temperature_missing_policy": "not_evaluated_no_extrapolation",
             "temperature_study_grid_coverage": float(temperature_c.notna().mean()),
             "temperature_thermodynamic_role": "normalizer_not_hard_saturation_limit",
+            "temperature_saturation_reference": "USGS_Benson_Krause_1980_1984_equation_7",
+            "temperature_calibration_resolution": "minute_calibration_minute_validation_minute_production",
+            "temperature_uncertainty": "1000_replicate_calendar_day_cluster_bootstrap",
+            "temperature_validation_rule": "minute_exceedance_and_2h_warning_window_rates_le_0.02_in_independent_validation",
+            "temperature_validation_filter": "frozen_D1_total_spike_step_drift_freeze_regime_and_D2_Strict",
+            "temperature_optional_D1_saturation_floor_filter": "unavailable_in_frozen_release_not_imputed",
             "temperature_source_start": str(temperature_minute.index.min()),
             "temperature_source_end": str(temperature_minute.index.max()),
             "temperature_raw_missing_minutes": int(
@@ -239,6 +245,7 @@ def main(
                 "diagnostic_only_positions"
             ],
             "position_conditioned_ORP_envelope": "diagnostic_only_pending_site_review",
+            "legacy_v2_3_rate_reconstruction": "all_hard_point_violation_fraction_with_original_caps",
         },
         "source_inputs": source_meta,
         "config_sha256": config_hash,

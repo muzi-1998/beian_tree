@@ -52,12 +52,15 @@ operational_envelope_contract:
   score_role: "operational_warning_not_instrument_failure"
   aerobic_do_temperature_conditioned_upper:
     enabled: true
-    status: "frozen_time_blocked_site_calibration"
+    status: "frozen_minute_level_time_blocked_site_calibration"
     scope: "aerobic_DO_positions_1_to_3"
     covariate: "minute_influent_temperature_proxy"
     interpretation: "temperature_conditioned_operational_warning_not_thermodynamic_saturation_limit"
     saturation_reference:
-      equation: "14.652-0.41022*T+0.007991*T^2-0.000077774*T^3"
+      equation: "Benson-Krause_1980_1984_equation_7"
+      implementation: "exp(-139.34411+1.575701e5/Tk-6.642308e7/Tk^2+1.243800e10/Tk^3-8.621949e11/Tk^4)"
+      authority: "USGS_DOTABLES_Technical_Memorandum_2011.03"
+      reference_url: "https://water.usgs.gov/water-resources/memos/documents/WQ.2011.03.pdf"
       medium: "freshwater"
       pressure_assumption: "standard_atmosphere"
       salinity_assumption: "zero"
@@ -70,23 +73,33 @@ operational_envelope_contract:
       validation_end_exclusive: "2026-04-01 00:00:00"
       terminal_start: "2026-04-01 00:00:00"
       terminal_end_exclusive: "2026-04-14 00:00:00"
-      quality_filter: "D1_total,Q_spike,Q_step,Q_freeze,Q_regime,D2_Strict>=4.5_and_D2_usable"
-      DO_hourly_statistic: "mean"
-      estimator: "max(P99,median+3x1.4826MAD)_of_DO_over_Csat"
-      minimum_valid_temperature_minutes_per_hour: 30
-      minimum_calibration_sensor_hours: 720
+      resolution: "minute_calibration_minute_validation_minute_production"
+      quality_filter: "D1_total,Q_spike,Q_step,Q_drift,Q_freeze,Q_regime,D2_Strict>=4.5_and_D2_usable"
+      unavailable_optional_D1_filter: "no_independent_DO_saturation_or_floor_sheet_in_frozen_D1_release"
+      estimator: "max(P99,median+3x1.4826MAD)_of_minute_DO_over_Benson_Krause_Csat"
+      minimum_calibration_sensor_minutes: 43200
+      bootstrap:
+        cluster: "calendar_day"
+        replicates: 1000
+        seed: 20260811
+      validation_window:
+        minutes: 120
+        minimum_high_quality_minutes: 60
+        warning_if_exceedance_rate_gt: 0.02
       alpha_by_position:
-        "1": 0.2870480956
-        "2": 0.3146109551
-        "3": 0.4898265899
-      calibration_support_sensor_hours:
-        "1": 1137
-        "2": 2238
-        "3": 2547
+        "1": 0.2789373305
+        "2": 0.3100300303
+        "3": 0.5065765789
+      calibration_support_sensor_minutes:
+        "1": 62452
+        "2": 113862
+        "3": 120644
       scored_positions: ["1", "2"]
       diagnostic_only_positions: ["3"]
-      promotion_rule: "independent_validation_high_quality_warning_rate_le_0.02_per_sensor"
+      promotion_rule: "independent_validation_high_quality_minute_exceedance_rate_le_0.02_and_2h_warning_window_rate_le_0.02_per_sensor"
       position_3_status: "diagnostic_only_failed_temporal_stability_DO_2_3"
+      cross_line_leave_one_out_role: "diagnostic_transfer_test_not_used_to_tune_or_promote"
+      terminal_test_role: "locked_forward_test_never_used_to_refit_or_widen_alpha"
     runtime_missing_policy: "upper_component_not_evaluated_no_extrapolation"
     external_validity_limit: "requires_in_basin_temperature_pressure_salinity_and_cross_plant_validation"
   orp_soft_range:
@@ -108,5 +121,5 @@ sources:
     source_sha256: "2085f4de640aa0231f95e3abe370dec6d1da9c3daf064e6f05042e344ca58ea9"
     inspected_sheet_range: "Sheet1!A1:P34"
     reverified_at: "2026-07-27T00:00:00+08:00"
-version: "v2.5.0"
-effective_date: "2026-08-10"
+version: "v2.6.0"
+effective_date: "2026-08-11"

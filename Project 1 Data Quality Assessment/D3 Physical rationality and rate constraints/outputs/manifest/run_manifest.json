@@ -1,8 +1,8 @@
 {
-  "run_id": "RUN_D3_v2.5.0_20260810T070618Z_1ca914b0",
-  "d3_version": "v2.5.0",
-  "created_at_utc": "2026-08-10T07:06:18.811133+00:00",
-  "wall_time_s": 183.02576565742493,
+  "run_id": "RUN_D3_v2.6.0_20260811T014014Z_89fb1db3",
+  "d3_version": "v2.6.0",
+  "created_at_utc": "2026-08-11T01:40:14.898542+00:00",
+  "wall_time_s": 310.3533947467804,
   "study_start": "2025-08-01 00:00:00",
   "study_end": "2026-04-13 23:59:00",
   "subset_days": null,
@@ -12,13 +12,13 @@
   "n_evaluated": 42840,
   "n_not_evaluated": 168,
   "n_events": 5620,
-  "mean_D3_evaluated": 4.854903100573727,
+  "mean_D3_evaluated": 4.85438043715163,
   "versions": {
     "mapping": "v2.4.0",
-    "threshold": "v2.5.0",
+    "threshold": "v2.6.0",
     "rate_utils": "rate_utils@v2.4.0",
     "benchmark": "benchmark@v2.2.0",
-    "sensitivity": "interval-sensitivity@v1.0.0"
+    "sensitivity": "interval-sensitivity@v1.1.0"
   },
   "independence_contract": {
     "D1_score_consumed": false,
@@ -54,14 +54,20 @@
     "temperature_missing_policy": "not_evaluated_no_extrapolation",
     "temperature_study_grid_coverage": 0.9901801215277778,
     "temperature_thermodynamic_role": "normalizer_not_hard_saturation_limit",
+    "temperature_saturation_reference": "USGS_Benson_Krause_1980_1984_equation_7",
+    "temperature_calibration_resolution": "minute_calibration_minute_validation_minute_production",
+    "temperature_uncertainty": "1000_replicate_calendar_day_cluster_bootstrap",
+    "temperature_validation_rule": "minute_exceedance_and_2h_warning_window_rates_le_0.02_in_independent_validation",
+    "temperature_validation_filter": "frozen_D1_total_spike_step_drift_freeze_regime_and_D2_Strict",
+    "temperature_optional_D1_saturation_floor_filter": "unavailable_in_frozen_release_not_imputed",
     "temperature_source_start": "2025-08-01 00:00:00",
     "temperature_source_end": "2026-07-30 23:59:00",
     "temperature_raw_missing_minutes": 4205,
     "temperature_invalid_minutes": 8,
     "aerobic_DO_alpha_by_position": {
-      "1": 0.2870480956,
-      "2": 0.3146109551,
-      "3": 0.4898265899
+      "1": 0.2789373305,
+      "2": 0.3100300303,
+      "3": 0.5065765789
     },
     "aerobic_DO_temperature_scored_positions": [
       "1",
@@ -70,7 +76,8 @@
     "aerobic_DO_temperature_diagnostic_only_positions": [
       "3"
     ],
-    "position_conditioned_ORP_envelope": "diagnostic_only_pending_site_review"
+    "position_conditioned_ORP_envelope": "diagnostic_only_pending_site_review",
+    "legacy_v2_3_rate_reconstruction": "all_hard_point_violation_fraction_with_original_caps"
   },
   "source_inputs": {
     "do_xlsx": {
@@ -89,8 +96,8 @@
       "size_bytes": 63041057
     }
   },
-  "config_sha256": "1ca914b0e76c0615037edafc40be7e1fe78574abb93f93859825b07f8edd426b",
-  "code_sha256": "6d7e5fbc4a241e6bbe26e242bb1f518c315f2a9caa1b91d75e61ee56288c2645",
+  "config_sha256": "89fb1db342608d41128a70a860f8034beaab72fed9c0826b4f0d1c40b90a5acd",
+  "code_sha256": "7365c0e057f6370f72f4709594b7561b3a459651eba63e1512be7d7dd4a5e22a",
   "exported_files": [
     "D3_window_scores.xlsx",
     "D3_value_evidence.xlsx",

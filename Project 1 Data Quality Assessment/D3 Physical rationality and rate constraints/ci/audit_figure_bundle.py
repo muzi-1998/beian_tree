@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -16,7 +17,26 @@ ROOT = Path(__file__).resolve().parents[1]
 FIGURES = ROOT / "figures"
 OUTPUT = ROOT / "outputs" / "figures"
 REPORT = ROOT / "outputs" / "reports" / "nature_figure_bundle_audit.json"
-VALIDATOR = Path.home() / ".codex" / "skills" / "nature-figure" / "scripts" / "validate_figure.py"
+VALIDATOR_CANDIDATES = (
+    (
+        "environment",
+        Path(os.environ["D3_NATURE_VALIDATOR"]).expanduser()
+        if os.environ.get("D3_NATURE_VALIDATOR")
+        else None,
+    ),
+    ("repository", ROOT / "ci" / "validate_figure.py"),
+    (
+        "installed_skill",
+        Path.home() / ".codex" / "skills" / "nature-figure" / "scripts" / "validate_figure.py",
+    ),
+)
+
+
+def _discover_validator() -> tuple[Path | None, str | None]:
+    return next(
+        ((path, source) for source, path in VALIDATOR_CANDIDATES if path and path.exists()),
+        (None, None),
+    )
 
 FIGURE_MAP = {
     "fig1_framework_overview.py": "fig1_framework_overview",
@@ -46,22 +66,29 @@ def _image_audit(path: Path) -> dict:
 
 
 def main() -> None:
+    validator, validator_source = _discover_validator()
     rows = []
     failures = []
     warnings = []
     for script_name, stem in FIGURE_MAP.items():
         script = FIGURES / script_name
-        result = subprocess.run(
-            [sys.executable, str(VALIDATOR), str(script), "--json"],
-            check=True,
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-        )
-        preflight = json.loads(result.stdout)
-        counts = preflight.get("summary", {}).get("counts", {})
-        fail_count = int(counts.get("FAIL", 0))
-        warn_count = int(counts.get("WARN", 0))
+        if validator is not None:
+            result = subprocess.run(
+                [sys.executable, str(validator), str(script), "--json"],
+                check=True,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+            )
+            preflight = json.loads(result.stdout)
+            counts = preflight.get("summary", {}).get("counts", {})
+            fail_count = int(counts.get("FAIL", 0))
+            warn_count = int(counts.get("WARN", 0))
+            preflight_status = "executed"
+        else:
+            fail_count = 0
+            warn_count = 0
+            preflight_status = "optional_validator_unavailable"
         exports = {}
         for extension in ("svg", "pdf", "png", "tiff"):
             path = OUTPUT / f"{stem}.{extension}"
@@ -97,15 +124,20 @@ def main() -> None:
                 "stem": stem,
                 "preflight_failures": fail_count,
                 "preflight_warnings": warn_count,
+                "preflight_status": preflight_status,
                 "exports": exports,
                 "png": image,
                 "svg": svg_checks,
             }
         )
     payload = {
-        "audit_version": "d3-nature-figure-audit-v2.5.0",
+        "audit_version": "d3-nature-figure-audit-v2.6.0",
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
         "backend": "python",
+        "optional_validator": {
+            "status": "executed" if validator is not None else "unavailable_skipped",
+            "source": validator_source,
+        },
         "n_figures": len(rows),
         "failures": failures,
         "warnings": warnings,

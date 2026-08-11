@@ -1,7 +1,11 @@
 {
-  "audit_version": "d3-nature-figure-audit-v2.5.0",
-  "created_at_utc": "2026-08-10T07:12:04.858885+00:00",
+  "audit_version": "d3-nature-figure-audit-v2.6.0",
+  "created_at_utc": "2026-08-11T01:47:56.484055+00:00",
   "backend": "python",
+  "optional_validator": {
+    "status": "executed",
+    "source": "installed_skill"
+  },
   "n_figures": 10,
   "failures": [],
   "warnings": [],
@@ -12,6 +16,7 @@
       "stem": "fig1_framework_overview",
       "preflight_failures": 0,
       "preflight_warnings": 0,
+      "preflight_status": "executed",
       "exports": {
         "svg": {
           "exists": true,
@@ -52,33 +57,34 @@
       "stem": "fig2_score_landscape",
       "preflight_failures": 0,
       "preflight_warnings": 0,
+      "preflight_status": "executed",
       "exports": {
         "svg": {
           "exists": true,
-          "bytes": 112282,
+          "bytes": 112196,
           "newer_than_source": true
         },
         "pdf": {
           "exists": true,
-          "bytes": 76052,
+          "bytes": 76030,
           "newer_than_source": true
         },
         "png": {
           "exists": true,
-          "bytes": 594213,
+          "bytes": 593612,
           "newer_than_source": true
         },
         "tiff": {
           "exists": true,
-          "bytes": 1707436,
+          "bytes": 1704416,
           "newer_than_source": true
         }
       },
       "png": {
         "width_px": 4297,
         "height_px": 3118,
-        "pixel_std": 52.24857711791992,
-        "nonwhite_fraction": 0.27170551586402975,
+        "pixel_std": 52.256343841552734,
+        "nonwhite_fraction": 0.27166409191310437,
         "nonblank": true
       },
       "svg": {
@@ -92,6 +98,7 @@
       "stem": "fig3_evidence_coverage",
       "preflight_failures": 0,
       "preflight_warnings": 0,
+      "preflight_status": "executed",
       "exports": {
         "svg": {
           "exists": true,
@@ -132,6 +139,7 @@
       "stem": "fig4_persistent_rate_construct",
       "preflight_failures": 0,
       "preflight_warnings": 0,
+      "preflight_status": "executed",
       "exports": {
         "svg": {
           "exists": true,
@@ -172,6 +180,7 @@
       "stem": "fig5_boundary_fixed_threshold",
       "preflight_failures": 0,
       "preflight_warnings": 0,
+      "preflight_status": "executed",
       "exports": {
         "svg": {
           "exists": true,
@@ -180,25 +189,25 @@
         },
         "pdf": {
           "exists": true,
-          "bytes": 52869,
+          "bytes": 52876,
           "newer_than_source": true
         },
         "png": {
           "exists": true,
-          "bytes": 396397,
+          "bytes": 396007,
           "newer_than_source": true
         },
         "tiff": {
           "exists": true,
-          "bytes": 1226364,
+          "bytes": 1226184,
           "newer_than_source": true
         }
       },
       "png": {
         "width_px": 4099,
         "height_px": 3257,
-        "pixel_std": 57.322505950927734,
-        "nonwhite_fraction": 0.16461034289274146,
+        "pixel_std": 57.32256317138672,
+        "nonwhite_fraction": 0.16461131664320053,
         "nonblank": true
       },
       "svg": {
@@ -212,33 +221,34 @@
       "stem": "fig6_gate_and_directional_profile",
       "preflight_failures": 0,
       "preflight_warnings": 0,
+      "preflight_status": "executed",
       "exports": {
         "svg": {
           "exists": true,
-          "bytes": 80135,
+          "bytes": 80143,
           "newer_than_source": true
         },
         "pdf": {
           "exists": true,
-          "bytes": 57165,
+          "bytes": 56589,
           "newer_than_source": true
         },
         "png": {
           "exists": true,
-          "bytes": 586745,
+          "bytes": 586797,
           "newer_than_source": true
         },
         "tiff": {
           "exists": true,
-          "bytes": 1758030,
+          "bytes": 1758278,
           "newer_than_source": true
         }
       },
       "png": {
         "width_px": 4258,
         "height_px": 3387,
-        "pixel_std": 62.031227111816406,
-        "nonwhite_fraction": 0.3017229555772541,
+        "pixel_std": 62.02451705932617,
+        "nonwhite_fraction": 0.3017434106563057,
         "nonblank": true
       },
       "svg": {
@@ -252,6 +262,7 @@
       "stem": "fig7_case_studies",
       "preflight_failures": 0,
       "preflight_warnings": 0,
+      "preflight_status": "executed",
       "exports": {
         "svg": {
           "exists": true,
@@ -292,6 +303,7 @@
       "stem": "fig8_boundary_rate_validation",
       "preflight_failures": 0,
       "preflight_warnings": 0,
+      "preflight_status": "executed",
       "exports": {
         "svg": {
           "exists": true,
@@ -332,6 +344,7 @@
       "stem": "fig9_do4_zero_equivalence_contract",
       "preflight_failures": 0,
       "preflight_warnings": 0,
+      "preflight_status": "executed",
       "exports": {
         "svg": {
           "exists": true,
@@ -372,33 +385,34 @@
       "stem": "fig10_temperature_conditioned_do_upper",
       "preflight_failures": 0,
       "preflight_warnings": 0,
+      "preflight_status": "executed",
       "exports": {
         "svg": {
           "exists": true,
-          "bytes": 85621,
+          "bytes": 112982,
           "newer_than_source": true
         },
         "pdf": {
           "exists": true,
-          "bytes": 75177,
+          "bytes": 78177,
           "newer_than_source": true
         },
         "png": {
           "exists": true,
-          "bytes": 915648,
+          "bytes": 929447,
           "newer_than_source": true
         },
         "tiff": {
           "exists": true,
-          "bytes": 1561694,
+          "bytes": 1584092,
           "newer_than_source": true
         }
       },
       "png": {
-        "width_px": 4201,
+        "width_px": 4161,
         "height_px": 3041,
-        "pixel_std": 44.8197135925293,
-        "nonwhite_fraction": 0.1151456164310325,
+        "pixel_std": 44.47272872924805,
+        "nonwhite_fraction": 0.1154954230025113,
         "nonblank": true
       },
       "svg": {

@@ -180,7 +180,20 @@ class ValueRangeChecker:
             zero_offset_mask = (clean >= hard_low) & (clean < zero_equivalence_low)
             severe_negative_mask = clean < hard_low
         hard = hard_low_mask | hard_high_mask
-        soft = soft_low_mask | (soft_high_mask if score_soft_high else False)
+        scored_high_mask = soft_high_mask if score_soft_high else np.zeros(len(clean), dtype=bool)
+        soft = soft_low_mask | scored_high_mask
+        soft_low_rate = float(soft_low_mask.mean())
+        soft_high_rate = (
+            float(soft_high_mask[high_evaluable].mean())
+            if score_soft_high and high_evaluable.any()
+            else 0.0
+        )
+        # Low- and high-side evidence have different evaluability when the
+        # dynamic temperature covariate is missing. They are mutually
+        # exclusive, so summing side-specific rates preserves the complete-
+        # case union while preventing missing temperature from becoming an
+        # implicit high-side pass.
+        combined_soft_rate = float(np.clip(soft_low_rate + soft_high_rate, 0.0, 1.0))
         hard_full = np.zeros(len(x), dtype=bool)
         hard_full[valid] = hard
         runs = self._run_lengths(hard_full)
@@ -206,10 +219,10 @@ class ValueRangeChecker:
             severe_negative_count=int(severe_negative_mask.sum()),
             n_samples=int(len(clean)),
             hard_violation_rate=float(hard.mean()),
-            soft_violation_rate=float(soft.mean()),
+            soft_violation_rate=combined_soft_rate,
             hard_low_violation_rate=float(hard_low_mask.mean()),
             hard_high_violation_rate=float(hard_high_mask.mean()),
-            soft_low_violation_rate=float(soft_low_mask.mean()),
+            soft_low_violation_rate=soft_low_rate,
             soft_high_violation_rate=float(soft_high_mask.mean()),
             physical_low_violation_rate=float(physical_low_mask.mean()),
             zero_equivalent_rate=float(zero_equivalent_mask.mean()),

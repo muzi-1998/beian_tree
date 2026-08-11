@@ -15,6 +15,10 @@ from src.d3_physical.do_temperature_envelope import (
 )
 from src.d3_physical.threshold_store import ThresholdStore
 from src.d3_physical.value_range_checker import ValueRangeChecker
+from src.validation.d3_validation import (
+    _legacy_v23_rate_score,
+    _operational_envelope_family,
+)
 
 
 ROOT = Path(__file__).parent.parent
@@ -30,13 +34,15 @@ def _thresholds() -> ThresholdStore:
         _yaml("d3_physical_bounds.yaml"),
         _yaml("d3_rate_limits.yaml"),
         benchmark,
-        version="v2.5.0",
+        version="v2.6.0",
     )
 
 
 def test_freshwater_saturation_reference_is_temperature_monotone():
     values = freshwater_do_saturation_mg_l(np.array([0.0, 15.0, 30.0, np.nan, 41.0]))
-    assert values[:3] == pytest.approx([14.652, 10.03418775, 7.437402], abs=1e-6)
+    assert values[:3] == pytest.approx(
+        [14.6208337002, 10.0838583410, 7.5587960478], abs=1e-9
+    )
     assert np.all(np.diff(values[:3]) < 0)
     assert np.isnan(values[3:]).all()
 
@@ -121,6 +127,7 @@ def test_dynamic_high_only_scores_evaluable_minutes():
     assert evidence.soft_high_violation_count == 1
     assert evidence.soft_high_violation_rate_evaluable == pytest.approx(0.5)
     assert evidence.soft_high_violation_rate == pytest.approx(1 / 3)
+    assert evidence.soft_violation_rate == pytest.approx(0.5)
     assert evidence.threshold_scope == "temperature_conditioned_position_template"
 
 
@@ -151,6 +158,21 @@ def test_frozen_position_registry_has_prespecified_support():
     ]["calibration"]
     assert set(calibration["alpha_by_position"]) == {"1", "2", "3"}
     assert all(
-        int(value) >= int(calibration["minimum_calibration_sensor_hours"])
-        for value in calibration["calibration_support_sensor_hours"].values()
+        int(value) >= int(calibration["minimum_calibration_sensor_minutes"])
+        for value in calibration["calibration_support_sensor_minutes"].values()
     )
+    assert "Q_drift" in calibration["quality_filter"]
+    assert calibration["resolution"] == "minute_calibration_minute_validation_minute_production"
+
+
+def test_legacy_rate_reconstruction_uses_point_violation_mapping():
+    rules = _yaml("d3_rules.yaml")
+    assert _legacy_v23_rate_score(0.0, rules) == pytest.approx(5.0)
+    assert _legacy_v23_rate_score(0.20, rules) < 2.0
+
+
+def test_do4_uses_dedicated_route_and_cannot_enter_orp_envelope():
+    assert _operational_envelope_family("DO_1_1") == "aerobic_do"
+    assert _operational_envelope_family("DO_1_4") == "dedicated_route"
+    assert _operational_envelope_family("DO_2_4") == "dedicated_route"
+    assert _operational_envelope_family("ORP_1_3") == "orp"

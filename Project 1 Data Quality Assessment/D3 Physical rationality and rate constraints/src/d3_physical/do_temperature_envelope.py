@@ -8,19 +8,21 @@ import numpy as np
 def freshwater_do_saturation_mg_l(temperature_c) -> np.ndarray:
     """Reference freshwater DO saturation at standard atmospheric pressure.
 
-    The polynomial is used as a temperature normalizer. In this project the
-    covariate is influent temperature, so the result is not treated as an
-    in-basin thermodynamic saturation measurement or a hard physical limit.
+    Uses the Benson-Krause freshwater equation adopted by USGS DOTABLES. In
+    this project the covariate is influent temperature, so the result is only
+    a monotonic temperature normalizer, not an in-basin thermodynamic
+    saturation measurement or a hard physical limit.
     """
     temperature = np.asarray(temperature_c, dtype=float)
     result = np.full(temperature.shape, np.nan, dtype=float)
     valid = np.isfinite(temperature) & (temperature >= 0.0) & (temperature <= 40.0)
-    t = temperature[valid]
-    result[valid] = (
-        14.652
-        - 0.41022 * t
-        + 0.007991 * t**2
-        - 0.000077774 * t**3
+    kelvin = temperature[valid] + 273.15
+    result[valid] = np.exp(
+        -139.34411
+        + 1.575701e5 / kelvin
+        - 6.642308e7 / kelvin**2
+        + 1.243800e10 / kelvin**3
+        - 8.621949e11 / kelvin**4
     )
     return result
 

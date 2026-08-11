@@ -1,5 +1,5 @@
 {
-  "validation_version": "v2.5.0",
+  "validation_version": "v2.6.0",
   "interval_sensitivity_version": "interval-sensitivity@v1.0.0",
   "rate_challenge_scenarios": 8,
   "rate_challenge_expected_matches": 8,
@@ -7,7 +7,7 @@
   "empirical_D1_D3_overlap_rows": 85932,
   "D1_score_source_sha256": "83207ca6f818dd309fe36cdb3adfdc9e569ea540fbca5c4acc0e45e8a321923c",
   "temperature_registry_all_match": true,
-  "temperature_study_hour_coverage": 0.9900716145833334,
+  "temperature_study_minute_coverage": 0.9901801215277778,
   "locked_conclusions": [
     "DO4 physical soft lower bound remains 0 mg/L; -0.05 mg/L is a separate provisional zero-equivalence tolerance.",
     "DO4 production upper warning is disabled pending a time-blocked post-anoxic template lock.",
@@ -16,8 +16,13 @@
     "Instrument-range failure is separated from provisional operating warnings.",
     "ORP sensitivity changes interval width around a fixed center through one canonical implementation.",
     "Aerobic DO upper warnings use a frozen longitudinal-position template conditioned on a minute influent-temperature proxy.",
+    "Calibration, validation, and production scoring use the same minute-level DO/Csat estimand with calendar-day cluster bootstrap uncertainty.",
+    "The validation-only benchmark filter includes the frozen D1 Q_drift component; no independent D1 saturation/floor sheet exists to add.",
     "Positions 1-2 are scored operational warnings; position 3 remains diagnostic-only after failed temporal transfer.",
-    "Missing temperature is not extrapolated and is reported as unevaluated upper-envelope evidence."
+    "Cross-line leave-one-line-out transfer is diagnostic and reveals directional asymmetry rather than being used to widen the pooled template.",
+    "Terminal-test exceedances remain locked forward-test evidence and never trigger retrospective alpha refitting.",
+    "Missing temperature is not extrapolated and is reported as unevaluated upper-envelope evidence.",
+    "Benson-Krause freshwater solubility is used only as a USGS-traceable monotonic temperature normalizer."
   ],
   "pending_external_evidence": [
     "in_basin_temperature_pressure_salinity_for_thermodynamic_DO_saturation_interpretation",

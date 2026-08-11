@@ -1,4 +1,4 @@
-"""Validate, run, and render the complete D3 v2.5 project."""
+"""Validate, run, and render the complete D3 v2.6 project."""
 
 from __future__ import annotations
 
@@ -59,7 +59,7 @@ def main() -> None:
 
     run([sys.executable, "ci/audit_figure_bundle.py"])
 
-    print(f"D3 v2.5.0 complete in {time.time() - started:.1f} s")
+    print(f"D3 v2.6.0 complete in {time.time() - started:.1f} s")
     print(f"Data: {ROOT / 'outputs' / 'data'}")
     print(f"Figures: {ROOT / 'outputs' / 'figures'}")
     print(f"Manifest: {ROOT / 'outputs' / 'manifest' / 'run_manifest.json'}")
