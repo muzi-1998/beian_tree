@@ -1,5 +1,7 @@
-"""Figure 5: fixed boundary diagnostics excluded from D3 scoring."""
-# Shared Nature contract: Arial; font.size=7; svg.fonttype='none'; pdf.fonttype=42; .svg .pdf .tiff dpi=600.
+"""Figure 5: threshold provenance and diagnostic-only boundary evidence."""
+# Shared Nature contract: Arial; svg.fonttype='none'; pdf.fonttype=42; .svg .pdf .png .tiff dpi=600.
+# Figure contract: every threshold has an explicit evidence source and role;
+# benchmark-tail diagnostics remain auditable but do not create a D3 subscore.
 
 from __future__ import annotations
 
@@ -7,70 +9,78 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from _figure_data import OUT, read, short_sensor
-from _nature_style import COLORS, annotation_box, panel_label, save_figure, style_axis
+from _figure_data import OUT, read, read_validation, sensor_order, short_sensor
+from _nature_style import COLORS, panel_label, save_figure, style_axis
 
 
-boundary = read("D3_boundary_diagnostics.xlsx")
-scores = read("D3_window_scores.xlsx")
 thresholds = read("D3_threshold_library.xlsx", sheet_name="full_library")
+boundary = read("D3_boundary_diagnostics.xlsx")
+registry = read_validation("D3_temperature_conditioned_DO_upper.xlsx", sheet_name="frozen_registry_check")
+order = sensor_order(list(boundary["sensor_id"].unique()))
+
+contracts = [
+    ("DO instrument range", "instrument", True, False, True),
+    ("ORP instrument range", "instrument", True, False, True),
+    ("DO operating hard bounds", "prior", True, False, True),
+    ("ORP operating hard bounds", "prior", True, False, True),
+    ("ORP soft range", "prior", True, False, True),
+    ("DO4 zero-equivalence", "resolution", True, False, True),
+    ("DO persistent-rate limits", "prior", True, False, True),
+    ("ORP persistent-rate limits", "prior", True, False, True),
+    ("Aerobic DO dynamic upper", "site", True, True, bool(registry["registry_match"].all())),
+    ("Benchmark tail / sticking", "benchmark", False, True, bool(thresholds.loc[thresholds["bound_type"].eq("boundary"), "validator_passed"].all())),
+]
+source_columns = ["Instrument\nregister", "Expert\nprior", "Site\ncalibrated", "Resolution\nprovisional", "Benchmark\nquantile", "Scored", "Diagnostic\noutput", "Validated\nimplementation"]
+source_map = {"instrument": 0, "prior": 1, "site": 2, "resolution": 3, "benchmark": 4}
+matrix = np.zeros((len(contracts), len(source_columns)))
+for row, (_, source, scored, diagnostic, validated) in enumerate(contracts):
+    matrix[row, source_map[source]] = 1
+    matrix[row, 5] = int(scored)
+    matrix[row, 6] = int(diagnostic)
+    matrix[row, 7] = int(validated)
+
 summary = boundary.groupby("sensor_id").agg(
     sticking_low=("boundary_sticking_low_rate", "mean"),
     sticking_high=("boundary_sticking_high_rate", "mean"),
     tail_low=("tail_rate_low", "mean"),
     tail_high=("tail_rate_high", "mean"),
-)
-summary["D3"] = scores.groupby("sensor_id").D3_total.mean()
-order = list(summary.sort_values("sticking_low").index)
+).reindex(order)
+
+fig = plt.figure(figsize=(7.2, 5.4))
+grid = fig.add_gridspec(2, 2, height_ratios=[1.05, 1.0], left=0.16, right=0.98, bottom=0.10, top=0.96, wspace=0.37, hspace=0.48)
+
+ax = fig.add_subplot(grid[0, :])
+image = ax.imshow(matrix, cmap="Blues", vmin=0, vmax=1, aspect="auto")
+ax.set_yticks(range(len(contracts)), [row[0] for row in contracts])
+ax.set_xticks(range(len(source_columns)), source_columns)
+for row in range(matrix.shape[0]):
+    for column in range(matrix.shape[1]):
+        ax.text(column, row, "X" if matrix[row, column] else "-", ha="center", va="center", fontsize=7.0, color="white" if matrix[row, column] else COLORS["light_gray"])
+ax.axvline(4.5, color="white", lw=1.3)
+ax.set_title("Threshold provenance, scoring role and implementation audit")
+style_axis(ax, full_frame=True)
+panel_label(ax, "a", x=-0.16)
+
+ax = fig.add_subplot(grid[1, 0])
 y = np.arange(len(order))
-fig, axes = plt.subplots(2, 2, figsize=(7.2, 5.4))
-fig.subplots_adjust(left=0.11, right=0.98, bottom=0.10, top=0.96, wspace=0.38, hspace=0.42)
-
-ax = axes[0, 0]
-s = summary.loc[order]
-ax.barh(y, s.sticking_low, color=COLORS["blue"], height=0.68, label="Low boundary")
-ax.barh(y, s.sticking_high, left=s.sticking_low, color=COLORS["orange"], height=0.68, label="High boundary")
-ax.set_yticks(y, [short_sensor(v) for v in order])
-ax.set(xlabel="Mean boundary-sticking fraction", xlim=(0, min(1, max(.05, (s.sticking_low+s.sticking_high).max()*1.08))))
-ax.legend(loc="lower right", bbox_to_anchor=(1.0, 1.00), ncol=2, columnspacing=0.8)
-ax.set_title("Fixed hard-bound proximity", loc="left", y=1.12)
+ax.barh(y - 0.16, 1000 * summary["tail_low"], height=0.30, color=COLORS["purple"], label="Lower tail")
+ax.barh(y + 0.16, 1000 * summary["tail_high"], height=0.30, color=COLORS["green"], label="Upper tail")
+ax.set_yticks(y, [short_sensor(sensor) for sensor in order])
+ax.set_xlabel("Mean tail occupancy per 1,000 min")
+ax.legend(loc="lower right")
+ax.set_title("Benchmark-tail diagnostics")
 style_axis(ax, grid=True)
-panel_label(ax, "(a)")
+panel_label(ax, "b", x=-0.18)
 
-ax = axes[0, 1]
-ax.barh(y - 0.18, s.tail_low, height=0.34, color=COLORS["purple"], label="Lower tail")
-ax.barh(y + 0.18, s.tail_high, height=0.34, color=COLORS["green"], label="Upper tail")
-ax.set_yticks(y, [short_sensor(v) for v in order])
-ax.set_xlabel("Mean benchmark-tail occupancy")
-ax.legend(loc="lower right", bbox_to_anchor=(1.0, 1.00), ncol=2, columnspacing=0.8)
-ax.set_title("Benchmark-derived tail diagnostics", loc="left", y=1.12)
+ax = fig.add_subplot(grid[1, 1])
+ax.barh(y - 0.16, 1000 * summary["sticking_low"], height=0.30, color=COLORS["blue"], label="Low boundary")
+ax.barh(y + 0.16, 1000 * summary["sticking_high"], height=0.30, color=COLORS["orange"], label="High boundary")
+ax.set_yticks(y, [short_sensor(sensor) for sensor in order])
+ax.set_xlabel("Mean boundary proximity per 1,000 min")
+ax.legend(loc="lower right")
+ax.text(0.98, 0.05, "Diagnostic only\nExcluded from D3 score", transform=ax.transAxes, ha="right", va="bottom", color=COLORS["gray"], fontsize=6.3)
+ax.set_title("Fixed-bound proximity")
 style_axis(ax, grid=True)
-panel_label(ax, "(b)")
-
-ax = axes[1, 0]
-occupancy = s.tail_low + s.tail_high
-ax.scatter(occupancy, s.D3, s=22, color=COLORS["cyan"], edgecolor="white", linewidth=0.4)
-offsets = [(4, -14), (-50, -2), (-46, 12)]
-for sensor, offset in zip(occupancy.nlargest(3).index, offsets):
-    ax.annotate(short_sensor(sensor), (occupancy[sensor], s.loc[sensor, "D3"]),
-                xytext=offset, textcoords="offset points", bbox=annotation_box(0.72),
-                arrowprops=dict(arrowstyle="-", color=COLORS["gray"], lw=0.5))
-ax.set(xlabel="Total tail occupancy", ylabel="Mean D3", ylim=(1, 5.1))
-ax.set_title("Diagnostic association only")
-style_axis(ax, minor=True)
-panel_label(ax, "(c)")
-
-ax = axes[1, 1]
-bounds = thresholds[thresholds.bound_type == "boundary"]
-counts = bounds.sensor_type.value_counts().reindex(["DO", "ORP"]).fillna(0)
-bars = ax.bar(counts.index, counts.values, color=[COLORS["blue"], COLORS["orange"]], width=0.58)
-for bar, value in zip(bars, counts.values):
-    ax.text(bar.get_x()+bar.get_width()/2, value+0.4, f"{int(value)}", ha="center")
-ax.text(0.98, 0.95, "Benchmark quantiles\nExcluded from D3 score", transform=ax.transAxes, ha="right", va="top",
-        fontweight="bold", color=COLORS["red"], bbox=annotation_box(0.82))
-ax.set(xlabel="Sensor type", ylabel="Threshold count")
-ax.set_title("Auditable threshold provenance")
-style_axis(ax, grid=True)
-panel_label(ax, "(d)")
+panel_label(ax, "c", x=-0.18)
 
 save_figure(fig, OUT, "fig5_boundary_fixed_threshold")

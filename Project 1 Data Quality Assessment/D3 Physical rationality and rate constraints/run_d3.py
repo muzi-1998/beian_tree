@@ -1,4 +1,4 @@
-"""Run the independent D3 v2.6 physical-plausibility pipeline."""
+"""Run the independent D3 v2.7 physical-plausibility pipeline."""
 
 from __future__ import annotations
 
@@ -213,11 +213,14 @@ def main(
             "temperature_conditioned_DO_upper_bound": "frozen_site_calibrated_operational_warning",
             "temperature_covariate": "minute_influent_temperature_proxy",
             "temperature_missing_policy": "not_evaluated_no_extrapolation",
+            "soft_union_denominator": "temperature_valid_or_low_violation_determinable_minutes",
+            "soft_context_unavailable_policy": "no_full_D3_score_and_no_implicit_pass",
             "temperature_study_grid_coverage": float(temperature_c.notna().mean()),
             "temperature_thermodynamic_role": "normalizer_not_hard_saturation_limit",
             "temperature_saturation_reference": "USGS_Benson_Krause_1980_1984_equation_7",
             "temperature_calibration_resolution": "minute_calibration_minute_validation_minute_production",
             "temperature_uncertainty": "1000_replicate_calendar_day_cluster_bootstrap",
+            "temperature_alpha_interval_propagation": "bootstrap_lower_point_upper_supplementary_sensitivity",
             "temperature_validation_rule": "minute_exceedance_and_2h_warning_window_rates_le_0.02_in_independent_validation",
             "temperature_validation_filter": "frozen_D1_total_spike_step_drift_freeze_regime_and_D2_Strict",
             "temperature_optional_D1_saturation_floor_filter": "unavailable_in_frozen_release_not_imputed",

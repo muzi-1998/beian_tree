@@ -1,5 +1,5 @@
 {
-  "validation_version": "v2.6.0",
+  "validation_version": "v2.7.0",
   "interval_sensitivity_version": "interval-sensitivity@v1.0.0",
   "rate_challenge_scenarios": 8,
   "rate_challenge_expected_matches": 8,
@@ -22,6 +22,8 @@
     "Cross-line leave-one-line-out transfer is diagnostic and reveals directional asymmetry rather than being used to widen the pooled template.",
     "Terminal-test exceedances remain locked forward-test evidence and never trigger retrospective alpha refitting.",
     "Missing temperature is not extrapolated and is reported as unevaluated upper-envelope evidence.",
+    "Combined soft-bound frequency is computed on minutes whose union state is determinable; temperature-missing non-low minutes remain unknown rather than passing.",
+    "Bootstrap lower, point, and upper alpha scenarios propagate coefficient uncertainty to minute and 2 h warning burden without changing the production alpha.",
     "Benson-Krause freshwater solubility is used only as a USGS-traceable monotonic temperature normalizer."
   ],
   "pending_external_evidence": [

@@ -280,6 +280,82 @@ def _phase_summary(
     return pd.DataFrame(rows)
 
 
+def _alpha_uncertainty_scenarios(
+    detail: pd.DataFrame,
+    registry: pd.DataFrame,
+    calibration: dict,
+) -> pd.DataFrame:
+    """Propagate the frozen alpha interval endpoints to warning burden."""
+    scenario_columns = {
+        "bootstrap_lower": "alpha_cluster_bootstrap_ci_low",
+        "point_estimate": "frozen_alpha",
+        "bootstrap_upper": "alpha_cluster_bootstrap_ci_high",
+    }
+    rows = []
+    for scenario_index, (scenario, column) in enumerate(scenario_columns.items()):
+        alpha_by_position = registry.set_index("position")[column].to_dict()
+        scenario_detail = detail.copy()
+        scenario_detail["scenario_alpha"] = scenario_detail["position"].map(
+            alpha_by_position
+        )
+        scenario_detail["dynamic_upper_mg_L"] = (
+            scenario_detail["scenario_alpha"]
+            * scenario_detail["Csat_reference_mg_L"]
+        )
+        scenario_detail["dynamic_warning"] = (
+            scenario_detail["DO_minute_mg_L"]
+            > scenario_detail["dynamic_upper_mg_L"]
+        ).fillna(False)
+        summary = _phase_summary(
+            scenario_detail,
+            calibration,
+            seed_offset=2000 + 100 * scenario_index,
+            include_ci=False,
+        )
+        summary.insert(2, "alpha_scenario", scenario)
+        summary.insert(
+            3,
+            "alpha_value",
+            summary["sensor_id"].str.rsplit("_", n=1).str[-1].astype(int).map(
+                alpha_by_position
+            ),
+        )
+        summary["sensitivity_role"] = (
+            "bootstrap_interval_propagation_not_production_parameter_selection"
+        )
+        rows.append(summary)
+    return pd.concat(rows, ignore_index=True)
+
+
+def _envelope_model_comparison(
+    detail: pd.DataFrame,
+    calibration: dict,
+) -> pd.DataFrame:
+    """Compare the frozen dynamic envelope with the historical fixed 8 mg/L rule."""
+    rows = []
+    for model, upper in (
+        ("temperature_conditioned", detail["dynamic_upper_mg_L"]),
+        ("fixed_8_mg_L", pd.Series(8.0, index=detail.index)),
+    ):
+        model_detail = detail.copy()
+        model_detail["dynamic_upper_mg_L"] = upper
+        model_detail["dynamic_warning"] = (
+            model_detail["DO_minute_mg_L"] > model_detail["dynamic_upper_mg_L"]
+        ).fillna(False)
+        summary = _phase_summary(
+            model_detail,
+            calibration,
+            seed_offset=3000 + len(rows) * 100,
+            include_ci=False,
+        )
+        summary.insert(2, "envelope_model", model)
+        summary["comparison_role"] = (
+            "prespecified_method_comparison_not_threshold_selection"
+        )
+        rows.append(summary)
+    return pd.concat(rows, ignore_index=True)
+
+
 def _leave_one_line_out(detail: pd.DataFrame, calibration: dict) -> pd.DataFrame:
     rows = []
     criterion = float(calibration["validation_window"]["warning_if_exceedance_rate_gt"])
@@ -445,6 +521,8 @@ def build_temperature_envelope_audit(
         )
     registry = pd.DataFrame(registry_rows).sort_values("position")
     phase_validation = _phase_summary(detail, calibration)
+    alpha_uncertainty = _alpha_uncertainty_scenarios(detail, registry, calibration)
+    envelope_comparison = _envelope_model_comparison(detail, calibration)
 
     sensitivity_rows = []
     for multiplier in (0.8, 0.9, 1.0, 1.1, 1.2):
@@ -533,6 +611,8 @@ def build_temperature_envelope_audit(
         "phase_validation": phase_validation,
         "cross_line_transfer": cross_line,
         "alpha_sensitivity": alpha_sensitivity,
+        "alpha_CI_scenarios": alpha_uncertainty,
+        "envelope_comparison": envelope_comparison,
         "exclusions": exclusions,
         "minute_detail": detail,
     }, sources

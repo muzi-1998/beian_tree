@@ -97,6 +97,51 @@ class D3Aggregator:
                 dominant_physical_issue="insufficient_evidence",
             )
 
+        subscore_values = np.array(
+            [sub.Q_value_hard, sub.Q_value_soft, sub.Q_persistent_rate], dtype=float
+        )
+        if not np.isfinite(subscore_values).all():
+            data_veto = bool(value_evidence.out_of_instrument)
+            known_hard_warning = bool(value_evidence.hard_violation_rate > 0)
+            known_rate_warning = bool(
+                rate_evidence.rate_hard_violation_rate > 0
+                or rate_evidence.rate_soft_violation_rate > 0
+            )
+            if data_veto:
+                gate_status, usable = "Fail", "invalid"
+                dominant = "instrument_range"
+            elif known_hard_warning or known_rate_warning:
+                gate_status, usable = "Warn", "review_only"
+                dominant = "hard_bound" if known_hard_warning else "persistent_rate"
+            else:
+                gate_status, usable = "NotEvaluated", "not_evaluated"
+                dominant = "context_unavailable"
+            return D3Result(
+                ts=ts,
+                sensor=sensor,
+                sensor_type=sensor_type,
+                Q_value_hard=float(sub.Q_value_hard),
+                Q_value_soft=float(sub.Q_value_soft),
+                Q_persistent_rate=float(sub.Q_persistent_rate),
+                Q_persistent_rate_soft_only=float(sub.Q_persistent_rate_soft_only),
+                Q_persistent_rate_hard=float(sub.Q_persistent_rate_hard),
+                D3_base=float("nan"),
+                D3_pre=float("nan"),
+                D3_total=float("nan"),
+                evidence_status="context_unavailable",
+                n_expected=int(expected_samples),
+                n_observed=n_observed,
+                observed_fraction=float(observed_fraction),
+                veto_flag=data_veto,
+                veto_reason="instrument_range" if data_veto else "",
+                data_veto_flag=data_veto,
+                operational_warning_flag=known_hard_warning or known_rate_warning,
+                D3_gate_status=gate_status,
+                process_coherent_shock=bool(rate_evidence.shock_candidate),
+                usable_tag=usable,
+                dominant_physical_issue=dominant,
+            )
+
         w = self.mapping["aggregation"]["weights"]
         values = {
             "Q_value_hard": sub.Q_value_hard,

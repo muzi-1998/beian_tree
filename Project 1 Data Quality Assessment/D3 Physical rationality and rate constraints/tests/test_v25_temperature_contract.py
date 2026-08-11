@@ -13,12 +13,15 @@ from src.d3_physical.do_temperature_envelope import (
     freshwater_do_saturation_mg_l,
     temperature_conditioned_upper,
 )
+from src.d3_physical.aggregator import D3Aggregator
+from src.d3_physical.scorer import SubScores
 from src.d3_physical.threshold_store import ThresholdStore
 from src.d3_physical.value_range_checker import ValueRangeChecker
 from src.validation.d3_validation import (
     _legacy_v23_rate_score,
     _operational_envelope_family,
 )
+from src.validation.do_temperature_validation import _alpha_uncertainty_scenarios
 
 
 ROOT = Path(__file__).parent.parent
@@ -34,7 +37,7 @@ def _thresholds() -> ThresholdStore:
         _yaml("d3_physical_bounds.yaml"),
         _yaml("d3_rate_limits.yaml"),
         benchmark,
-        version="v2.6.0",
+        version="v2.7.0",
     )
 
 
@@ -128,7 +131,34 @@ def test_dynamic_high_only_scores_evaluable_minutes():
     assert evidence.soft_high_violation_rate_evaluable == pytest.approx(0.5)
     assert evidence.soft_high_violation_rate == pytest.approx(1 / 3)
     assert evidence.soft_violation_rate == pytest.approx(0.5)
+    assert evidence.soft_state_determinable_count == 2
+    assert evidence.soft_state_determinable_fraction == pytest.approx(2 / 3)
+    assert (
+        evidence.soft_violation_rate_denominator
+        == "dynamic_union_on_determinable_minutes"
+    )
     assert evidence.threshold_scope == "temperature_conditioned_position_template"
+
+
+def test_dynamic_soft_union_keeps_low_evidence_with_missing_temperature():
+    bounds = _yaml("d3_physical_bounds.yaml")["sensors"]["DO"]
+    checker = ValueRangeChecker(
+        _thresholds(),
+        bounds["instrument_veto_range_low"],
+        bounds["instrument_veto_range_high"],
+    )
+    evidence = checker.check(
+        np.array([-0.10, 3.0, 4.0]),
+        "DO_1_1",
+        "DO",
+        dynamic_soft_high=np.array([np.nan, np.nan, 3.5]),
+        soft_high_mode="temperature_conditioned_influent_proxy",
+    )
+    assert evidence.soft_low_violation_count == 1
+    assert evidence.soft_high_violation_count == 1
+    assert evidence.soft_state_determinable_count == 2
+    assert evidence.soft_state_determinable_fraction == pytest.approx(2 / 3)
+    assert evidence.soft_violation_rate == pytest.approx(1.0)
 
 
 def test_diagnostic_only_dynamic_high_is_exported_but_not_scored():
@@ -149,6 +179,11 @@ def test_diagnostic_only_dynamic_high_is_exported_but_not_scored():
     assert evidence.soft_high_violation_count == 2
     assert evidence.soft_violation_count == 0
     assert evidence.soft_violation_rate == pytest.approx(0.0)
+    assert evidence.soft_state_determinable_fraction == pytest.approx(1.0)
+    assert (
+        evidence.soft_violation_rate_denominator
+        == "scored_low_side_on_observed_minutes"
+    )
     assert evidence.soft_high_scored is False
 
 
@@ -176,3 +211,78 @@ def test_do4_uses_dedicated_route_and_cannot_enter_orp_envelope():
     assert _operational_envelope_family("DO_1_4") == "dedicated_route"
     assert _operational_envelope_family("DO_2_4") == "dedicated_route"
     assert _operational_envelope_family("ORP_1_3") == "orp"
+
+
+def test_alpha_interval_scenarios_propagate_monotonically():
+    index = pd.date_range("2026-02-01", periods=120, freq="min")
+    detail = pd.DataFrame(
+        {
+            "ts": index,
+            "sensor_id": "DO_1_1",
+            "position": 1,
+            "phase": "validation",
+            "DO_minute_mg_L": 3.0,
+            "Csat_reference_mg_L": 10.0,
+            "upper_evaluable": True,
+            "high_quality_evaluable": True,
+            "high_quality_filter_pass": True,
+            "dynamic_upper_mg_L": 3.0,
+            "dynamic_warning": False,
+        }
+    )
+    registry = pd.DataFrame(
+        {
+            "position": [1],
+            "alpha_cluster_bootstrap_ci_low": [0.25],
+            "frozen_alpha": [0.30],
+            "alpha_cluster_bootstrap_ci_high": [0.35],
+        }
+    )
+    calibration = {
+        "bootstrap": {"replicates": 10, "seed": 7},
+        "validation_window": {
+            "minutes": 120,
+            "minimum_high_quality_minutes": 60,
+            "warning_if_exceedance_rate_gt": 0.02,
+        },
+        "scored_positions": ["1"],
+    }
+    result = _alpha_uncertainty_scenarios(detail, registry, calibration)
+    rates = result.set_index("alpha_scenario")["dynamic_warning_rate_high_quality"]
+    assert rates["bootstrap_lower"] >= rates["point_estimate"]
+    assert rates["point_estimate"] >= rates["bootstrap_upper"]
+    assert set(result["sensitivity_role"]) == {
+        "bootstrap_interval_propagation_not_production_parameter_selection"
+    }
+
+
+def test_unknown_soft_state_is_not_reported_as_sufficient_or_pass():
+    aggregator = D3Aggregator(_yaml("d3_rules.yaml"), _yaml("d3_mapping.yaml"))
+    value = SimpleNamespace(
+        n_samples=120,
+        out_of_instrument=False,
+        hard_violation_rate=0.0,
+        soft_violation_rate=np.nan,
+        consecutive_hard_max_min=0,
+    )
+    rate = SimpleNamespace(
+        n_samples=120,
+        shock_candidate=False,
+        rate_hard_violation_rate=0.0,
+        rate_soft_violation_rate=0.0,
+        rate_soft_only_violation_rate=0.0,
+        rate_hard_consec_max_min=0,
+    )
+    result = aggregator.aggregate(
+        pd.Timestamp("2026-01-01"),
+        "DO_1_1",
+        "DO",
+        SubScores(5.0, np.nan, 5.0, 5.0, 5.0),
+        value,
+        rate,
+        expected_samples=120,
+    )
+    assert result.evidence_status == "context_unavailable"
+    assert result.D3_gate_status == "NotEvaluated"
+    assert result.usable_tag == "not_evaluated"
+    assert np.isnan(result.D3_total)

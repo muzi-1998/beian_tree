@@ -173,6 +173,7 @@ class D3Pipeline:
                     "observed_fraction": result.observed_fraction,
                     "temperature_upper_status": upper_status,
                     "temperature_upper_evaluable_fraction": value_evidence.soft_high_evaluable_fraction,
+                    "soft_state_determinable_fraction": value_evidence.soft_state_determinable_fraction,
                     "D3_evidence_scope": (
                         "full_temperature_conditioned_scored"
                         if upper_status == "evaluated_scored"
@@ -230,6 +231,9 @@ class D3Pipeline:
                     "soft_high_violation_rate_evaluable": value_evidence.soft_high_violation_rate_evaluable,
                     "soft_high_evaluable_count": value_evidence.soft_high_evaluable_count,
                     "soft_high_evaluable_fraction": value_evidence.soft_high_evaluable_fraction,
+                    "soft_state_determinable_count": value_evidence.soft_state_determinable_count,
+                    "soft_state_determinable_fraction": value_evidence.soft_state_determinable_fraction,
+                    "soft_violation_rate_denominator": value_evidence.soft_violation_rate_denominator,
                     "soft_high_mode": value_evidence.soft_high_mode,
                     "dynamic_soft_high_min": value_evidence.dynamic_soft_high_min,
                     "dynamic_soft_high_median": value_evidence.dynamic_soft_high_median,

@@ -1,5 +1,7 @@
-"""Figure 2: D3 score landscape across sensors and time."""
-# Shared Nature contract: Arial; font.size=7; svg.fonttype='none'; pdf.fonttype=42; .svg .pdf .tiff dpi=600.
+"""Figure 2: site-wide scored and diagnostic D3 evidence landscape."""
+# Shared Nature contract: Arial; svg.fonttype='none'; pdf.fonttype=42; .svg .pdf .png .tiff dpi=600.
+# Figure contract: spatially ordered evidence burdens reveal which mechanisms
+# affect each channel without over-centering the supplementary D3 total score.
 
 from __future__ import annotations
 
@@ -7,63 +9,101 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from _figure_data import OUT, read, sensor_type, short_sensor
-from _nature_style import COLORS, ISSUE_COLORS, panel_label, save_figure, style_axis
+from _figure_data import OUT, read, sensor_order, short_sensor
+from _nature_style import COLORS, panel_label, save_figure, style_axis
+
+
+def _matrix(rows: pd.DataFrame, columns: list[str], order: list[str]) -> np.ndarray:
+    return 1000 * rows.set_index("sensor_id").reindex(order)[columns].to_numpy(dtype=float)
+
+
+def _draw_heatmap(ax, matrix, order, labels, title, cmap="YlOrRd"):
+    vmax = max(1.0, float(np.nanpercentile(matrix, 98)))
+    image = ax.imshow(matrix, cmap=cmap, vmin=0, vmax=vmax, aspect="auto")
+    ax.set_yticks(range(len(order)), [short_sensor(sensor) for sensor in order])
+    ax.set_xticks(range(len(labels)), labels, rotation=30, ha="right")
+    for row in range(matrix.shape[0]):
+        for column in range(matrix.shape[1]):
+            value = matrix[row, column]
+            text = "0" if np.isfinite(value) and value < 0.05 else f"{value:.1f}"
+            ax.text(
+                column, row, text, ha="center", va="center", fontsize=5.8,
+                color="white" if value > 0.58 * vmax else COLORS["black"],
+            )
+    ax.set_title(title)
+    style_axis(ax, full_frame=True)
+    return image
 
 
 scores = read("D3_window_scores.xlsx")
-scores = scores[scores["evidence_status"] == "sufficient"].copy()
-scores["sensor_type"] = scores["sensor_id"].map(sensor_type)
-scores["month"] = scores["ts"].dt.to_period("M").astype(str)
-fig, axes = plt.subplots(2, 2, figsize=(7.2, 5.4))
-fig.subplots_adjust(left=0.10, right=0.98, bottom=0.10, top=0.96, wspace=0.35, hspace=0.42)
+value = read("D3_value_evidence.xlsx")
+rate = read("D3_rate_evidence.xlsx")
+boundary = read("D3_boundary_diagnostics.xlsx")
+evaluated = scores[scores["evidence_status"].eq("sufficient")]
+order = sensor_order(list(scores["sensor_id"].unique()))
+
+scored = pd.DataFrame({"sensor_id": order})
+for name, series in {
+    "Hard value": value.groupby("sensor_id")["hard_violation_rate"].apply(lambda x: x.gt(0).mean()),
+    "Soft low": value.groupby("sensor_id")["soft_low_violation_rate"].apply(lambda x: x.gt(0).mean()),
+    "Soft high": value.assign(active=value["soft_high_scored"] & value["soft_high_violation_rate"].gt(0)).groupby("sensor_id")["active"].mean(),
+    "Soft-only rate": rate.groupby("sensor_id")["rate_soft_only_violation_rate"].apply(lambda x: x.gt(0).mean()),
+    "Hard persistent": rate.groupby("sensor_id")["rate_hard_violation_rate"].apply(lambda x: x.gt(0).mean()),
+}.items():
+    scored[name] = scored["sensor_id"].map(series)
+
+diagnostic = pd.DataFrame({"sensor_id": order})
+for name, series in {
+    "Physical low": value.groupby("sensor_id")["physical_low_violation_rate"].apply(lambda x: x.gt(0).mean()),
+    "Zero-equivalent": value.groupby("sensor_id")["zero_equivalent_rate"].apply(lambda x: x.gt(0).mean()),
+    "Upper diagnostic": value.assign(active=~value["soft_high_scored"] & value["soft_high_violation_rate"].gt(0)).groupby("sensor_id")["active"].mean(),
+    "Process guard": rate.groupby("sensor_id")["process_coherence_guarded_points"].apply(lambda x: x.gt(0).mean()),
+    "Benchmark tail": boundary.assign(active=boundary["tail_rate_low"].gt(0) | boundary["tail_rate_high"].gt(0)).groupby("sensor_id")["active"].mean(),
+}.items():
+    diagnostic[name] = diagnostic["sensor_id"].map(series)
+
+fig, axes = plt.subplots(2, 2, figsize=(7.2, 5.7))
+fig.subplots_adjust(left=0.11, right=0.98, bottom=0.11, top=0.96, wspace=0.40, hspace=0.48)
 
 ax = axes[0, 0]
-bins = np.linspace(1, 5, 33)
-for group, color in [("DO", COLORS["blue"]), ("ORP", COLORS["orange"])]:
-    ax.hist(scores.loc[scores.sensor_type == group, "D3_total"], bins=bins, density=True,
-            histtype="step", linewidth=1.2, color=color, label=group)
-ax.set(xlabel="D3 score", ylabel="Density", xlim=(1, 5))
-ax.legend(loc="upper left")
-ax.set_title("Score distributions")
-style_axis(ax, minor=True)
-panel_label(ax, "(a)")
+labels = list(scored.columns[1:])
+image = _draw_heatmap(ax, _matrix(scored, labels, order), order, labels, "Scored evidence burden")
+fig.colorbar(image, ax=ax, fraction=0.046, pad=0.025, label="Affected windows per 1,000")
+panel_label(ax, "a")
 
 ax = axes[0, 1]
-pivot = scores.pivot_table(index="sensor_id", columns="month", values="D3_total", aggfunc="median")
-image = ax.imshow(pivot, aspect="auto", cmap="viridis", vmin=1, vmax=5)
-ax.set_yticks(range(len(pivot)), [short_sensor(s) for s in pivot.index])
-ax.set_xticks(range(len(pivot.columns)), [m[5:] for m in pivot.columns])
-ax.set_xlabel("Month (2025-2026)")
-ax.set_title("Monthly median D3")
-style_axis(ax, full_frame=True)
-fig.colorbar(image, ax=ax, fraction=0.045, pad=0.03, label="D3")
-panel_label(ax, "(b)")
+labels = list(diagnostic.columns[1:])
+image = _draw_heatmap(ax, _matrix(diagnostic, labels, order), order, labels, "Diagnostic-only context", cmap="YlGnBu")
+fig.colorbar(image, ax=ax, fraction=0.046, pad=0.025, label="Affected windows per 1,000")
+panel_label(ax, "b")
 
 ax = axes[1, 0]
-display_data = scores
-value_score = 0.5 * display_data.Q_value_hard + 0.2 * display_data.Q_value_soft
-scatter = ax.scatter(value_score, 0.3 * display_data.Q_persistent_rate, c=display_data.D3_total, cmap="viridis",
-                     vmin=1, vmax=5, s=5, alpha=0.35, linewidths=0, rasterized=True)
-ax.set(xlabel="Weighted value evidence", ylabel="Weighted rate evidence")
-ax.set_title(f"Evidence contribution space (n={len(display_data):,})")
-style_axis(ax, minor=True)
-fig.colorbar(scatter, ax=ax, fraction=0.045, pad=0.03, label="D3")
-panel_label(ax, "(c)")
+warn = evaluated.groupby("sensor_id")["operational_warning_flag"].mean().reindex(order)
+fail = evaluated.groupby("sensor_id")["D3_gate_status"].apply(lambda x: x.eq("Fail").mean()).reindex(order)
+y = np.arange(len(order))
+ax.hlines(y, 0, 1000 * warn, color=COLORS["light_gray"], lw=1.3)
+ax.scatter(1000 * warn, y, s=19, color=COLORS["amber"], label="Warn")
+ax.scatter(1000 * fail, y, s=19, marker="s", facecolor="white", edgecolor=COLORS["red"], label="Fail")
+ax.set_yticks(y, [short_sensor(sensor) for sensor in order])
+ax.set_xlabel("Gate burden per 1,000 evaluated windows")
+ax.legend(loc="lower right")
+ax.set_title("Formal gate outcomes")
+style_axis(ax, grid=True)
+panel_label(ax, "c")
 
 ax = axes[1, 1]
-order = list(scores.groupby("sensor_id").D3_total.mean().sort_values().index)
-issue = pd.crosstab(scores.sensor_id, scores.dominant_physical_issue, normalize="index").reindex(order).fillna(0)
-left = np.zeros(len(issue))
-for key in ["hard_bound", "soft_bound", "persistent_rate", "none"]:
-    values = issue[key].to_numpy() if key in issue else np.zeros(len(issue))
-    ax.barh(range(len(issue)), values, left=left, color=ISSUE_COLORS[key], label=key.replace("_", " "), height=0.72)
-    left += values
-ax.set_yticks(range(len(issue)), [short_sensor(s) for s in issue.index])
-ax.set(xlabel="Fraction of evaluated windows", xlim=(0, 1))
-ax.legend(loc="lower center", bbox_to_anchor=(0.5, 1.00), ncol=4, columnspacing=0.8)
-ax.set_title("Dominant physical evidence", y=1.14)
-style_axis(ax)
-panel_label(ax, "(d)")
+direction = value.groupby("sensor_id").agg(
+    low=("soft_low_violation_rate", lambda x: 1000 * x.gt(0).mean()),
+    high=("soft_high_violation_rate", lambda x: 1000 * x.gt(0).mean()),
+).reindex(order)
+y = np.arange(len(order))
+ax.barh(y - 0.16, direction["low"], height=0.30, color=COLORS["purple"], label="Low side")
+ax.barh(y + 0.16, direction["high"], height=0.30, color=COLORS["orange"], label="High side")
+ax.set_yticks(y, [short_sensor(sensor) for sensor in order])
+ax.set_xlabel("Windows with directional evidence per 1,000")
+ax.legend(loc="lower right")
+ax.set_title("Direction of operating-envelope departures")
+style_axis(ax, grid=True)
+panel_label(ax, "d")
 
 save_figure(fig, OUT, "fig2_score_landscape")

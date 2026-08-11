@@ -87,6 +87,9 @@ def build_profile_summary(results: dict) -> pd.DataFrame:
             "temperature_upper_mean_coverage": float(
                 value_sensor["soft_high_evaluable_fraction"].mean()
             ),
+            "soft_state_mean_determinable_fraction": float(
+                value_sensor["soft_state_determinable_fraction"].mean()
+            ),
             "soft_high_scored": bool(value_sensor["soft_high_scored"].any()),
             "physical_low_window_rate": float(value_sensor["physical_low_violation_rate"].gt(0).mean()),
             "zero_equivalent_window_rate": float(value_sensor["zero_equivalent_rate"].gt(0).mean()),

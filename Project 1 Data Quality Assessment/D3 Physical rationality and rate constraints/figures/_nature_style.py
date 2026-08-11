@@ -74,6 +74,10 @@ ISSUE_COLORS = {
     "soft_bound": COLORS["amber"],
     "rate": COLORS["blue"],
     "persistent_rate": COLORS["blue"],
+    "persistent_rate_soft_only": COLORS["cyan"],
+    "persistent_rate_hard": COLORS["blue"],
+    "instrument_range": COLORS["red"],
+    "process_coherent_shock": COLORS["green"],
     "not_evaluated": COLORS["gray"],
 }
 

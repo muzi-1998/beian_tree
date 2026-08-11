@@ -1,4 +1,4 @@
-"""Validate, run, and render the complete D3 v2.6 project."""
+"""Validate, run, and render the complete D3 v2.7 project."""
 
 from __future__ import annotations
 
@@ -53,13 +53,14 @@ def main() -> None:
         "fig8_boundary_rate_validation.py",
         "fig9_do4_zero_equivalence_contract.py",
         "fig10_temperature_conditioned_do_upper.py",
+        "fig11_orp_spatial_heterogeneity.py",
     ]
     for script in scripts:
         run([sys.executable, str(Path("figures") / script)])
 
     run([sys.executable, "ci/audit_figure_bundle.py"])
 
-    print(f"D3 v2.6.0 complete in {time.time() - started:.1f} s")
+    print(f"D3 v2.7.0 complete in {time.time() - started:.1f} s")
     print(f"Data: {ROOT / 'outputs' / 'data'}")
     print(f"Figures: {ROOT / 'outputs' / 'figures'}")
     print(f"Manifest: {ROOT / 'outputs' / 'manifest' / 'run_manifest.json'}")

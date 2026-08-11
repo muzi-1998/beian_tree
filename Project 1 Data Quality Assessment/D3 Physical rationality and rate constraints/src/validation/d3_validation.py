@@ -1,4 +1,4 @@
-"""Generate D3 v2.6 boundary, persistence, and construct-validity evidence."""
+"""Generate D3 v2.7 boundary, persistence, and construct-validity evidence."""
 
 from __future__ import annotations
 
@@ -232,6 +232,25 @@ def _operational_diagnostics(
         complete = sample.dropna()
         if complete.empty:
             continue
+        delta = complete["DO_1_4"] - complete["DO_2_4"]
+        daily_delta = delta.groupby(delta.index.date).median().to_numpy(dtype=float)
+        if len(daily_delta) >= 2:
+            rng = np.random.default_rng(20260811 + int(month.ordinal))
+            bootstrap_delta = np.empty(1000, dtype=float)
+            for index in range(len(bootstrap_delta)):
+                bootstrap_delta[index] = np.median(
+                    daily_delta[rng.integers(0, len(daily_delta), size=len(daily_delta))]
+                )
+            delta_ci_low, delta_ci_high = np.quantile(bootstrap_delta, [0.025, 0.975])
+        else:
+            delta_ci_low = delta_ci_high = np.nan
+        pooled_mad = np.sqrt(
+            (
+                (1.4826 * (complete["DO_1_4"] - complete["DO_1_4"].median()).abs().median()) ** 2
+                + (1.4826 * (complete["DO_2_4"] - complete["DO_2_4"].median()).abs().median()) ** 2
+            )
+            / 2.0
+        )
         negative_1 = complete["DO_1_4"] < 0.0
         negative_2 = complete["DO_2_4"] < 0.0
         zero_1 = complete["DO_1_4"].between(-0.05, 0.0, inclusive="left")
@@ -242,11 +261,73 @@ def _operational_diagnostics(
                 "n_paired": int(len(complete)),
                 "DO_1_4_median": float(complete["DO_1_4"].median()),
                 "DO_2_4_median": float(complete["DO_2_4"].median()),
+                "paired_delta_median_mg_L": float(delta.median()),
+                "paired_delta_day_block_ci_low": float(delta_ci_low),
+                "paired_delta_day_block_ci_high": float(delta_ci_high),
+                "paired_delta_n_days": int(len(daily_delta)),
+                "paired_robust_standardized_difference": (
+                    float(delta.median() / pooled_mad) if pooled_mad > 0 else np.nan
+                ),
                 "negative_jaccard": _event_jaccard(negative_1, negative_2),
                 "zero_equivalent_jaccard": _event_jaccard(zero_1, zero_2),
                 "negative_rate_DO_1_4": float(negative_1.mean()),
                 "negative_rate_DO_2_4": float(negative_2.mean()),
                 "interpretation": "parallel_line_diagnostic_not_cross_sensor_scoring",
+            }
+        )
+
+    orp_distribution_rows = []
+    orp_parallel_rows = []
+    for position in (1, 2, 3):
+        sensors = [f"ORP_1_{position}", f"ORP_2_{position}"]
+        for sensor in sensors:
+            observed = frame[sensor].dropna()
+            orp_distribution_rows.append(
+                {
+                    "sensor_id": sensor,
+                    "position": position,
+                    "pool": int(sensor.split("_")[1]),
+                    "n_observed": int(len(observed)),
+                    "p01_mV": float(observed.quantile(0.01)),
+                    "q25_mV": float(observed.quantile(0.25)),
+                    "median_mV": float(observed.median()),
+                    "q75_mV": float(observed.quantile(0.75)),
+                    "p99_mV": float(observed.quantile(0.99)),
+                    "role": "full_period_distribution_context_not_scoring_template",
+                }
+            )
+        complete = frame[sensors].dropna()
+        delta = complete[sensors[0]] - complete[sensors[1]]
+        daily_delta = delta.groupby(delta.index.date).median().to_numpy(dtype=float)
+        if len(daily_delta) >= 2:
+            rng = np.random.default_rng(20260831 + position)
+            estimates = np.empty(1000, dtype=float)
+            for index in range(len(estimates)):
+                estimates[index] = np.median(
+                    daily_delta[rng.integers(0, len(daily_delta), size=len(daily_delta))]
+                )
+            ci_low, ci_high = np.quantile(estimates, [0.025, 0.975])
+        else:
+            ci_low = ci_high = np.nan
+        scales = [
+            1.4826 * (complete[sensor] - complete[sensor].median()).abs().median()
+            for sensor in sensors
+        ]
+        pooled_scale = float(np.sqrt(np.mean(np.square(scales))))
+        orp_parallel_rows.append(
+            {
+                "position": position,
+                "line_1_sensor": sensors[0],
+                "line_2_sensor": sensors[1],
+                "n_paired_minutes": int(len(complete)),
+                "n_day_blocks": int(len(daily_delta)),
+                "median_line1_minus_line2_mV": float(delta.median()),
+                "day_block_ci_low_mV": float(ci_low),
+                "day_block_ci_high_mV": float(ci_high),
+                "robust_standardized_difference": (
+                    float(delta.median() / pooled_scale) if pooled_scale > 0 else np.nan
+                ),
+                "role": "parallel_line_heterogeneity_diagnostic_not_scoring_template",
             }
         )
     return {
@@ -256,6 +337,8 @@ def _operational_diagnostics(
         "DO4_zero_eq_sensitivity": pd.DataFrame(deadband_rows),
         "DO4_monthly_zero_stability": pd.DataFrame(monthly_rows),
         "DO4_parallel_line_diagnostic": pd.DataFrame(parallel_rows),
+        "ORP_position_distribution": pd.DataFrame(orp_distribution_rows),
+        "ORP_parallel_position_effect": pd.DataFrame(orp_parallel_rows),
     }
 
 
@@ -870,6 +953,8 @@ def run_validation(
             "phase_validation",
             "cross_line_transfer",
             "alpha_sensitivity",
+            "alpha_CI_scenarios",
+            "envelope_comparison",
             "exclusions",
         ):
             temperature_audit[sheet].to_excel(writer, sheet_name=sheet[:31], index=False)
@@ -941,7 +1026,7 @@ def run_validation(
 
     d1_sha = hashlib.sha256(d1_path.read_bytes()).hexdigest() if d1_path.exists() else None
     summary = {
-        "validation_version": "v2.6.0",
+        "validation_version": "v2.7.0",
         "interval_sensitivity_version": INTERVAL_SCALING_VERSION,
         "rate_challenge_scenarios": int(len(challenge)),
         "rate_challenge_expected_matches": int(
@@ -975,6 +1060,8 @@ def run_validation(
             "Cross-line leave-one-line-out transfer is diagnostic and reveals directional asymmetry rather than being used to widen the pooled template.",
             "Terminal-test exceedances remain locked forward-test evidence and never trigger retrospective alpha refitting.",
             "Missing temperature is not extrapolated and is reported as unevaluated upper-envelope evidence.",
+            "Combined soft-bound frequency is computed on minutes whose union state is determinable; temperature-missing non-low minutes remain unknown rather than passing.",
+            "Bootstrap lower, point, and upper alpha scenarios propagate coefficient uncertainty to minute and 2 h warning burden without changing the production alpha.",
             "Benson-Krause freshwater solubility is used only as a USGS-traceable monotonic temperature normalizer.",
         ],
         "pending_external_evidence": [

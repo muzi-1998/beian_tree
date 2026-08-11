@@ -52,6 +52,9 @@ class ValueEvidence:
     soft_high_evaluable_count: int
     soft_high_evaluable_fraction: float
     soft_high_violation_rate_evaluable: float
+    soft_state_determinable_count: int
+    soft_state_determinable_fraction: float
+    soft_violation_rate_denominator: str
     dynamic_soft_high_min: float
     dynamic_soft_high_median: float
     dynamic_soft_high_max: float
@@ -140,6 +143,9 @@ class ValueRangeChecker:
                 soft_high_evaluable_count=0,
                 soft_high_evaluable_fraction=np.nan,
                 soft_high_violation_rate_evaluable=np.nan,
+                soft_state_determinable_count=0,
+                soft_state_determinable_fraction=np.nan,
+                soft_violation_rate_denominator="no_observed_values",
                 dynamic_soft_high_min=np.nan,
                 dynamic_soft_high_median=np.nan,
                 dynamic_soft_high_max=np.nan,
@@ -183,17 +189,28 @@ class ValueRangeChecker:
         scored_high_mask = soft_high_mask if score_soft_high else np.zeros(len(clean), dtype=bool)
         soft = soft_low_mask | scored_high_mask
         soft_low_rate = float(soft_low_mask.mean())
-        soft_high_rate = (
-            float(soft_high_mask[high_evaluable].mean())
-            if score_soft_high and high_evaluable.any()
-            else 0.0
+        if score_soft_high and dynamic_soft_high is not None:
+            # A minute is fully classifiable when the dynamic upper bound is
+            # available, or when a low-side violation already establishes a
+            # soft violation without that covariate. Temperature-missing,
+            # non-low minutes remain unknown rather than becoming passes.
+            soft_state_determinable = high_evaluable | soft_low_mask
+            denominator_contract = "dynamic_union_on_determinable_minutes"
+        else:
+            # Static high bounds and low-only scoring are evaluable for every
+            # observed value. A diagnostic-only dynamic upper bound must not
+            # alter the denominator of the scored low-side component.
+            soft_state_determinable = np.ones(len(clean), dtype=bool)
+            denominator_contract = (
+                "static_union_on_observed_minutes"
+                if score_soft_high and active_high_mode == "static"
+                else "scored_low_side_on_observed_minutes"
+            )
+        combined_soft_rate = (
+            float(soft[soft_state_determinable].mean())
+            if soft_state_determinable.any()
+            else np.nan
         )
-        # Low- and high-side evidence have different evaluability when the
-        # dynamic temperature covariate is missing. They are mutually
-        # exclusive, so summing side-specific rates preserves the complete-
-        # case union while preventing missing temperature from becoming an
-        # implicit high-side pass.
-        combined_soft_rate = float(np.clip(soft_low_rate + soft_high_rate, 0.0, 1.0))
         hard_full = np.zeros(len(x), dtype=bool)
         hard_full[valid] = hard
         runs = self._run_lengths(hard_full)
@@ -260,6 +277,9 @@ class ValueRangeChecker:
                 if high_evaluable.any()
                 else np.nan
             ),
+            soft_state_determinable_count=int(soft_state_determinable.sum()),
+            soft_state_determinable_fraction=float(soft_state_determinable.mean()),
+            soft_violation_rate_denominator=denominator_contract,
             dynamic_soft_high_min=float(finite_high.min()) if len(finite_high) else np.nan,
             dynamic_soft_high_median=float(np.median(finite_high)) if len(finite_high) else np.nan,
             dynamic_soft_high_max=float(finite_high.max()) if len(finite_high) else np.nan,

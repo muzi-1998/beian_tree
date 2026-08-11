@@ -49,6 +49,7 @@ FIGURE_MAP = {
     "fig8_boundary_rate_validation.py": "fig8_boundary_rate_validation",
     "fig9_do4_zero_equivalence_contract.py": "fig9_do4_zero_equivalence_contract",
     "fig10_temperature_conditioned_do_upper.py": "fig10_temperature_conditioned_do_upper",
+    "fig11_orp_spatial_heterogeneity.py": "fig11_orp_spatial_heterogeneity",
 }
 
 
@@ -75,12 +76,16 @@ def main() -> None:
         if validator is not None:
             result = subprocess.run(
                 [sys.executable, str(validator), str(script), "--json"],
-                check=True,
+                check=False,
                 capture_output=True,
                 text=True,
                 encoding="utf-8",
             )
-            preflight = json.loads(result.stdout)
+            if not result.stdout.strip():
+                failures.append(f"preflight_no_json:{script_name}:{result.returncode}")
+                preflight = {"summary": {"counts": {"FAIL": 1, "WARN": 0}}}
+            else:
+                preflight = json.loads(result.stdout)
             counts = preflight.get("summary", {}).get("counts", {})
             fail_count = int(counts.get("FAIL", 0))
             warn_count = int(counts.get("WARN", 0))
@@ -131,7 +136,7 @@ def main() -> None:
             }
         )
     payload = {
-        "audit_version": "d3-nature-figure-audit-v2.6.0",
+        "audit_version": "d3-nature-figure-audit-v2.7.0",
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
         "backend": "python",
         "optional_validator": {

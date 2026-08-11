@@ -101,6 +101,8 @@ operational_envelope_contract:
       cross_line_leave_one_out_role: "diagnostic_transfer_test_not_used_to_tune_or_promote"
       terminal_test_role: "locked_forward_test_never_used_to_refit_or_widen_alpha"
     runtime_missing_policy: "upper_component_not_evaluated_no_extrapolation"
+    combined_soft_denominator: "minutes_with_valid_dynamic_upper_or_deterministic_low_side_violation"
+    context_unavailable_policy: "do_not_assign_pass_or_full_D3_score"
     external_validity_limit: "requires_in_basin_temperature_pressure_salinity_and_cross_plant_validation"
   orp_soft_range:
     status: "pending_position_and_regime_validation"
@@ -121,5 +123,5 @@ sources:
     source_sha256: "2085f4de640aa0231f95e3abe370dec6d1da9c3daf064e6f05042e344ca58ea9"
     inspected_sheet_range: "Sheet1!A1:P34"
     reverified_at: "2026-07-27T00:00:00+08:00"
-version: "v2.6.0"
+version: "v2.7.0"
 effective_date: "2026-08-11"
