@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-import pickle
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
-from .common import CONFIG_ROOT, PROJECT_ROOT, event_jaccard, read_yaml
+from .common import PROJECT_ROOT, event_jaccard, read_yaml
 
 
 D3_ROOT = PROJECT_ROOT / "D3 Physical rationality and rate constraints"
@@ -41,23 +40,21 @@ def build_safety_gate() -> pd.DataFrame:
             how="left",
         )
     )
-    gate["D3_hard_fail"] = gate["out_of_instrument"].fillna(False).astype(bool)
+    gate["D3_hard_fail"] = gate["data_veto_flag"].fillna(False).astype(bool)
     gate["D3_soft_warning"] = (
         gate["hard_violation_count"].gt(0) | gate["soft_violation_count"].gt(0)
     )
+    gate["D3_zero_equivalent_present"] = gate["zero_equivalent_count"].gt(0)
+    gate["D3_zero_offset_warning"] = gate["zero_offset_warning_count"].gt(0)
     gate["D3_rate_warning"] = (
         gate["rate_soft_violation_rate"].gt(0)
         | gate["rate_hard_violation_rate"].gt(0)
     )
+    gate["D3_process_coherence_guard"] = gate[
+        "process_coherence_guarded_points"
+    ].gt(0)
     gate["D3_boundary_diagnostic"] = gate["boundary_sticking_rate"].ge(0.90)
-    gate["D3_gate_status"] = np.select(
-        [
-            gate["D3_hard_fail"],
-            gate["D3_soft_warning"] | gate["D3_rate_warning"],
-        ],
-        ["Fail", "Warn"],
-        default="Pass",
-    )
+    gate["D3_gate_status"] = gate["D3_gate_status"].fillna("NotEvaluated")
     gate["D3_total_legacy"] = gate["D3_total"]
     gate["threshold_source"] = np.select(
         [
@@ -68,7 +65,7 @@ def build_safety_gate() -> pd.DataFrame:
         [
             "verified_installation_register",
             "versioned_expert_operational_rule",
-            "versioned_robust_rate_rule",
+            "provisional_persistent_same_sign_rate_rule",
         ],
         default="none",
     )
@@ -103,8 +100,11 @@ def build_safety_gate() -> pd.DataFrame:
         "D3_gate_status",
         "D3_hard_fail",
         "D3_soft_warning",
+        "D3_zero_equivalent_present",
+        "D3_zero_offset_warning",
         "D3_rate_warning",
         "D3_boundary_diagnostic",
+        "D3_process_coherence_guard",
         "gate_reason",
         "threshold_source",
         "evidence_grade",
@@ -155,90 +155,48 @@ def build_threshold_register() -> pd.DataFrame:
     )
 
 
-def _window_warning_mask(
-    raw: pd.DataFrame,
-    evidence: pd.DataFrame,
-    *,
-    soft_multiplier: float = 1.0,
-    rate_multiplier: float = 1.0,
-) -> pd.DataFrame:
-    rows = []
-    for record in evidence.itertuples(index=False):
-        end = pd.Timestamp(record.ts)
-        start = end - pd.Timedelta(minutes=int(record.window_min))
-        values = raw.loc[start:end, record.sensor_id].dropna().to_numpy(dtype=float)
-        if not len(values):
-            warning = False
-        else:
-            soft_low = float(record.soft_low) * soft_multiplier
-            soft_high = float(record.soft_high) * soft_multiplier
-            value_warning = bool(((values < soft_low) | (values > soft_high)).any())
-            rate_limit = float(record.rate_limit_soft) * rate_multiplier
-            rate_warning = bool((np.abs(np.diff(values)) > rate_limit).any())
-            warning = value_warning or rate_warning
-        rows.append(
-            {
-                "timestamp": end,
-                "sensor_id": record.sensor_id,
-                "warning": warning,
-            }
-        )
-    return pd.DataFrame(rows)
-
-
 def run_d3_sensitivity(output_dir: Path) -> dict[str, pd.DataFrame]:
     gate = build_safety_gate()
     threshold_register = build_threshold_register()
-    main, value, rate, _ = _read_current_evidence()
-    evidence = (
-        main[["ts", "sensor_id", "window_min"]]
-        .merge(
-            value[["ts", "sensor_id", "soft_low", "soft_high"]],
-            on=["ts", "sensor_id"],
-        )
-        .merge(
-            rate[["ts", "sensor_id", "rate_limit_soft"]],
-            on=["ts", "sensor_id"],
-        )
+    sensitivity_path = D3_ROOT / "outputs" / "validation" / "D3_threshold_sensitivity.xlsx"
+    canonical_summary = pd.read_excel(sensitivity_path, sheet_name="summary")
+    canonical_detail = pd.read_excel(sensitivity_path, sheet_name="sampled_windows")
+    parameter_names = {
+        "operational_soft_envelope_width": "soft_boundary_multiplier",
+        "persistent_rate_limit": "rate_threshold_multiplier",
+    }
+    oat_summary = canonical_summary.rename(
+        columns={"multiplier": "setting"}
+    ).copy()
+    oat_summary["parameter"] = oat_summary["parameter"].map(parameter_names)
+    oat_summary["is_primary"] = oat_summary["setting"].eq(1.0)
+    oat_summary["baseline_warning_windows"] = oat_summary["baseline_events"]
+    oat_summary["variant_warning_windows"] = oat_summary["variant_events"]
+    oat_summary["warning_burden_change"] = (
+        oat_summary["variant_events"] - oat_summary["baseline_events"]
     )
-    with (PROJECT_ROOT / "1.1 Decomposition" / "outputs" / "_w2_checkpoint.pkl").open("rb") as handle:
-        raw = pickle.load(handle)["out"]["df_min"]
-    design = read_yaml(CONFIG_ROOT / "validation_design.yaml")["D3"]
-    baseline = _window_warning_mask(raw, evidence)
-    summaries = []
+    oat_summary["analysis_unit"] = "stratified_monthly_nonoverlap_2h_sensor_window"
+    oat_summary["stable_at_jaccard_0_75"] = oat_summary["event_jaccard"].ge(0.75)
+    versions = canonical_detail["sensitivity_code_version"].dropna().unique()
+    if len(versions) != 1:
+        raise ValueError(f"D3 sensitivity must have one canonical code version; got {versions}")
+    oat_summary["sensitivity_code_version"] = versions[0]
+
     sensor_rows = []
-    for parameter, settings in (
-        ("soft_boundary_multiplier", design["soft_boundary_multipliers"]),
-        ("rate_threshold_multiplier", design["rate_threshold_multipliers"]),
-    ):
-        for setting in settings:
-            kwargs = (
-                {"soft_multiplier": float(setting)}
-                if parameter.startswith("soft")
-                else {"rate_multiplier": float(setting)}
-            )
-            variant = _window_warning_mask(raw, evidence, **kwargs)
-            merged = baseline.merge(
-                variant,
-                on=["timestamp", "sensor_id"],
-                suffixes=("_baseline", "_variant"),
-            )
-            summary = {
-                "parameter": parameter,
-                "setting": float(setting),
-                "is_primary": float(setting) == 1.0,
-                "event_jaccard": event_jaccard(
-                    merged["warning_baseline"],
-                    merged["warning_variant"],
-                ),
-                "baseline_warning_windows": int(merged["warning_baseline"].sum()),
-                "variant_warning_windows": int(merged["warning_variant"].sum()),
-                "warning_burden_change": int(
-                    merged["warning_variant"].sum() - merged["warning_baseline"].sum()
-                ),
-                "analysis_unit": "nonoverlap_2h_sensor_window",
-            }
-            summaries.append(summary)
+    for canonical_parameter, parameter_frame in canonical_detail.groupby("parameter"):
+        event_column = (
+            "warning"
+            if canonical_parameter == "operational_soft_envelope_width"
+            else "persistent_event"
+        )
+        baseline = parameter_frame.loc[
+            parameter_frame["multiplier"].eq(1.0),
+            ["timestamp", "sensor_id", event_column],
+        ].rename(columns={event_column: "warning_baseline"})
+        for setting, variant in parameter_frame.groupby("multiplier"):
+            merged = variant.merge(
+                baseline, on=["timestamp", "sensor_id"], how="inner"
+            ).rename(columns={event_column: "warning_variant"})
             grouped = (
                 merged.groupby("sensor_id", as_index=False)
                 .agg(
@@ -246,12 +204,18 @@ def run_d3_sensitivity(output_dir: Path) -> dict[str, pd.DataFrame]:
                     variant_warning_windows=("warning_variant", "sum"),
                 )
             )
-            grouped["parameter"] = parameter
+            grouped["parameter"] = parameter_names[canonical_parameter]
             grouped["setting"] = float(setting)
+            grouped["sensitivity_code_version"] = versions[0]
+            grouped["event_jaccard"] = grouped.apply(
+                lambda row: event_jaccard(
+                    merged.loc[merged["sensor_id"].eq(row["sensor_id"]), "warning_baseline"],
+                    merged.loc[merged["sensor_id"].eq(row["sensor_id"]), "warning_variant"],
+                ),
+                axis=1,
+            )
             sensor_rows.append(grouped)
 
-    oat_summary = pd.DataFrame(summaries)
-    oat_summary["stable_at_jaccard_0_75"] = oat_summary["event_jaccard"].ge(0.75)
     oat_by_sensor = pd.concat(sensor_rows, ignore_index=True)
     outputs = {
         "D3_safety_gate": gate,

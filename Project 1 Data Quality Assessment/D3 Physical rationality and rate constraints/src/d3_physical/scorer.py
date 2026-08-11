@@ -21,17 +21,44 @@ def logistic_zero_anchored(value: float, x0: float, k: float) -> float:
 class SubScores:
     Q_value_hard: float
     Q_value_soft: float
-    Q_rate: float
+    Q_persistent_rate: float
+    Q_persistent_rate_soft_only: float = 5.0
+    Q_persistent_rate_hard: float = 5.0
+
+    @property
+    def Q_rate(self) -> float:
+        """Backward-compatible alias; new outputs use Q_persistent_rate."""
+        return self.Q_persistent_rate
 
 
 class D3ScoreMapper:
     def __init__(self, mapping_cfg: dict):
         self.cfg = mapping_cfg
+        component_weights = mapping_cfg["Q_persistent_rate"]["component_weights"]
+        if not np.isclose(sum(component_weights.values()), 1.0):
+            raise ValueError("Persistent-rate component weights must sum to 1.0")
 
     def map(self, value_evidence, rate_evidence) -> SubScores:
         ch = self.cfg["Q_value_hard"]
         cs = self.cfg["Q_value_soft"]
-        cr = self.cfg["Q_rate"]
+        cr = self.cfg["Q_persistent_rate"]
+        soft_cfg = cr["soft_only"]
+        hard_cfg = cr["hard"]
+        q_soft_only = logistic_zero_anchored(
+            rate_evidence.rate_soft_only_violation_rate,
+            soft_cfg["x0"],
+            soft_cfg["k"],
+        )
+        q_hard = logistic_zero_anchored(
+            rate_evidence.rate_hard_violation_rate,
+            hard_cfg["x0"],
+            hard_cfg["k"],
+        )
+        rate_weights = cr["component_weights"]
+        q_persistent = (
+            float(rate_weights["soft_only"]) * q_soft_only
+            + float(rate_weights["hard"]) * q_hard
+        )
         return SubScores(
             Q_value_hard=logistic_zero_anchored(
                 value_evidence.hard_violation_rate, ch["x0"], ch["k"]
@@ -39,7 +66,7 @@ class D3ScoreMapper:
             Q_value_soft=logistic_zero_anchored(
                 value_evidence.soft_violation_rate, cs["x0"], cs["k"]
             ),
-            Q_rate=logistic_zero_anchored(
-                rate_evidence.rate_hard_violation_rate, cr["x0"], cr["k"]
-            ),
+            Q_persistent_rate=float(q_persistent),
+            Q_persistent_rate_soft_only=float(q_soft_only),
+            Q_persistent_rate_hard=float(q_hard),
         )

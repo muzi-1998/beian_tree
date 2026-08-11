@@ -1,23 +1,24 @@
 {
-  "run_id": "RUN_D3_v2.2.1_20260727T043759Z_8d52c551",
-  "d3_version": "v2.2.1",
-  "created_at_utc": "2026-07-27T04:37:59.598261+00:00",
-  "wall_time_s": 1194.485069990158,
+  "run_id": "RUN_D3_v2.7.0_20260811T031925Z_b3392abf",
+  "d3_version": "v2.7.0",
+  "created_at_utc": "2026-08-11T03:19:25.925381+00:00",
+  "wall_time_s": 226.09589767456055,
   "study_start": "2025-08-01 00:00:00",
   "study_end": "2026-04-13 23:59:00",
   "subset_days": null,
   "window_min": 120,
   "stride_min": 120,
   "n_sensor_windows": 43008,
-  "n_evaluated": 42840,
-  "n_not_evaluated": 168,
-  "n_events": 50,
-  "mean_D3_evaluated": 4.799486212750228,
+  "n_evaluated": 42748,
+  "n_not_evaluated": 260,
+  "n_events": 5615,
+  "mean_D3_evaluated": 4.854084976897601,
   "versions": {
-    "mapping": "v2.2.0",
-    "threshold": "v2.2.1",
-    "rate_utils": "rate_utils@v2.2.0",
-    "benchmark": "benchmark@v2.2.0"
+    "mapping": "v2.4.0",
+    "threshold": "v2.7.0",
+    "rate_utils": "rate_utils@v2.4.0",
+    "benchmark": "benchmark@v2.2.0",
+    "sensitivity": "interval-sensitivity@v1.1.0"
   },
   "independence_contract": {
     "D1_score_consumed": false,
@@ -25,7 +26,61 @@
     "boundary_in_D3_score": false,
     "canonical_1_1_time_grid": true,
     "imputed_values_scored": false,
-    "regime_labels_consumed": false
+    "regime_labels_consumed": false,
+    "D1_D2_consumed_by_production_score": false,
+    "D1_D2_consumed_by_validation_candidate_filter": true
+  },
+  "scientific_contract": {
+    "instrument_range_role": "data_quality_fail",
+    "operational_bounds_role": "provisional_warning_only",
+    "rate_construct": "mutually_exclusive_soft_only_and_hard_persistent_same_sign_rate",
+    "rate_component_weights": {
+      "soft_only": 0.3,
+      "hard": 0.7
+    },
+    "outer_aggregation_weights": {
+      "Q_value_hard": 0.5,
+      "Q_value_soft": 0.2,
+      "Q_persistent_rate": 0.3
+    },
+    "candidate_0.45_0.35_0.20": "sensitivity_only_not_promoted",
+    "impulse_return_role": "D1_spike_owned_morphology_exclusion",
+    "process_coherence_role": "attribution_guard_not_veto",
+    "do4_physical_soft_low_mg_L": 0.0,
+    "do4_zero_equivalence_low_mg_L": -0.05,
+    "do4_operational_soft_high": "disabled_pending_time_blocked_template_validation",
+    "temperature_conditioned_DO_upper_bound": "frozen_site_calibrated_operational_warning",
+    "temperature_covariate": "minute_influent_temperature_proxy",
+    "temperature_missing_policy": "not_evaluated_no_extrapolation",
+    "soft_union_denominator": "temperature_valid_or_low_violation_determinable_minutes",
+    "soft_context_unavailable_policy": "no_full_D3_score_and_no_implicit_pass",
+    "temperature_study_grid_coverage": 0.9901801215277778,
+    "temperature_thermodynamic_role": "normalizer_not_hard_saturation_limit",
+    "temperature_saturation_reference": "USGS_Benson_Krause_1980_1984_equation_7",
+    "temperature_calibration_resolution": "minute_calibration_minute_validation_minute_production",
+    "temperature_uncertainty": "1000_replicate_calendar_day_cluster_bootstrap",
+    "temperature_alpha_interval_propagation": "bootstrap_lower_point_upper_supplementary_sensitivity",
+    "temperature_validation_rule": "minute_exceedance_and_2h_warning_window_rates_le_0.02_in_independent_validation",
+    "temperature_validation_filter": "frozen_D1_total_spike_step_drift_freeze_regime_and_D2_Strict",
+    "temperature_optional_D1_saturation_floor_filter": "unavailable_in_frozen_release_not_imputed",
+    "temperature_source_start": "2025-08-01 00:00:00",
+    "temperature_source_end": "2026-07-30 23:59:00",
+    "temperature_raw_missing_minutes": 4205,
+    "temperature_invalid_minutes": 8,
+    "aerobic_DO_alpha_by_position": {
+      "1": 0.2789373305,
+      "2": 0.3100300303,
+      "3": 0.5065765789
+    },
+    "aerobic_DO_temperature_scored_positions": [
+      "1",
+      "2"
+    ],
+    "aerobic_DO_temperature_diagnostic_only_positions": [
+      "3"
+    ],
+    "position_conditioned_ORP_envelope": "diagnostic_only_pending_site_review",
+    "legacy_v2_3_rate_reconstruction": "all_hard_point_violation_fraction_with_original_caps"
   },
   "source_inputs": {
     "do_xlsx": {
@@ -37,10 +92,15 @@
       "name": "beian_min_2_ORP-08-26-04.xlsx",
       "sha256": "44cd9b8501a6251347f5b741d1f02a57801450aa599f2559d66ec79272b25de5",
       "size_bytes": 16059938
+    },
+    "temperature_csv": {
+      "name": "整年对齐_分钟数据_2025-08-01_2026-07-30_01_influent+effluent.csv",
+      "sha256": "441d9dfd6d7273670ec11bd91588759f6784acfec78172b1ff2555d6fccc30af",
+      "size_bytes": 63041057
     }
   },
-  "config_sha256": "8d52c551a6721f57d03e72b151864f1539e372dd41b5a263de4f4eef434ca906",
-  "code_sha256": "68c6966483d58bf612161d6d74acd3634a22b4ccbc95db74fbd27f9e36c288bf",
+  "config_sha256": "b3392abf041b8af853862536bf0fa5c6a2cdc821f2a72b9a5b17805a5670a475",
+  "code_sha256": "73f4a9fb5313a97e0df9c5e3fcce5bcef5145ab515d5f8d8b28c762333333562",
   "exported_files": [
     "D3_window_scores.xlsx",
     "D3_value_evidence.xlsx",
@@ -50,5 +110,16 @@
     "D3_physical_events.xlsx",
     "D3_mapping_params.xlsx",
     "D3_sensor_summary.xlsx"
+  ],
+  "validation_files": [
+    "D3_operational_envelope_diagnostics.xlsx",
+    "D3_threshold_sensitivity.xlsx",
+    "D3_rate_construct_validation.xlsx",
+    "D3_weight_contract_sensitivity.xlsx",
+    "D3_DO4_zero_equivalence_views.parquet",
+    "D3_boundary_rate_validation_source.parquet",
+    "D3_validation_summary.json",
+    "D3_temperature_conditioned_DO_upper.xlsx",
+    "D3_temperature_conditioned_DO_upper.parquet"
   ]
 }

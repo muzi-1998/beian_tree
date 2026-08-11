@@ -19,4 +19,30 @@ rate_limits:
     unit: "mV/min"
     min_duration_min: 1
 
-version: "v2.2.0"
+persistence:
+  soft_same_sign_min: 3
+  hard_same_sign_min: 10
+  veto_same_sign_min: 30
+  status: "provisional_expert_prior_pending_injection_and_site_validation"
+
+impulse_return:
+  enabled: true
+  max_return_min: 3
+  baseline_tolerance:
+    DO: 0.05
+    ORP: 5.0
+  role: "D1_spike_owned_morphology_exclusion"
+
+process_coherence_guard:
+  enabled: true
+  max_lag_min: 2
+  exact_parallel_peer_sufficient: true
+  minimum_same_line_peer_count: 2
+  role: "attribution_guard_not_veto"
+
+threshold_contract:
+  status: "provisional_expert_prior"
+  calibration_required: "position_and_operating_condition_specific"
+  perturbation_multipliers: [0.8, 0.9, 1.0, 1.1, 1.2]
+
+version: "v2.4.0"

@@ -1,4 +1,4 @@
-# D3 v2.2 rules. D3 is independent of D1 and D2 scores.
+# D3 v2.4 rules. D3 is independent of D1 and D2 scores in production.
 
 veto:
   veto_1:
@@ -14,15 +14,24 @@ veto:
     cap: 1.5
     usable_tag: "invalid"
   veto_3:
-    name: "rate_persistent"
+    name: "persistent_rate"
     trigger:
       rate_hard_violation_min_gt: 30
     cap: 2.5
+
+decision_contract:
+  instrument_range: "data_quality_fail"
+  operational_hard_bound: "review_warning"
+  operational_soft_bound: "operational_warning"
+  persistent_rate: "operational_warning"
+  process_coherent_shock: "guarded_process_diagnostic"
+  provisional_operational_rules_exclude_training: false
 
 evidence:
   min_observations: 30
   min_observed_fraction: 0.50
   on_insufficient: "not_evaluated"
+  on_context_unavailable: "not_evaluated_unless_independent_hard_or_rate_evidence_determines_warn_or_fail"
 
 usable_tag_rules:
   invalid_caps_below: 1.6
@@ -33,3 +42,11 @@ usable_tag_rules:
 boundary_sticking:
   threshold_relative_margin: 0.05   # within 5% of hard range
   score_inclusion: false
+
+legacy_v2_3_rate_mapping:
+  x0: 0.05
+  k: 20.0
+  evidence: "all_hard_point_violation_fraction"
+  reconstruction_role: "historical_sensitivity_only"
+
+version: "v2.7.0"

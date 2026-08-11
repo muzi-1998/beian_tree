@@ -8,12 +8,13 @@ from pathlib import Path
 import pandas as pd
 
 
-INPUT_KEYS = ("do_xlsx", "orp_xlsx")
+SENSOR_INPUT_KEYS = ("do_xlsx", "orp_xlsx")
+AUXILIARY_INPUT_KEYS = ("temperature_csv",)
 
 
 def resolve_input_paths(paths_cfg: dict, root: Path) -> dict[str, Path]:
     resolved = {}
-    for key in INPUT_KEYS:
+    for key in (*SENSOR_INPUT_KEYS, *AUXILIARY_INPUT_KEYS):
         path = Path(paths_cfg["input"][key])
         if not path.is_absolute():
             path = (root / path).resolve()
@@ -43,7 +44,7 @@ def load_aligned_data(paths_cfg: dict, root: Path) -> pd.DataFrame:
     retains ownership of availability and D3 never scores interpolated values.
     """
     inputs = resolve_input_paths(paths_cfg, root)
-    frames = [_read_source(inputs[key]) for key in INPUT_KEYS]
+    frames = [_read_source(inputs[key]) for key in SENSOR_INPUT_KEYS]
     merged = pd.concat(frames, axis=1).sort_index()
     freq = paths_cfg["time_grid"]["freq"]
     merged = merged.resample(freq).mean()
@@ -53,6 +54,49 @@ def load_aligned_data(paths_cfg: dict, root: Path) -> pd.DataFrame:
         freq=freq,
     )
     return merged.reindex(expected).rename_axis("ts")
+
+
+def load_temperature_proxy(paths_cfg: dict, root: Path) -> pd.Series:
+    """Load the minute influent-temperature proxy and mask invalid values."""
+    path = resolve_input_paths(paths_cfg, root)["temperature_csv"]
+    cfg = paths_cfg["temperature"]
+    required = {cfg["timestamp_column"], cfg["value_column"]}
+    frame = pd.read_csv(path, usecols=list(required))
+    missing = required - set(frame.columns)
+    if missing:
+        raise ValueError(f"Temperature source missing columns: {sorted(missing)}")
+    index = pd.to_datetime(
+        frame[cfg["timestamp_column"]], format=cfg["datetime_format"], errors="raise"
+    )
+    raw_values = pd.to_numeric(frame[cfg["value_column"]], errors="coerce")
+    low, high = map(float, cfg["valid_range_C"])
+    valid = raw_values.between(low, high)
+    values = raw_values.where(valid)
+    series = pd.Series(values.to_numpy(dtype=float), index=index, name="influent_temperature_C")
+    if series.index.has_duplicates:
+        raise ValueError("Temperature source contains duplicate timestamps")
+    if not series.index.is_monotonic_increasing:
+        raise ValueError("Temperature source is not chronologically ordered")
+    if len(series) > 1 and not series.index.to_series().diff().iloc[1:].eq(pd.Timedelta(minutes=1)).all():
+        raise ValueError("Temperature source is not a complete 1-minute time axis")
+    series.attrs.update(
+        {
+            "raw_missing_count": int(raw_values.isna().sum()),
+            "invalid_range_count": int((raw_values.notna() & ~valid).sum()),
+            "valid_range_C": [low, high],
+            "source_rows": int(len(series)),
+            "source_path": str(path),
+        }
+    )
+    return series
+
+
+def align_temperature_to_grid(temperature: pd.Series, target_index: pd.DatetimeIndex) -> pd.Series:
+    """Align by exact minute without interpolation or extrapolation."""
+    aligned = temperature.reindex(target_index)
+    aligned.name = temperature.name
+    aligned.attrs.update(temperature.attrs)
+    return aligned
 
 
 def source_fingerprints(paths_cfg: dict, root: Path) -> dict[str, dict]:

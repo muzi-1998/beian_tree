@@ -1,4 +1,4 @@
-"""Run the independent D3 v2.2.1 physical-plausibility pipeline."""
+"""Run the independent D3 v2.7 physical-plausibility pipeline."""
 
 from __future__ import annotations
 
@@ -17,15 +17,22 @@ ROOT = Path(__file__).parent.resolve()
 sys.path.insert(0, str(ROOT))
 
 from src.common.benchmark_windows import BenchmarkWindows
-from src.data.input_loader import load_aligned_data, source_fingerprints
+from src.data.input_loader import (
+    align_temperature_to_grid,
+    load_aligned_data,
+    load_temperature_proxy,
+    source_fingerprints,
+)
 from src.d3_physical.threshold_store import ThresholdStore
 from src.outputs.excel_exporter import build_profile_summary, export_all
 from src.pipeline.d3_pipeline import D3Pipeline
+from src.validation.d3_validation import run_validation
 from src.version import (
     BENCHMARK_VERSION,
     D3_VERSION,
     MAPPING_VERSION,
     RATE_UTILS_VERSION,
+    SENSITIVITY_VERSION,
     THRESHOLD_VERSION,
 )
 
@@ -48,6 +55,7 @@ def main(
     stride_min: int = 120,
     max_windows: int | None = None,
     subset_days: int | None = None,
+    skip_validation: bool = False,
 ):
     started = time.time()
     configs_dir = ROOT / "configs"
@@ -86,6 +94,15 @@ def main(
         end = frame.index[0] + pd.Timedelta(days=subset_days)
         frame = frame.loc[frame.index < end]
     print(f"  {len(frame):,} rows; {frame.index[0]} to {frame.index[-1]}")
+    temperature_minute = load_temperature_proxy(paths_cfg, ROOT)
+    temperature_c = align_temperature_to_grid(temperature_minute, frame.index)
+    print(
+        "  Temperature proxy: "
+        f"{temperature_minute.index.min()} to {temperature_minute.index.max()}; "
+        f"study-grid valid coverage={temperature_c.notna().mean():.1%}; "
+        f"raw missing={temperature_minute.attrs['raw_missing_count']:,}; "
+        f"invalid={temperature_minute.attrs['invalid_range_count']:,}"
+    )
 
     sensors = [item["id"] for item in sensors_cfg["sensors"]]
     missing_sensors = sorted(set(sensors) - set(frame.columns))
@@ -120,6 +137,7 @@ def main(
         thresholds,
         configs,
         run_id,
+        temperature_c=temperature_c,
     )
     results = pipeline.run(window_min, stride_min, max_windows=max_windows)
 
@@ -127,6 +145,20 @@ def main(
     profile = build_profile_summary(results)
     output_dir = ROOT / paths_cfg["output"]["data"]
     exported = export_all(results, threshold_frame, mapping_cfg, profile, output_dir)
+
+    validation_paths = {}
+    if not skip_validation and max_windows is None and subset_days is None:
+        print("[F] Running boundary, persistence, and construct-validity audits...")
+        validation_paths = run_validation(
+            frame=frame,
+            results=results,
+            sensors=sensors,
+            sensor_meta=sensors_cfg["sensors"],
+            thresholds=thresholds,
+            configs=configs,
+            root=ROOT,
+            temperature_minute=temperature_minute,
+        )
 
     scores = results["main_scores"]
     evaluated = scores[scores["evidence_status"] == "sufficient"]
@@ -150,6 +182,7 @@ def main(
             "threshold": THRESHOLD_VERSION,
             "rate_utils": RATE_UTILS_VERSION,
             "benchmark": BENCHMARK_VERSION,
+            "sensitivity": SENSITIVITY_VERSION,
         },
         "independence_contract": {
             "D1_score_consumed": False,
@@ -158,11 +191,70 @@ def main(
             "canonical_1_1_time_grid": True,
             "imputed_values_scored": False,
             "regime_labels_consumed": False,
+            "D1_D2_consumed_by_production_score": False,
+            "D1_D2_consumed_by_validation_candidate_filter": True,
+        },
+        "scientific_contract": {
+            "instrument_range_role": "data_quality_fail",
+            "operational_bounds_role": "provisional_warning_only",
+            "rate_construct": "mutually_exclusive_soft_only_and_hard_persistent_same_sign_rate",
+            "rate_component_weights": {"soft_only": 0.30, "hard": 0.70},
+            "outer_aggregation_weights": {
+                "Q_value_hard": 0.50,
+                "Q_value_soft": 0.20,
+                "Q_persistent_rate": 0.30,
+            },
+            "candidate_0.45_0.35_0.20": "sensitivity_only_not_promoted",
+            "impulse_return_role": "D1_spike_owned_morphology_exclusion",
+            "process_coherence_role": "attribution_guard_not_veto",
+            "do4_physical_soft_low_mg_L": 0.0,
+            "do4_zero_equivalence_low_mg_L": -0.05,
+            "do4_operational_soft_high": "disabled_pending_time_blocked_template_validation",
+            "temperature_conditioned_DO_upper_bound": "frozen_site_calibrated_operational_warning",
+            "temperature_covariate": "minute_influent_temperature_proxy",
+            "temperature_missing_policy": "not_evaluated_no_extrapolation",
+            "soft_union_denominator": "temperature_valid_or_low_violation_determinable_minutes",
+            "soft_context_unavailable_policy": "no_full_D3_score_and_no_implicit_pass",
+            "temperature_study_grid_coverage": float(temperature_c.notna().mean()),
+            "temperature_thermodynamic_role": "normalizer_not_hard_saturation_limit",
+            "temperature_saturation_reference": "USGS_Benson_Krause_1980_1984_equation_7",
+            "temperature_calibration_resolution": "minute_calibration_minute_validation_minute_production",
+            "temperature_uncertainty": "1000_replicate_calendar_day_cluster_bootstrap",
+            "temperature_alpha_interval_propagation": "bootstrap_lower_point_upper_supplementary_sensitivity",
+            "temperature_validation_rule": "minute_exceedance_and_2h_warning_window_rates_le_0.02_in_independent_validation",
+            "temperature_validation_filter": "frozen_D1_total_spike_step_drift_freeze_regime_and_D2_Strict",
+            "temperature_optional_D1_saturation_floor_filter": "unavailable_in_frozen_release_not_imputed",
+            "temperature_source_start": str(temperature_minute.index.min()),
+            "temperature_source_end": str(temperature_minute.index.max()),
+            "temperature_raw_missing_minutes": int(
+                temperature_minute.attrs["raw_missing_count"]
+            ),
+            "temperature_invalid_minutes": int(
+                temperature_minute.attrs["invalid_range_count"]
+            ),
+            "aerobic_DO_alpha_by_position": physical_bounds_cfg[
+                "operational_envelope_contract"
+            ]["aerobic_do_temperature_conditioned_upper"]["calibration"][
+                "alpha_by_position"
+            ],
+            "aerobic_DO_temperature_scored_positions": physical_bounds_cfg[
+                "operational_envelope_contract"
+            ]["aerobic_do_temperature_conditioned_upper"]["calibration"][
+                "scored_positions"
+            ],
+            "aerobic_DO_temperature_diagnostic_only_positions": physical_bounds_cfg[
+                "operational_envelope_contract"
+            ]["aerobic_do_temperature_conditioned_upper"]["calibration"][
+                "diagnostic_only_positions"
+            ],
+            "position_conditioned_ORP_envelope": "diagnostic_only_pending_site_review",
+            "legacy_v2_3_rate_reconstruction": "all_hard_point_violation_fraction_with_original_caps",
         },
         "source_inputs": source_meta,
         "config_sha256": config_hash,
         "code_sha256": code_hash,
         "exported_files": [path.name for path in exported],
+        "validation_files": [path.name for path in validation_paths.values()],
     }
     manifest_path = ROOT / paths_cfg["output"]["manifest"]
     manifest_path.parent.mkdir(parents=True, exist_ok=True)
@@ -177,5 +269,12 @@ if __name__ == "__main__":
     parser.add_argument("--stride-min", type=int, default=120)
     parser.add_argument("--max-windows", type=int)
     parser.add_argument("--subset-days", type=int)
+    parser.add_argument("--skip-validation", action="store_true")
     args = parser.parse_args()
-    main(args.window_min, args.stride_min, args.max_windows, args.subset_days)
+    main(
+        args.window_min,
+        args.stride_min,
+        args.max_windows,
+        args.subset_days,
+        args.skip_validation,
+    )

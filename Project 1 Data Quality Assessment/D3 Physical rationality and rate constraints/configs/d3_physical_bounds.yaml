@@ -1,12 +1,13 @@
 # d3_physical_bounds.yaml
-# Fixed DO/ORP hard and soft bounds used by the independent D3 contract.
+# Instrument limits and provisional operating envelopes for independent D3.
 
 sensors:
   DO:
     hard_low: -0.2
     hard_high: 20.0
     soft_low: 0.0
-    soft_high: 8.0
+    soft_high: null
+    soft_sensitivity_anchor: "lower"
     unit: "mg/L"
     manufacturer_range_low: 0.0
     manufacturer_range_high: 20.0
@@ -18,12 +19,102 @@ sensors:
     hard_high: 500.0
     soft_low: -400.0
     soft_high: 200.0
+    soft_sensitivity_anchor: "center"
     unit: "mV"
     manufacturer_range_low: -1500.0
     manufacturer_range_high: 1500.0
     instrument_veto_range_low: -1500.0
     instrument_veto_range_high: 1500.0
     instrument_veto_basis: "registered_range"
+
+sensor_overrides:
+  DO_1_4:
+    process_zone: "post_anoxic"
+    physical_soft_low: 0.0
+    zero_equivalence_low: -0.05
+    operational_soft_high: null
+    soft_sensitivity_anchor: "none"
+    physical_low_basis: "nonnegative_dissolved_oxygen_concentration"
+    zero_equivalence_basis: "resolution_derived_provisional_zero_point_tolerance"
+    upper_bound_basis: "pending_post_anoxic_template_validation"
+  DO_2_4:
+    process_zone: "post_anoxic"
+    physical_soft_low: 0.0
+    zero_equivalence_low: -0.05
+    operational_soft_high: null
+    soft_sensitivity_anchor: "none"
+    physical_low_basis: "nonnegative_dissolved_oxygen_concentration"
+    zero_equivalence_basis: "resolution_derived_provisional_zero_point_tolerance"
+    upper_bound_basis: "pending_post_anoxic_template_validation"
+
+operational_envelope_contract:
+  status: "mixed_frozen_site_calibration_and_provisional_expert_prior"
+  score_role: "operational_warning_not_instrument_failure"
+  aerobic_do_temperature_conditioned_upper:
+    enabled: true
+    status: "frozen_minute_level_time_blocked_site_calibration"
+    scope: "aerobic_DO_positions_1_to_3"
+    covariate: "minute_influent_temperature_proxy"
+    interpretation: "temperature_conditioned_operational_warning_not_thermodynamic_saturation_limit"
+    saturation_reference:
+      equation: "Benson-Krause_1980_1984_equation_7"
+      implementation: "exp(-139.34411+1.575701e5/Tk-6.642308e7/Tk^2+1.243800e10/Tk^3-8.621949e11/Tk^4)"
+      authority: "USGS_DOTABLES_Technical_Memorandum_2011.03"
+      reference_url: "https://water.usgs.gov/water-resources/memos/documents/WQ.2011.03.pdf"
+      medium: "freshwater"
+      pressure_assumption: "standard_atmosphere"
+      salinity_assumption: "zero"
+      valid_temperature_C: [0.0, 40.0]
+    calibration:
+      grouping: "longitudinal_position_across_parallel_lines"
+      start: "2025-08-01 00:00:00"
+      end_exclusive: "2026-02-01 00:00:00"
+      validation_start: "2026-02-01 00:00:00"
+      validation_end_exclusive: "2026-04-01 00:00:00"
+      terminal_start: "2026-04-01 00:00:00"
+      terminal_end_exclusive: "2026-04-14 00:00:00"
+      resolution: "minute_calibration_minute_validation_minute_production"
+      quality_filter: "D1_total,Q_spike,Q_step,Q_drift,Q_freeze,Q_regime,D2_Strict>=4.5_and_D2_usable"
+      unavailable_optional_D1_filter: "no_independent_DO_saturation_or_floor_sheet_in_frozen_D1_release"
+      estimator: "max(P99,median+3x1.4826MAD)_of_minute_DO_over_Benson_Krause_Csat"
+      minimum_calibration_sensor_minutes: 43200
+      bootstrap:
+        cluster: "calendar_day"
+        replicates: 1000
+        seed: 20260811
+      validation_window:
+        minutes: 120
+        minimum_high_quality_minutes: 60
+        warning_if_exceedance_rate_gt: 0.02
+      alpha_by_position:
+        "1": 0.2789373305
+        "2": 0.3100300303
+        "3": 0.5065765789
+      calibration_support_sensor_minutes:
+        "1": 62452
+        "2": 113862
+        "3": 120644
+      scored_positions: ["1", "2"]
+      diagnostic_only_positions: ["3"]
+      promotion_rule: "independent_validation_high_quality_minute_exceedance_rate_le_0.02_and_2h_warning_window_rate_le_0.02_per_sensor"
+      position_3_status: "diagnostic_only_failed_temporal_stability_DO_2_3"
+      cross_line_leave_one_out_role: "diagnostic_transfer_test_not_used_to_tune_or_promote"
+      terminal_test_role: "locked_forward_test_never_used_to_refit_or_widen_alpha"
+    runtime_missing_policy: "upper_component_not_evaluated_no_extrapolation"
+    combined_soft_denominator: "minutes_with_valid_dynamic_upper_or_deterministic_low_side_violation"
+    context_unavailable_policy: "do_not_assign_pass_or_full_D3_score"
+    external_validity_limit: "requires_in_basin_temperature_pressure_salinity_and_cross_plant_validation"
+  orp_soft_range:
+    status: "pending_position_and_regime_validation"
+    position_groups: ["anaerobic", "anoxic_mid", "anoxic_end"]
+    position_conditioned_envelopes_role: "diagnostic_only_until_site_review"
+  do4_zero_equivalence:
+    provisional_value_mg_L: -0.05
+    sensitivity_values_mg_L: [0.0, -0.03, -0.05, -0.10]
+    physical_soft_low_mg_L: 0.0
+    production_upper_bound: null
+    production_upper_bound_status: "disabled_pending_time_blocked_post_anoxic_template_validation"
+    final_lock_requires: "manufacturer_accuracy_or_zero_oxygen_calibration"
 
 sources:
   operational_bounds: "expert_operational_limits_pending_site_validation"
@@ -32,5 +123,5 @@ sources:
     source_sha256: "2085f4de640aa0231f95e3abe370dec6d1da9c3daf064e6f05042e344ca58ea9"
     inspected_sheet_range: "Sheet1!A1:P34"
     reverified_at: "2026-07-27T00:00:00+08:00"
-version: "v2.2.1"
-effective_date: "2026-05-26"
+version: "v2.7.0"
+effective_date: "2026-08-11"

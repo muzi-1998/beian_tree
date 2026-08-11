@@ -10,6 +10,7 @@ import pandas as pd
 
 from src.d3_physical.aggregator import D3Aggregator
 from src.d3_physical.boundary_features import BoundaryFeatureExtractor
+from src.d3_physical.do_temperature_envelope import temperature_conditioned_upper
 from src.d3_physical.rate_constraint_checker import RateConstraintChecker
 from src.d3_physical.scorer import D3ScoreMapper
 from src.d3_physical.threshold_store import ThresholdStore
@@ -27,6 +28,7 @@ class D3Pipeline:
         thresholds: ThresholdStore,
         configs: dict,
         run_id: str,
+        temperature_c: pd.Series | None = None,
     ):
         self.df_main = df_main
         self.sensors = sensors
@@ -35,6 +37,14 @@ class D3Pipeline:
         self.thresholds = thresholds
         self.configs = configs
         self.run_id = run_id
+        self.temperature_c = (
+            temperature_c.reindex(df_main.index)
+            if temperature_c is not None
+            else pd.Series(np.nan, index=df_main.index, name="influent_temperature_C")
+        )
+        self.do_temperature_contract = configs["physical_bounds"][
+            "operational_envelope_contract"
+        ]["aerobic_do_temperature_conditioned_upper"]
 
         bounds_cfg = configs["physical_bounds"]["sensors"]
         self.value_checkers = {
@@ -89,14 +99,47 @@ class D3Pipeline:
                     continue
                 sensor_type = self.sensor_meta[sensor]["type"]
                 values = window_df[sensor].to_numpy(dtype=float)
-                value_evidence = self.value_checkers[sensor_type].check(values, sensor, sensor_type)
-                neighbor_sync, parallel_sync = rate_context.get(sensor, (0.0, 0.0))
+                temperature_values = self.temperature_c.reindex(window_df.index).to_numpy(dtype=float)
+                dynamic_upper, upper_status = temperature_conditioned_upper(
+                    temperature_values,
+                    self.sensor_meta[sensor],
+                    self.do_temperature_contract,
+                )
+                position = str(self.sensor_meta[sensor]["position"])
+                score_dynamic_upper = (
+                    dynamic_upper is not None
+                    and position
+                    in self.do_temperature_contract["calibration"]["scored_positions"]
+                )
+                include_soft_high_in_score = (
+                    score_dynamic_upper if dynamic_upper is not None else True
+                )
+                if dynamic_upper is not None and upper_status in {
+                    "evaluated",
+                    "partially_evaluated",
+                }:
+                    upper_status = f"{upper_status}_{'scored' if score_dynamic_upper else 'diagnostic_only'}"
+                value_evidence = self.value_checkers[sensor_type].check(
+                    values,
+                    sensor,
+                    sensor_type,
+                    dynamic_soft_high=dynamic_upper,
+                    soft_high_mode=(
+                        "temperature_conditioned_influent_proxy"
+                        if dynamic_upper is not None
+                        else None
+                    ),
+                    score_soft_high=include_soft_high_in_score,
+                )
+                context = rate_context[sensor]
                 rate_evidence = self.rate_checker.check(
                     values,
                     sensor,
                     sensor_type,
-                    neighbor_sync_score=neighbor_sync,
-                    parallel_sync_score=parallel_sync,
+                    neighbor_sync_score=context.neighbor_sync_score,
+                    parallel_sync_score=context.parallel_sync_score,
+                    process_coherent_mask=context.coherent_mask,
+                    precomputed_rate=context.rate_series,
                 )
                 boundary = self.boundary_extractor.compute(values, sensor, sensor_type)
                 sub = self.scorer.map(value_evidence, rate_evidence)
@@ -117,17 +160,41 @@ class D3Pipeline:
                     "sensor_id": sensor,
                     "Q_value_hard": result.Q_value_hard,
                     "Q_value_soft": result.Q_value_soft,
+                    "Q_persistent_rate": result.Q_persistent_rate,
+                    "Q_persistent_rate_soft_only": result.Q_persistent_rate_soft_only,
+                    "Q_persistent_rate_hard": result.Q_persistent_rate_hard,
                     "Q_rate": result.Q_rate,
+                    "Q_rate_alias_status": "deprecated_alias_of_Q_persistent_rate",
                     "D3_base": result.D3_base,
                     "D3_total": result.D3_total,
                     "evidence_status": result.evidence_status,
                     "n_expected": result.n_expected,
                     "n_observed": result.n_observed,
                     "observed_fraction": result.observed_fraction,
+                    "temperature_upper_status": upper_status,
+                    "temperature_upper_evaluable_fraction": value_evidence.soft_high_evaluable_fraction,
+                    "soft_state_determinable_fraction": value_evidence.soft_state_determinable_fraction,
+                    "D3_evidence_scope": (
+                        "full_temperature_conditioned_scored"
+                        if upper_status == "evaluated_scored"
+                        else "partial_temperature_conditioned_scored"
+                        if upper_status == "partially_evaluated_scored"
+                        else "temperature_conditioned_diagnostic_only"
+                        if upper_status == "evaluated_diagnostic_only"
+                        else "partial_temperature_conditioned_diagnostic_only"
+                        if upper_status == "partially_evaluated_diagnostic_only"
+                        else "partial_temperature_unavailable"
+                        if upper_status == "temperature_unavailable"
+                        else "not_applicable"
+                    ),
                     "dominant_physical_issue": result.dominant_physical_issue,
                     "veto_flag": result.veto_flag,
                     "veto_reason": result.veto_reason,
+                    "data_veto_flag": result.data_veto_flag,
+                    "operational_warning_flag": result.operational_warning_flag,
+                    "D3_gate_status": result.D3_gate_status,
                     "process_coherent_shock": result.process_coherent_shock,
+                    "process_coherence_role": "attribution_guard_not_veto",
                     "boundary_diagnostic_only": True,
                     "threshold_version": THRESHOLD_VERSION,
                     "mapping_version": MAPPING_VERSION,
@@ -143,13 +210,55 @@ class D3Pipeline:
                     "hard_high": value_evidence.hard_high,
                     "soft_low": value_evidence.soft_low,
                     "soft_high": value_evidence.soft_high,
+                    "effective_soft_low": value_evidence.effective_soft_low,
+                    "zero_equivalence_low": value_evidence.zero_equivalence_low,
                     "hard_violation_count": value_evidence.hard_violation_count,
                     "soft_violation_count": value_evidence.soft_violation_count,
+                    "hard_low_violation_count": value_evidence.hard_low_violation_count,
+                    "hard_high_violation_count": value_evidence.hard_high_violation_count,
+                    "soft_low_violation_count": value_evidence.soft_low_violation_count,
+                    "soft_high_violation_count": value_evidence.soft_high_violation_count,
+                    "physical_low_violation_count": value_evidence.physical_low_violation_count,
+                    "zero_equivalent_count": value_evidence.zero_equivalent_count,
+                    "zero_offset_warning_count": value_evidence.zero_offset_warning_count,
+                    "severe_negative_count": value_evidence.severe_negative_count,
                     "hard_violation_rate": value_evidence.hard_violation_rate,
                     "soft_violation_rate": value_evidence.soft_violation_rate,
+                    "hard_low_violation_rate": value_evidence.hard_low_violation_rate,
+                    "hard_high_violation_rate": value_evidence.hard_high_violation_rate,
+                    "soft_low_violation_rate": value_evidence.soft_low_violation_rate,
+                    "soft_high_violation_rate": value_evidence.soft_high_violation_rate,
+                    "soft_high_violation_rate_evaluable": value_evidence.soft_high_violation_rate_evaluable,
+                    "soft_high_evaluable_count": value_evidence.soft_high_evaluable_count,
+                    "soft_high_evaluable_fraction": value_evidence.soft_high_evaluable_fraction,
+                    "soft_state_determinable_count": value_evidence.soft_state_determinable_count,
+                    "soft_state_determinable_fraction": value_evidence.soft_state_determinable_fraction,
+                    "soft_violation_rate_denominator": value_evidence.soft_violation_rate_denominator,
+                    "soft_high_mode": value_evidence.soft_high_mode,
+                    "dynamic_soft_high_min": value_evidence.dynamic_soft_high_min,
+                    "dynamic_soft_high_median": value_evidence.dynamic_soft_high_median,
+                    "dynamic_soft_high_max": value_evidence.dynamic_soft_high_max,
+                    "soft_high_scored": value_evidence.soft_high_scored,
+                    "temperature_upper_diagnostic_warning": bool(
+                        value_evidence.soft_high_violation_count > 0
+                    ),
+                    "physical_low_violation_rate": value_evidence.physical_low_violation_rate,
+                    "zero_equivalent_rate": value_evidence.zero_equivalent_rate,
+                    "zero_offset_warning_rate": value_evidence.zero_offset_warning_rate,
+                    "severe_negative_rate": value_evidence.severe_negative_rate,
                     "max_violation_magnitude": value_evidence.max_violation_magnitude,
+                    "max_soft_low_exceedance": value_evidence.max_soft_low_exceedance,
+                    "max_soft_high_exceedance": value_evidence.max_soft_high_exceedance,
+                    "max_physical_low_exceedance": value_evidence.max_physical_low_exceedance,
                     "out_of_instrument": value_evidence.out_of_instrument,
                     "consecutive_hard_max_min": value_evidence.consecutive_hard_max_min,
+                    "threshold_scope": value_evidence.threshold_scope,
+                    "soft_sensitivity_anchor": value_evidence.soft_sensitivity_anchor,
+                    "operational_threshold_status": (
+                        "frozen_site_calibrated_temperature_conditioned_warning"
+                        if value_evidence.soft_high_mode == "temperature_conditioned_influent_proxy"
+                        else "provisional_expert_prior"
+                    ),
                     "threshold_version": THRESHOLD_VERSION,
                     "run_id": self.run_id,
                 })
@@ -161,14 +270,27 @@ class D3Pipeline:
                     "rate_utils_version": rate_evidence.rate_utils_version,
                     "rate_limit_soft": rate_evidence.rate_limit_soft,
                     "rate_limit_hard": rate_evidence.rate_limit_hard,
+                    "rate_soft_point_violation_rate": rate_evidence.rate_soft_point_violation_rate,
+                    "rate_hard_point_violation_rate": rate_evidence.rate_hard_point_violation_rate,
                     "rate_soft_violation_rate": rate_evidence.rate_soft_violation_rate,
+                    "rate_soft_only_violation_rate": rate_evidence.rate_soft_only_violation_rate,
                     "rate_hard_violation_rate": rate_evidence.rate_hard_violation_rate,
                     "rate_severity": rate_evidence.max_rate_severity,
                     "rate_hard_consec_max_min": rate_evidence.rate_hard_consec_max_min,
+                    "rate_hard_consec_raw_max_min": rate_evidence.rate_hard_consec_raw_max_min,
+                    "persistent_rate_event_count": rate_evidence.persistent_rate_event_count,
+                    "persistent_soft_only_event_count": rate_evidence.persistent_soft_only_event_count,
+                    "persistent_hard_event_count": rate_evidence.persistent_hard_event_count,
+                    "impulse_return_event_count": rate_evidence.impulse_return_event_count,
+                    "impulse_return_excluded_fraction": rate_evidence.impulse_return_excluded_fraction,
+                    "process_coherence_guarded_fraction": rate_evidence.process_coherence_guarded_fraction,
+                    "process_coherence_guarded_points": rate_evidence.process_coherence_guarded_points,
                     "neighbor_sync_score": rate_evidence.neighbor_sync_score,
                     "parallel_sync_score": rate_evidence.parallel_sync_score,
                     "process_coherent_shock": rate_evidence.shock_candidate,
-                    "diagnostic_only_sync": True,
+                    "process_coherence_role": "attribution_guard_not_veto",
+                    "rate_construct": "mutually_exclusive_soft_only_and_hard_persistent_rate",
+                    "rate_threshold_status": "provisional_expert_prior",
                     "rate_mapping_version": MAPPING_VERSION,
                     "run_id": self.run_id,
                 })
@@ -191,15 +313,25 @@ class D3Pipeline:
                     "run_id": self.run_id,
                 })
 
-                if result.evidence_status == "sufficient" and (result.D3_total < 3.0 or result.veto_flag):
+                if result.evidence_status == "sufficient" and (
+                    result.D3_total < 3.0
+                    or result.veto_flag
+                    or result.process_coherent_shock
+                    or rate_evidence.rate_soft_only_violation_rate > 0
+                    or rate_evidence.rate_hard_violation_rate > 0
+                ):
                     if "instrument_range" in result.veto_reason:
                         event_type = "instrument_range"
                     elif "hard_violation" in result.veto_reason:
                         event_type = "hard_bound"
-                    elif "rate_persistent" in result.veto_reason or result.dominant_physical_issue == "rate":
-                        event_type = "rate_violation"
+                    elif rate_evidence.rate_hard_violation_rate > 0:
+                        event_type = "persistent_rate_hard"
+                    elif rate_evidence.rate_soft_only_violation_rate > 0:
+                        event_type = "persistent_rate_soft_only"
                     elif result.dominant_physical_issue == "soft_bound":
                         event_type = "soft_bound"
+                    elif result.process_coherent_shock:
+                        event_type = "process_coherent_shock"
                     else:
                         event_type = "low_quality_window"
                     rows["events"].append({
@@ -213,7 +345,13 @@ class D3Pipeline:
                         "veto_triggered": result.veto_flag,
                         "veto_reason": result.veto_reason,
                         "process_coherent_shock": result.process_coherent_shock,
-                        "review_priority": "high" if result.D3_total < 2.0 else "medium",
+                        "review_priority": (
+                            "high"
+                            if result.D3_total < 2.0
+                            else "low"
+                            if event_type == "persistent_rate_soft_only"
+                            else "medium"
+                        ),
                         "run_id": self.run_id,
                     })
 

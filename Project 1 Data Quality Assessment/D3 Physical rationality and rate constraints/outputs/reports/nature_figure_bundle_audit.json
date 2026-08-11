@@ -1,164 +1,466 @@
 {
-  "figure_dir": "D:\\004_git\\beian_tree\\Project 1 Data Quality Assessment\\D3 Physical rationality and rate constraints\\outputs\\figures",
-  "figures": 7,
-  "failed": 0,
-  "generated_at": "2026-07-27T05:05:00+00:00",
-  "nature_skill_version": "2.1.0",
-  "source_preflight": {
-    "backend": "python",
-    "shared_style_module_verified": true,
-    "static_validator_limitation": "per-script checks do not resolve _nature_style.py imports",
-    "rendered_bundle_visually_reviewed": true
+  "audit_version": "d3-nature-figure-audit-v2.7.0",
+  "created_at_utc": "2026-08-11T03:33:00.204785+00:00",
+  "backend": "python",
+  "optional_validator": {
+    "status": "executed",
+    "source": "installed_skill"
   },
-  "records": [
+  "n_figures": 11,
+  "failures": [],
+  "warnings": [],
+  "passed": true,
+  "figures": [
     {
+      "script": "fig1_framework_overview.py",
       "stem": "fig1_framework_overview",
-      "png": true,
-      "svg": true,
-      "pdf": true,
-      "png_size_px": [
-        4188,
-        2928
-      ],
-      "png_nonblank": true,
-      "svg_text_elements": 77,
-      "svg_arial_declared": true,
-      "panel_labels": [
-        "(a)",
-        "(b)",
-        "(c)",
-        "(d)"
-      ],
-      "nonconforming_bare_panel_labels": [],
-      "fresh_vs_sources": true
+      "preflight_failures": 0,
+      "preflight_warnings": 0,
+      "preflight_status": "executed",
+      "exports": {
+        "svg": {
+          "exists": true,
+          "bytes": 34670,
+          "newer_than_source": true
+        },
+        "pdf": {
+          "exists": true,
+          "bytes": 53431,
+          "newer_than_source": true
+        },
+        "png": {
+          "exists": true,
+          "bytes": 568450,
+          "newer_than_source": true
+        },
+        "tiff": {
+          "exists": true,
+          "bytes": 1627952,
+          "newer_than_source": true
+        }
+      },
+      "png": {
+        "width_px": 4217,
+        "height_px": 2938,
+        "pixel_std": 45.33042907714844,
+        "nonwhite_fraction": 0.24667748116032662,
+        "nonblank": true
+      },
+      "svg": {
+        "arial_declared": true,
+        "editable_text": true,
+        "panel_a_present": true
+      }
     },
     {
+      "script": "fig2_score_landscape.py",
       "stem": "fig2_score_landscape",
-      "png": true,
-      "svg": true,
-      "pdf": true,
-      "png_size_px": [
-        4297,
-        3118
-      ],
-      "png_nonblank": true,
-      "svg_text_elements": 112,
-      "svg_arial_declared": true,
-      "panel_labels": [
-        "(a)",
-        "(b)",
-        "(c)",
-        "(d)"
-      ],
-      "nonconforming_bare_panel_labels": [],
-      "fresh_vs_sources": true
+      "preflight_failures": 0,
+      "preflight_warnings": 0,
+      "preflight_status": "executed",
+      "exports": {
+        "svg": {
+          "exists": true,
+          "bytes": 119301,
+          "newer_than_source": true
+        },
+        "pdf": {
+          "exists": true,
+          "bytes": 60986,
+          "newer_than_source": true
+        },
+        "png": {
+          "exists": true,
+          "bytes": 809483,
+          "newer_than_source": true
+        },
+        "tiff": {
+          "exists": true,
+          "bytes": 2039190,
+          "newer_than_source": true
+        }
+      },
+      "png": {
+        "width_px": 4286,
+        "height_px": 3238,
+        "pixel_std": 53.95011901855469,
+        "nonwhite_fraction": 0.31211123911483935,
+        "nonblank": true
+      },
+      "svg": {
+        "arial_declared": true,
+        "editable_text": true,
+        "panel_a_present": true
+      }
     },
     {
+      "script": "fig3_evidence_coverage.py",
       "stem": "fig3_evidence_coverage",
-      "png": true,
-      "svg": true,
-      "pdf": true,
-      "png_size_px": [
-        4268,
-        3145
-      ],
-      "png_nonblank": true,
-      "svg_text_elements": 96,
-      "svg_arial_declared": true,
-      "panel_labels": [
-        "(a)",
-        "(b)",
-        "(c)",
-        "(d)"
-      ],
-      "nonconforming_bare_panel_labels": [],
-      "fresh_vs_sources": true
+      "preflight_failures": 0,
+      "preflight_warnings": 0,
+      "preflight_status": "executed",
+      "exports": {
+        "svg": {
+          "exists": true,
+          "bytes": 71783,
+          "newer_than_source": true
+        },
+        "pdf": {
+          "exists": true,
+          "bytes": 57680,
+          "newer_than_source": true
+        },
+        "png": {
+          "exists": true,
+          "bytes": 524994,
+          "newer_than_source": true
+        },
+        "tiff": {
+          "exists": true,
+          "bytes": 1863986,
+          "newer_than_source": true
+        }
+      },
+      "png": {
+        "width_px": 4249,
+        "height_px": 3160,
+        "pixel_std": 82.0203628540039,
+        "nonwhite_fraction": 0.3591312624563933,
+        "nonblank": true
+      },
+      "svg": {
+        "arial_declared": true,
+        "editable_text": true,
+        "panel_a_present": true
+      }
     },
     {
-      "stem": "fig4_rate_constraints",
-      "png": true,
-      "svg": true,
-      "pdf": true,
-      "png_size_px": [
-        4157,
-        3145
-      ],
-      "png_nonblank": true,
-      "svg_text_elements": 92,
-      "svg_arial_declared": true,
-      "panel_labels": [
-        "(a)",
-        "(b)",
-        "(c)",
-        "(d)"
-      ],
-      "nonconforming_bare_panel_labels": [],
-      "fresh_vs_sources": true
+      "script": "fig4_persistent_rate_construct.py",
+      "stem": "fig4_persistent_rate_construct",
+      "preflight_failures": 0,
+      "preflight_warnings": 0,
+      "preflight_status": "executed",
+      "exports": {
+        "svg": {
+          "exists": true,
+          "bytes": 77536,
+          "newer_than_source": true
+        },
+        "pdf": {
+          "exists": true,
+          "bytes": 70247,
+          "newer_than_source": true
+        },
+        "png": {
+          "exists": true,
+          "bytes": 660456,
+          "newer_than_source": true
+        },
+        "tiff": {
+          "exists": true,
+          "bytes": 1971772,
+          "newer_than_source": true
+        }
+      },
+      "png": {
+        "width_px": 4131,
+        "height_px": 3172,
+        "pixel_std": 65.38605499267578,
+        "nonwhite_fraction": 0.33899073929075,
+        "nonblank": true
+      },
+      "svg": {
+        "arial_declared": true,
+        "editable_text": true,
+        "panel_a_present": true
+      }
     },
     {
+      "script": "fig5_boundary_fixed_threshold.py",
       "stem": "fig5_boundary_fixed_threshold",
-      "png": true,
-      "svg": true,
-      "pdf": true,
-      "png_size_px": [
-        4099,
-        3257
-      ],
-      "png_nonblank": true,
-      "svg_text_elements": 90,
-      "svg_arial_declared": true,
-      "panel_labels": [
-        "(a)",
-        "(b)",
-        "(c)",
-        "(d)"
-      ],
-      "nonconforming_bare_panel_labels": [],
-      "fresh_vs_sources": true
+      "preflight_failures": 0,
+      "preflight_warnings": 0,
+      "preflight_status": "executed",
+      "exports": {
+        "svg": {
+          "exists": true,
+          "bytes": 80845,
+          "newer_than_source": true
+        },
+        "pdf": {
+          "exists": true,
+          "bytes": 54846,
+          "newer_than_source": true
+        },
+        "png": {
+          "exists": true,
+          "bytes": 462398,
+          "newer_than_source": true
+        },
+        "tiff": {
+          "exists": true,
+          "bytes": 1329726,
+          "newer_than_source": true
+        }
+      },
+      "png": {
+        "width_px": 4280,
+        "height_px": 3118,
+        "pixel_std": 75.79278564453125,
+        "nonwhite_fraction": 0.18898497119529054,
+        "nonblank": true
+      },
+      "svg": {
+        "arial_declared": true,
+        "editable_text": true,
+        "panel_a_present": true
+      }
     },
     {
-      "stem": "fig6_events_profile",
-      "png": true,
-      "svg": true,
-      "pdf": true,
-      "png_size_px": [
-        4301,
-        3309
-      ],
-      "png_nonblank": true,
-      "svg_text_elements": 95,
-      "svg_arial_declared": true,
-      "panel_labels": [
-        "(a)",
-        "(b)",
-        "(c)",
-        "(d)"
-      ],
-      "nonconforming_bare_panel_labels": [],
-      "fresh_vs_sources": true
+      "script": "fig6_gate_and_directional_profile.py",
+      "stem": "fig6_gate_and_directional_profile",
+      "preflight_failures": 0,
+      "preflight_warnings": 0,
+      "preflight_status": "executed",
+      "exports": {
+        "svg": {
+          "exists": true,
+          "bytes": 82885,
+          "newer_than_source": true
+        },
+        "pdf": {
+          "exists": true,
+          "bytes": 61093,
+          "newer_than_source": true
+        },
+        "png": {
+          "exists": true,
+          "bytes": 675189,
+          "newer_than_source": true
+        },
+        "tiff": {
+          "exists": true,
+          "bytes": 1873714,
+          "newer_than_source": true
+        }
+      },
+      "png": {
+        "width_px": 4287,
+        "height_px": 3431,
+        "pixel_std": 56.37423324584961,
+        "nonwhite_fraction": 0.25015560521778374,
+        "nonblank": true
+      },
+      "svg": {
+        "arial_declared": true,
+        "editable_text": true,
+        "panel_a_present": true
+      }
     },
     {
+      "script": "fig7_case_studies.py",
       "stem": "fig7_case_studies",
-      "png": true,
-      "svg": true,
-      "pdf": true,
-      "png_size_px": [
-        4156,
-        4019
-      ],
-      "png_nonblank": true,
-      "svg_text_elements": 103,
-      "svg_arial_declared": true,
-      "panel_labels": [
-        "(a)",
-        "(b)",
-        "(c)",
-        "(d)",
-        "(e)",
-        "(f)"
-      ],
-      "nonconforming_bare_panel_labels": [],
-      "fresh_vs_sources": true
+      "preflight_failures": 0,
+      "preflight_warnings": 0,
+      "preflight_status": "executed",
+      "exports": {
+        "svg": {
+          "exists": true,
+          "bytes": 164923,
+          "newer_than_source": true
+        },
+        "pdf": {
+          "exists": true,
+          "bytes": 83840,
+          "newer_than_source": true
+        },
+        "png": {
+          "exists": true,
+          "bytes": 1251800,
+          "newer_than_source": true
+        },
+        "tiff": {
+          "exists": true,
+          "bytes": 2414990,
+          "newer_than_source": true
+        }
+      },
+      "png": {
+        "width_px": 4159,
+        "height_px": 3947,
+        "pixel_std": 50.360191345214844,
+        "nonwhite_fraction": 0.16639108485582563,
+        "nonblank": true
+      },
+      "svg": {
+        "arial_declared": true,
+        "editable_text": true,
+        "panel_a_present": true
+      }
+    },
+    {
+      "script": "fig8_boundary_rate_validation.py",
+      "stem": "fig8_boundary_rate_validation",
+      "preflight_failures": 0,
+      "preflight_warnings": 0,
+      "preflight_status": "executed",
+      "exports": {
+        "svg": {
+          "exists": true,
+          "bytes": 87401,
+          "newer_than_source": true
+        },
+        "pdf": {
+          "exists": true,
+          "bytes": 66424,
+          "newer_than_source": true
+        },
+        "png": {
+          "exists": true,
+          "bytes": 718924,
+          "newer_than_source": true
+        },
+        "tiff": {
+          "exists": true,
+          "bytes": 1501218,
+          "newer_than_source": true
+        }
+      },
+      "png": {
+        "width_px": 4215,
+        "height_px": 3195,
+        "pixel_std": 48.62691116333008,
+        "nonwhite_fraction": 0.08972263527122933,
+        "nonblank": true
+      },
+      "svg": {
+        "arial_declared": true,
+        "editable_text": true,
+        "panel_a_present": true
+      }
+    },
+    {
+      "script": "fig9_do4_zero_equivalence_contract.py",
+      "stem": "fig9_do4_zero_equivalence_contract",
+      "preflight_failures": 0,
+      "preflight_warnings": 0,
+      "preflight_status": "executed",
+      "exports": {
+        "svg": {
+          "exists": true,
+          "bytes": 77666,
+          "newer_than_source": true
+        },
+        "pdf": {
+          "exists": true,
+          "bytes": 67974,
+          "newer_than_source": true
+        },
+        "png": {
+          "exists": true,
+          "bytes": 553795,
+          "newer_than_source": true
+        },
+        "tiff": {
+          "exists": true,
+          "bytes": 1101794,
+          "newer_than_source": true
+        }
+      },
+      "png": {
+        "width_px": 4121,
+        "height_px": 3083,
+        "pixel_std": 42.851802825927734,
+        "nonwhite_fraction": 0.05879586554724765,
+        "nonblank": true
+      },
+      "svg": {
+        "arial_declared": true,
+        "editable_text": true,
+        "panel_a_present": true
+      }
+    },
+    {
+      "script": "fig10_temperature_conditioned_do_upper.py",
+      "stem": "fig10_temperature_conditioned_do_upper",
+      "preflight_failures": 0,
+      "preflight_warnings": 0,
+      "preflight_status": "executed",
+      "exports": {
+        "svg": {
+          "exists": true,
+          "bytes": 80945,
+          "newer_than_source": true
+        },
+        "pdf": {
+          "exists": true,
+          "bytes": 66208,
+          "newer_than_source": true
+        },
+        "png": {
+          "exists": true,
+          "bytes": 506273,
+          "newer_than_source": true
+        },
+        "tiff": {
+          "exists": true,
+          "bytes": 1253174,
+          "newer_than_source": true
+        }
+      },
+      "png": {
+        "width_px": 4088,
+        "height_px": 3099,
+        "pixel_std": 42.737667083740234,
+        "nonwhite_fraction": 0.18531994412691677,
+        "nonblank": true
+      },
+      "svg": {
+        "arial_declared": true,
+        "editable_text": true,
+        "panel_a_present": true
+      }
+    },
+    {
+      "script": "fig11_orp_spatial_heterogeneity.py",
+      "stem": "fig11_orp_spatial_heterogeneity",
+      "preflight_failures": 0,
+      "preflight_warnings": 0,
+      "preflight_status": "executed",
+      "exports": {
+        "svg": {
+          "exists": true,
+          "bytes": 55863,
+          "newer_than_source": true
+        },
+        "pdf": {
+          "exists": true,
+          "bytes": 52704,
+          "newer_than_source": true
+        },
+        "png": {
+          "exists": true,
+          "bytes": 543062,
+          "newer_than_source": true
+        },
+        "tiff": {
+          "exists": true,
+          "bytes": 1127194,
+          "newer_than_source": true
+        }
+      },
+      "png": {
+        "width_px": 4133,
+        "height_px": 3139,
+        "pixel_std": 42.11606216430664,
+        "nonwhite_fraction": 0.06157673723340533,
+        "nonblank": true
+      },
+      "svg": {
+        "arial_declared": true,
+        "editable_text": true,
+        "panel_a_present": true
+      }
     }
   ]
 }
