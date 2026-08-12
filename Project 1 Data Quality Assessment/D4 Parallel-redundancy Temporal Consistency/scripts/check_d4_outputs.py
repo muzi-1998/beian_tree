@@ -10,9 +10,21 @@ import pandas as pd
 D4_ROOT = Path(__file__).resolve().parents[1]
 DATA = D4_ROOT / "outputs" / "data"
 FIGURES = D4_ROOT / "outputs" / "figures"
+FIGURE_SOURCE = D4_ROOT / "outputs" / "figure_source_data"
 QA = D4_ROOT / "outputs" / "qa"
 COMPARISON = D4_ROOT / "outputs" / "comparison"
 INTEGRATION = D4_ROOT / "outputs" / "integration"
+EXPECTED_FIGURES = {
+    "FigD4_1_scientific_construct",
+    "FigD4_2_pair_mechanism_profile",
+    "FigD4_3_burden_coverage_calibration",
+    "FigD4_4_formal_episode_cases",
+    "FigD4_5_mechanism_specificity",
+    "FigD4_6_ablation_and_lag_resolution",
+    "FigS1_all_pair_residual_trajectories",
+    "FigS2_trend_concordance",
+    "FigS3_numeric_independence_audit",
+}
 
 
 def main() -> None:
@@ -36,8 +48,14 @@ def main() -> None:
     )
     stems = {path.stem for path in FIGURES.glob("*.png")}
     missing_counterparts = [
-        stem for stem in stems
-        if not (FIGURES / f"{stem}.svg").exists() or not (FIGURES / f"{stem}.pdf").exists()
+        f"{stem}.{extension}"
+        for stem in EXPECTED_FIGURES
+        for extension in ("svg", "pdf", "png", "tiff")
+        if not (FIGURES / f"{stem}.{extension}").exists()
+    ]
+    missing_source_data = [
+        f"{stem}_source_data.xlsx" for stem in EXPECTED_FIGURES
+        if not (FIGURE_SOURCE / f"{stem}_source_data.xlsx").exists()
     ]
     comparison_stem = "Fig_D4_three_version_sensitivity"
     comparison_bundle_ok = all(
@@ -81,7 +99,9 @@ def main() -> None:
             ((validation["required_for_acceptance"] == True) & (validation["pass"] != True)).sum()
         ),
         "figure_stems": len(stems),
+        "figure_stems_exact": stems == EXPECTED_FIGURES,
         "missing_figure_counterparts": missing_counterparts,
+        "missing_figure_source_data": missing_source_data,
         "comparison_bundle_ok": bool(comparison_bundle_ok),
     }
     checks["passed"] = bool(
@@ -101,8 +121,10 @@ def main() -> None:
         and checks["integration_numeric_source"] == "D4_raw"
         and checks["integration_max_abs_numeric_adjustment"] < 1e-12
         and checks["required_validation_failures"] == 0
-        and checks["figure_stems"] == 8
+        and checks["figure_stems"] == 9
+        and checks["figure_stems_exact"]
         and not checks["missing_figure_counterparts"]
+        and not checks["missing_figure_source_data"]
         and checks["comparison_bundle_ok"]
     )
     QA.mkdir(parents=True, exist_ok=True)

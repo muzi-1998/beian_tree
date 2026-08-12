@@ -19,8 +19,10 @@
   "integration_numeric_source": "D4_raw",
   "integration_max_abs_numeric_adjustment": 0.0,
   "required_validation_failures": 0,
-  "figure_stems": 8,
+  "figure_stems": 9,
+  "figure_stems_exact": true,
   "missing_figure_counterparts": [],
+  "missing_figure_source_data": [],
   "comparison_bundle_ok": true,
   "passed": true
 }
