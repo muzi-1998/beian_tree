@@ -19,7 +19,12 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.ref }}
-          fetch-depth: 0
+          fetch-depth: 1
+          sparse-checkout: |
+            .chatgpt_d4_figure_audit
+            Project 1 Data Quality Assessment/D4 Parallel-redundancy Temporal Consistency
+            deliverables
+          sparse-checkout-cone-mode: false
 
       - name: Set up Python
         uses: actions/setup-python@v5
