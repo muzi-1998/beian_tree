@@ -37,6 +37,16 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y -qq libreoffice-writer fonts-noto-cjk poppler-utils
 
+      - name: Patch CJK font node compatibility
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('.chatgpt_d4_figure_audit/build_report.py')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace('._element.rPr.rFonts.set(', '._element.get_or_add_rPr().get_or_add_rFonts().set(')
+          p.write_text(s, encoding='utf-8')
+          PY
+
       - name: Build Word audit
         run: python .chatgpt_d4_figure_audit/build_report.py
 
