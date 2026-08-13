@@ -1,7 +1,7 @@
 {
-  "run_id": "D4V15_20260813_033216",
-  "config_version": "d4-v1.5-common-support-frozen-d4-20260813",
-  "generated_utc": "2026-08-13T03:43:44.039323+00:00",
+  "run_id": "D4V151_20260813_083347",
+  "config_version": "d4-v1.5.1-statistical-dependence-audit-20260813",
+  "generated_utc": "2026-08-13T08:36:22.514300+00:00",
   "data_span": [
     "2025-08-01 00:00:00",
     "2026-04-13 23:50:00"
@@ -9,7 +9,7 @@
   "rows": 42847,
   "pairs": 7,
   "d2_run_id": "D2V4_20260805_1127",
-  "calibration_id": "D4CAL-V15-f6c351de01b0",
+  "calibration_id": "D4CAL-V151-66fe1bb6b7d3",
   "phase_contract": {
     "development_start": "2025-08-01 00:00:00",
     "development_end": "2026-01-24 23:59:59",
@@ -27,6 +27,18 @@
     "policy": "synchronous_timestamp_primary"
   },
   "distribution_component_version": "full_w1_0.60_ks_0.40_development_frozen",
+  "calibration_support_contract": {
+    "min_stratum_windows": 100,
+    "min_variable_windows": 50,
+    "independent_block_days": 7,
+    "min_exact_independent_blocks": 6,
+    "percentile_precision": {
+      "quantile": 0.975,
+      "bootstrap_repetitions": 600,
+      "relative_ci_width_diagnostic_limit": 1.0,
+      "admission_role": "evidence_grade_only_pending_preregistered_precision_target"
+    }
+  },
   "terminal_status": "pending_genuinely_unseen_future_period",
   "dependencies": [
     {
@@ -62,14 +74,14 @@
     {
       "dependency": "d4_config",
       "path_role": "d4.yaml",
-      "sha256": "9ab231ea9d1bd72ba6f74b8a30198fb6af41bc1796d5236f1fd864d482e73121",
-      "modified_utc": "2026-08-13T02:48:32.783588+00:00"
+      "sha256": "213ecde94309486e5a09659e2306c3028459cc77786e175b98e381cba198df74",
+      "modified_utc": "2026-08-13T08:26:25.369829+00:00"
     },
     {
       "dependency": "d4_pipeline_code",
       "path_role": "pipeline.py",
-      "sha256": "7cdd93fbd646fbfc9b7ac14411fcc3bc95b7cc5b05b32de29422275022d77f19",
-      "modified_utc": "2026-08-13T03:31:36.648093+00:00"
+      "sha256": "4c9dfbaa3c0068d0476fd8a2f6a1602802bacb31bb9c6c60f5bf7dfa0f79c5a6",
+      "modified_utc": "2026-08-13T08:33:10.776586+00:00"
     },
     {
       "dependency": "d4_scoring_code",

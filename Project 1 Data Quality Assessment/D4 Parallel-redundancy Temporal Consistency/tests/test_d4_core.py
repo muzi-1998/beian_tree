@@ -19,7 +19,8 @@ from d4.scoring import (
 )
 from d4.pipeline import _mapping_id, _phase_labels
 from d4.config import load_config
-from d4.validation import _inject
+from d4.validation import _inject, _time_block_ids
+from d4.episode_validation import _event_runs, _resample_boundaries, _summary
 
 
 def test_identical_pair_has_zero_distance_and_variance_risk():
@@ -91,6 +92,8 @@ def test_mapping_id_binds_fit_period_and_component_version():
         "q90": 0.3, "q97_5": 0.4, "fit_start": "2025-08-01",
         "fit_end": "2026-01-24", "common_support_policy": "synchronous",
         "distribution_component_version": "full-v1",
+        "min_exact_independent_blocks": 6,
+        "support_admission_rule": "minimum_windows_and_independent_7d_blocks",
     }
     changed_period = {**base, "fit_end": "2026-01-31"}
     changed_component = {**base, "distribution_component_version": "w1-only-v1"}
@@ -116,6 +119,41 @@ def test_common_change_challenges_preserve_the_predefined_mechanism_roles():
     assert np.isclose(unequal_reference[-1] / unequal_target[-1], 0.4)
     assert opposite_target[-1] > 0 > opposite_reference[-1]
     assert np.isclose(opposite_target[-1], -opposite_reference[-1])
+
+
+def test_bootstrap_join_cannot_merge_two_distinct_low_score_episodes():
+    score = np.array([2.0, 2.0, 2.0, 2.0, 2.0, 2.0])
+    evaluable = np.ones(6, dtype=bool)
+    merged = _summary(score, evaluable)
+    separated = _summary(
+        score, evaluable, break_before=np.array([False, False, False, True, False, False])
+    )
+    assert merged["n_events"] == 1
+    assert merged["median_duration_h"] == 6
+    assert separated["n_events"] == 2
+    assert separated["median_duration_h"] == 3
+    assert separated["n_evaluable_hours"] == 6
+
+
+def test_circular_wrap_and_resampled_block_joins_are_event_boundaries():
+    sampled = np.array([8, 9, 0, 1, 2, 3, 5, 6, 7, 8, 9, 0])
+    boundaries = _resample_boundaries(sampled, block_hours=6)
+    assert boundaries.tolist() == [
+        False, False, True, False, False, False,
+        True, False, False, False, False, True,
+    ]
+    events = _event_runs(
+        np.full(12, 2.0), np.ones(12, dtype=bool), break_before=boundaries
+    )
+    assert [event["duration_h"] for event in events] == [4.0, 5.0]
+
+
+def test_validation_time_blocks_keep_contemporaneous_pairs_together():
+    timestamps = pd.Series(pd.to_datetime([
+        "2026-02-01", "2026-02-01", "2026-02-07 23:00", "2026-02-08",
+    ], format="mixed"))
+    blocks = _time_block_ids(timestamps, block_days=7)
+    assert blocks.tolist() == [0, 0, 0, 1]
 
 
 def test_quantile_mapping_is_monotone_decreasing():

@@ -1,4 +1,4 @@
-version: d4-v1.5-common-support-frozen-d4-20260813
+version: d4-v1.5.1-statistical-dependence-audit-20260813
 window_hours: 24
 step_hours: 1
 analysis_interval_minutes: 10
@@ -57,6 +57,13 @@ benchmark:
   quantiles: [0.50, 0.75, 0.90, 0.975]
   d5_screen_status: external_D5_gate_not_applied_in_core
   independent_block_days: 7
+  min_exact_independent_blocks: 6
+  percentile_precision:
+    quantile: 0.975
+    bootstrap_repetitions: 600
+    relative_ci_width_diagnostic_limit: 1.00
+    admission_role: evidence_grade_only_pending_preregistered_precision_target
+  independent_block_rationale: provisional_six_week_identifiability_floor_not_precision_guarantee
 
 arbitration:
   d1_unreliable_below: 2.5

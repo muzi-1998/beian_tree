@@ -1,7 +1,7 @@
 {
-  "generated_utc": "2026-08-13T04:20:28.517042+00:00",
+  "generated_utc": "2026-08-13T08:40:31.360211+00:00",
   "d4_input": "D4 Parallel-redundancy Temporal Consistency\\outputs\\data\\D4_main_scores.xlsx",
-  "d4_sha256": "052eb9c50f8f4db9e0a89bcb43db86c18b3651bfcc62e0dabf46a1019cdeb83a",
+  "d4_sha256": "c21738a331d19632cc915e4d29cf692920aeccd346a6c74912f0f52dd4a9ca04",
   "d5_input": "D5 Topological Role Consistency and Structural Representativeness\\outputs\\local\\D5_gate_interface.parquet",
   "d5_sha256": "22b640fa64ff95f0677bdcafea1517c192dd506fc11559efc53db49916918e0e",
   "rows": 42847,
@@ -13,7 +13,7 @@
   "max_abs_numeric_adjustment": 0.0,
   "final_output": "D4 Parallel-redundancy Temporal Consistency\\outputs\\integration\\D4_D5_final_arbitration.parquet",
   "report": "D4 Parallel-redundancy Temporal Consistency\\outputs\\integration\\D4_D5_FINAL_ARBITRATION_REPORT.md",
-  "report_sha256": "aac8a958111f5114783064e5e4118e44a6f75194e5dba302a10e952847dea136",
+  "report_sha256": "6cbf4d5d88d25db90b1cac4752c0e28538d40c734f7c1ee6659727b716c65d62",
   "numeric_source": "D4_raw",
   "d1_role": "interpretation_only",
   "status": "final_independent_D4_with_dual_D5_interfaces"

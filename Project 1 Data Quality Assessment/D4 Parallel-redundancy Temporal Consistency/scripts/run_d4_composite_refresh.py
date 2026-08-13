@@ -17,7 +17,8 @@ from src.confirmatory_v2.composite import run_composite
 from src.confirmatory_v2.d3_safety_gate import run_d3_sensitivity
 
 
-OUTPUT_DIR = D4_ROOT / "outputs" / "integration" / "D4V15_composite_refresh"
+OUTPUT_DIR = D4_ROOT / "outputs" / "integration" / "D4V151_composite_refresh"
+MANIFEST_NAME = "D4V151_composite_refresh_manifest.json"
 
 
 def _sha256(path: Path) -> str:
@@ -30,6 +31,9 @@ def _sha256(path: Path) -> str:
 
 def main() -> None:
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    for stale_manifest in OUTPUT_DIR.glob("D4V*_composite_refresh_manifest.json"):
+        if stale_manifest.name != MANIFEST_NAME:
+            stale_manifest.unlink()
     inputs = {
         "D1": PROJECT_ROOT / "D1 Sensor health" / "outputs" / "data" / "D1_main_scores_min.xlsx",
         "D2": PROJECT_ROOT / "D2 Temporal Continuity & Information Availability" / "artifacts" / "data" / "D2_main_scores_hourly.xlsx",
@@ -48,7 +52,7 @@ def main() -> None:
     output_paths = sorted(OUTPUT_DIR.glob("*.parquet"))
     output_hashes = {path.name: _sha256(path) for path in output_paths}
     run_payload = json.dumps(input_hashes, sort_keys=True).encode("utf-8")
-    run_id = f"D4V15-COMPOSITE-{hashlib.sha256(run_payload).hexdigest()[:12]}"
+    run_id = f"D4V151-COMPOSITE-{hashlib.sha256(run_payload).hexdigest()[:12]}"
 
     node = composite["WWDQS_node_scores"]
     pair = composite["WWDQS_pair_scores"]
@@ -89,11 +93,11 @@ def main() -> None:
             "D5 report availability controls Full versus Basic coverage and must be interpreted explicitly.",
         ],
     }
-    (OUTPUT_DIR / "D4V15_composite_refresh_manifest.json").write_text(
+    (OUTPUT_DIR / MANIFEST_NAME).write_text(
         json.dumps(manifest, indent=2, ensure_ascii=True), encoding="utf-8"
     )
 
-    report = f"""# D4 v1.5 composite refresh
+    report = f"""# D4 v1.5.1 composite refresh
 
 - Run ID: `{run_id}`
 - Status: retrospective SHA-bound refresh; not untouched terminal validation

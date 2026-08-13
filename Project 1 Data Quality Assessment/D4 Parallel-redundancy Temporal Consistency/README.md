@@ -30,12 +30,12 @@ scripts/              reproducible pipeline, validation, and figure entry points
 src/d4/               configuration, scoring, validation, output, and figure code
 tests/                formula and symmetry regression tests
 outputs/data/         current Excel deliverables plus a hash-bound manifest
-outputs/figures/      six main and five supplementary publication figures
+outputs/figures/      six main and six supplementary publication figures
 outputs/figure_source_data/
                       one traceable Excel source workbook per figure
 outputs/qa/           automated figure-bundle QA
-outputs/comparison/   legacy and v1.4-v1.5 method-sensitivity workbooks
-outputs/integration/D4V15_composite_refresh/
+outputs/comparison/   legacy and v1.4-v1.5.1 method-sensitivity workbooks
+outputs/integration/D4V151_composite_refresh/
                       SHA-bound retrospective composite refresh
 legacy/2026-05-30-proxy/
                       preserved proxy-era package; not valid as current results
@@ -54,6 +54,7 @@ python ".\D4 Parallel-redundancy Temporal Consistency\scripts\run_d4_pipeline.py
 python ".\D4 Parallel-redundancy Temporal Consistency\scripts\run_d4_validation.py"
 python ".\D4 Parallel-redundancy Temporal Consistency\scripts\run_d4_episode_validation.py"
 python ".\D4 Parallel-redundancy Temporal Consistency\scripts\run_d4_method_sensitivity.py"
+python ".\D4 Parallel-redundancy Temporal Consistency\scripts\run_d1_d4_redundancy_audit.py"
 python ".\D4 Parallel-redundancy Temporal Consistency\scripts\make_d4_figures.py"
 python ".\D4 Parallel-redundancy Temporal Consistency\scripts\audit_d4_figures.py"
 python ".\D4 Parallel-redundancy Temporal Consistency\scripts\run_d4_d5_readiness.py"
@@ -68,10 +69,13 @@ hashes rather than rely on file modification times.
 
 ## Current acceptance status
 
-The v1.5 raw core uses public variable-by-regime calibration from development-
+The v1.5.1 raw core uses public variable-by-regime calibration from development-
 period high-quality windows (bilateral D1 >= 4.5, bilateral D2 continuity >=
 24 h, and at least 80% synchronous common support). W1 and KS are calculated on
-the same timestamp support. The numeric aggregation source remains `D4_raw`;
+the same timestamp support. Regime-template admission also requires at least six
+independent 7 d development blocks; tail-quantile precision is reported as an
+evidence grade and is not used to tune the threshold retrospectively. The
+numeric aggregation source remains `D4_raw`;
 D1/D2 benchmark admission is an evidence-quality screen, not a score blend.
 Sparse ORP high-quality support requires a documented variable-level fallback
 and remains a calibration limitation. The February-April period is an internal
@@ -84,9 +88,11 @@ not be claimed from the current package.
 
 The six main figures cover the scientific construct, pair-level mechanism
 profile, temporal burden and evaluability, formal field episodes, controlled
-mechanism validation, and component/resolution limitations. Five supplementary
+mechanism validation, and component/resolution limitations. Six supplementary
 figures retain all-pair trajectories, trend concordance, the numeric-
-independence audit, W1/KS construct ablation, and event-duration inference. All
+independence audit, W1/KS construct ablation, and event-duration inference.
+The sixth supplementary figure audits D1-D4 score dependence, formal-event
+overlap, and leave-dimension-out pair-composite sensitivity. All
 quantitative panels use `usable_for_D4` as the
 analysis denominator unless a calibration or integration denominator is stated
 explicitly. Formal field cases are selected from `D4_event_windows.xlsx` and

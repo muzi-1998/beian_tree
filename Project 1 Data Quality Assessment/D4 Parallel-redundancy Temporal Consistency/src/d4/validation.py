@@ -28,22 +28,39 @@ DISTRIBUTION_CHALLENGES = (
     "distribution_tail",
     "distribution_mixture",
 )
+VALIDATION_BLOCK_DAYS = 7
 
 
-def _cluster_bootstrap_interval(
+def _time_block_ids(
+    timestamps: pd.Series,
+    *,
+    block_days: int = VALIDATION_BLOCK_DAYS,
+) -> pd.Series:
+    values = pd.to_datetime(timestamps)
+    anchor = values.min().floor("D")
+    return ((values.dt.floor("D") - anchor).dt.days // block_days).astype(int)
+
+
+def _synchronized_block_bootstrap_interval(
     frame: pd.DataFrame,
     value_fn,
     rng: np.random.Generator,
     *,
-    repetitions: int = 300,
-) -> tuple[float, float]:
-    grouped = [group for _, group in frame.groupby("window_id", sort=False)]
+    repetitions: int = 600,
+    block_days: int = VALIDATION_BLOCK_DAYS,
+) -> tuple[float, float, int]:
+    source = frame.copy()
+    source["_process_time_block"] = _time_block_ids(
+        source["timestamp"], block_days=block_days
+    )
+    grouped = [group for _, group in source.groupby("_process_time_block", sort=True)]
     values = []
     for _ in range(repetitions):
         sampled = rng.integers(0, len(grouped), size=len(grouped))
         draw = pd.concat([grouped[index] for index in sampled], ignore_index=True)
         values.append(float(value_fn(draw)))
-    return tuple(np.quantile(values, [0.025, 0.975]))
+    low, high = np.nanquantile(values, [0.025, 0.975])
+    return float(low), float(high), len(grouped)
 
 
 def _inject(
@@ -199,8 +216,8 @@ def _distribution_internal_ablation(
             positive["window_id"].reset_index(drop=True)
         ):
             raise ValueError(f"Distribution challenge is not paired: {challenge}")
-        n_clusters = len(baseline)
-        labels = np.r_[np.zeros(n_clusters, dtype=int), np.ones(n_clusters, dtype=int)]
+        n_windows = len(baseline)
+        labels = np.r_[np.zeros(n_windows, dtype=int), np.ones(n_windows, dtype=int)]
         point: dict[str, tuple[float, float]] = {}
         for condition, column in score_columns.items():
             risk = 5.0 - np.r_[baseline[column].to_numpy(), positive[column].to_numpy()]
@@ -209,32 +226,26 @@ def _distribution_internal_ablation(
                 float(average_precision_score(labels, risk)),
             )
         for alternative in ("W1-only", "KS-only"):
-            auc_draws = np.empty(repetitions)
-            ap_draws = np.empty(repetitions)
-            for iteration in range(repetitions):
-                sampled = rng.integers(0, n_clusters, n_clusters)
-                draw = np.r_[sampled, sampled + n_clusters]
-                full_risk = 5.0 - np.r_[
-                    baseline[score_columns["Full"]].to_numpy(),
-                    positive[score_columns["Full"]].to_numpy(),
-                ]
-                alternative_risk = 5.0 - np.r_[
-                    baseline[score_columns[alternative]].to_numpy(),
-                    positive[score_columns[alternative]].to_numpy(),
-                ]
-                auc_draws[iteration] = (
-                    roc_auc_score(labels[draw], full_risk[draw])
-                    - roc_auc_score(labels[draw], alternative_risk[draw])
-                )
-                ap_draws[iteration] = (
-                    average_precision_score(labels[draw], full_risk[draw])
-                    - average_precision_score(labels[draw], alternative_risk[draw])
+            paired = pd.concat([
+                baseline.assign(_label=0), positive.assign(_label=1)
+            ], ignore_index=True)
+            def metric_difference(draw: pd.DataFrame, metric_name: str) -> float:
+                draw_labels = draw["_label"].to_numpy(dtype=int)
+                full_risk = 5.0 - draw[score_columns["Full"]].to_numpy(dtype=float)
+                alternative_risk = 5.0 - draw[score_columns[alternative]].to_numpy(dtype=float)
+                metric_fn = roc_auc_score if metric_name == "AUROC" else average_precision_score
+                return float(
+                    metric_fn(draw_labels, full_risk)
+                    - metric_fn(draw_labels, alternative_risk)
                 )
             for metric, metric_index, draws in (
-                ("delta_AUROC_full_minus_alternative", 0, auc_draws),
-                ("delta_AUPRC_full_minus_alternative", 1, ap_draws),
+                ("delta_AUROC_full_minus_alternative", 0, "AUROC"),
+                ("delta_AUPRC_full_minus_alternative", 1, "AUPRC"),
             ):
-                low, high = np.quantile(draws, [0.025, 0.975])
+                low, high, n_blocks = _synchronized_block_bootstrap_interval(
+                    paired, lambda draw, name=draws: metric_difference(draw, name),
+                    rng, repetitions=repetitions,
+                )
                 rows.append({
                     "challenge": challenge,
                     "alternative": alternative,
@@ -244,7 +255,9 @@ def _distribution_internal_ablation(
                     "difference": point["Full"][metric_index] - point[alternative][metric_index],
                     "CI_low": float(low),
                     "CI_high": float(high),
-                    "n_window_clusters": n_clusters,
+                    "n_window_clusters": n_windows,
+                    "n_process_time_blocks": n_blocks,
+                    "bootstrap_unit": "synchronized_7d_process_time_block_all_pairs",
                     "decision_scope": "internal_validation_construct_ablation",
                 })
 
@@ -260,12 +273,11 @@ def _distribution_internal_ablation(
     for condition, column in score_columns.items():
         values = common[column].to_numpy(dtype=float)
         point_far = float((values[eligible] < threshold).mean())
-        draws = np.empty(repetitions)
-        eligible_index = np.flatnonzero(eligible)
-        for iteration in range(repetitions):
-            sampled = rng.choice(eligible_index, size=len(eligible_index), replace=True)
-            draws[iteration] = float((values[sampled] < threshold).mean())
-        low, high = np.quantile(draws, [0.025, 0.975])
+        control = common.loc[eligible, ["timestamp", "window_id", column]].copy()
+        low, high, n_blocks = _synchronized_block_bootstrap_interval(
+            control, lambda draw: (draw[column] < threshold).mean(),
+            rng, repetitions=repetitions,
+        )
         rows.append({
             "challenge": "equal_common_mode_control",
             "alternative": condition,
@@ -276,6 +288,8 @@ def _distribution_internal_ablation(
             "CI_low": float(low),
             "CI_high": float(high),
             "n_window_clusters": int(eligible.sum()),
+            "n_process_time_blocks": n_blocks,
+            "bootstrap_unit": "synchronized_7d_process_time_block_all_pairs",
             "decision_scope": "internal_validation_negative_control",
         })
     return pd.DataFrame(rows)
@@ -398,7 +412,7 @@ def run_validation(
         y = combined["is_unilateral_fault"].astype(int).to_numpy()
         risk = combined["anomaly_score"].to_numpy(dtype=float)
         roc_auc = float(roc_auc_score(y, risk))
-        ci_low, ci_high = _cluster_bootstrap_interval(
+        ci_low, ci_high, n_blocks = _synchronized_block_bootstrap_interval(
             combined,
             lambda draw: roc_auc_score(draw["is_unilateral_fault"].astype(int), draw["anomaly_score"]),
             rng,
@@ -408,6 +422,8 @@ def run_validation(
         summary_rows.append({
             "validation": injection, "metric": "ROC_AUC", "value": roc_auc,
             "CI_low": ci_low, "CI_high": ci_high,
+            "n_process_time_blocks": n_blocks,
+            "bootstrap_unit": "synchronized_7d_process_time_block_all_pairs",
             "target": 0.70, "pass": roc_auc >= 0.70,
             "required_for_acceptance": injection != "unilateral_spike",
             "interpretation": (
@@ -423,13 +439,16 @@ def run_validation(
             curve_rows.append({"injection": injection, "curve": "PR", "x": recall[i], "y": precision[i],
                                "threshold": pr_threshold[i] if i < len(pr_threshold) else np.nan})
     for injection in ("synchronous_switch", "common_mode_drift"):
-        subset = scores[scores["injection"] == injection][["window_id", "D4_raw"]]
+        subset = scores[scores["injection"] == injection][
+            ["window_id", "timestamp", "D4_raw"]
+        ]
         paired = subset.merge(
-            baseline[["window_id", "D4_raw"]], on="window_id", suffixes=("_injected", "_baseline")
+            baseline[["window_id", "D4_raw"]], on="window_id",
+            suffixes=("_injected", "_baseline"), validate="one_to_one",
         )
         paired = paired[paired["D4_raw_baseline"] >= cfg.classification["asymmetry_max"]]
         far = float((paired["D4_raw_injected"] < cfg.classification["asymmetry_max"]).mean())
-        ci_low, ci_high = _cluster_bootstrap_interval(
+        ci_low, ci_high, n_blocks = _synchronized_block_bootstrap_interval(
             paired,
             lambda draw: (draw["D4_raw_injected"] < cfg.classification["asymmetry_max"]).mean(),
             rng,
@@ -437,6 +456,8 @@ def run_validation(
         summary_rows.append({
             "validation": injection, "metric": "new_false_alarm_rate", "value": far,
             "CI_low": ci_low, "CI_high": ci_high,
+            "n_process_time_blocks": n_blocks,
+            "bootstrap_unit": "synchronized_7d_process_time_block_all_pairs",
             "target": 0.10, "pass": far <= 0.10,
             "required_for_acceptance": True,
             "interpretation": "paired conditional FAR among windows that were non-alarming before injection",
@@ -460,11 +481,11 @@ def run_validation(
     )
     for injection, (scenario, role, metric) in common_change_contract.items():
         paired = scores[scores["injection"].eq(injection)][
-            ["window_id", "D4_raw"]
+            ["window_id", "timestamp", "D4_raw"]
         ].merge(baseline_contract, on="window_id", validate="one_to_one")
         paired = paired[paired["D4_raw_baseline"] >= threshold]
         estimate = float((paired["D4_raw"] < threshold).mean())
-        ci_low, ci_high = _cluster_bootstrap_interval(
+        ci_low, ci_high, n_blocks = _synchronized_block_bootstrap_interval(
             paired,
             lambda draw: (draw["D4_raw"] < threshold).mean(),
             rng,
@@ -479,6 +500,8 @@ def run_validation(
             "ci95_low": ci_low,
             "ci95_high": ci_high,
             "n_window_clusters": len(paired),
+            "n_process_time_blocks": n_blocks,
+            "bootstrap_unit": "synchronized_7d_process_time_block_all_pairs",
             "alarm_threshold": threshold,
             "acceptance_target": 0.10 if role == "negative_control" else np.nan,
             "pass": estimate <= 0.10 if role == "negative_control" else pd.NA,
@@ -497,20 +520,22 @@ def run_validation(
         score = validation_set["D4_raw"].to_numpy() if condition == "full" else _ablation_score(validation_set, condition, cfg)
         sync_score = sync["D4_raw"].to_numpy() if condition == "full" else _ablation_score(sync, condition, cfg)
         baseline_score = baseline["D4_raw"].to_numpy() if condition == "full" else _ablation_score(baseline, condition, cfg)
-        scored_validation = validation_set[["window_id", "is_unilateral_fault"]].copy()
+        scored_validation = validation_set[
+            ["window_id", "timestamp", "is_unilateral_fault"]
+        ].copy()
         scored_validation["score"] = score
-        auc_low, auc_high = _cluster_bootstrap_interval(
+        auc_low, auc_high, auc_blocks = _synchronized_block_bootstrap_interval(
             scored_validation,
             lambda draw: roc_auc_score(draw["is_unilateral_fault"].astype(int), 5.0 - draw["score"]),
             rng,
         )
-        scored_sync = sync[["window_id"]].copy()
+        scored_sync = sync[["window_id", "timestamp"]].copy()
         scored_sync["score"] = sync_score
         scored_sync["baseline_score"] = baseline_score
         scored_sync = scored_sync[
             scored_sync["baseline_score"] >= cfg.classification["asymmetry_max"]
         ]
-        far_low, far_high = _cluster_bootstrap_interval(
+        far_low, far_high, far_blocks = _synchronized_block_bootstrap_interval(
             scored_sync,
             lambda draw: (draw["score"] < cfg.classification["asymmetry_max"]).mean(),
             rng,
@@ -522,6 +547,9 @@ def run_validation(
                 (scored_sync["score"] < cfg.classification["asymmetry_max"]).mean()
             ),
             "FAR_CI_low": far_low, "FAR_CI_high": far_high,
+            "AUC_process_time_blocks": auc_blocks,
+            "FAR_process_time_blocks": far_blocks,
+            "bootstrap_unit": "synchronized_7d_process_time_block_all_pairs",
             "n_positive": int(labels.sum()), "n_negative": int((1 - labels).sum()),
         })
     outputs = {

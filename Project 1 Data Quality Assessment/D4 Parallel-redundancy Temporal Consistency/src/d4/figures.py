@@ -15,6 +15,7 @@ from sklearn.metrics import (
 )
 
 from .config import D4Config
+from .validation import _synchronized_block_bootstrap_interval
 from .figure_style import (
     KEY_LINE_WIDTH,
     PALETTE,
@@ -146,6 +147,10 @@ def _day_block_interval(
 def _provenance_table(params: pd.DataFrame) -> pd.DataFrame:
     frame = params[params["regime_id"].notna()].copy()
     frame["regime_id"] = frame["regime_id"].astype(int)
+    if "exact_independent_blocks" not in frame:
+        frame["exact_independent_blocks"] = np.nan
+    if "percentile_precision_grade" not in frame:
+        frame["percentile_precision_grade"] = "not_reported"
     return (
         frame.groupby(["variable", "regime_id"], as_index=False)
         .agg(
@@ -153,6 +158,8 @@ def _provenance_table(params: pd.DataFrame) -> pd.DataFrame:
             exact_stratum_size=("exact_stratum_size", "min"),
             mapping_scope=("mapping_scope", "first"),
             calibration_quality=("calibration_quality", "first"),
+            exact_independent_blocks=("exact_independent_blocks", "min"),
+            percentile_precision_grade=("percentile_precision_grade", "first"),
         )
         .sort_values(["variable", "regime_id"])
     )
@@ -399,12 +406,17 @@ def figure_3_burden_coverage_calibration(
     x = np.arange(len(strata))
     bars = ax_c.bar(x, support, color=[PALETTE["blue"] if label.startswith("DO") else PALETTE["orange"] for label in strata],
                     width=0.68)
-    for bar, ratio, quality in zip(bars, share, provenance["calibration_quality"]):
+    for bar, ratio, quality, n_blocks in zip(
+        bars, share, provenance["calibration_quality"],
+        provenance["exact_independent_blocks"],
+    ):
         if quality != "adequate":
             bar.set_hatch("///")
             bar.set_edgecolor(PALETTE["red"])
+        block_label = f"{int(n_blocks)} x 7 d blocks" if np.isfinite(n_blocks) else "blocks not reported"
         ax_c.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + max(support) * 0.025,
-                  f"{ratio:.0%} exact", ha="center", va="bottom", fontsize=6.0,
+                  f"{ratio:.0%} exact\n{block_label}",
+                  ha="center", va="bottom", fontsize=5.4,
                   color=PALETTE["red"] if quality != "adequate" else PALETTE["gray"])
     ax_c.axhline(100, color=PALETTE["gray"], lw=0.7, ls=(0, (3, 2)), label="Minimum stratum support")
     ax_c.set_ylabel("Calibration windows")
@@ -412,6 +424,9 @@ def figure_3_burden_coverage_calibration(
     if np.any(support <= 0):
         raise ValueError("Calibration support must be strictly positive for the log axis")
     ax_c.set_yscale("log")
+    ax_c.set_ylim(90, 1600)
+    ax_c.set_yticks([100, 300, 1000], ["100", "300", "1000"])
+    ax_c.yaxis.set_minor_formatter(mpl.ticker.NullFormatter())
     ax_c.legend(loc="upper right")
     panel_label(ax_c, "c"); _open(ax_c)
     fig.subplots_adjust(left=0.09, right=0.94, top=0.98, bottom=0.10)
@@ -639,8 +654,8 @@ def _mechanism_ablation(scores: pd.DataFrame, cfg: D4Config) -> pd.DataFrame:
             positive["window_id"].reset_index(drop=True)
         ):
             raise ValueError(f"Unpaired injection windows for {injection}")
-        n_clusters = len(baseline)
-        y = np.r_[np.zeros(n_clusters, dtype=int), np.ones(n_clusters, dtype=int)]
+        n_windows = len(baseline)
+        y = np.r_[np.zeros(n_windows, dtype=int), np.ones(n_windows, dtype=int)]
         full_risk = 5.0 - np.r_[
             score_by_condition(baseline, "full"), score_by_condition(positive, "full")
         ]
@@ -651,15 +666,22 @@ def _mechanism_ablation(scores: pd.DataFrame, cfg: D4Config) -> pd.DataFrame:
                 score_by_condition(positive, condition),
             ]
             point = float(roc_auc_score(y, risk) - full_auc)
-            estimates = np.empty(repetitions, dtype=float)
-            for iteration in range(repetitions):
-                sampled = rng.integers(0, n_clusters, n_clusters)
-                draw = np.r_[sampled, sampled + n_clusters]
-                estimates[iteration] = (
-                    roc_auc_score(y[draw], risk[draw])
-                    - roc_auc_score(y[draw], full_risk[draw])
-                )
-            low, high = np.quantile(estimates, [0.025, 0.975])
+            paired = pd.concat([
+                baseline[["timestamp", "window_id"]].assign(
+                    label=0, risk=risk[:n_windows], full_risk=full_risk[:n_windows]
+                ),
+                positive[["timestamp", "window_id"]].assign(
+                    label=1, risk=risk[n_windows:], full_risk=full_risk[n_windows:]
+                ),
+            ], ignore_index=True)
+            low, high, n_blocks = _synchronized_block_bootstrap_interval(
+                paired,
+                lambda draw: (
+                    roc_auc_score(draw["label"], draw["risk"])
+                    - roc_auc_score(draw["label"], draw["full_risk"])
+                ),
+                rng, repetitions=repetitions,
+            )
             rows.append({
                 "mechanism": label,
                 "condition": condition,
@@ -667,7 +689,9 @@ def _mechanism_ablation(scores: pd.DataFrame, cfg: D4Config) -> pd.DataFrame:
                 "delta": point,
                 "ci_low": float(low),
                 "ci_high": float(high),
-                "n_clusters": n_clusters,
+                "n_window_clusters": n_windows,
+                "n_process_time_blocks": n_blocks,
+                "bootstrap_unit": "synchronized_7d_process_time_block_all_pairs",
             })
 
     common = scores[scores["injection"].eq("common_mode_drift")].sort_values("window_id")
@@ -675,7 +699,6 @@ def _mechanism_ablation(scores: pd.DataFrame, cfg: D4Config) -> pd.DataFrame:
         common["window_id"].reset_index(drop=True)
     ):
         raise ValueError("Unpaired common-mode control windows")
-    n_clusters = len(baseline)
     threshold = cfg.classification["asymmetry_max"]
     full_baseline = score_by_condition(baseline, "full")
     full_common = score_by_condition(common, "full")
@@ -687,17 +710,25 @@ def _mechanism_ablation(scores: pd.DataFrame, cfg: D4Config) -> pd.DataFrame:
         condition_eligible = condition_baseline >= threshold
         condition_far = float((condition_common[condition_eligible] < threshold).mean())
         point = condition_far - full_far
-        estimates = np.empty(repetitions, dtype=float)
-        for iteration in range(repetitions):
-            sampled = rng.integers(0, n_clusters, n_clusters)
-            draw_full = full_eligible[sampled]
-            draw_condition = condition_eligible[sampled]
-            sampled_full_far = float((full_common[sampled][draw_full] < threshold).mean())
-            sampled_condition_far = float(
-                (condition_common[sampled][draw_condition] < threshold).mean()
+        paired = baseline[["timestamp", "window_id"]].copy()
+        paired["full_baseline"] = full_baseline
+        paired["condition_baseline"] = condition_baseline
+        paired["full_common"] = full_common
+        paired["condition_common"] = condition_common
+
+        def far_difference(draw: pd.DataFrame) -> float:
+            full_ok = draw["full_baseline"] >= threshold
+            condition_ok = draw["condition_baseline"] >= threshold
+            if not full_ok.any() or not condition_ok.any():
+                return np.nan
+            return float(
+                (draw.loc[condition_ok, "condition_common"] < threshold).mean()
+                - (draw.loc[full_ok, "full_common"] < threshold).mean()
             )
-            estimates[iteration] = sampled_condition_far - sampled_full_far
-        low, high = np.quantile(estimates, [0.025, 0.975])
+
+        low, high, n_blocks = _synchronized_block_bootstrap_interval(
+            paired, far_difference, rng, repetitions=repetitions,
+        )
         rows.append({
             "mechanism": "Equal common-mode control",
             "condition": condition,
@@ -705,7 +736,9 @@ def _mechanism_ablation(scores: pd.DataFrame, cfg: D4Config) -> pd.DataFrame:
             "delta": point,
             "ci_low": float(low),
             "ci_high": float(high),
-            "n_clusters": n_clusters,
+            "n_window_clusters": len(baseline),
+            "n_process_time_blocks": n_blocks,
+            "bootstrap_unit": "synchronized_7d_process_time_block_all_pairs",
         })
     return pd.DataFrame(rows)
 
@@ -742,7 +775,7 @@ def figure_6_ablation_resolution(
     axes[0].set_yticks(np.arange(len(conditions)), condition_labels)
     cbar = fig.colorbar(image, ax=axes[0], fraction=0.045, pad=0.03)
     cbar.set_label("Delta AUROC vs full")
-    axes[0].text(0.0, -0.35, "* 95% cluster-bootstrap CI excludes zero",
+    axes[0].text(0.0, -0.35, "* 95% synchronized 7 d block CI excludes zero",
                  transform=axes[0].transAxes, fontsize=5.8, color=PALETTE["gray"])
     panel_label(axes[0], "a"); _boxed(axes[0])
 
@@ -922,7 +955,7 @@ def supplementary_4_distribution_construct(
     axes[0].set_xlabel("Delta AUROC (Full - single distance)")
     axes[0].legend(loc="lower right")
     axes[0].text(
-        0.0, -0.23, "n = 126 paired windows per challenge; 95% cluster-bootstrap CI",
+        0.0, -0.23, "n = 126 paired windows; 95% synchronized 7 d block CI",
         transform=axes[0].transAxes, fontsize=5.8, color=PALETTE["gray"],
         clip_on=False,
     )
@@ -1014,6 +1047,72 @@ def supplementary_5_episode_duration(
     })
 
 
+def supplementary_6_d1_d4_redundancy(
+    audit_path: Path,
+    output_dir: Path,
+    source_dir: Path,
+) -> None:
+    score = pd.read_excel(audit_path, sheet_name="score_dependence")
+    event = pd.read_excel(audit_path, sheet_name="event_hour_overlap")
+    ablation = pd.read_excel(audit_path, sheet_name="composite_ablation")
+    pair_score = score[score["scope"].ne("pooled")].set_index("scope").reindex(PAIR_ORDER)
+    event = event.set_index("pair_id").reindex(PAIR_ORDER)
+    labels = [_pair_label(pair) for pair in PAIR_ORDER]
+    fig, axes = plt.subplots(
+        1, 3, figsize=(FIG_WIDTH_MM / 25.4, 70 / 25.4),
+        gridspec_kw={"width_ratios": [1.15, 1.1, 1.0], "wspace": 0.52},
+    )
+    y = np.arange(len(PAIR_ORDER))
+    axes[0].hlines(
+        y, pair_score["spearman_D1min_D4_CI_low"],
+        pair_score["spearman_D1min_D4_CI_high"], color=PALETTE["mid_gray"], lw=1.2,
+    )
+    axes[0].scatter(pair_score["spearman_D1min_D4"], y, color=PALETTE["blue"], s=25)
+    axes[0].axvline(0, color=PALETTE["black"], lw=0.7)
+    axes[0].set_yticks(y, labels); axes[0].invert_yaxis()
+    axes[0].set_xlabel("Spearman rho (D1 pair minimum vs D4)")
+    panel_label(axes[0], "a"); _open(axes[0])
+
+    axes[1].barh(y, event["event_hour_jaccard"], color=PALETTE["green"])
+    axes[1].set_yticks(y, [])
+    axes[1].invert_yaxis()
+    axes[1].set_xlim(0, max(0.25, float(event["event_hour_jaccard"].max()) * 1.15))
+    axes[1].set_xlabel("Formal event-hour Jaccard")
+    panel_label(axes[1], "b"); _open(axes[1])
+
+    variants = ablation.set_index("variant").reindex(["without_D1", "without_D4"])
+    x = np.arange(len(variants))
+    axes[2].bar(
+        x, variants["mean_score_change"],
+        color=[PALETTE["orange"], PALETTE["purple"]], width=0.62,
+    )
+    axes[2].errorbar(
+        x, variants["mean_score_change"],
+        yerr=np.vstack([
+            variants["mean_score_change"] - variants["mean_score_change_CI_low"],
+            variants["mean_score_change_CI_high"] - variants["mean_score_change"],
+        ]),
+        fmt="none", ecolor=PALETTE["black"], lw=0.8, capsize=2,
+    )
+    axes[2].axhline(0, color=PALETTE["black"], lw=0.7)
+    axes[2].set_xticks(x, ["Leave D1 out", "Leave D4 out"], rotation=24, ha="right")
+    axes[2].set_ylabel("Pair-composite score change")
+    panel_label(axes[2], "c"); _open(axes[2])
+    fig.text(
+        0.99, 0.01,
+        "Association and ablation; incremental validity awaits an independent criterion",
+        ha="right", va="bottom", fontsize=6.0, color=PALETTE["red"],
+    )
+    fig.subplots_adjust(left=0.11, right=0.99, top=0.94, bottom=0.25)
+    stem = "FigS6_d1_d4_redundancy_audit"
+    _save_publication_figure(fig, output_dir / stem)
+    _write_source(source_dir, stem, {
+        "score_dependence": score,
+        "event_hour_overlap": event.reset_index(),
+        "composite_ablation": ablation,
+    })
+
+
 def make_all_figures(cfg: D4Config, data_dir: Path, output_dir: Path) -> None:
     configure_style()
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -1052,4 +1151,7 @@ def make_all_figures(cfg: D4Config, data_dir: Path, output_dir: Path) -> None:
     )
     supplementary_5_episode_duration(
         data_dir / "D4_event_duration_validation.xlsx", output_dir, source_dir
+    )
+    supplementary_6_d1_d4_redundancy(
+        data_dir / "D1_D4_redundancy_audit.xlsx", output_dir, source_dir
     )

@@ -32,6 +32,7 @@ EXPECTED_STEMS = (
     "FigS3_numeric_independence_audit",
     "FigS4_distribution_construct_ablation",
     "FigS5_do14_episode_duration",
+    "FigS6_d1_d4_redundancy_audit",
 )
 VALIDATOR_CANDIDATES = (
     (
@@ -162,7 +163,7 @@ def main() -> None:
         "audit_version": "d4-nature-figure-audit-v1.0",
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
         "backend": "python",
-        "figure_contract": {"main": 6, "supplementary": 5, "observed": len(rows)},
+        "figure_contract": {"main": 6, "supplementary": 6, "observed": len(rows)},
         "nature_preflight": preflight,
         "unexpected_png_stems": unexpected,
         "missing_png_stems": missing,

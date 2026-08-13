@@ -105,7 +105,7 @@ def run_method_sensitivity(
     event_comparison = _event_overlap(old_events, new_events)
     contract = pd.DataFrame([{
         "legacy_version": "d4-v1.4-canonical-d4-20260726",
-        "current_version": "d4-v1.5-common-support-frozen-d4-20260813",
+        "current_version": "d4-v1.5.1-statistical-dependence-audit-20260813",
         "primary_changes": "common synchronous support; development-only mapping",
         "concurrent_dependency_change": "D2 process-floor release updated between runs",
         "interpretation": (

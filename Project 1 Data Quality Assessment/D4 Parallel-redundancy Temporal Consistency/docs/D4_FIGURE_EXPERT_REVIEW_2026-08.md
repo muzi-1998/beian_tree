@@ -3,7 +3,7 @@
 ## Scope and locked scientific boundary
 
 This revision implements the 12 August 2026 figure review and the 13 August
-methodology audit. The plotted core is the current hash-bound D4 v1.5 release:
+methodology audit. The plotted core is the current hash-bound D4 v1.5.1 release:
 42,847 pair-windows across seven homologous pairs.
 `D4_raw` is the independent numeric dimension; D2 controls evaluability, while
 D1 and D5 provide interpretation or attribution governance and cannot rewrite
@@ -27,7 +27,7 @@ the D4 value.
    negative control, unequal/opposite positive controls, and pair-level
    heterogeneity. Spike remains a D1-owned secondary challenge.
 6. `FigD4_6_ablation_and_lag_resolution` replaces pooled-only interpretation
-   with mechanism-specific paired-window cluster-bootstrap deltas and preserves
+   with mechanism-specific synchronized time-block bootstrap deltas and preserves
    the negative sub-hour lag result.
 
 ## Supplementary decisions
@@ -36,7 +36,8 @@ the D4 value.
 trend concordance and robust slope differences; `FigS3` verifies that finalized
 D4 equals `D4_raw` and that D1/D5 context does not numerically alter the score;
 `FigS4` reports W1/KS construct ablation; and `FigS5` reports the time-block
-bootstrap event-duration analysis for DO14.
+bootstrap event-duration analysis for DO14. `FigS6` reports D1-D4 dependence,
+formal-event overlap, and leave-dimension-out pair-composite sensitivity.
 The superseded eight-figure bundle is removed by the reproducible figure entry
 point rather than retained beside current results.
 

@@ -16,30 +16,52 @@ def _event_runs(
     *,
     threshold: float = 3.0,
     min_hours: int = 3,
+    break_before: np.ndarray | None = None,
 ) -> list[dict[str, float]]:
     values = np.asarray(score, dtype=float)
     valid = np.asarray(evaluable, dtype=bool) & np.isfinite(values)
     active = valid & (values < threshold)
-    transitions = np.flatnonzero(np.diff(np.r_[False, active, False].astype(int)))
+    boundaries = (
+        np.zeros(len(values), dtype=bool)
+        if break_before is None
+        else np.asarray(break_before, dtype=bool)
+    )
+    if boundaries.shape != active.shape:
+        raise ValueError("break_before must have the same shape as score")
+    segment_starts = np.flatnonzero(boundaries)
+    segment_starts = np.unique(np.r_[0, segment_starts])
+    segment_stops = np.r_[segment_starts[1:], len(values)]
     events: list[dict[str, float]] = []
-    for start, stop in transitions.reshape(-1, 2):
-        duration = stop - start
-        if duration < min_hours:
-            continue
-        segment = values[start:stop]
-        events.append({
-            "start_index": float(start),
-            "end_index": float(stop - 1),
-            "duration_h": float(duration),
-            "min_D4_raw": float(np.nanmin(segment)),
-            "mean_D4_raw": float(np.nanmean(segment)),
-            "area_below_3": float(np.nansum(threshold - segment)),
-        })
+    for segment_start, segment_stop in zip(segment_starts, segment_stops):
+        local_active = active[segment_start:segment_stop]
+        transitions = np.flatnonzero(
+            np.diff(np.r_[False, local_active, False].astype(int))
+        )
+        for local_start, local_stop in transitions.reshape(-1, 2):
+            start = int(segment_start + local_start)
+            stop = int(segment_start + local_stop)
+            duration = stop - start
+            if duration < min_hours:
+                continue
+            segment = values[start:stop]
+            events.append({
+                "start_index": float(start),
+                "end_index": float(stop - 1),
+                "duration_h": float(duration),
+                "min_D4_raw": float(np.nanmin(segment)),
+                "mean_D4_raw": float(np.nanmean(segment)),
+                "area_below_3": float(np.nansum(threshold - segment)),
+            })
     return events
 
 
-def _summary(score: np.ndarray, evaluable: np.ndarray) -> dict[str, float]:
-    events = _event_runs(score, evaluable)
+def _summary(
+    score: np.ndarray,
+    evaluable: np.ndarray,
+    *,
+    break_before: np.ndarray | None = None,
+) -> dict[str, float]:
+    events = _event_runs(score, evaluable, break_before=break_before)
     durations = np.asarray([event["duration_h"] for event in events], dtype=float)
     valid = np.asarray(evaluable, dtype=bool) & np.isfinite(score)
     active_hours = float(sum(event["duration_h"] for event in events))
@@ -76,6 +98,18 @@ def _circular_block_indices(
     starts = rng.integers(0, n, size=blocks)
     offsets = np.arange(block_hours)
     return np.concatenate([(start + offsets) % n for start in starts])[:n]
+
+
+def _resample_boundaries(indices: np.ndarray, block_hours: int) -> np.ndarray:
+    """Mark joins that cannot represent continuous observed-time episodes."""
+    sampled = np.asarray(indices, dtype=int)
+    boundaries = np.zeros(len(sampled), dtype=bool)
+    boundaries[np.arange(block_hours, len(sampled), block_hours)] = True
+    if len(sampled) > 1:
+        # A circular block that wraps from the study end to its beginning must
+        # also be split because those observations were never adjacent in time.
+        boundaries[1:] |= sampled[1:] < sampled[:-1]
+    return boundaries
 
 
 def _contrast(pair_stats: dict[str, dict[str, float]]) -> dict[str, float]:
@@ -133,8 +167,11 @@ def run_episode_validation(
         draws = {metric: np.empty(repetitions) for metric in point_contrast}
         for repetition in range(repetitions):
             sampled = _circular_block_indices(len(timestamps), block_hours, rng)
+            break_before = _resample_boundaries(sampled, block_hours)
             sampled_stats = {
-                pair_id: _summary(score[sampled], evaluable[sampled])
+                pair_id: _summary(
+                    score[sampled], evaluable[sampled], break_before=break_before
+                )
                 for pair_id, (score, evaluable) in pair_arrays.items()
             }
             contrast = _contrast(sampled_stats)
@@ -160,7 +197,10 @@ def run_episode_validation(
                 "CI_high": float(high),
                 "block_hours": block_hours,
                 "bootstrap_repetitions": repetitions,
-                "bootstrap_unit": "synchronous_moving_time_block_with_event_reextraction",
+                "bootstrap_unit": (
+                    "synchronous_circular_moving_time_block_with_explicit_"
+                    "join_and_wrap_event_breaks"
+                ),
             })
 
     contract = pd.DataFrame([{
@@ -169,6 +209,10 @@ def run_episode_validation(
         "event_threshold": "D4_raw<3",
         "minimum_duration_hours": 3,
         "independent_unit": "synchronous time block across homologous pairs",
+        "block_boundary_contract": (
+            "events are re-extracted within continuous sampled segments; joins "
+            "between sampled blocks and circular study-end wraps cannot merge"
+        ),
         "inference_scope": "retrospective episode-duration confirmation; no sensor causality",
     }])
     outputs = {

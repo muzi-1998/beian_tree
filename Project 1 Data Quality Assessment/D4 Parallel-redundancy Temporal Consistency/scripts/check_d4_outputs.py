@@ -27,6 +27,7 @@ EXPECTED_FIGURES = {
     "FigS3_numeric_independence_audit",
     "FigS4_distribution_construct_ablation",
     "FigS5_do14_episode_duration",
+    "FigS6_d1_d4_redundancy_audit",
 }
 
 
@@ -46,6 +47,10 @@ def main() -> None:
     validation = pd.read_excel(DATA / "D4_benchmark_results.xlsx", sheet_name="summary")
     common_change = pd.read_excel(
         DATA / "D4_benchmark_results.xlsx", sheet_name="common_change_contract"
+    )
+    redundancy = pd.read_excel(DATA / "D1_D4_redundancy_audit.xlsx", sheet_name="score_dependence")
+    redundancy_contract = pd.read_excel(
+        DATA / "D1_D4_redundancy_audit.xlsx", sheet_name="method_contract"
     )
     expected_base = (
         0.35 * scores["Q_dist"] + 0.25 * scores["Q_trend"]
@@ -76,16 +81,18 @@ def main() -> None:
         (COMPARISON / f"{comparison_stem}.{suffix}").exists()
         for suffix in ("png", "svg", "pdf")
     ) and (COMPARISON / "D4_three_version_sensitivity.xlsx").exists()
+    method_sensitivity_ok = (
+        COMPARISON / "D4_v14_v151_method_sensitivity.xlsx"
+    ).exists()
     integration_manifest = json.loads(
         (INTEGRATION / "D4_D5_aggregation_readiness_manifest.json").read_text(
             encoding="utf-8"
         )
     )
+    composite_dir = INTEGRATION / "D4V151_composite_refresh"
+    composite_manifest_files = sorted(composite_dir.glob("D4V*_composite_refresh_manifest.json"))
     composite_refresh_manifest = json.loads(
-        (
-            INTEGRATION / "D4V15_composite_refresh"
-            / "D4V15_composite_refresh_manifest.json"
-        ).read_text(encoding="utf-8")
+        (composite_dir / "D4V151_composite_refresh_manifest.json").read_text(encoding="utf-8")
     )
     common_roles = common_change.set_index("scenario")["role"].to_dict()
     equal_far = float(
@@ -104,6 +111,31 @@ def main() -> None:
         "calibration_min_n": int(params["sample_size"].min()),
         "calibration_sources": sorted(params["benchmark_source"].drop_duplicates().tolist()),
         "pair_specific_mapping_count": int(params["mapping_scope"].str.contains("pair", case=False).sum()),
+        "calibration_support_rule_consistent": bool(
+            (
+                params["mapping_scope"].eq("variable_regime_public")
+                == (
+                    params["exact_stratum_size"].ge(100)
+                    & params["exact_independent_blocks"].ge(
+                        params["min_exact_independent_blocks"]
+                    )
+                )
+            ).all()
+        ),
+        "ORP_fallback_regimes": sorted(
+            params.loc[
+                params["variable"].eq("ORP")
+                & params["regime_id"].notna()
+                & params["mapping_scope"].ne("variable_regime_public"),
+                "regime_id",
+            ].astype(int).unique().tolist()
+        ),
+        "wide_percentile_precision_rows": int(
+            params["percentile_precision_grade"].eq("wide_interval").sum()
+        ),
+        "wide_exact_candidate_precision_rows": int(
+            params["exact_candidate_percentile_precision_grade"].eq("wide_interval").sum()
+        ),
         "benchmark_D1_violations": int(
             (benchmark["D1_target"].lt(4.5) | benchmark["D1_ref"].lt(4.5)).sum()
         ),
@@ -145,11 +177,22 @@ def main() -> None:
             == _sha256(DATA / "D4_main_scores.xlsx")
         ),
         "composite_refresh_numeric_source": composite_refresh_manifest["D4_numeric_source"],
+        "composite_manifest_files": [path.name for path in composite_manifest_files],
+        "composite_manifest_unique": bool(
+            [path.name for path in composite_manifest_files]
+            == ["D4V151_composite_refresh_manifest.json"]
+        ),
+        "redundancy_pooled_row_count": int(redundancy["scope"].eq("pooled").sum()),
+        "redundancy_incremental_validity_pending": bool(
+            redundancy_contract["incremental_validity_status"].iloc[0]
+            == "pending_independent_downstream_criterion"
+        ),
         "figure_stems": len(stems),
         "figure_stems_exact": stems == EXPECTED_FIGURES,
         "missing_figure_counterparts": missing_counterparts,
         "missing_figure_source_data": missing_source_data,
         "comparison_bundle_ok": bool(comparison_bundle_ok),
+        "method_sensitivity_ok": bool(method_sensitivity_ok),
     }
     checks["passed"] = bool(
         checks["pairs"] == 7
@@ -159,6 +202,10 @@ def main() -> None:
         and checks["d2_gate_mismatch_count"] == 0
         and checks["calibration_min_n"] >= 50
         and checks["pair_specific_mapping_count"] == 0
+        and checks["calibration_support_rule_consistent"]
+        and checks["ORP_fallback_regimes"] == [0, 1, 3]
+        and checks["wide_percentile_precision_rows"] > 0
+        and checks["wide_exact_candidate_precision_rows"] > 0
         and checks["benchmark_D1_violations"] == 0
         and checks["benchmark_D2_continuity_violations"] == 0
         and checks["benchmark_non_development_rows"] == 0
@@ -178,11 +225,15 @@ def main() -> None:
         == "retrospective_sha_bound_refresh_not_untouched_terminal_validation"
         and checks["composite_refresh_d4_hash_matches"]
         and checks["composite_refresh_numeric_source"] == "D4_raw"
-        and checks["figure_stems"] == 11
+        and checks["composite_manifest_unique"]
+        and checks["redundancy_pooled_row_count"] == 1
+        and checks["redundancy_incremental_validity_pending"]
+        and checks["figure_stems"] == 12
         and checks["figure_stems_exact"]
         and not checks["missing_figure_counterparts"]
         and not checks["missing_figure_source_data"]
         and checks["comparison_bundle_ok"]
+        and checks["method_sensitivity_ok"]
     )
     QA.mkdir(parents=True, exist_ok=True)
     (QA / "numerical_qa.json").write_text(json.dumps(checks, indent=2), encoding="utf-8")

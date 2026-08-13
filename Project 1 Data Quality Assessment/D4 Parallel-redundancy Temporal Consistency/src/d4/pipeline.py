@@ -47,12 +47,17 @@ def _phase_labels(timestamps: pd.Series, cfg: D4Config) -> np.ndarray:
     )
 
 
-def _independent_block_count(frame: pd.DataFrame, block_days: int) -> int:
+def _independent_block_count(
+    frame: pd.DataFrame,
+    block_days: int,
+    *,
+    anchor: pd.Timestamp | str | None = None,
+) -> int:
     if frame.empty:
         return 0
     days = pd.to_datetime(frame["timestamp"]).dt.floor("D")
-    anchor = days.min()
-    return int(((days - anchor).dt.days // int(block_days)).nunique())
+    block_anchor = days.min() if anchor is None else pd.Timestamp(anchor).floor("D")
+    return int(((days - block_anchor).dt.days // int(block_days)).nunique())
 
 
 def _mapping_id(row: dict[str, object]) -> str:
@@ -62,12 +67,49 @@ def _mapping_id(row: dict[str, object]) -> str:
             "variable", "regime_id", "subscore", "risk_metric",
             "q50", "q75", "q90", "q97_5", "fit_start", "fit_end",
             "common_support_policy", "distribution_component_version",
+            "min_exact_independent_blocks", "support_admission_rule",
         )
     }
     digest = hashlib.sha256(
         json.dumps(bound_fields, sort_keys=True).encode("utf-8")
     ).hexdigest()[:12]
     return f"{row['variable']}-R{row['regime_id']}-{row['subscore']}-{digest}"
+
+
+def _block_quantile_precision(
+    frame: pd.DataFrame,
+    value_column: str,
+    *,
+    block_days: int,
+    repetitions: int,
+    seed: int,
+    anchor: pd.Timestamp | str,
+) -> dict[str, float | str]:
+    source = frame.loc[frame[value_column].notna(), ["timestamp", value_column]].copy()
+    days = pd.to_datetime(source["timestamp"]).dt.floor("D")
+    source["_block"] = (
+        (days - pd.Timestamp(anchor).floor("D")).dt.days // int(block_days)
+    )
+    blocks = [group[value_column].to_numpy(dtype=float) for _, group in source.groupby("_block")]
+    rng = np.random.Generator(np.random.PCG64(seed))
+    draws = {0.90: np.empty(repetitions), 0.975: np.empty(repetitions)}
+    for iteration in range(repetitions):
+        sampled = rng.integers(0, len(blocks), len(blocks))
+        values = np.concatenate([blocks[index] for index in sampled])
+        for quantile in draws:
+            draws[quantile][iteration] = np.quantile(values, quantile)
+    output: dict[str, float | str] = {}
+    relative_widths = []
+    for quantile, label in ((0.90, "q90"), (0.975, "q97_5")):
+        point = float(source[value_column].quantile(quantile))
+        low, high = np.quantile(draws[quantile], [0.025, 0.975])
+        relative_width = float((high - low) / max(abs(point), 1e-12))
+        output[f"{label}_block_CI_low"] = float(low)
+        output[f"{label}_block_CI_high"] = float(high)
+        output[f"{label}_relative_CI_width"] = relative_width
+        relative_widths.append(relative_width)
+    output["percentile_precision_max_relative_CI_width"] = max(relative_widths)
+    return output
 
 
 def _load_context(
@@ -232,6 +274,11 @@ def _fit_and_score(
     quantile_levels = np.asarray(cfg.benchmark["quantiles"], dtype=float)
     min_stratum = int(cfg.benchmark["min_stratum_windows"])
     min_variable = int(cfg.benchmark["min_variable_windows"])
+    independent_block_days = int(cfg.benchmark["independent_block_days"])
+    min_exact_blocks = int(cfg.benchmark["min_exact_independent_blocks"])
+    precision_cfg = cfg.benchmark["percentile_precision"]
+    precision_repetitions = int(precision_cfg["bootstrap_repetitions"])
+    precision_limit = float(precision_cfg["relative_ci_width_diagnostic_limit"])
     risk_to_q = {
         "risk_dist": ("Q_dist", "production"),
         "risk_dist_w1": ("Q_dist_w1_candidate", "construct_ablation_only"),
@@ -253,18 +300,38 @@ def _fit_and_score(
             benchmark["variable"].eq(variable) & benchmark["regime_id"].eq(regime_value)
         ]
         variable_pool = benchmark[benchmark["variable"].eq(variable)]
-        if len(exact_pool) >= min_stratum:
+        block_anchor = pd.Timestamp(cfg.phase_contract["development_start"])
+        exact_blocks = _independent_block_count(
+            exact_pool, independent_block_days, anchor=block_anchor
+        )
+        variable_blocks = _independent_block_count(
+            variable_pool, independent_block_days, anchor=block_anchor
+        )
+        if len(exact_pool) >= min_stratum and exact_blocks >= min_exact_blocks:
             calibration = exact_pool
             mapping_scope = "variable_regime_public"
             calibration_quality = "adequate"
-        elif len(variable_pool) >= min_variable:
+            fallback_reason = "none"
+        elif len(variable_pool) >= min_variable and variable_blocks >= min_exact_blocks:
             calibration = variable_pool
             mapping_scope = "variable_public_fallback"
             calibration_quality = "limited_regime_support"
+            failures = []
+            if len(exact_pool) < min_stratum:
+                failures.append(f"exact_windows={len(exact_pool)}<{min_stratum}")
+            if exact_blocks < min_exact_blocks:
+                failures.append(
+                    f"exact_independent_blocks={exact_blocks}<{min_exact_blocks}"
+                )
+            fallback_reason = "; ".join(failures)
         else:
             calibration = benchmark
             mapping_scope = "global_normalized_fallback"
             calibration_quality = "insufficient_variable_support"
+            fallback_reason = (
+                f"variable_windows={len(variable_pool)}<{min_variable} or "
+                f"variable_independent_blocks={variable_blocks}<{min_exact_blocks}"
+            )
         if calibration.empty:
             raise ValueError("No v1.2 high-quality benchmark windows are available")
         for risk_column, (q_column, mapping_role) in risk_to_q.items():
@@ -273,6 +340,54 @@ def _fit_and_score(
             if len(values) < 4:
                 raise ValueError(f"Insufficient calibration values for {variable}/{regime_value}/{q_column}")
             thresholds = np.quantile(values, quantile_levels)
+            precision_seed = int(hashlib.sha256(
+                f"{variable}|{regime_value}|{risk_column}|D4V151".encode("utf-8")
+            ).hexdigest()[:8], 16)
+            precision = _block_quantile_precision(
+                calibration_rows, risk_column,
+                block_days=independent_block_days,
+                repetitions=precision_repetitions,
+                seed=precision_seed,
+                anchor=block_anchor,
+            )
+            exact_precision: dict[str, float | str] = {}
+            exact_risk_rows = exact_pool.loc[exact_pool[risk_column].notna()].copy()
+            if len(exact_risk_rows) >= 4 and exact_blocks >= 2:
+                raw_exact_precision = _block_quantile_precision(
+                    exact_risk_rows, risk_column,
+                    block_days=independent_block_days,
+                    repetitions=precision_repetitions,
+                    seed=precision_seed + 1,
+                    anchor=block_anchor,
+                )
+                exact_precision = {
+                    f"exact_candidate_{key}": value
+                    for key, value in raw_exact_precision.items()
+                }
+                exact_precision_grade = (
+                    "supported"
+                    if float(raw_exact_precision[
+                        "percentile_precision_max_relative_CI_width"
+                    ]) <= precision_limit
+                    else "wide_interval"
+                )
+            else:
+                exact_precision_grade = "insufficient_independent_support"
+            precision_grade = (
+                "supported"
+                if float(precision["percentile_precision_max_relative_CI_width"])
+                <= precision_limit
+                else "wide_interval"
+            )
+            mapping_evidence_quality = (
+                "fallback_limited_regime_support"
+                if mapping_scope != "variable_regime_public"
+                else (
+                    "admitted_minimum_support_tail_precision_wide"
+                    if precision_grade == "wide_interval"
+                    else "admitted_supported_precision"
+                )
+            )
             frame.loc[target_mask, q_column] = score_from_quantiles(
                 frame.loc[target_mask, risk_column].to_numpy(dtype=float), thresholds
             )
@@ -288,14 +403,22 @@ def _fit_and_score(
                 "sample_size": len(values),
                 "exact_stratum_size": len(exact_pool),
                 "independent_blocks": _independent_block_count(
-                    calibration_rows, int(cfg.benchmark["independent_block_days"])
+                    calibration_rows, independent_block_days, anchor=block_anchor
                 ),
-                "exact_independent_blocks": _independent_block_count(
-                    exact_pool.loc[exact_pool[risk_column].notna()],
-                    int(cfg.benchmark["independent_block_days"]),
-                ),
+                "exact_independent_blocks": exact_blocks,
+                "variable_independent_blocks": variable_blocks,
+                "min_exact_independent_blocks": min_exact_blocks,
+                "support_admission_rule": "minimum_windows_and_independent_7d_blocks",
+                "fallback_reason": fallback_reason,
                 "mapping_scope": mapping_scope,
                 "calibration_quality": calibration_quality,
+                "mapping_evidence_quality": mapping_evidence_quality,
+                "percentile_precision_grade": precision_grade,
+                "exact_candidate_percentile_precision_grade": exact_precision_grade,
+                "percentile_precision_role": precision_cfg["admission_role"],
+                "percentile_precision_bootstrap_repetitions": precision_repetitions,
+                **precision,
+                **exact_precision,
                 "mapping_role": mapping_role,
                 "fit_phase": "development",
                 "fit_start": calibration_rows["timestamp"].min(),
@@ -463,7 +586,7 @@ def run_pipeline(project_root: Path, d4_root: Path) -> dict[str, object]:
     cfg = load_config(config_path, project_root)
     output_dir = d4_root / "outputs" / "data"
     output_dir.mkdir(parents=True, exist_ok=True)
-    run_id = datetime.now(timezone.utc).strftime("D4V15_%Y%m%d_%H%M%S")
+    run_id = datetime.now(timezone.utc).strftime("D4V151_%Y%m%d_%H%M%S")
 
     residuals = pd.read_parquet(cfg.paths["residuals"])
     columns = sorted({p.target for p in cfg.pairs} | {p.reference for p in cfg.pairs})
@@ -475,7 +598,7 @@ def run_pipeline(project_root: Path, d4_root: Path) -> dict[str, object]:
     calibration_digest = hashlib.sha256(
         pd.util.hash_pandas_object(params.fillna("<NA>"), index=False).to_numpy().tobytes()
     ).hexdigest()
-    calibration_id = f"D4CAL-V15-{calibration_digest[:12]}"
+    calibration_id = f"D4CAL-V151-{calibration_digest[:12]}"
     main["run_id"] = run_id
     main["config_version"] = cfg.version
     main["calibration_id"] = calibration_id
@@ -533,6 +656,9 @@ def run_pipeline(project_root: Path, d4_root: Path) -> dict[str, object]:
             "terminal_status": cfg.phase_contract["terminal_status"],
             "common_support_contract": cfg.common_support["policy"],
             "distribution_component_version": cfg.distribution["component_version"],
+            "calibration_support_rule": "minimum_windows_and_independent_7d_blocks",
+            "min_exact_independent_blocks": cfg.benchmark["min_exact_independent_blocks"],
+            "percentile_precision_role": cfg.benchmark["percentile_precision"]["admission_role"],
         }]),
     })
     _write_excel(output_dir / "D4_pair_benchmark_library.xlsx", {
@@ -617,6 +743,13 @@ def run_pipeline(project_root: Path, d4_root: Path) -> dict[str, object]:
         "phase_contract": cfg.phase_contract,
         "common_support_contract": cfg.common_support,
         "distribution_component_version": cfg.distribution["component_version"],
+        "calibration_support_contract": {
+            "min_stratum_windows": cfg.benchmark["min_stratum_windows"],
+            "min_variable_windows": cfg.benchmark["min_variable_windows"],
+            "independent_block_days": cfg.benchmark["independent_block_days"],
+            "min_exact_independent_blocks": cfg.benchmark["min_exact_independent_blocks"],
+            "percentile_precision": cfg.benchmark["percentile_precision"],
+        },
         "terminal_status": cfg.phase_contract["terminal_status"],
         "dependencies": dependencies,
         "scientific_boundary": (

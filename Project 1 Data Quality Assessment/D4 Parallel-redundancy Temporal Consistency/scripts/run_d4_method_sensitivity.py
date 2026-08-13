@@ -14,6 +14,6 @@ if __name__ == "__main__":
     outputs = run_method_sensitivity(
         D4_ROOT / "legacy" / "2026-07-26-v1.4-canonical" / "D4_main_scores.xlsx",
         D4_ROOT / "outputs" / "data" / "D4_main_scores.xlsx",
-        D4_ROOT / "outputs" / "comparison" / "D4_v14_v15_method_sensitivity.xlsx",
+        D4_ROOT / "outputs" / "comparison" / "D4_v14_v151_method_sensitivity.xlsx",
     )
     print(outputs["pair_score_comparison"].to_string(index=False))

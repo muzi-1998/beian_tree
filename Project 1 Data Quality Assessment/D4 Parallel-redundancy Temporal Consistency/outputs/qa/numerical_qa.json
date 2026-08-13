@@ -10,6 +10,14 @@
     "development_only_high_quality_common_support_external_D5_gate"
   ],
   "pair_specific_mapping_count": 0,
+  "calibration_support_rule_consistent": true,
+  "ORP_fallback_regimes": [
+    0,
+    1,
+    3
+  ],
+  "wide_percentile_precision_rows": 4,
+  "wide_exact_candidate_precision_rows": 6,
   "benchmark_D1_violations": 0,
   "benchmark_D2_continuity_violations": 0,
   "benchmark_non_development_rows": 0,
@@ -28,10 +36,17 @@
   "composite_refresh_status": "retrospective_sha_bound_refresh_not_untouched_terminal_validation",
   "composite_refresh_d4_hash_matches": true,
   "composite_refresh_numeric_source": "D4_raw",
-  "figure_stems": 11,
+  "composite_manifest_files": [
+    "D4V151_composite_refresh_manifest.json"
+  ],
+  "composite_manifest_unique": true,
+  "redundancy_pooled_row_count": 1,
+  "redundancy_incremental_validity_pending": true,
+  "figure_stems": 12,
   "figure_stems_exact": true,
   "missing_figure_counterparts": [],
   "missing_figure_source_data": [],
   "comparison_bundle_ok": true,
+  "method_sensitivity_ok": true,
   "passed": true
 }
