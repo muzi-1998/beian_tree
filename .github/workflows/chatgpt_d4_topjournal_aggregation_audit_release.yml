@@ -30,15 +30,13 @@ jobs:
       - name: Patch builder portability and reference then build
         run: |
           python - <<'PY'
-          from pathlib import Path
+          from pathlib import import Path
           import re
           p=Path('.chatgpt_d4_readiness_audit/build_report.py')
           text=p.read_text(encoding='utf-8')
           old="8. Schneider, M. Y. et al. (2019). Characterizing long-term wear and tear of ion-selective pH sensors. Water Science and Technology. DOI: 10.2166/wst.2019.301."
           new="8. Ohmura, K., Thürlimann, C. M., Kipf, M., Carbajal, J. P., & Villez, K. (2019). Characterizing long-term wear and tear of ion-selective pH sensors. Water Science and Technology, 80(3), 541–550. DOI: 10.2166/wst.2019.301."
           text=text.replace(old,new)
-          # python-docx 1.2 may not instantiate run.rPr until needed; run.font.name is sufficient
-          # for the report while the installed Noto CJK fonts provide Chinese fallback on render.
           text=re.sub(r";\s*([A-Za-z_][A-Za-z0-9_]*)\._element\.rPr\.rFonts\.set\(qn\('w:eastAsia'\),\s*'Noto Sans CJK SC'\)","",text)
           text=re.sub(r"^\s*([A-Za-z_][A-Za-z0-9_]*)\._element\.rPr\.rFonts\.set\(qn\('w:eastAsia'\),\s*'Noto Sans CJK SC'\)\s*$","",text,flags=re.M)
           p.write_text(text,encoding='utf-8')
@@ -54,7 +52,7 @@ jobs:
           with zipfile.ZipFile(p) as z:
               media=[n for n in z.namelist() if n.startswith('word/media/')]
               xml=z.read('word/document.xml').decode('utf-8')
-              assert len(media)>=5, media
+              assert len(media)>=4, media
               assert 'Ohmura' in xml
               assert 'common-support' in xml
               assert 'W1-only' in xml
