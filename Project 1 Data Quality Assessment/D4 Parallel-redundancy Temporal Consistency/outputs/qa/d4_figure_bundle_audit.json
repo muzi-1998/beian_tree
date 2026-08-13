@@ -1,11 +1,11 @@
 {
   "audit_version": "d4-nature-figure-audit-v1.0",
-  "created_at_utc": "2026-08-12T08:45:31.735818+00:00",
+  "created_at_utc": "2026-08-13T04:20:33.027256+00:00",
   "backend": "python",
   "figure_contract": {
     "main": 6,
-    "supplementary": 3,
-    "observed": 9
+    "supplementary": 5,
+    "observed": 11
   },
   "nature_preflight": {
     "status": "executed",
@@ -27,13 +27,13 @@
           "exists": true,
           "fresh": true,
           "bytes": 28061,
-          "sha256": "2e58415e021c95d698469a886b91d5f437f22ce66fed3984a30ce6f2bb6def94"
+          "sha256": "babef7af10ebd7384aa4866aab3dd952d283d3b8e5f561b0fef9ce933409a659"
         },
         "pdf": {
           "exists": true,
           "fresh": true,
           "bytes": 51482,
-          "sha256": "e8f0b2296ff634db395dc662351d0f17bc2c66d5ecf9248bc0b59d64232fd6fa"
+          "sha256": "0fd5a2888c9044c5a3b4b7dd379998ff39201c70d42ed9b220beaf1e098f7f55"
         },
         "png": {
           "exists": true,
@@ -51,7 +51,7 @@
       "source_data": {
         "exists": true,
         "bytes": 6559,
-        "sha256": "03cac4ac52a2cd5fbae157d27bd140ff084faa04d252aa28f2647b5447bed999"
+        "sha256": "cee76a6113602036869b23c894ea6fd76f937936e3513f61bc2f32c9ce1b2038"
       },
       "png": {
         "width_px": 4540,
@@ -73,38 +73,38 @@
         "svg": {
           "exists": true,
           "fresh": true,
-          "bytes": 53404,
-          "sha256": "604724ce3bc3147279215bc799c036b06c37fc3f33cc0f365904b08d211e7186"
+          "bytes": 53401,
+          "sha256": "786b30a67f6f63b5fc8d9f999d4c2151bed7ef1addead1e0b72d53eecd569557"
         },
         "pdf": {
           "exists": true,
           "fresh": true,
-          "bytes": 49769,
-          "sha256": "42094707837e950c013982ab5fa60d20a55b5fffecff12748bcc6a2aa96cc854"
+          "bytes": 49084,
+          "sha256": "1b3a28ee99d0b686929dfc73841ef4e55bc460e8c751c5fc278087fe61f1240e"
         },
         "png": {
           "exists": true,
           "fresh": true,
-          "bytes": 327085,
-          "sha256": "67bc47157b04512919ffab09e4a14c6185c01edb6378a2a3af44d03e655239ef"
+          "bytes": 329182,
+          "sha256": "7b55dd1c4608743acc33c4ce8b9afa272b794a9459cc5cbbe5147519f03238ec"
         },
         "tiff": {
           "exists": true,
           "fresh": true,
-          "bytes": 791038,
-          "sha256": "603711a923b1dc7b8333924fb306a48b357fb529fa7fe4652790f4395394846f"
+          "bytes": 790394,
+          "sha256": "57f72549b0846533d48eadd72dc6f04581084573e27ef7ae458ce08212f40fa4"
         }
       },
       "source_data": {
         "exists": true,
-        "bytes": 8053,
-        "sha256": "74959325b5afebb7a4aecf61b84f0c97ed693cb4244987899661fc105981cca0"
+        "bytes": 8010,
+        "sha256": "cf741c0909cf2f30b6952f962937cce4246610d5e009dc0548417a30ee0b9209"
       },
       "png": {
         "width_px": 4337,
         "height_px": 1840,
-        "pixel_std": 48.415870666503906,
-        "nonwhite_fraction": 0.10720895028621268,
+        "pixel_std": 47.91242218017578,
+        "nonwhite_fraction": 0.10366512616414873,
         "nonblank": true
       },
       "svg": {
@@ -120,38 +120,38 @@
         "svg": {
           "exists": true,
           "fresh": true,
-          "bytes": 41452,
-          "sha256": "3af566271a8be2a9cfbcc39710ca51b13eb06ab2108774095d7c8de6f3d6ad11"
+          "bytes": 41662,
+          "sha256": "363a5c0fb0a4aed113c02f5a1a6dfa61d407f8c4ecbf2a1c8821f0290db92efc"
         },
         "pdf": {
           "exists": true,
           "fresh": true,
-          "bytes": 49447,
-          "sha256": "be741217aacaf77a24c09f220cbeda21f479e8366d5afea85da08f9b749a4838"
+          "bytes": 49199,
+          "sha256": "1ae902de983697635dbb453d8c92dea78df7b520eeb826919727aeda21998918"
         },
         "png": {
           "exists": true,
           "fresh": true,
-          "bytes": 359948,
-          "sha256": "c40ab08f61e49d197ad6762429e7d2cbdae8fab4aa6f375e90f3e007ad235b16"
+          "bytes": 366486,
+          "sha256": "6f0e6bd4adde9e1a791f003bda4c6de122f4838fb68c228ee489f65d2b274894"
         },
         "tiff": {
           "exists": true,
           "fresh": true,
-          "bytes": 2291348,
-          "sha256": "4369ddc9abebf945e3e2427ecae7463822492e83e47723f802af2b6491fa0d4b"
+          "bytes": 2077124,
+          "sha256": "56815b921050d6ff02e9976d8bf55299fe286bbf01ec6a17c9ab7e9db998f1a4"
         }
       },
       "source_data": {
         "exists": true,
-        "bytes": 16521,
-        "sha256": "ee980d83bf7b03d32c637d06cb09040ebe890061570d5f701fd8cc66baebb8c5"
+        "bytes": 15160,
+        "sha256": "58b8fc394542116a9d0cd49e1669743aeb4cbd85c540198837d3c5656dcc6065"
       },
       "png": {
-        "width_px": 4461,
+        "width_px": 4513,
         "height_px": 2686,
-        "pixel_std": 71.02374267578125,
-        "nonwhite_fraction": 0.42588276021039795,
+        "pixel_std": 72.89537048339844,
+        "nonwhite_fraction": 0.43555623788248693,
         "nonblank": true
       },
       "svg": {
@@ -167,38 +167,38 @@
         "svg": {
           "exists": true,
           "fresh": true,
-          "bytes": 143037,
-          "sha256": "81ff5f63944b124a8e2d8e1e7920122900a76b3ce4239eb084f1835d0cd27ba0"
+          "bytes": 203663,
+          "sha256": "b066effa2d6de67b3e839780d6bb451f1829146c7eada4d576c2c0584369ce5c"
         },
         "pdf": {
           "exists": true,
           "fresh": true,
-          "bytes": 75969,
-          "sha256": "7f048e55111dc6f02b4805d691d643203f613d2582859bc41e7dd276294aa09b"
+          "bytes": 94278,
+          "sha256": "e23f8744bf7535b61677e0e1c7379bd5f8374825ea50c1086551018eb6b3952d"
         },
         "png": {
           "exists": true,
           "fresh": true,
-          "bytes": 1001563,
-          "sha256": "7adb326b8265abaf37e265e12c3f606ddbdf1134a8dc10018d1be00c2a0d2812"
+          "bytes": 1037265,
+          "sha256": "f066d74c1c30ef8d9231b4f5036440d9f4f893e2ff6ebd51f42b515c7f17c137"
         },
         "tiff": {
           "exists": true,
           "fresh": true,
-          "bytes": 1684546,
-          "sha256": "f2c47abfaae462a5b07e64d3e8f0b6869c26ea28ad2ade0b7bda3a7345d61269"
+          "bytes": 1867560,
+          "sha256": "54b4533514b8219b8b43fce6e6c57f8852cca4cb13c7985b02911a2d828dfe1e"
         }
       },
       "source_data": {
         "exists": true,
-        "bytes": 63287,
-        "sha256": "5c99895f44a80a1f93bc48c230b26cc852ba7f5470ec44ae111128e6b4205566"
+        "bytes": 99720,
+        "sha256": "60a49f5c44dd452b8e1b196d2c273a0f0974f6f32716cd4f35e11a56cc0d31db"
       },
       "png": {
         "width_px": 4325,
         "height_px": 2613,
-        "pixel_std": 50.48542022705078,
-        "nonwhite_fraction": 0.21696630232563285,
+        "pixel_std": 54.040931701660156,
+        "nonwhite_fraction": 0.25182845222531186,
         "nonblank": true
       },
       "svg": {
@@ -214,38 +214,38 @@
         "svg": {
           "exists": true,
           "fresh": true,
-          "bytes": 65209,
-          "sha256": "105556ebea2766791efd816dbf43565ceeb026db13f14e3eab6e7b531461af2b"
+          "bytes": 65205,
+          "sha256": "d73da31f203669202d9a4051919631c89f181fead917c3d3d063b69f8b97d14f"
         },
         "pdf": {
           "exists": true,
           "fresh": true,
-          "bytes": 51614,
-          "sha256": "c6700730ec16512f8d8d0833bd805fbb0b0fc5b8d872480ba7e02f7d2764b84b"
+          "bytes": 51646,
+          "sha256": "a6be7e887bd944887e77bc1809859f7f2c3ff6c4fdec8b2af9399dc6c7a108f0"
         },
         "png": {
           "exists": true,
           "fresh": true,
-          "bytes": 639112,
-          "sha256": "744c90807d16aa4903e23963215d7e5798eed78272852294888a99414878c5e3"
+          "bytes": 671060,
+          "sha256": "428e47bd5894348ea5ec756e6d2a43bad38245acaaf7f687fbbb479604b894ec"
         },
         "tiff": {
           "exists": true,
           "fresh": true,
-          "bytes": 1242610,
-          "sha256": "7a65707b974c9669766d0234e1543587baef65fc39ed83d4c8f0584e39e33410"
+          "bytes": 1272766,
+          "sha256": "f7535abc364bc9c3ce5ed634dcc3e9bd66d78f0786d5f102619ce408bc5971a9"
         }
       },
       "source_data": {
         "exists": true,
-        "bytes": 35394,
-        "sha256": "e22880e3f23081c26e461d25b2bfb7e1fbdb8a02e7a5f5c74895f91d65c3fd9d"
+        "bytes": 34546,
+        "sha256": "6695976bcaa4751decb3dca8de476e450c7bfc3407739f5c80e654869220cbe9"
       },
       "png": {
         "width_px": 4310,
         "height_px": 2885,
-        "pixel_std": 49.248687744140625,
-        "nonwhite_fraction": 0.0865343182393933,
+        "pixel_std": 50.189353942871094,
+        "nonwhite_fraction": 0.09432668374301834,
         "nonblank": true
       },
       "svg": {
@@ -261,38 +261,38 @@
         "svg": {
           "exists": true,
           "fresh": true,
-          "bytes": 37645,
-          "sha256": "e23af1f14b496b035ecc7466fc10c1efc625a3b589fb5d82cc130565756badd5"
+          "bytes": 36823,
+          "sha256": "539f7e7325ba95ad15fb2efd8a1ae731a0517ea69b3ef64b74ea3f87cdc4de48"
         },
         "pdf": {
           "exists": true,
           "fresh": true,
-          "bytes": 48564,
-          "sha256": "141f65e36a80d40f6bf20557b42243de9772d60d45196a450c7a8329c527f0f6"
+          "bytes": 48899,
+          "sha256": "edbfd014bed932d3cbf6b98bb2f93c055de454ea5f49cf618ddabe397bc5c906"
         },
         "png": {
           "exists": true,
           "fresh": true,
-          "bytes": 360042,
-          "sha256": "18061bfafd5ea6a4b1d9ce02aa4ae308c73c9f25488de6d53bd798b3fc7c3be6"
+          "bytes": 358247,
+          "sha256": "4994af49478e34aec5840767e2b8c6f94d7ace5c75945a4b3667148f4580488b"
         },
         "tiff": {
           "exists": true,
           "fresh": true,
-          "bytes": 1118514,
-          "sha256": "af3bfd13687a20c6671753ed280023ba8a599eaa834226c7caa5b0a2dc5c647d"
+          "bytes": 1123546,
+          "sha256": "0b8778bc8fd52a854875ec6fdfe4402cce143f2b902d0dfaeb953680fb5b0d6b"
         }
       },
       "source_data": {
         "exists": true,
-        "bytes": 7672,
-        "sha256": "8a3509318b9346fc6caa28508e62e714db1436717473f501fab7b81e47498973"
+        "bytes": 7625,
+        "sha256": "00b32b5b94ecbd9a9f452f78444b788352de5eb26d65956d51277899045413f0"
       },
       "png": {
         "width_px": 4421,
         "height_px": 1996,
-        "pixel_std": 42.02487564086914,
-        "nonwhite_fraction": 0.22152379855843785,
+        "pixel_std": 41.385780334472656,
+        "nonwhite_fraction": 0.2206113199028684,
         "nonblank": true
       },
       "svg": {
@@ -308,38 +308,38 @@
         "svg": {
           "exists": true,
           "fresh": true,
-          "bytes": 580047,
-          "sha256": "c39fc9c5a7fdf2ef61e0aec29dc7106ac38ed316f43c90b506d1e9d69b119b20"
+          "bytes": 546025,
+          "sha256": "1122343335aa4fe64c4befd1df38ce1d5763cf06666d372c32ee46476b078362"
         },
         "pdf": {
           "exists": true,
           "fresh": true,
-          "bytes": 182927,
-          "sha256": "5d7ee81ff007374ce0e883e5a2e4b8865ef872e07296742f92250c068c542358"
+          "bytes": 179104,
+          "sha256": "efbb2bb5bf6539b0684d01ce1b12c79eb33c2598f0ec84f2c5f59393f9d140ea"
         },
         "png": {
           "exists": true,
           "fresh": true,
-          "bytes": 1619063,
-          "sha256": "7a237f748d5eea39c6ea5de5b0a424ef5ad9d4d3891c5c9907d7529d05051e1f"
+          "bytes": 1618202,
+          "sha256": "b3b633373500267a94108887553b8862656cad1928f8745298a2deab959b83fd"
         },
         "tiff": {
           "exists": true,
           "fresh": true,
-          "bytes": 3519766,
-          "sha256": "d0cb15f7b1ec03842cf3e009b342309043ffbf3ef2dd27b1dd981d8107b5f562"
+          "bytes": 3440086,
+          "sha256": "8d071d738ec699eac25a8dbb0d0e703d53623a48f8f78164f985ef091f24bda9"
         }
       },
       "source_data": {
         "exists": true,
-        "bytes": 385219,
-        "sha256": "dc38cff09d6d03478176f6e6e5959842870f3f3a236929781f6d1a9beab8e282"
+        "bytes": 371508,
+        "sha256": "5988e1813d4cf6d679d19731bfd3e358cd81ef08a86c0af9a1ba92e4f6dc2e67"
       },
       "png": {
         "width_px": 4347,
         "height_px": 4184,
-        "pixel_std": 44.88502883911133,
-        "nonwhite_fraction": 0.24557484755755601,
+        "pixel_std": 44.8365364074707,
+        "nonwhite_fraction": 0.27047389003910743,
         "nonblank": true
       },
       "svg": {
@@ -355,38 +355,38 @@
         "svg": {
           "exists": true,
           "fresh": true,
-          "bytes": 23380,
-          "sha256": "deca42d72def4446db6cc68ea7f90a6e6ded324d515f81987e5dabd6b0a05a10"
+          "bytes": 22978,
+          "sha256": "c597da0a44a9cc0f8e7570e10d6583571db06e7c1757af7c5c18b0f57c1aae64"
         },
         "pdf": {
           "exists": true,
           "fresh": true,
-          "bytes": 36947,
-          "sha256": "96f4d726db171f4c3a5295b2d0a96952552b55e7549c8f331ffebeba66c74557"
+          "bytes": 36343,
+          "sha256": "5bc39a02fbda387944c329924860bb3f75847350ac9af04dd18e507ce0e2c1d7"
         },
         "png": {
           "exists": true,
           "fresh": true,
-          "bytes": 134125,
-          "sha256": "8bfa55b5ee1eb90a7797d10e99ef966b9f664a7d3823fb033b9900fb2b3051a3"
+          "bytes": 133177,
+          "sha256": "fc53ba23a78744ff9ac872c75053a1e6f6deaf46393575add8d9e9c6051017b9"
         },
         "tiff": {
           "exists": true,
           "fresh": true,
-          "bytes": 391358,
-          "sha256": "61c08879011c9f6143b627b2dbc6849fa406e2ebe992cfc2ec95db1539bce44c"
+          "bytes": 390904,
+          "sha256": "790723a31303df2a69f4209a7ea4c00348fdb91c8d543c7b1d736f6527d539d0"
         }
       },
       "source_data": {
         "exists": true,
-        "bytes": 7431375,
-        "sha256": "df419fc6657d5e311df197b76704aca8c5a659cdc66facef2d0f381beedf4338"
+        "bytes": 10462221,
+        "sha256": "4a6f2e3e265893c50f197098dee76b5f406c021ab74d87eb7f074ecd63182c93"
       },
       "png": {
         "width_px": 4130,
         "height_px": 1709,
-        "pixel_std": 33.14375305175781,
-        "nonwhite_fraction": 0.024974745578528145,
+        "pixel_std": 33.05955123901367,
+        "nonwhite_fraction": 0.024853326003765847,
         "nonblank": true
       },
       "svg": {
@@ -402,38 +402,132 @@
         "svg": {
           "exists": true,
           "fresh": true,
-          "bytes": 19550,
-          "sha256": "edb7d689f83521e51eaac1290c59b9fc8d76b43878313af7bffdbd7527aaf97c"
+          "bytes": 19937,
+          "sha256": "3b85992d4585364906777ea7fd32e2eba5a69c7a3e6de489df5489b80a4dddd0"
         },
         "pdf": {
           "exists": true,
           "fresh": true,
-          "bytes": 35514,
-          "sha256": "fd0f8848c2f91dd0840302397e3591634b4db7229bf6f0ef7fb0c42ba5aeb5f8"
+          "bytes": 35537,
+          "sha256": "ed4ecbb779e2ca41e73416d958515f4d353ab75a6df547bbda221179d8967e26"
         },
         "png": {
           "exists": true,
           "fresh": true,
-          "bytes": 173206,
-          "sha256": "2781efcf155c307949fc826a4df89dd1e4660480fd97555f4adac128e61e823e"
+          "bytes": 179316,
+          "sha256": "3a6c6acb07f2376be4774a41fcd32ea93dff9624e23ed7e1491078723574b5fa"
         },
         "tiff": {
           "exists": true,
           "fresh": true,
-          "bytes": 607092,
-          "sha256": "110201052010554db057ea78a8acdcfa455120221a645da36836e9014012730a"
+          "bytes": 613622,
+          "sha256": "7a74f612c5b7cea953776d81d054085aa513aeb7a39cfa687fa9c5a92f569102"
         }
       },
       "source_data": {
         "exists": true,
-        "bytes": 828501,
-        "sha256": "4f734e9a3518a5d5747b4147ab4a48a4796327d262ecf1849f83d0a8daeed30a"
+        "bytes": 920128,
+        "sha256": "29553ea5ac74fbe37bc7b3fac002eb09682fbfcaa5f2d3c4f64bd18872d8f225"
       },
       "png": {
         "width_px": 4231,
         "height_px": 1533,
-        "pixel_std": 69.94429016113281,
-        "nonwhite_fraction": 0.22968327921009207,
+        "pixel_std": 70.06128692626953,
+        "nonwhite_fraction": 0.23014981368685114,
+        "nonblank": true
+      },
+      "svg": {
+        "editable_text": true,
+        "arial_declared": true,
+        "panel_a_present": true
+      }
+    },
+    {
+      "stem": "FigS4_distribution_construct_ablation",
+      "role": "supplementary",
+      "exports": {
+        "svg": {
+          "exists": true,
+          "fresh": true,
+          "bytes": 24141,
+          "sha256": "f5063725dc648b11e5eed8b3a16e0ed0bf42892840e7dc025ed43ff75243dc62"
+        },
+        "pdf": {
+          "exists": true,
+          "fresh": true,
+          "bytes": 44554,
+          "sha256": "0fe2073306dec72540389a41a13476a4d7a946cac85fcc739c13940095bf6985"
+        },
+        "png": {
+          "exists": true,
+          "fresh": true,
+          "bytes": 212380,
+          "sha256": "1e3d98aa07bf8aab78c9b312985b19d1400ae4771d0c23a96daafe8fea9837a8"
+        },
+        "tiff": {
+          "exists": true,
+          "fresh": true,
+          "bytes": 498314,
+          "sha256": "f4daf4dbd09779b71299190e484d4c7422495475e212216663b01a36655beb9b"
+        }
+      },
+      "source_data": {
+        "exists": true,
+        "bytes": 6961,
+        "sha256": "90103a024f99ad589b30b998cc04dcb8b18633c0dd5ecfa6984117dad088c25c"
+      },
+      "png": {
+        "width_px": 4177,
+        "height_px": 1526,
+        "pixel_std": 40.61772155761719,
+        "nonwhite_fraction": 0.05488177001246607,
+        "nonblank": true
+      },
+      "svg": {
+        "editable_text": true,
+        "arial_declared": true,
+        "panel_a_present": true
+      }
+    },
+    {
+      "stem": "FigS5_do14_episode_duration",
+      "role": "supplementary",
+      "exports": {
+        "svg": {
+          "exists": true,
+          "fresh": true,
+          "bytes": 36649,
+          "sha256": "f9049081e6599559f7e66fc6b20e3238582ec6ba62c3fd3d51380723911aebe6"
+        },
+        "pdf": {
+          "exists": true,
+          "fresh": true,
+          "bytes": 44839,
+          "sha256": "270e2903447f4b5db4c04021de81d36814d7400efc6cfbd14908919c17f7a648"
+        },
+        "png": {
+          "exists": true,
+          "fresh": true,
+          "bytes": 244840,
+          "sha256": "7f18910965befad3dc27593420ee94d75cb1f37013d0cb5c2f8d4a381d3cedfd"
+        },
+        "tiff": {
+          "exists": true,
+          "fresh": true,
+          "bytes": 521234,
+          "sha256": "eea91174433a266046461fbaa8bcefd15385bc8dcb89e133e466ee9aca638edf"
+        }
+      },
+      "source_data": {
+        "exists": true,
+        "bytes": 221777,
+        "sha256": "7e2dfacdfea4da4900a1064238982134a05d4a054ce2df3a9c810db03278f45f"
+      },
+      "png": {
+        "width_px": 4358,
+        "height_px": 1668,
+        "pixel_std": 38.20594024658203,
+        "nonwhite_fraction": 0.03684835518459945,
         "nonblank": true
       },
       "svg": {

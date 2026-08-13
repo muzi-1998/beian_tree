@@ -4,7 +4,12 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from sklearn.metrics import auc, precision_recall_curve, roc_auc_score, roc_curve
+from sklearn.metrics import (
+    average_precision_score,
+    precision_recall_curve,
+    roc_auc_score,
+    roc_curve,
+)
 
 from .config import D4Config, PairConfig
 from .scoring import (
@@ -17,6 +22,12 @@ from .scoring import (
 
 
 INJECTIONS = ("unilateral_drift", "unilateral_step", "unilateral_freeze", "unilateral_spike")
+DISTRIBUTION_CHALLENGES = (
+    "distribution_location",
+    "distribution_scale",
+    "distribution_tail",
+    "distribution_mixture",
+)
 
 
 def _cluster_bootstrap_interval(
@@ -59,6 +70,28 @@ def _inject(
         change = np.linspace(0.0, 2.5 * scale, n)
         t += change
         r += change
+    elif kind == "common_unequal":
+        change = np.linspace(0.0, 2.5 * scale, n)
+        t += change
+        r += 0.4 * change
+    elif kind == "opposite_direction":
+        change = np.linspace(0.0, 2.5 * scale, n)
+        t += change
+        r -= change
+    elif kind == "distribution_location":
+        t += 1.5 * scale
+    elif kind == "distribution_scale":
+        center = float(np.nanmedian(t))
+        t = center + 1.8 * (t - center)
+    elif kind == "distribution_tail":
+        finite = np.flatnonzero(np.isfinite(t))
+        count = max(4, int(np.ceil(0.10 * len(finite))))
+        selected = rng.choice(finite, size=count, replace=False)
+        t[selected] += 4.0 * scale
+    elif kind == "distribution_mixture":
+        finite = np.flatnonzero(np.isfinite(t))
+        assignment = rng.choice([-1.0, 1.0], size=len(finite))
+        t[finite] += assignment * 1.5 * scale
     else:
         raise ValueError(f"Unknown injection: {kind}")
     return t, r
@@ -89,6 +122,10 @@ def _score_window(
     metrics = compute_window_metrics(
         target, reference, deadband=cfg.deadband[pair.variable],
         points_per_hour=60 // cfg.analysis_interval_minutes,
+        min_common_hour_fraction=float(cfg.common_support["min_hour_fraction"]),
+        distribution_weights={
+            key: float(value) for key, value in cfg.distribution["weights"].items()
+        },
     )
     risks = {
         "Q_dist": metrics.risk_dist, "Q_trend": metrics.risk_trend,
@@ -101,6 +138,14 @@ def _score_window(
         for name, value in risks.items()
     }
     q["Q_cp"] = float(q_cp)
+    q_dist_w1 = float(score_from_quantiles(
+        np.array([metrics.risk_dist_w1]),
+        _thresholds(params, pair.variable, regime_id, "Q_dist_w1_candidate"),
+    )[0])
+    q_dist_ks = float(score_from_quantiles(
+        np.array([metrics.risk_dist_ks]),
+        _thresholds(params, pair.variable, regime_id, "Q_dist_ks_candidate"),
+    )[0])
     q_var_without_deadband = q["Q_var"]
     if metrics.deadband_active:
         q["Q_var"] = 5.0
@@ -109,11 +154,131 @@ def _score_window(
         np.array([q["Q_var"]]), np.array([q["Q_cp"]]),
         weights=cfg.weights, lambda_blend=cfg.lambda_blend,
     )
+    _, raw_w1 = aggregate_scores(
+        np.array([q_dist_w1]), np.array([q["Q_trend"]]),
+        np.array([q["Q_var"]]), np.array([q["Q_cp"]]),
+        weights=cfg.weights, lambda_blend=cfg.lambda_blend,
+    )
+    _, raw_ks = aggregate_scores(
+        np.array([q_dist_ks]), np.array([q["Q_trend"]]),
+        np.array([q["Q_var"]]), np.array([q["Q_cp"]]),
+        weights=cfg.weights, lambda_blend=cfg.lambda_blend,
+    )
     return {
         **q, "Q_var_no_deadband": q_var_without_deadband,
+        "Q_dist_w1_candidate": q_dist_w1,
+        "Q_dist_ks_candidate": q_dist_ks,
         "D4_base": float(base[0]), "D4_raw": float(raw[0]),
+        "D4_raw_full": float(raw[0]),
+        "D4_raw_w1_only": float(raw_w1[0]),
+        "D4_raw_ks_only": float(raw_ks[0]),
+        "risk_dist_full": float(metrics.risk_dist),
+        "risk_dist_w1": float(metrics.risk_dist_w1),
+        "risk_dist_ks": float(metrics.risk_dist_ks),
         "deadband_active": float(metrics.deadband_active),
     }
+
+
+def _distribution_internal_ablation(
+    scores: pd.DataFrame,
+    cfg: D4Config,
+    rng: np.random.Generator,
+    *,
+    repetitions: int = 600,
+) -> pd.DataFrame:
+    score_columns = {
+        "Full": "D4_raw_full",
+        "W1-only": "D4_raw_w1_only",
+        "KS-only": "D4_raw_ks_only",
+    }
+    baseline = scores[scores["injection"].eq("baseline")].sort_values("window_id")
+    rows: list[dict[str, object]] = []
+    for challenge in DISTRIBUTION_CHALLENGES:
+        positive = scores[scores["injection"].eq(challenge)].sort_values("window_id")
+        if not baseline["window_id"].reset_index(drop=True).equals(
+            positive["window_id"].reset_index(drop=True)
+        ):
+            raise ValueError(f"Distribution challenge is not paired: {challenge}")
+        n_clusters = len(baseline)
+        labels = np.r_[np.zeros(n_clusters, dtype=int), np.ones(n_clusters, dtype=int)]
+        point: dict[str, tuple[float, float]] = {}
+        for condition, column in score_columns.items():
+            risk = 5.0 - np.r_[baseline[column].to_numpy(), positive[column].to_numpy()]
+            point[condition] = (
+                float(roc_auc_score(labels, risk)),
+                float(average_precision_score(labels, risk)),
+            )
+        for alternative in ("W1-only", "KS-only"):
+            auc_draws = np.empty(repetitions)
+            ap_draws = np.empty(repetitions)
+            for iteration in range(repetitions):
+                sampled = rng.integers(0, n_clusters, n_clusters)
+                draw = np.r_[sampled, sampled + n_clusters]
+                full_risk = 5.0 - np.r_[
+                    baseline[score_columns["Full"]].to_numpy(),
+                    positive[score_columns["Full"]].to_numpy(),
+                ]
+                alternative_risk = 5.0 - np.r_[
+                    baseline[score_columns[alternative]].to_numpy(),
+                    positive[score_columns[alternative]].to_numpy(),
+                ]
+                auc_draws[iteration] = (
+                    roc_auc_score(labels[draw], full_risk[draw])
+                    - roc_auc_score(labels[draw], alternative_risk[draw])
+                )
+                ap_draws[iteration] = (
+                    average_precision_score(labels[draw], full_risk[draw])
+                    - average_precision_score(labels[draw], alternative_risk[draw])
+                )
+            for metric, metric_index, draws in (
+                ("delta_AUROC_full_minus_alternative", 0, auc_draws),
+                ("delta_AUPRC_full_minus_alternative", 1, ap_draws),
+            ):
+                low, high = np.quantile(draws, [0.025, 0.975])
+                rows.append({
+                    "challenge": challenge,
+                    "alternative": alternative,
+                    "metric": metric,
+                    "full_value": point["Full"][metric_index],
+                    "alternative_value": point[alternative][metric_index],
+                    "difference": point["Full"][metric_index] - point[alternative][metric_index],
+                    "CI_low": float(low),
+                    "CI_high": float(high),
+                    "n_window_clusters": n_clusters,
+                    "decision_scope": "internal_validation_construct_ablation",
+                })
+
+    common = scores[scores["injection"].eq("common_mode_drift")].sort_values("window_id")
+    if not baseline["window_id"].reset_index(drop=True).equals(
+        common["window_id"].reset_index(drop=True)
+    ):
+        raise ValueError("Common-mode control is not paired")
+    threshold = float(cfg.classification["asymmetry_max"])
+    eligible = np.ones(len(baseline), dtype=bool)
+    for column in score_columns.values():
+        eligible &= baseline[column].to_numpy(dtype=float) >= threshold
+    for condition, column in score_columns.items():
+        values = common[column].to_numpy(dtype=float)
+        point_far = float((values[eligible] < threshold).mean())
+        draws = np.empty(repetitions)
+        eligible_index = np.flatnonzero(eligible)
+        for iteration in range(repetitions):
+            sampled = rng.choice(eligible_index, size=len(eligible_index), replace=True)
+            draws[iteration] = float((values[sampled] < threshold).mean())
+        low, high = np.quantile(draws, [0.025, 0.975])
+        rows.append({
+            "challenge": "equal_common_mode_control",
+            "alternative": condition,
+            "metric": "conditional_new_FAR_common_eligible_set",
+            "full_value": np.nan,
+            "alternative_value": point_far,
+            "difference": np.nan,
+            "CI_low": float(low),
+            "CI_high": float(high),
+            "n_window_clusters": int(eligible.sum()),
+            "decision_scope": "internal_validation_negative_control",
+        })
+    return pd.DataFrame(rows)
 
 
 def _ablation_score(frame: pd.DataFrame, condition: str, cfg: D4Config) -> np.ndarray:
@@ -154,7 +319,7 @@ def run_validation(
         candidates = main[
             (main["pair_id"] == pair.pair_id)
             & main["usable_for_D4"]
-            & (main["timestamp"] >= main["timestamp"].quantile(0.70))
+            & main["phase_id"].eq("internal_validation")
         ]["timestamp"].drop_duplicates()
         if len(candidates) > windows_per_pair:
             positions = np.linspace(0, len(candidates) - 1, windows_per_pair, dtype=int)
@@ -178,7 +343,11 @@ def run_validation(
                 float(np.nanquantile(reference, 0.75) - np.nanquantile(reference, 0.25)),
                 cfg.deadband[pair.variable],
             )
-            for injection in ("baseline", *INJECTIONS, "synchronous_switch", "common_mode_drift"):
+            for injection in (
+                "baseline", *INJECTIONS, *DISTRIBUTION_CHALLENGES,
+                "synchronous_switch", "common_mode_drift",
+                "common_unequal", "opposite_direction",
+            ):
                 if injection == "baseline":
                     t_inj, r_inj = target.copy(), reference.copy()
                     t_aux_inj, r_aux_inj = target_aux.copy(), reference_aux.copy()
@@ -215,7 +384,7 @@ def run_validation(
                 rows.append({
                     "pair_id": pair.pair_id, "window_id": f"{pair.pair_id}-{window_no:02d}",
                     "timestamp": timestamp, "injection": injection,
-                    "is_unilateral_fault": injection in INJECTIONS,
+                    "is_unilateral_fault": injection in (*INJECTIONS, *DISTRIBUTION_CHALLENGES),
                     "anomaly_score": 5.0 - score["D4_raw"], **score,
                 })
     scores = pd.DataFrame(rows)
@@ -273,6 +442,52 @@ def run_validation(
             "interpretation": "paired conditional FAR among windows that were non-alarming before injection",
         })
 
+    common_change_rows: list[dict[str, object]] = []
+    common_change_contract = {
+        "common_mode_drift": (
+            "common_equal", "negative_control", "conditional_false_alarm_rate"
+        ),
+        "common_unequal": (
+            "common_unequal", "positive_asymmetry_stress_test", "conditional_response_rate"
+        ),
+        "opposite_direction": (
+            "opposite_direction", "positive_asymmetry_stress_test", "conditional_response_rate"
+        ),
+    }
+    threshold = float(cfg.classification["asymmetry_max"])
+    baseline_contract = baseline[["window_id", "D4_raw"]].rename(
+        columns={"D4_raw": "D4_raw_baseline"}
+    )
+    for injection, (scenario, role, metric) in common_change_contract.items():
+        paired = scores[scores["injection"].eq(injection)][
+            ["window_id", "D4_raw"]
+        ].merge(baseline_contract, on="window_id", validate="one_to_one")
+        paired = paired[paired["D4_raw_baseline"] >= threshold]
+        estimate = float((paired["D4_raw"] < threshold).mean())
+        ci_low, ci_high = _cluster_bootstrap_interval(
+            paired,
+            lambda draw: (draw["D4_raw"] < threshold).mean(),
+            rng,
+            repetitions=600,
+        )
+        common_change_rows.append({
+            "scenario": scenario,
+            "injection": injection,
+            "role": role,
+            "metric": metric,
+            "estimate": estimate,
+            "ci95_low": ci_low,
+            "ci95_high": ci_high,
+            "n_window_clusters": len(paired),
+            "alarm_threshold": threshold,
+            "acceptance_target": 0.10 if role == "negative_control" else np.nan,
+            "pass": estimate <= 0.10 if role == "negative_control" else pd.NA,
+            "claim_scope": (
+                "equal change contributes to conditional FAR; unequal and opposite "
+                "changes are positive asymmetry stress tests and never enter FAR"
+            ),
+        })
+
     ablation_rows: list[dict[str, object]] = []
     unilateral = scores[scores["injection"].isin(INJECTIONS)]
     validation_set = pd.concat([baseline, unilateral], ignore_index=True)
@@ -314,6 +529,8 @@ def run_validation(
         "injection_scores": scores,
         "roc_pr_curves": pd.DataFrame(curve_rows),
         "ablation": pd.DataFrame(ablation_rows),
+        "distribution_internal_ablation": _distribution_internal_ablation(scores, cfg, rng),
+        "common_change_contract": pd.DataFrame(common_change_rows),
     }
     calibration_id = str(main["calibration_id"].dropna().iloc[0])
     for frame in outputs.values():

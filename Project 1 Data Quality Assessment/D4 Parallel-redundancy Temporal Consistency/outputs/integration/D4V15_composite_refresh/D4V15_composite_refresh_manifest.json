@@ -1,0 +1,68 @@
+{
+  "run_id": "D4V15-COMPOSITE-db23b03bac4d",
+  "generated_utc": "2026-08-13T04:16:45.830425+00:00",
+  "status": "retrospective_sha_bound_refresh_not_untouched_terminal_validation",
+  "D4_numeric_source": "D4_raw",
+  "D4_calibration_ids": [
+    "D4CAL-V15-f6c351de01b0"
+  ],
+  "formula_contract": {
+    "node": "equal mean of evaluable D1, D2 and D5; at least two dimensions",
+    "pair": "equal mean of target Q_node, reference Q_node and independent D4_raw",
+    "D3": "non-numeric safety gate; Fail excludes high-confidence eligibility",
+    "coverage": "Full and Basic are reported separately"
+  },
+  "input_files": {
+    "D1": {
+      "path": "D1 Sensor health\\outputs\\data\\D1_main_scores_min.xlsx",
+      "sha256": "83207ca6f818dd309fe36cdb3adfdc9e569ea540fbca5c4acc0e45e8a321923c"
+    },
+    "D2": {
+      "path": "D2 Temporal Continuity & Information Availability\\artifacts\\data\\D2_main_scores_hourly.xlsx",
+      "sha256": "ac051d9a24a17523433c63187cf63f0128efb185325a1ea789633f7fc13d04a6"
+    },
+    "D3": {
+      "path": "D3 Physical rationality and rate constraints\\outputs\\data\\D3_window_scores.xlsx",
+      "sha256": "c98b59796f10c42377c210a5d5fbdf21d98b0b99e848ad2733a0507d9df1629a"
+    },
+    "D4": {
+      "path": "D4 Parallel-redundancy Temporal Consistency\\outputs\\data\\D4_main_scores.xlsx",
+      "sha256": "052eb9c50f8f4db9e0a89bcb43db86c18b3651bfcc62e0dabf46a1019cdeb83a"
+    },
+    "D5": {
+      "path": "D5 Topological Role Consistency and Structural Representativeness\\outputs\\local\\D5_report_interface.parquet",
+      "sha256": "f057e0a8037282fb43a71a94d7043c7bd3de2b4c8fa9865365bcf0427195dbda"
+    }
+  },
+  "output_files": {
+    "D3_oat_by_sensor.parquet": "1c5a9210bfcbdbc6d9142bb88e7ebd1f26bc79b1c3e2f8bfd2e81e14240afcae",
+    "D3_oat_summary.parquet": "7f9dcf7137984029ab58fbb5da08c87b5ac0b560c1eda056e94de09ebf52b02f",
+    "D3_safety_gate.parquet": "1982ca2976bf6b851cda199bbbb514ea8666c518a3c66f0fc45fd25c0e2b8f21",
+    "D3_threshold_register_v2.parquet": "659330bc5a78218240876477b82d3182118837ca7de5a5b0cdb419454edb83b8",
+    "WWDQS_block_bootstrap.parquet": "35a35bedff0b56cb396964051ec0722ecb7626a89b99c61a2930c75a203a03d0",
+    "WWDQS_dimension_ablation.parquet": "4c960b1f77b3eb0c7f182c6360ff1795328f84819fd29952e5787aa705762d92",
+    "WWDQS_node_scores.parquet": "5f554bda35708559d1ca11b89326b1a5f7b0108c92199b29e80daa695665424a",
+    "WWDQS_pair_scores.parquet": "6099a993f8089af5b25e1c3fd1daaa04da57ad62f628565f188caa3f99d4553c",
+    "WWDQS_plant_summary.parquet": "11ee09acf4d809bde1ce9de1728c23977d16f91cc293a64a2e0e9b437c62793c"
+  },
+  "row_counts": {
+    "node": 86016,
+    "pair": 42847,
+    "plant_day": 256
+  },
+  "node_coverage_counts": {
+    "basic": 46046,
+    "full": 39606,
+    "limited": 364
+  },
+  "pair_coverage_counts": {
+    "basic": 22583,
+    "full": 19774,
+    "limited": 490
+  },
+  "limitations": [
+    "The refresh is retrospective and cannot create a genuinely unseen terminal period.",
+    "D3 remains a safety-gate interface rather than a compensatory numeric dimension.",
+    "D5 report availability controls Full versus Basic coverage and must be interpreted explicitly."
+  ]
+}

@@ -1,6 +1,6 @@
 # D4-D5 Final Arbitration Report
 
-Generated: 2026-07-27T05:24:25.798699+00:00
+Generated: 2026-08-13T04:20:28.515030+00:00
 
 ## Decision
 
@@ -13,7 +13,7 @@ sensor-identity Veto only when the corresponding validation claim has passed.
 ## Current release
 
 - Input rows: 42,847
-- Finalized `D4_forDQR` rows: 37,987
+- Finalized `D4_forDQR` rows: 42,371
 - D5 score-ready rows: 0
 - D4 sensor-gate-applicable rows: 0
 - Process-coherence Guard rows: 0

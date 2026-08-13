@@ -17,6 +17,9 @@ from d4.scoring import (
     compute_window_metrics,
     score_from_quantiles,
 )
+from d4.pipeline import _mapping_id, _phase_labels
+from d4.config import load_config
+from d4.validation import _inject
 
 
 def test_identical_pair_has_zero_distance_and_variance_risk():
@@ -44,6 +47,75 @@ def test_pair_metrics_are_symmetric_under_sensor_swap():
     reverse = compute_window_metrics(reference, target, deadband=0.2, points_per_hour=6)
     for field in ("risk_dist", "risk_trend", "risk_var", "risk_cp"):
         assert np.isclose(getattr(forward, field), getattr(reverse, field))
+
+
+def test_common_support_is_invariant_to_asymmetric_extra_values():
+    shared_target = np.linspace(0.0, 1.0, 120)
+    shared_reference = shared_target + 0.1
+    target_a = np.r_[shared_target, np.repeat(np.nan, 24)]
+    reference_a = np.r_[shared_reference, np.linspace(100.0, 200.0, 24)]
+    target_b = np.r_[shared_target, np.linspace(-200.0, -100.0, 24)]
+    reference_b = np.r_[shared_reference, np.repeat(np.nan, 24)]
+    first = compute_window_metrics(target_a, reference_a, deadband=0.2, points_per_hour=6)
+    second = compute_window_metrics(target_b, reference_b, deadband=0.2, points_per_hour=6)
+    assert first.n_common == second.n_common == 120
+    assert np.isclose(first.risk_dist, second.risk_dist)
+    assert np.isclose(first.risk_trend, second.risk_trend)
+    assert np.isclose(first.risk_var, second.risk_var)
+
+
+def test_common_support_provenance_detects_asymmetric_missingness():
+    target = np.r_[np.arange(120, dtype=float), np.repeat(np.nan, 24)]
+    reference = np.arange(144, dtype=float)
+    result = compute_window_metrics(target, reference, deadband=0.2, points_per_hour=6)
+    assert result.valid_fraction_target == 120 / 144
+    assert result.valid_fraction_reference == 1.0
+    assert result.valid_fraction_common == 120 / 144
+    assert result.asymmetric_missing_fraction == 24 / 144
+    assert result.support_jaccard == 120 / 144
+
+
+def test_phase_contract_prevents_validation_rows_from_entering_development():
+    cfg = load_config(D4_ROOT / "configs" / "d4.yaml", D4_ROOT.parent)
+    timestamps = pd.Series(pd.to_datetime([
+        "2026-01-24 23:00", "2026-01-25 00:00", "2026-02-01 00:00",
+    ]))
+    labels = _phase_labels(timestamps, cfg)
+    assert labels.tolist() == ["development", "embargo", "internal_validation"]
+
+
+def test_mapping_id_binds_fit_period_and_component_version():
+    base = {
+        "variable": "DO", "regime_id": 0, "subscore": "Q_dist",
+        "risk_metric": "risk_dist", "q50": 0.1, "q75": 0.2,
+        "q90": 0.3, "q97_5": 0.4, "fit_start": "2025-08-01",
+        "fit_end": "2026-01-24", "common_support_policy": "synchronous",
+        "distribution_component_version": "full-v1",
+    }
+    changed_period = {**base, "fit_end": "2026-01-31"}
+    changed_component = {**base, "distribution_component_version": "w1-only-v1"}
+    assert _mapping_id(base) != _mapping_id(changed_period)
+    assert _mapping_id(base) != _mapping_id(changed_component)
+
+
+def test_common_change_challenges_preserve_the_predefined_mechanism_roles():
+    target = np.zeros(120, dtype=float)
+    reference = np.zeros(120, dtype=float)
+    rng = np.random.default_rng(7)
+    equal_target, equal_reference = _inject(
+        target, reference, "common_mode_drift", 1.0, rng
+    )
+    unequal_target, unequal_reference = _inject(
+        target, reference, "common_unequal", 1.0, rng
+    )
+    opposite_target, opposite_reference = _inject(
+        target, reference, "opposite_direction", 1.0, rng
+    )
+    assert np.allclose(equal_target, equal_reference)
+    assert unequal_target[-1] > unequal_reference[-1] > 0
+    assert np.isclose(unequal_reference[-1] / unequal_target[-1], 0.4)
+    assert opposite_target[-1] > 0 > opposite_reference[-1]
+    assert np.isclose(opposite_target[-1], -opposite_reference[-1])
 
 
 def test_quantile_mapping_is_monotone_decreasing():

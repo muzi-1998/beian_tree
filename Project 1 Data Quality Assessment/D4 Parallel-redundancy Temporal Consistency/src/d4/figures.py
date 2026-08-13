@@ -528,14 +528,13 @@ def _per_pair_auc(scores: pd.DataFrame) -> pd.DataFrame:
 
 def figure_5_mechanism_validation(
     benchmark_path: Path,
-    mechanism_summary_path: Path | None,
     output_dir: Path,
     source_dir: Path,
 ) -> None:
     curves = pd.read_excel(benchmark_path, sheet_name="roc_pr_curves")
     scores = pd.read_excel(benchmark_path, sheet_name="injection_scores")
     summary = pd.read_excel(benchmark_path, sheet_name="summary")
-    mechanism = pd.read_parquet(mechanism_summary_path) if mechanism_summary_path and mechanism_summary_path.exists() else pd.DataFrame()
+    mechanism = pd.read_excel(benchmark_path, sheet_name="common_change_contract")
     per_pair = _per_pair_auc(scores)
     fig, axes = plt.subplots(2, 2, figsize=(FIG_WIDTH_MM / 25.4, 118 / 25.4),
                              gridspec_kw={"hspace": 0.40, "wspace": 0.32})
@@ -564,21 +563,22 @@ def figure_5_mechanism_validation(
     for index, ax in enumerate(axes[0]):
         panel_label(ax, chr(97 + index)); _boxed(ax)
 
-    if not mechanism.empty:
-        controls = mechanism[mechanism["scenario"].isin(["common_equal", "common_unequal", "opposite_direction"])]
-        control_labels = ["Equal common\nnegative control", "Unequal same-direction\npositive control", "Opposite-direction\npositive control"]
-        values = controls.set_index("scenario").reindex(["common_equal", "common_unequal", "opposite_direction"])
-        y = values["estimate"].to_numpy(); error = np.vstack([y - values["ci95_low"], values["ci95_high"] - y])
-        axes[1, 0].bar(np.arange(3), y, color=[PALETTE["green"], PALETTE["orange"], PALETTE["red"]],
-                       width=0.65, yerr=error, capsize=2,
-                       error_kw={"elinewidth": 0.7, "ecolor": PALETTE["gray"]})
-        axes[1, 0].axhline(0.10, color=PALETTE["gray"], lw=0.7, ls=(0, (3, 2)), label="FAR limit")
-        axes[1, 0].set_ylim(0, 1.08); axes[1, 0].set_ylabel("Conditional response rate")
-        axes[1, 0].set_xticks(np.arange(3), control_labels)
-        axes[1, 0].legend(loc="upper left")
-    else:
-        far = summary[summary["metric"].eq("new_false_alarm_rate")]
-        axes[1, 0].bar(np.arange(len(far)), far["value"], color=PALETTE["green"])
+    control_labels = ["Equal common\nnegative control", "Unequal same-direction\npositive control", "Opposite-direction\npositive control"]
+    values = mechanism.set_index("scenario").reindex(
+        ["common_equal", "common_unequal", "opposite_direction"]
+    )
+    y = values["estimate"].to_numpy()
+    error = np.vstack([y - values["ci95_low"], values["ci95_high"] - y])
+    axes[1, 0].bar(np.arange(3), y,
+                   color=[PALETTE["green"], PALETTE["orange"], PALETTE["red"]],
+                   width=0.65, yerr=error, capsize=2,
+                   error_kw={"elinewidth": 0.7, "ecolor": PALETTE["gray"]})
+    axes[1, 0].axhline(0.10, color=PALETTE["gray"], lw=0.7,
+                       ls=(0, (3, 2)), label="FAR limit (equal only)")
+    axes[1, 0].set_ylim(0, 1.08)
+    axes[1, 0].set_ylabel("Conditional alarm rate")
+    axes[1, 0].set_xticks(np.arange(3), control_labels)
+    axes[1, 0].legend(loc="upper left")
     panel_label(axes[1, 0], "c"); _open(axes[1, 0])
 
     mechanisms = ["unilateral_drift", "unilateral_step", "unilateral_freeze", "unilateral_spike"]
@@ -885,6 +885,135 @@ def supplementary_3_integrity(
                                      "status_counts": counts.rename_axis("integration_status").reset_index(name="n_windows")})
 
 
+def supplementary_4_distribution_construct(
+    benchmark_path: Path,
+    output_dir: Path,
+    source_dir: Path,
+) -> None:
+    ablation = pd.read_excel(benchmark_path, sheet_name="distribution_internal_ablation")
+    positive = ablation[ablation["challenge"].ne("equal_common_mode_control")].copy()
+    positive = positive[positive["metric"].eq("delta_AUROC_full_minus_alternative")]
+    challenge_order = [
+        "distribution_location", "distribution_scale",
+        "distribution_tail", "distribution_mixture",
+    ]
+    challenge_labels = ["Location", "Scale", "Tail", "Mixture"]
+    alternative_order = ["W1-only", "KS-only"]
+    colors = {"W1-only": PALETTE["blue"], "KS-only": PALETTE["orange"]}
+    fig, axes = plt.subplots(
+        1, 2, figsize=(FIG_WIDTH_MM / 25.4, 68 / 25.4),
+        gridspec_kw={"width_ratios": [1.6, 0.85], "wspace": 0.40},
+    )
+    y = np.arange(len(challenge_order), dtype=float)
+    for offset, alternative in zip((-0.12, 0.12), alternative_order):
+        subset = positive[positive["alternative"].eq(alternative)].set_index("challenge").reindex(challenge_order)
+        axes[0].errorbar(
+            subset["difference"], y + offset,
+            xerr=np.vstack([
+                subset["difference"] - subset["CI_low"],
+                subset["CI_high"] - subset["difference"],
+            ]),
+            fmt="o", color=colors[alternative], ms=4, lw=0.9, capsize=2,
+            label=alternative,
+        )
+    axes[0].axvline(0, color=PALETTE["black"], lw=0.7)
+    axes[0].set_yticks(y, challenge_labels)
+    axes[0].invert_yaxis()
+    axes[0].set_xlabel("Delta AUROC (Full - single distance)")
+    axes[0].legend(loc="lower right")
+    axes[0].text(
+        0.0, -0.23, "n = 126 paired windows per challenge; 95% cluster-bootstrap CI",
+        transform=axes[0].transAxes, fontsize=5.8, color=PALETTE["gray"],
+        clip_on=False,
+    )
+    panel_label(axes[0], "a"); _open(axes[0])
+
+    control = ablation[
+        ablation["metric"].eq("conditional_new_FAR_common_eligible_set")
+    ].set_index("alternative").reindex(["Full", "W1-only", "KS-only"])
+    x = np.arange(len(control))
+    axes[1].bar(
+        x, control["alternative_value"],
+        color=[PALETTE["green"], PALETTE["blue"], PALETTE["orange"]], width=0.62,
+    )
+    axes[1].errorbar(
+        x, control["alternative_value"],
+        yerr=np.vstack([
+            control["alternative_value"] - control["CI_low"],
+            control["CI_high"] - control["alternative_value"],
+        ]),
+        fmt="none", ecolor=PALETTE["black"], lw=0.8, capsize=2,
+    )
+    axes[1].axhline(0.10, color=PALETTE["red"], lw=0.7, ls=(0, (3, 2)))
+    axes[1].set_xticks(x, control.index, rotation=24, ha="right")
+    axes[1].set_ylabel("Equal common-mode conditional FAR")
+    axes[1].set_ylim(0, max(0.17, float(control["CI_high"].max()) * 1.12))
+    panel_label(axes[1], "b"); _open(axes[1])
+    fig.subplots_adjust(left=0.12, right=0.99, top=0.94, bottom=0.28)
+    stem = "FigS4_distribution_construct_ablation"
+    _save_publication_figure(fig, output_dir / stem)
+    _write_source(source_dir, stem, {"construct_ablation": ablation})
+
+
+def supplementary_5_episode_duration(
+    validation_path: Path,
+    output_dir: Path,
+    source_dir: Path,
+) -> None:
+    pair_summary = pd.read_excel(validation_path, sheet_name="pair_summary")
+    events = pd.read_excel(validation_path, sheet_name="event_detail")
+    contrasts = pd.read_excel(validation_path, sheet_name="do14_contrasts")
+    pair_bootstrap = pd.read_excel(validation_path, sheet_name="pair_bootstrap")
+    do_pairs = ["PAIR_DO11", "PAIR_DO12", "PAIR_DO13", "PAIR_DO14"]
+    labels = [_pair_label(pair) for pair in do_pairs]
+    fig, axes = plt.subplots(
+        1, 3, figsize=(FIG_WIDTH_MM / 25.4, 70 / 25.4),
+        gridspec_kw={"width_ratios": [1.1, 0.85, 1.1], "wspace": 0.48},
+    )
+    for pair, color in zip(do_pairs, [PALETTE["sky"], PALETTE["blue"], PALETTE["teal"], PALETTE["red"]]):
+        durations = np.sort(events.loc[events["pair_id"].eq(pair), "duration_h"].to_numpy(dtype=float))
+        survival = 1.0 - np.arange(1, len(durations) + 1) / len(durations)
+        axes[0].step(durations, survival, where="post", color=color, lw=1.0, label=_pair_label(pair))
+    axes[0].set_xscale("log")
+    axes[0].set_xlabel("Episode duration (h, log scale)")
+    axes[0].set_ylabel("Survival probability")
+    axes[0].legend(loc="upper right", ncol=2, columnspacing=0.8)
+    panel_label(axes[0], "a"); _open(axes[0])
+
+    point = pair_summary.set_index("pair_id").reindex(do_pairs)
+    interval = pair_bootstrap.groupby("pair_id")["median_duration_h"].quantile([0.025, 0.975]).unstack().reindex(do_pairs)
+    y = np.arange(len(do_pairs))
+    axes[1].hlines(y, interval[0.025], interval[0.975], color=PALETTE["mid_gray"], lw=1.4)
+    axes[1].scatter(point["median_duration_h"], y, c=[PALETTE["blue"]] * 3 + [PALETTE["red"]], s=28)
+    axes[1].set_yticks(y, labels)
+    axes[1].invert_yaxis()
+    axes[1].set_xlabel("Median duration (h)\n7 d block 95% CI")
+    panel_label(axes[1], "b"); _open(axes[1])
+
+    axes[2].scatter(
+        point["event_rate_per_1000_h"], point["time_burden"],
+        c=[PALETTE["blue"]] * 3 + [PALETTE["red"]], s=34,
+    )
+    for pair in do_pairs:
+        row = point.loc[pair]
+        axes[2].annotate(
+            _pair_label(pair), (row["event_rate_per_1000_h"], row["time_burden"]),
+            xytext=(4, 3), textcoords="offset points", fontsize=6.2,
+        )
+    axes[2].set_xlabel("Events per 1000 evaluable pair-hours")
+    axes[2].set_ylabel("Time burden (D4 raw < 3)")
+    panel_label(axes[2], "c"); _open(axes[2])
+    fig.subplots_adjust(left=0.09, right=0.99, top=0.94, bottom=0.22)
+    stem = "FigS5_do14_episode_duration"
+    _save_publication_figure(fig, output_dir / stem)
+    _write_source(source_dir, stem, {
+        "pair_summary": pair_summary,
+        "event_detail": events,
+        "do14_contrasts": contrasts,
+        "pair_bootstrap": pair_bootstrap,
+    })
+
+
 def make_all_figures(cfg: D4Config, data_dir: Path, output_dir: Path) -> None:
     configure_style()
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -907,7 +1036,6 @@ def make_all_figures(cfg: D4Config, data_dir: Path, output_dir: Path) -> None:
     figure_4_field_cases(cfg, main, events, output_dir, source_dir)
     figure_5_mechanism_validation(
         data_dir / "D4_benchmark_results.xlsx",
-        confirmatory / "D4_mechanism_summary.parquet",
         output_dir, source_dir,
     )
     figure_6_ablation_resolution(
@@ -919,3 +1047,9 @@ def make_all_figures(cfg: D4Config, data_dir: Path, output_dir: Path) -> None:
     supplementary_1_all_pairs(cfg, main, events, output_dir, source_dir)
     supplementary_2_trend_concordance(main, raw, output_dir, source_dir)
     supplementary_3_integrity(integration, output_dir, source_dir)
+    supplementary_4_distribution_construct(
+        data_dir / "D4_benchmark_results.xlsx", output_dir, source_dir
+    )
+    supplementary_5_episode_duration(
+        data_dir / "D4_event_duration_validation.xlsx", output_dir, source_dir
+    )

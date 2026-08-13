@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 from pathlib import Path
 
 import numpy as np
@@ -24,7 +25,17 @@ EXPECTED_FIGURES = {
     "FigS1_all_pair_residual_trajectories",
     "FigS2_trend_concordance",
     "FigS3_numeric_independence_audit",
+    "FigS4_distribution_construct_ablation",
+    "FigS5_do14_episode_duration",
 }
+
+
+def _sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 def main() -> None:
@@ -33,6 +44,9 @@ def main() -> None:
     benchmark = pd.read_excel(DATA / "D4_pair_benchmark_library.xlsx", sheet_name="benchmark_windows")
     events = pd.read_excel(DATA / "D4_event_windows.xlsx", sheet_name="events")
     validation = pd.read_excel(DATA / "D4_benchmark_results.xlsx", sheet_name="summary")
+    common_change = pd.read_excel(
+        DATA / "D4_benchmark_results.xlsx", sheet_name="common_change_contract"
+    )
     expected_base = (
         0.35 * scores["Q_dist"] + 0.25 * scores["Q_trend"]
         + 0.20 * scores["Q_var"] + 0.20 * scores["Q_cp"]
@@ -42,8 +56,8 @@ def main() -> None:
     ].min(axis=1)
     expected_gate = (
         scores["D2_target_veto"].eq(0) & scores["D2_ref_veto"].eq(0)
-        & scores["valid_fraction_target"].ge(0.80)
-        & scores["valid_fraction_reference"].ge(0.80)
+        & scores["valid_fraction_common"].ge(0.80)
+        & scores["valid_fraction_common_hours"].ge(0.80)
         & scores["D4_raw"].notna()
     )
     stems = {path.stem for path in FIGURES.glob("*.png")}
@@ -67,6 +81,16 @@ def main() -> None:
             encoding="utf-8"
         )
     )
+    composite_refresh_manifest = json.loads(
+        (
+            INTEGRATION / "D4V15_composite_refresh"
+            / "D4V15_composite_refresh_manifest.json"
+        ).read_text(encoding="utf-8")
+    )
+    common_roles = common_change.set_index("scenario")["role"].to_dict()
+    equal_far = float(
+        common_change.loc[common_change["scenario"].eq("common_equal"), "estimate"].iloc[0]
+    )
     checks = {
         "rows": int(len(scores)),
         "pairs": int(scores["pair_id"].nunique()),
@@ -87,6 +111,11 @@ def main() -> None:
             (~benchmark["D2_target_continuous_24h"].astype(bool)
              | ~benchmark["D2_ref_continuous_24h"].astype(bool)).sum()
         ),
+        "benchmark_non_development_rows": int(benchmark["phase_id"].ne("development").sum()),
+        "calibration_non_development_rows": int(params["fit_phase"].ne("development").sum()),
+        "calibration_after_fit_end_rows": int(
+            (pd.to_datetime(params["fit_end"]) > pd.Timestamp("2026-01-24 23:59:59")).sum()
+        ),
         "event_duration_violations": int(events["duration_h"].lt(3.0).sum()),
         "final_D4_forDQR_nonnull": int(scores["D4_forDQR"].notna().sum()),
         "D5_proxy_rows": int(scores["D5_zone_consensus_label"].ne("not_available").sum()),
@@ -98,6 +127,24 @@ def main() -> None:
         "required_validation_failures": int(
             ((validation["required_for_acceptance"] == True) & (validation["pass"] != True)).sum()
         ),
+        "common_change_roles_ok": common_roles == {
+            "common_equal": "negative_control",
+            "common_unequal": "positive_asymmetry_stress_test",
+            "opposite_direction": "positive_asymmetry_stress_test",
+        },
+        "equal_common_mode_far": equal_far,
+        "positive_common_changes_excluded_from_far": bool(
+            common_change.loc[
+                common_change["scenario"].isin(["common_unequal", "opposite_direction"]),
+                "metric",
+            ].eq("conditional_response_rate").all()
+        ),
+        "composite_refresh_status": composite_refresh_manifest["status"],
+        "composite_refresh_d4_hash_matches": bool(
+            composite_refresh_manifest["input_files"]["D4"]["sha256"]
+            == _sha256(DATA / "D4_main_scores.xlsx")
+        ),
+        "composite_refresh_numeric_source": composite_refresh_manifest["D4_numeric_source"],
         "figure_stems": len(stems),
         "figure_stems_exact": stems == EXPECTED_FIGURES,
         "missing_figure_counterparts": missing_counterparts,
@@ -114,6 +161,9 @@ def main() -> None:
         and checks["pair_specific_mapping_count"] == 0
         and checks["benchmark_D1_violations"] == 0
         and checks["benchmark_D2_continuity_violations"] == 0
+        and checks["benchmark_non_development_rows"] == 0
+        and checks["calibration_non_development_rows"] == 0
+        and checks["calibration_after_fit_end_rows"] == 0
         and checks["event_duration_violations"] == 0
         and checks["final_D4_forDQR_nonnull"] == 0
         and checks["D5_proxy_rows"] == 0
@@ -121,7 +171,14 @@ def main() -> None:
         and checks["integration_numeric_source"] == "D4_raw"
         and checks["integration_max_abs_numeric_adjustment"] < 1e-12
         and checks["required_validation_failures"] == 0
-        and checks["figure_stems"] == 9
+        and checks["common_change_roles_ok"]
+        and checks["equal_common_mode_far"] <= 0.10
+        and checks["positive_common_changes_excluded_from_far"]
+        and checks["composite_refresh_status"]
+        == "retrospective_sha_bound_refresh_not_untouched_terminal_validation"
+        and checks["composite_refresh_d4_hash_matches"]
+        and checks["composite_refresh_numeric_source"] == "D4_raw"
+        and checks["figure_stems"] == 11
         and checks["figure_stems_exact"]
         and not checks["missing_figure_counterparts"]
         and not checks["missing_figure_source_data"]

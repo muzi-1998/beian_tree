@@ -29,16 +29,20 @@ docs/                 expert audit and scientific decision record
 scripts/              reproducible pipeline, validation, and figure entry points
 src/d4/               configuration, scoring, validation, output, and figure code
 tests/                formula and symmetry regression tests
-outputs/data/         ten current Excel deliverables plus a hash-bound manifest
-outputs/figures/      six main and three supplementary publication figures
+outputs/data/         current Excel deliverables plus a hash-bound manifest
+outputs/figures/      six main and five supplementary publication figures
 outputs/figure_source_data/
                       one traceable Excel source workbook per figure
 outputs/qa/           automated figure-bundle QA
-outputs/comparison/   old/current/restored sensitivity workbook and figure
+outputs/comparison/   legacy and v1.4-v1.5 method-sensitivity workbooks
+outputs/integration/D4V15_composite_refresh/
+                      SHA-bound retrospective composite refresh
 legacy/2026-05-30-proxy/
                       preserved proxy-era package; not valid as current results
 legacy/2026-07-13-v1.3-independent/
                       frozen pre-restoration comparison inputs
+legacy/2026-07-26-v1.4-canonical/
+                      frozen pre-common-support production package
 ```
 
 ## Reproduce
@@ -48,9 +52,12 @@ Run from `Project 1 Data Quality Assessment`:
 ```powershell
 python ".\D4 Parallel-redundancy Temporal Consistency\scripts\run_d4_pipeline.py"
 python ".\D4 Parallel-redundancy Temporal Consistency\scripts\run_d4_validation.py"
+python ".\D4 Parallel-redundancy Temporal Consistency\scripts\run_d4_episode_validation.py"
+python ".\D4 Parallel-redundancy Temporal Consistency\scripts\run_d4_method_sensitivity.py"
 python ".\D4 Parallel-redundancy Temporal Consistency\scripts\make_d4_figures.py"
 python ".\D4 Parallel-redundancy Temporal Consistency\scripts\audit_d4_figures.py"
-python ".\D4 Parallel-redundancy Temporal Consistency\scripts\run_d4_sensitivity.py"
+python ".\D4 Parallel-redundancy Temporal Consistency\scripts\run_d4_d5_readiness.py"
+python ".\D4 Parallel-redundancy Temporal Consistency\scripts\run_d4_composite_refresh.py"
 python ".\D4 Parallel-redundancy Temporal Consistency\scripts\check_d4_outputs.py"
 python -m pytest ".\D4 Parallel-redundancy Temporal Consistency\tests" -q
 ```
@@ -61,21 +68,26 @@ hashes rather than rely on file modification times.
 
 ## Current acceptance status
 
-The restored v1.2 raw core uses public variable-by-regime calibration from
-high-quality windows (bilateral D1 >= 4.5, bilateral D2 continuity >= 24 h,
-complete residual windows). The numeric aggregation source remains `D4_raw`;
+The v1.5 raw core uses public variable-by-regime calibration from development-
+period high-quality windows (bilateral D1 >= 4.5, bilateral D2 continuity >=
+24 h, and at least 80% synchronous common support). W1 and KS are calculated on
+the same timestamp support. The numeric aggregation source remains `D4_raw`;
 D1/D2 benchmark admission is an evidence-quality screen, not a score blend.
 Sparse ORP high-quality support requires a documented variable-level fallback
-and remains a calibration limitation. External labelled-event validation and
-action-grade D5 causal attribution must not be claimed from the current package.
+and remains a calibration limitation. The February-April period is an internal
+chronological validation period, not a genuinely untouched terminal test,
+because upstream transforms had already been developed on the study period.
+External labelled-event validation and action-grade D5 causal attribution must
+not be claimed from the current package.
 
 ## Publication figure set
 
 The six main figures cover the scientific construct, pair-level mechanism
 profile, temporal burden and evaluability, formal field episodes, controlled
-mechanism validation, and component/resolution limitations. Three
-supplementary figures retain all-pair trajectories, trend concordance, and the
-numeric-independence audit. All quantitative panels use `usable_for_D4` as the
+mechanism validation, and component/resolution limitations. Five supplementary
+figures retain all-pair trajectories, trend concordance, the numeric-
+independence audit, W1/KS construct ablation, and event-duration inference. All
+quantitative panels use `usable_for_D4` as the
 analysis denominator unless a calibration or integration denominator is stated
 explicitly. Formal field cases are selected from `D4_event_windows.xlsx` and
 remain detection examples with causal attribution pending.

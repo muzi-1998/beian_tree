@@ -2,9 +2,9 @@
 
 ## Scope and locked scientific boundary
 
-This revision implements the 12 August 2026 expert figure review without
-re-estimating the production D4 score. The plotted core remains the current
-hash-bound D4 release: 42,847 pair-windows across seven homologous pairs.
+This revision implements the 12 August 2026 figure review and the 13 August
+methodology audit. The plotted core is the current hash-bound D4 v1.5 release:
+42,847 pair-windows across seven homologous pairs.
 `D4_raw` is the independent numeric dimension; D2 controls evaluability, while
 D1 and D5 provide interpretation or attribution governance and cannot rewrite
 the D4 value.
@@ -34,7 +34,9 @@ the D4 value.
 
 `FigS1` retains all-pair trajectories and formal event shading; `FigS2` reports
 trend concordance and robust slope differences; `FigS3` verifies that finalized
-D4 equals `D4_raw` and that D1/D5 context does not numerically alter the score.
+D4 equals `D4_raw` and that D1/D5 context does not numerically alter the score;
+`FigS4` reports W1/KS construct ablation; and `FigS5` reports the time-block
+bootstrap event-duration analysis for DO14.
 The superseded eight-figure bundle is removed by the reproducible figure entry
 point rather than retained beside current results.
 
