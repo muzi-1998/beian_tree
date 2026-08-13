@@ -30,7 +30,9 @@ scripts/              reproducible pipeline, validation, and figure entry points
 src/d4/               configuration, scoring, validation, output, and figure code
 tests/                formula and symmetry regression tests
 outputs/data/         ten current Excel deliverables plus a hash-bound manifest
-outputs/figures/      eight figures in editable SVG, PDF, and 600 dpi PNG
+outputs/figures/      six main and three supplementary publication figures
+outputs/figure_source_data/
+                      one traceable Excel source workbook per figure
 outputs/qa/           automated figure-bundle QA
 outputs/comparison/   old/current/restored sensitivity workbook and figure
 legacy/2026-05-30-proxy/
@@ -47,6 +49,7 @@ Run from `Project 1 Data Quality Assessment`:
 python ".\D4 Parallel-redundancy Temporal Consistency\scripts\run_d4_pipeline.py"
 python ".\D4 Parallel-redundancy Temporal Consistency\scripts\run_d4_validation.py"
 python ".\D4 Parallel-redundancy Temporal Consistency\scripts\make_d4_figures.py"
+python ".\D4 Parallel-redundancy Temporal Consistency\scripts\audit_d4_figures.py"
 python ".\D4 Parallel-redundancy Temporal Consistency\scripts\run_d4_sensitivity.py"
 python ".\D4 Parallel-redundancy Temporal Consistency\scripts\check_d4_outputs.py"
 python -m pytest ".\D4 Parallel-redundancy Temporal Consistency\tests" -q
@@ -65,3 +68,20 @@ D1/D2 benchmark admission is an evidence-quality screen, not a score blend.
 Sparse ORP high-quality support requires a documented variable-level fallback
 and remains a calibration limitation. External labelled-event validation and
 action-grade D5 causal attribution must not be claimed from the current package.
+
+## Publication figure set
+
+The six main figures cover the scientific construct, pair-level mechanism
+profile, temporal burden and evaluability, formal field episodes, controlled
+mechanism validation, and component/resolution limitations. Three
+supplementary figures retain all-pair trajectories, trend concordance, and the
+numeric-independence audit. All quantitative panels use `usable_for_D4` as the
+analysis denominator unless a calibration or integration denominator is stated
+explicitly. Formal field cases are selected from `D4_event_windows.xlsx` and
+remain detection examples with causal attribution pending.
+
+Every figure is exported as editable SVG and PDF plus 600 dpi PNG and LZW TIFF.
+The matching workbook in `outputs/figure_source_data/` records the plotted data,
+sample support, interval definition, and calibration provenance. The figure
+entry point also removes the superseded eight-figure bundle by fixed filename so
+old and current results cannot coexist silently.

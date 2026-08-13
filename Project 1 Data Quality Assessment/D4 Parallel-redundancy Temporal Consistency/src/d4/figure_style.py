@@ -7,14 +7,18 @@ import numpy as np
 
 
 AXIS_WIDTH = 0.8
+KEY_LINE_WIDTH = 0.9
 PANEL_X = -0.10
 PANEL_Y = 1.02
 PANEL_FONTSIZE = 9.0
 TITLE_PAD = 6.0
 PALETTE = {
-    "blue": "#2F6F9F", "orange": "#D28B45", "green": "#4C8C5A",
-    "red": "#B65C5C", "purple": "#8064A2", "gray": "#6E7478",
-    "light_gray": "#D5DADD", "teal": "#4F9C8A", "amber": "#C3A13B",
+    # Okabe-Ito anchors plus quiet neutral fills.
+    "blue": "#0072B2", "sky": "#56B4E9", "orange": "#E69F00",
+    "green": "#009E73", "red": "#D55E00", "purple": "#CC79A7",
+    "yellow": "#F0E442", "black": "#242629", "gray": "#6E7478",
+    "mid_gray": "#A7ADB1", "light_gray": "#D9DEE1", "pale_gray": "#F2F4F5",
+    "teal": "#009E73", "amber": "#E69F00",
 }
 
 
@@ -27,8 +31,8 @@ def configure_style() -> None:
         "axes.titlesize": 7,
         "axes.titlepad": TITLE_PAD,
         "axes.linewidth": AXIS_WIDTH,
-        "xtick.labelsize": 6.5,
-        "ytick.labelsize": 6.5,
+        "xtick.labelsize": 7,
+        "ytick.labelsize": 7,
         "xtick.major.width": AXIS_WIDTH,
         "ytick.major.width": AXIS_WIDTH,
         "xtick.minor.width": AXIS_WIDTH,
@@ -36,6 +40,8 @@ def configure_style() -> None:
         "xtick.direction": "out",
         "ytick.direction": "out",
         "legend.frameon": False,
+        "legend.fontsize": 7,
+        "lines.linewidth": KEY_LINE_WIDTH,
         "svg.fonttype": "none",
         "pdf.fonttype": 42,
         "ps.fonttype": 42,
@@ -103,4 +109,8 @@ def save_figure(fig, output_base) -> None:
     fig.savefig(output_base.with_suffix(".svg"), bbox_inches="tight")
     fig.savefig(output_base.with_suffix(".pdf"), bbox_inches="tight")
     fig.savefig(output_base.with_suffix(".png"), dpi=600, bbox_inches="tight")
+    fig.savefig(
+        output_base.with_suffix(".tiff"), dpi=600, bbox_inches="tight",
+        pil_kwargs={"compression": "tiff_lzw"},
+    )
     plt.close(fig)
