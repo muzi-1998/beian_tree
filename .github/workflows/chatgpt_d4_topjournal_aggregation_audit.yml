@@ -1,0 +1,104 @@
+name: Build D4 top-journal and aggregation audit
+
+on:
+  push:
+    branches:
+      - chatgpt/d4-topjournal-aggregation-audit-20260813
+    paths:
+      - '.chatgpt_d4_readiness_audit/**'
+      - '.github/workflows/chatgpt_d4_topjournal_aggregation_audit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: chatgpt/d4-topjournal-aggregation-audit-20260813
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install python-docx pillow lxml
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq libreoffice-writer poppler-utils fonts-noto-cjk fonts-liberation
+
+      - name: Build Word report
+        run: python .chatgpt_d4_readiness_audit/build_report.py
+
+      - name: Verify DOCX structure
+        run: |
+          python - <<'PY'
+          import zipfile
+          from pathlib import Path
+          p=Path('deliverables/260813_D4_顶刊SCI发表与最终DQR聚合_方法学缺口_四项问题审查_修改完善方案_专家版.docx')
+          assert p.exists() and p.stat().st_size > 500000, (p.exists(), p.stat().st_size if p.exists() else None)
+          with zipfile.ZipFile(p) as z:
+              names=z.namelist()
+              media=[n for n in names if n.startswith('word/media/')]
+              assert len(media) >= 5, media
+              assert 'word/document.xml' in names
+          print('verified docx', p.stat().st_size, 'bytes; media=', len(media))
+          PY
+
+      - name: Render DOCX to PDF
+        run: |
+          mkdir -p deliverables/rendered
+          libreoffice --headless --convert-to pdf --outdir deliverables/rendered deliverables/260813_D4_顶刊SCI发表与最终DQR聚合_方法学缺口_四项问题审查_修改完善方案_专家版.docx
+          pdfinfo deliverables/rendered/260813_D4_顶刊SCI发表与最终DQR聚合_方法学缺口_四项问题审查_修改完善方案_专家版.pdf | tee deliverables/rendered/pdfinfo.txt
+          pdftoppm -png -r 80 deliverables/rendered/260813_D4_顶刊SCI发表与最终DQR聚合_方法学缺口_四项问题审查_修改完善方案_专家版.pdf deliverables/rendered/page >/dev/null 2>&1
+
+      - name: Automated rendered-page QA
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from PIL import Image, ImageStat
+          pages=sorted(Path('deliverables/rendered').glob('page-*.png'))
+          assert len(pages) >= 10, len(pages)
+          issues=[]
+          for p in pages:
+              im=Image.open(p).convert('L')
+              stat=ImageStat.Stat(im)
+              mean=stat.mean[0]
+              extrema=im.getextrema()
+              if mean > 253.8 or extrema[0] > 245:
+                  issues.append((p.name,mean,extrema))
+          print('rendered pages', len(pages), 'near_blank_issues', issues)
+          assert not issues, issues
+          Path('deliverables/rendered/page_qa.txt').write_text(
+              f'pages={len(pages)}\nnear_blank_issues={issues}\n', encoding='utf-8')
+          PY
+
+      - name: Commit generated deliverables
+        run: |
+          rm -f deliverables/rendered/page-*.png
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add deliverables/*.docx deliverables/rendered/*.pdf deliverables/rendered/*.txt
+          if git diff --cached --quiet; then
+            echo 'No generated changes to commit'
+          else
+            git commit -m 'Build D4 top-journal and aggregation readiness audit'
+            git push origin HEAD:chatgpt/d4-topjournal-aggregation-audit-20260813
+          fi
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: D4_topjournal_aggregation_readiness_audit
+          path: |
+            deliverables/260813_D4_顶刊SCI发表与最终DQR聚合_方法学缺口_四项问题审查_修改完善方案_专家版.docx
+            deliverables/rendered/260813_D4_顶刊SCI发表与最终DQR聚合_方法学缺口_四项问题审查_修改完善方案_专家版.pdf
+            deliverables/rendered/pdfinfo.txt
+            deliverables/rendered/page_qa.txt
+          if-no-files-found: error
