@@ -30,7 +30,7 @@ jobs:
       - name: Patch builder portability and reference then build
         run: |
           python - <<'PY'
-          from pathlib import import Path
+          from pathlib import Path
           import re
           p=Path('.chatgpt_d4_readiness_audit/build_report.py')
           text=p.read_text(encoding='utf-8')
