@@ -1,0 +1,110 @@
+{
+  "version": "d5-publication-contract-v1.0",
+  "confirmatory_run_id": "D1D5V20-764c93bf3d95",
+  "summary": {
+    "contract_version": "d5-publication-contract-v1.0",
+    "confirmatory_run_id": "D1D5V20-764c93bf3d95",
+    "full_outer_AUROC": 0.9666666666666668,
+    "full_outer_AUPRC": 0.9741901154401155,
+    "full_outer_Top1": 0.7666666666666667,
+    "local_all_Top1": 0.6222222222222222,
+    "local_all_Top2": 0.8388888888888889,
+    "local_all_MRR": 0.7527856402856403,
+    "local_swap_Top1": 0.7,
+    "local_swap_Top2": 0.8666666666666667,
+    "local_swap_MRR": 0.8152972027972027,
+    "months_without_report_coverage": 3,
+    "minimum_monthly_report_coverage": 0.0,
+    "D4_D5_spearman": 0.14478442031176914,
+    "D4_D5_partial_rank": 0.13588443079683482,
+    "D4_D5_low_score_jaccard": 0.23535532202684425,
+    "max_target_exclusion_disagreement": 0.18004014756944445,
+    "max_postreference_target_exclusion_disagreement": 0.002351026313409892,
+    "max_injected_context_switch_rate": 0.0,
+    "max_injected_ood_rate_change": 0.05787037037037037,
+    "d4_run_id": "D4V14_20260726_100717",
+    "d4_audit_status": "provisional_rerun_after_latest_D4_merge",
+    "scientific_score_ready": true,
+    "sensor_specific_hard_veto_ready": false,
+    "deployment_ready": false
+  },
+  "d4_dependency": {
+    "d4_run_id": "D4V14_20260726_100717",
+    "d4_calibration_id": "D4CAL-V14-7a16d7f511d3",
+    "status": "provisional_rerun_after_latest_D4_merge",
+    "n_pair_hours": 18376
+  },
+  "production_score_changed": false,
+  "files": [
+    {
+      "relative_path": "outputs\\publication\\D5_PUBLICATION_READINESS_AUDIT_v1.0.md",
+      "sha256": "951b14afceb659a941306c90c0763fec61bf79de8cd0d5316024059cfbdf7bdf",
+      "bytes": 5709
+    },
+    {
+      "relative_path": "outputs\\publication\\D5_publication_audit_tables.xlsx",
+      "sha256": "f804b0704ef36c432f26f3faf80d6ad7cbf93f014ec02a34916644a509ae3dae",
+      "bytes": 23665
+    },
+    {
+      "relative_path": "outputs\\publication\\D5_decision_register.parquet",
+      "sha256": "8c888a1b2a0a3790d1333395853deb23b7c145c3a9489c8464c595fef28427f9",
+      "bytes": 4691
+    },
+    {
+      "relative_path": "outputs\\publication\\D5_outer_refit_summary.parquet",
+      "sha256": "9ea7de7e9e34e2bc3b5c657dd72bded594918e0310ad7e231a2610ef45253f30",
+      "bytes": 6681
+    },
+    {
+      "relative_path": "outputs\\publication\\D5_outer_refit_deltas.parquet",
+      "sha256": "1601955bc59dfd0da87cd33e695f16ac974ad0be8ecacbdb23dfe465599ce7bf",
+      "bytes": 7921
+    },
+    {
+      "relative_path": "outputs\\publication\\D5_localization.parquet",
+      "sha256": "e63682e2c8a0ebeb772d9d0eae21b4be654b370f853eb939376249c595ddfcff",
+      "bytes": 6980
+    },
+    {
+      "relative_path": "outputs\\publication\\D5_risk_coverage.parquet",
+      "sha256": "eb0caf68ddfdc8203a64254c3aa277304432bb3fa762cb19e0b9123740a49508",
+      "bytes": 5064
+    },
+    {
+      "relative_path": "outputs\\publication\\D5_monthly_coverage.parquet",
+      "sha256": "51e4fd571650b85d5e4d8c2aab7c0ca543cb81aff01517a7efacc70c08bea506",
+      "bytes": 6919
+    },
+    {
+      "relative_path": "outputs\\publication\\D5_support_sensitivity.parquet",
+      "sha256": "f6ee73f3893ed53682e63122e9220948cc97ffa0c9ead47b20b6b2c739de9fda",
+      "bytes": 5871
+    },
+    {
+      "relative_path": "outputs\\publication\\D5_d4_d5_dependence.parquet",
+      "sha256": "a18b2d57e0affd0fdf036d32f43b988f92c6866b4300aa8cfa798991759f1268",
+      "bytes": 4364
+    },
+    {
+      "relative_path": "outputs\\publication\\D5_d4_d5_composite.parquet",
+      "sha256": "54eed66c77212702829f3d4bc85907babd66e415997082a0a86a8b49ea1b4556",
+      "bytes": 4352
+    },
+    {
+      "relative_path": "outputs\\publication\\D5_target_influence.parquet",
+      "sha256": "77b6a0a69423e32f3f664790ccd0b4e841d967fce6370559b159ea50c758bdad",
+      "bytes": 8536
+    },
+    {
+      "relative_path": "outputs\\publication\\D5_coverage_summary.parquet",
+      "sha256": "54201e6be7009f8ed97eb53e8abd9d8d33766757486839e1d1650d09bf1718c6",
+      "bytes": 2879
+    },
+    {
+      "relative_path": "outputs\\publication\\D5_coverage_strata.parquet",
+      "sha256": "f4da589996c29b4e710131be262c3efdaa0fb822e051293f1310365aaf0e7b75",
+      "bytes": 5837
+    }
+  ]
+}

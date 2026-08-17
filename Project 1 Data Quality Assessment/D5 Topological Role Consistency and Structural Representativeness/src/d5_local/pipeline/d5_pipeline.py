@@ -902,7 +902,7 @@ class D5Pipeline:
                 "regime_model_version": self.config["regime_model_version"],
                 "mapping_version": self.config["mapping_version"],
                 "code_commit": self._code_commit(),
-                "active_regime_policy": "target_excluded_MAP_hysteresis",
+                "active_regime_policy": "plant_global_robust_context_MAP_hysteresis",
                 "orp_policy_version": self.orp_config["policy_version"],
             },
             scientific_boundaries=[
@@ -914,6 +914,7 @@ class D5Pipeline:
                 "Process-coherence evidence is an attribution guard, not a Veto; only validated sensor-identity evidence may activate Veto.",
                 "D4 final numeric scoring uses D4_raw; D1 and D5 contribute interpretation, attribution and action governance without numerical rewriting.",
                 "Observed low D5_raw windows are unlabeled structural evidence, not confirmed faults.",
+                "The plant-global robust regime context includes each target with bounded influence through pooled median and dispersion; strict target exclusion is evaluated as a sensitivity challenge rather than claimed by the production model.",
             ],
             acceptance={
                 "acceptance_status": acceptance_status,

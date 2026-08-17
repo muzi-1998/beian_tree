@@ -1,0 +1,43 @@
+version: d5-publication-contract-v1.0
+confirmatory_run_id: D1D5V20-764c93bf3d95
+random_seed: 20260817
+
+score_contract:
+  primary_scientific_score: D5_raw
+  retrospective_report_score: D5_report_score
+  scale: [1.0, 5.0]
+  grade_bands_enabled: false
+  missing_or_ood_policy: preserve_as_missing_and_report_coverage
+  production_context_policy: plant_global_robust_context_MAP_hysteresis
+  target_exclusion_claim: false
+
+support_contract:
+  L1: diagnostic_only
+  L2: retrospective_scientific_report
+  L3: gate_candidate_subject_to_node_validation
+  missing_support_is_not_low_quality: true
+  sensitivity_only:
+    n_effective_multiplier: [0.8, 1.0, 1.2]
+    node_reference_coverage: [0.70, 0.80, 0.90]
+    node_bootstrap_stability: [0.75, 0.80, 0.85]
+
+claim_boundaries:
+  top1_localization_threshold: 0.80
+  top1_failure_blocks: sensor_specific_hard_veto
+  top1_failure_does_not_block: continuous_scientific_score
+  process_coherence_role: attribution_guard_not_veto
+  event_truth_status: unlabeled_candidate_events
+  future_holdout_status: pending_new_data
+  deployment_status: pending_documentary_audit_and_dual_approval
+
+statistical_analysis:
+  synchronized_block_hours: 168
+  bootstrap_repetitions: 2000
+  low_score_threshold: 3.0
+  dependence_metrics: [spearman, kendall, partial_rank, low_score_jaccard]
+  localization_metrics: [top1, top2, reciprocal_rank, topological_hop_error]
+  d4_refresh_required_after_run_id: D4V14_20260726_100717
+
+publication_figures:
+  - FigD5_6_validation_coverage
+  - FigD5_7_D4_D5_complementarity

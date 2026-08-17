@@ -72,6 +72,14 @@ class D5ReportBuilder:
         self.figure_qa = json.loads(
             (self.paths.figure_root / "D5_figure_qa.json").read_text(encoding="utf-8")
         )
+        publication_manifest = (
+            D5_ROOT / "outputs" / "publication" / "D5_publication_audit_manifest.json"
+        )
+        self.publication = (
+            json.loads(publication_manifest.read_text(encoding="utf-8"))["summary"]
+            if publication_manifest.exists()
+            else {}
+        )
         self.generated = pd.Timestamp.now(tz="Asia/Shanghai").strftime("%Y-%m-%d %H:%M CST")
 
     def build_all(self) -> list[Path]:
@@ -81,17 +89,17 @@ class D5ReportBuilder:
         release_index_md = self._release_index_markdown()
         outputs = []
         for name, content in [
-            ("D5_EXPERT_REPORT_v2.3.md", report_md),
-            ("D5_PROJECT_DIRECTORY_GUIDE_v2.3.md", guide_md),
-            ("D5_FIGURE_CAPTIONS_v2.3.md", captions_md),
+            ("D5_EXPERT_REPORT_v2.4.md", report_md),
+            ("D5_PROJECT_DIRECTORY_GUIDE_v2.4.md", guide_md),
+            ("D5_FIGURE_CAPTIONS_v2.4.md", captions_md),
             ("D5_CURRENT_RELEASE.md", release_index_md),
         ]:
             path = self.paths.report_root / name
             path.write_text(content, encoding="utf-8")
             outputs.append(path)
             (self.docs_root / name).write_text(content, encoding="utf-8")
-        expert_docx = self.paths.report_root / "D5_EXPERT_REPORT_v2.3.docx"
-        guide_docx = self.paths.report_root / "D5_PROJECT_DIRECTORY_GUIDE_v2.3.docx"
+        expert_docx = self.paths.report_root / "D5_EXPERT_REPORT_v2.4.docx"
+        guide_docx = self.paths.report_root / "D5_PROJECT_DIRECTORY_GUIDE_v2.4.docx"
         self._build_expert_docx(expert_docx)
         self._build_guide_docx(guide_docx)
         outputs.extend([expert_docx, guide_docx])
@@ -100,7 +108,7 @@ class D5ReportBuilder:
     def _release_index_markdown(self) -> str:
         return f"""# D5 Current Release
 
-Current release: **D5 v2.3**
+Current release: **D5 v2.4**
 
 Generated: {self.generated}
 
@@ -112,9 +120,10 @@ Generated: {self.generated}
   prespecified 0.80 threshold.
 - Automated deployment: blocked pending documentary audit, maintenance
   provenance and dual approval.
-- Current report: `D5_EXPERT_REPORT_v2.3.md` / `.docx`.
-- Current directory guide: `D5_PROJECT_DIRECTORY_GUIDE_v2.3.md` / `.docx`.
-- Current figure captions: `D5_FIGURE_CAPTIONS_v2.3.md`.
+- Current report: `D5_EXPERT_REPORT_v2.4.md` / `.docx`.
+- Current directory guide: `D5_PROJECT_DIRECTORY_GUIDE_v2.4.md` / `.docx`.
+- Current figure captions: `D5_FIGURE_CAPTIONS_v2.4.md`.
+- Publication audit: `../publication/D5_PUBLICATION_READINESS_AUDIT_v1.0.md`.
 
 Files labelled v2.1 or v2.2 are retained only as immutable release history and
 must not be used as the current scientific result.
@@ -211,7 +220,7 @@ must not be used as the current scientific result.
         support_lines = "\n".join(
             f"- `{level}`: {count} templates" for level, count in f["support"].items()
         )
-        return f"""# D5 Expert Review Report v2.3
+        return f"""# D5 Expert Review Report v2.4
 
 **Project:** Topological Role Consistency and Structural Representativeness
 **Run:** `{f['run_id']}`
@@ -220,7 +229,7 @@ must not be used as the current scientific result.
 
 ## 1. Executive verdict
 
-The D5 v2.3 implementation is complete as a regime-conditioned ordinal spatial-structure assessment. Local, Sensitivity and Shadow V2 tracks, frozen templates, hourly scores, validation-graded admission, dual report/gate interfaces, plot data, SCI-ready figures, manifests and audit records are present. The Local Track remains logically independent of D1, D2, D3 and D4 and consumes only canonical observations, exogenous hydraulic/time context and declared D5 topology.
+The D5 v2.4 release retains the frozen v2.3 scoring implementation and adds publication-grade validation, coverage, complementarity and target-influence audits. Local, Sensitivity and Shadow V2 tracks, frozen templates, hourly scores, validation-graded admission, dual report/gate interfaces, plot data, SCI-ready figures, manifests and audit records are present. The Local Track remains logically independent of D1, D2, D3 and D4 and consumes only canonical observations, exogenous hydraulic/time context and declared D5 topology.
 
 The ordinal research topology is confirmed: process line, pool zone, longitudinal order, SCADA-to-physical-point identity and the absence of study-period probe/channel changes are author-confirmed; the installation register independently reconciles eight active DO and six active ORP instruments. Exact coordinates, asset IDs and maintenance records are not model inputs and therefore do not suppress retrospective scientific scores. They remain deployment-governance limitations. Family-level support identifies {f['family_l3_templates']} L3 candidates, but node-specific blocked validation retains only {f['node_validated_l3_templates']} final L3 templates; the current effective distribution is L1={f['l1_templates']}, L2={f['l2_templates']} and L3={f['l3_templates']}. `D5_report_score` contains {f['d5_report_nonnull']:,} rows. Swap Top-1 is {f['swap_top1']:.2f} (95% CI {f['swap_top1_low']:.2f}-{f['swap_top1_high']:.2f}, n={f['swap_top1_n']}), so node-specific hard Veto remains disabled without blocking the score.
 
@@ -233,6 +242,7 @@ The ordinal research topology is confirmed: process line, pool zone, longitudina
 - One plant-global regime is inferred from QR/QIR, robust pooled DO/ORP level
   and dispersion, and cyclic time features. Every sensor is then compared with
   its role-specific template under the same active regime.
+- The pooled context includes each target with bounded median/dispersion influence. Strict target exclusion is a sensitivity challenge, not a production-model claim.
 - Observed low `D5_raw` is structural evidence, not a confirmed hardware fault.
 
 ## 3. Data and result freshness
@@ -278,6 +288,8 @@ not alter the retrospective score. Current provisional report rows:
 
 Validation uses observed test-period spatial windows with frozen templates. Same-line, same-analyte position swaps are positive controls. Freeze, temporal ramps, common-mode and zone-coherent changes, DO4 floor behavior and dropout are negative/orthogonality controls. The swap detection metrics pass, but localization remains below the release criterion and must not be hidden by threshold tuning.
 
+The publication audit additionally reports six future-month outer refits (full-model AUROC {self.publication.get('full_outer_AUROC', float('nan')):.3f}, AUPRC {self.publication.get('full_outer_AUPRC', float('nan')):.3f}, Top-1 {self.publication.get('full_outer_Top1', float('nan')):.3f}), Top-2/MRR localization, synchronized 7-d D4-D5 dependence, target-influence sensitivity and monthly support migration. Confidence-risk coverage is not monotonic; the current confidence field remains evidence metadata and is not a calibrated hard-Veto gate.
+
 ## 6. Topology and D4 interface
 
 - Declared topology contains 14 DO/ORP nodes, 10 longitudinal edges and seven parallel peer pairs.
@@ -289,7 +301,7 @@ Validation uses observed test-period spatial windows with frozen templates. Same
 
 ## 7. Figure review
 
-Five multi-panel figure groups are available as SVG, PDF, 600 dpi PNG and LZW-compressed 600 dpi TIFF, backed by `D5_plot_data.parquet/.csv`. All use Arial, 0.8 pt boxed axes, inward ticks, unified panel labels, endpoint-aware scales and transparent label backgrounds where annotations cover data. Figure D5-3 decomposes weighted leave-one-out structural attribution and does not claim exact Shapley values. Figure D5-5 is now the integration evidence figure: it shows family-to-node support attrition, node validation metrics, dual-interface coverage and the zero-adjustment D4 independence audit. Automated counterpart/font/pixel QA passed: {f['figure_qa']}.
+Seven multi-panel figure groups are available as SVG, PDF, 600 dpi PNG and LZW-compressed 600 dpi TIFF. All use Arial, 0.8 pt boxed axes, inward ticks, unified panel labels, endpoint-aware scales and transparent label backgrounds where annotations cover data. Figure D5-6 reports future-month refits, localization and coverage; Figure D5-7 reports D4-D5 complementarity, composite ablation, target influence and support sensitivity. Automated counterpart/font/pixel QA passed: {f['figure_qa']}.
 
 ## 8. Critical limitations
 
@@ -307,7 +319,7 @@ The branch may enter final WW-DQS subscore aggregation as a **scientific impleme
 1. Use `D5_report_score` only where report eligibility is explicit; renormalize missing dimensions rather than substituting a low score.
 2. Use the separate gate interface only for final L3 nodes and treat process coherence as an attribution Guard, never as Veto.
 3. Keep sensor-specific hard Veto disabled until blocked localization reaches Top-1 >=0.80.
-4. Complete D4-D5 conditional dependence and ablation analysis before fixing final WW-DQS weights.
+4. Rerun the completed D4-D5 conditional dependence and ablation audit after the latest D4 release is merged, before freezing WW-DQS weights.
 5. Add field-confirmed topology and event cases as external validation when they become available.
 6. Complete documentary audit and dual approval before any automated plant-control deployment.
 
@@ -324,9 +336,10 @@ retrospective scientific aggregation.
             ("outputs/plot_data", "Frozen long-table data used by every manuscript figure"),
             ("outputs/figures", "SVG/PDF/600 dpi PNG/TIFF figures and figure QA"),
             ("outputs/reports", "Expert report, directory guide and figure captions"),
+            ("outputs/publication", "Publication decisions, inference audits, source data and manifest"),
         ]
         output_table = "\n".join(f"| `{path}` | {role} |" for path, role in output_rows)
-        return f"""# D5 Project Directory Guide v2.3
+        return f"""# D5 Project Directory Guide v2.4
 
 **Generated:** {self.generated}
 **Update rule:** every computational or figure change must rerun reports and release QA.
@@ -338,6 +351,7 @@ D5 Topological Role Consistency and Structural Representativeness/
 |-- configs/
 |   |-- common/          # paths, sensors, topology evidence and interface schemas
 |   |-- local/           # production-isolated D5 Local policies
+|   |-- publication/     # final claim, support and inference contract
 |   |-- sensitivity/     # upstream-filter sensitivity only
 |   `-- shadow_v2/       # graph/topology research only
 |-- src/
@@ -371,6 +385,7 @@ D5 Topological Role Consistency and Structural Representativeness/
 python scripts/run_d5_local.py
 python scripts/run_d5_sensitivity.py
 python scripts/run_d5_validation.py
+python scripts/run_d5_publication_audit.py
 python scripts/run_d5_topology_review.py
 python scripts/run_d5_shadow_v2.py
 python scripts/make_d5_figures.py
@@ -427,7 +442,7 @@ Current release classification: **scientific score ready for final subscore aggr
 """
 
     def _captions_markdown(self) -> str:
-        return """# D5 Figure Captions v2.3
+        return """# D5 Figure Captions v2.4
 
 ## Figure D5-1. Author-confirmed topology, applicability and scientific boundary
 
@@ -448,6 +463,14 @@ Current release classification: **scientific score ready for final subscore aggr
 ## Figure D5-5. Hierarchical admission and dimension-independent integration
 
 (a) Family-level and final node-level support counts, showing that shared sample support does not automatically upgrade every node. (b) Node bootstrap stability and blocked-temporal holdout FAR for family-L3 candidates; dashed lines show prespecified node thresholds. (c) Coverage of the sensor-hour report interface and pair-hour gate states, including attribution Guard and sensor Veto. (d) D4 independence audit comparing the final D4 score with its sole numeric source, `D4_raw`; the identity line represents zero cross-dimensional adjustment.
+
+## Figure D5-6. Validation, localization and evidence coverage boundary
+
+(a) Six future-month complete refits of the full model and three prespecified structural ablations; points show fold-cluster estimates and 95% intervals. (b) Top-1, Top-2 and mean reciprocal rank for three controlled spatial challenges. (c) Monthly coverage of calculable raw evidence and support-eligible report scores; shading denotes L1 support. (d) Controlled-injection risk-coverage analysis. The non-monotonic curve shows that confidence is not calibrated as a selective-localization probability.
+
+## Figure D5-7. D4-D5 complementarity and D5 robustness
+
+(a) D4-D5 rank association, adjusted rank association and low-score Jaccard; intervals use synchronized 7-d temporal blocks where estimable. (b) Pair-composite leave-D4-out and leave-D5-out sensitivity. (c) Leave-one-target-out regime disagreement and OOD-rate response to controlled target offsets. (d) Final-L3 template count under prespecified support-threshold perturbations. D4-D5 estimates use the current main D4 v1.4 artifact and remain provisional pending the latest D4 merge.
 """
 
     def _new_document(self, title: str, subtitle: str, status: str) -> Document:
@@ -459,7 +482,7 @@ Current release classification: **scientific score ready for final subscore aggr
         section.right_margin = Inches(0.82)
         self._configure_styles(document)
         header = section.header.paragraphs[0]
-        header.text = "D5 v2.3 | Project 1 Data Quality Assessment"
+        header.text = "D5 v2.4 | Project 1 Data Quality Assessment"
         header.alignment = WD_ALIGN_PARAGRAPH.RIGHT
         self._format_runs(header, size=8, color=MUTED)
         footer = section.footer.paragraphs[0]
@@ -518,13 +541,13 @@ Current release classification: **scientific score ready for final subscore aggr
         f = self._facts()
         doc = self._new_document(
             "D5 Expert Review Report",
-            "Regime-conditioned Ordinal Spatial Structure and Representativeness | v2.3",
+            "Regime-conditioned Ordinal Spatial Structure and Representativeness | v2.4",
             "Scientific score released; claim-specific action gates retained",
         )
         self._heading(doc, "1. Executive verdict", 1)
         self._paragraph(
             doc,
-            "D5 v2.3 is complete as a regime-conditioned ordinal spatial-structure assessment with family-to-node support validation and separate scientific report and decision-gate interfaces.",
+            "D5 v2.4 retains the frozen scoring implementation and adds publication-grade outer-refit, localization, coverage, complementarity and target-influence audits.",
         )
         self._warning(
             doc,
@@ -590,6 +613,17 @@ Current release classification: **scientific score ready for final subscore aggr
             doc,
             "Same-line position swaps are scored with frozen templates. Freeze, temporal ramps, common/zone-coherent changes, DO4 floor behavior and dropout are orthogonality controls. Detection and FAR pass, but node localization remains below release quality.",
         )
+        if self.publication:
+            self._warning(
+                doc,
+                "Publication audit: six-fold full refit AUROC "
+                f"{self.publication['full_outer_AUROC']:.3f}, AUPRC "
+                f"{self.publication['full_outer_AUPRC']:.3f}, Top-1 "
+                f"{self.publication['full_outer_Top1']:.3f}; local all-scenario "
+                f"Top-2 {self.publication['local_all_Top2']:.3f}. Confidence-risk "
+                "coverage is not monotonic, so confidence is not a calibrated "
+                "sensor-Veto gate.",
+            )
         invariance_rows = [
             [row.metric, f"{row.estimate:.3f}", row.criterion, "PASS" if row.passed else "FAIL"]
             for row in self.invariance.itertuples(index=False)
@@ -613,8 +647,10 @@ Current release classification: **scientific score ready for final subscore aggr
             "Figure D5-3 | Evidence decomposition, node influence and zone consensus.",
             "Figure D5-4 | Validation and Local-Sensitivity invariance.",
             "Figure D5-5 | Support, regime, topology and release governance.",
+            "Figure D5-6 | Future-month validation, localization and evidence coverage.",
+            "Figure D5-7 | D4-D5 complementarity and D5 robustness.",
         ]
-        stems = ["FigD5_1_framework", "FigD5_2_spatiotemporal", "FigD5_3_evidence", "FigD5_4_validation", "FigD5_5_governance"]
+        stems = ["FigD5_1_framework", "FigD5_2_spatiotemporal", "FigD5_3_evidence", "FigD5_4_validation", "FigD5_5_governance", "FigD5_6_validation_coverage", "FigD5_7_D4_D5_complementarity"]
         for stem, caption in zip(stems, captions):
             paragraph = doc.add_paragraph()
             paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -644,7 +680,7 @@ Current release classification: **scientific score ready for final subscore aggr
             "Use score-eligible D5 rows with confidence-aware missing-dimension renormalization.",
             "Use process-coherence Guard only for persistent final-L3 evidence and never report it as Veto.",
             "Raise blocked-holdout Top-1 to at least 0.80 without weakening negative-control FAR.",
-            "Complete D4-D5 overlap and ablation analysis before freezing WW-DQS weights.",
+            "Rerun D4-D5 overlap and ablation analysis after the latest D4 merge before freezing WW-DQS weights.",
             "Obtain documentary approval before automated deployment.",
         ]:
             self._number(doc, item)
@@ -653,7 +689,7 @@ Current release classification: **scientific score ready for final subscore aggr
     def _build_guide_docx(self, path: Path) -> None:
         doc = self._new_document(
             "D5 Project Directory Guide",
-            "Python structure, artifact ownership and release workflow | v2.3",
+            "Python structure, artifact ownership and release workflow | v2.4",
             "Operational reference; regenerate on every project update",
         )
         self._heading(doc, "1. Directory map", 1)

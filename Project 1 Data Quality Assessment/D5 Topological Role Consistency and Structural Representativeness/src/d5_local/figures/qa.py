@@ -17,6 +17,7 @@ def run_figure_qa() -> dict[str, object]:
     stems = [f"FigD5_{index}_{name}" for index, name in [
         (1, "framework"), (2, "spatiotemporal"), (3, "evidence"),
         (4, "validation"), (5, "governance"),
+        (6, "validation_coverage"), (7, "D4_D5_complementarity"),
     ]]
     for stem in stems:
         counterparts = [

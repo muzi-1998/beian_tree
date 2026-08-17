@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-07-27T05:25:53.857746+00:00",
+  "generated_utc": "2026-08-17T09:51:29.497419+00:00",
   "run_id": "D5-LOCAL-20260727T034533Z",
   "research_release_status": "complete_with_documented_caveats",
   "production_release_status": "blocked",
@@ -77,17 +77,17 @@
     "external_event_and_topology_truth_unavailable",
     "swap_Top1_below_0.80"
   ],
-  "artifact_count": 92,
+  "artifact_count": 122,
   "artifact_inventory": [
     {
       "path": "outputs/D5_RELEASE_QA.json",
-      "size": 19291,
-      "sha256": "d289f2ed1790125576e6208aa59e739e900544fd5a3d6de3b66e4b01af1ed4ec"
+      "size": 24952,
+      "sha256": "fc561940849ad26d15c8d38f28c15b2a69532720e790e08caf8cefe4150a7a2f"
     },
     {
       "path": "outputs/figures/D5_figure_qa.json",
-      "size": 2837,
-      "sha256": "c2abac4e644f6aa39140b77b7df71f2d5841d4f280544fedb43d94acbe3d2b0d"
+      "size": 3875,
+      "sha256": "4efe7ee048fe969fcb278e5ff2d86af60c91b20739989b3115d0903fc23cf4b6"
     },
     {
       "path": "outputs/figures/FigD5_1_framework.pdf",
@@ -190,14 +190,54 @@
       "sha256": "c928a1e6e2a7517e6002c22db7c7a1f829c86a6555c6d34b2a44c3dd8ee11c82"
     },
     {
+      "path": "outputs/figures/FigD5_6_validation_coverage.pdf",
+      "size": 55784,
+      "sha256": "bcb82f3433cc8c9bff8b96a4bdab30af87da622e94f7769341fb0cbb80a699ab"
+    },
+    {
+      "path": "outputs/figures/FigD5_6_validation_coverage.png",
+      "size": 638508,
+      "sha256": "0e727c79d832125c2692a90737a1549169a2e462708c6e7ca453c71ee724c956"
+    },
+    {
+      "path": "outputs/figures/FigD5_6_validation_coverage.svg",
+      "size": 69107,
+      "sha256": "924185eb051252194293bb1f0f626a326a8fbab06ed4f94bd5482f9f20ba171d"
+    },
+    {
+      "path": "outputs/figures/FigD5_6_validation_coverage.tiff",
+      "size": 1372644,
+      "sha256": "eda63abf34b431710ff6444936d9b430fec8c42fc9b6c0e4b0053d7a93527571"
+    },
+    {
+      "path": "outputs/figures/FigD5_7_D4_D5_complementarity.pdf",
+      "size": 56584,
+      "sha256": "34558954fd2e7ff1dde3e9533847ae7334f7f41df775b4848784826ec78afc9b"
+    },
+    {
+      "path": "outputs/figures/FigD5_7_D4_D5_complementarity.png",
+      "size": 570614,
+      "sha256": "c841a08eced4705db43bea80ef95f51318deed8cbc9fa59162af958206f7ec14"
+    },
+    {
+      "path": "outputs/figures/FigD5_7_D4_D5_complementarity.svg",
+      "size": 53698,
+      "sha256": "d2a60d2df159dd5773262648198d95fa05aa2dfc6b36ea5ca4208c6b7b421ed5"
+    },
+    {
+      "path": "outputs/figures/FigD5_7_D4_D5_complementarity.tiff",
+      "size": 1364872,
+      "sha256": "deff101f038b17d4bd5a4545fd371aa0c588c56565c5238d555bfb4471899aa1"
+    },
+    {
       "path": "outputs/figures/figure_bundle_audit.json",
       "size": 2409,
       "sha256": "da3ebd141c082e91a1745abc60394a9bc5c09de0cd31ad6297aa5cafc4d49756"
     },
     {
       "path": "outputs/local/D5_ablation_redundancy.xlsx",
-      "size": 9987,
-      "sha256": "78516d5fee705aee9308c5ece95ce07cb2b09aec93248e68b486446b52ecd559"
+      "size": 9984,
+      "sha256": "f0feb1f3c9868bf39b167645436a3c13adea0cb6253ce840188905750b8c2157"
     },
     {
       "path": "outputs/local/D5_admission_decision.json",
@@ -211,8 +251,8 @@
     },
     {
       "path": "outputs/local/D5_audit_log.xlsx",
-      "size": 72619,
-      "sha256": "cea6bec15bebf22e5b642e374362165e070b1a825e2c905d22c5885728698aa8"
+      "size": 74702,
+      "sha256": "675cf312d5aa5e97cb8f722b22af3a9782c2b91a9dd3f12f708cfd6bb4955e3c"
     },
     {
       "path": "outputs/local/D5_case_study_exports.xlsx",
@@ -241,8 +281,8 @@
     },
     {
       "path": "outputs/local/D5_gate_interface.schema.json",
-      "size": 1106,
-      "sha256": "215cbcde37b7836586e81e198c982e82561c42170ddda3ef2bf109052fb10e29"
+      "size": 1128,
+      "sha256": "619b0d9ef22475a5de39a752b479540987d05f9cb5d649e2f7bece38005622f3"
     },
     {
       "path": "outputs/local/D5_gate_interface.xlsx",
@@ -296,8 +336,8 @@
     },
     {
       "path": "outputs/local/D5_report_interface.schema.json",
-      "size": 834,
-      "sha256": "e697ed5d3e9ba3b4ae628350d5592c7c5932a3326ac3721df45953d8e3569c87"
+      "size": 853,
+      "sha256": "c740ff5a12c99a1a761c5f2ab45d12f5174aaac3b2201e58e6d67a1a8c87c06e"
     },
     {
       "path": "outputs/local/D5_report_interface.xlsx",
@@ -371,8 +411,8 @@
     },
     {
       "path": "outputs/local/D5_topology_registry.schema.json",
-      "size": 1263,
-      "sha256": "3b6af16c6f624602a9851d780a2eb0d87f381ca851177c422c742d7fb60aed41"
+      "size": 1301,
+      "sha256": "0f4c6e9e6d510996d1435efd1810b4a1eaca35a989b7f3d78187e29f8ce9584e"
     },
     {
       "path": "outputs/local/D5_topology_registry.xlsx",
@@ -386,8 +426,8 @@
     },
     {
       "path": "outputs/local/D5_validation_results.xlsx",
-      "size": 60790,
-      "sha256": "3eff800b27bf69ec156f8138888d8c70af6d283d82e144d64162ae3ad416b651"
+      "size": 64326,
+      "sha256": "b4a0f5586b1108b945dba84b87a47a7f387c11fa182de0c506977f3c9870efff"
     },
     {
       "path": "outputs/local/D5_zone_consensus.parquet",
@@ -415,9 +455,94 @@
       "sha256": "27ae5a05d462aab27e6a6359daaf99d931840e8b58d462da108ff3ca12dfc1ae"
     },
     {
+      "path": "outputs/publication/D5_coverage_strata.parquet",
+      "size": 5837,
+      "sha256": "f4da589996c29b4e710131be262c3efdaa0fb822e051293f1310365aaf0e7b75"
+    },
+    {
+      "path": "outputs/publication/D5_coverage_summary.parquet",
+      "size": 2879,
+      "sha256": "54201e6be7009f8ed97eb53e8abd9d8d33766757486839e1d1650d09bf1718c6"
+    },
+    {
+      "path": "outputs/publication/D5_d4_d5_composite.parquet",
+      "size": 4352,
+      "sha256": "54eed66c77212702829f3d4bc85907babd66e415997082a0a86a8b49ea1b4556"
+    },
+    {
+      "path": "outputs/publication/D5_d4_d5_dependence.parquet",
+      "size": 4364,
+      "sha256": "a18b2d57e0affd0fdf036d32f43b988f92c6866b4300aa8cfa798991759f1268"
+    },
+    {
+      "path": "outputs/publication/D5_decision_register.parquet",
+      "size": 4691,
+      "sha256": "8c888a1b2a0a3790d1333395853deb23b7c145c3a9489c8464c595fef28427f9"
+    },
+    {
+      "path": "outputs/publication/D5_localization.parquet",
+      "size": 6980,
+      "sha256": "e63682e2c8a0ebeb772d9d0eae21b4be654b370f853eb939376249c595ddfcff"
+    },
+    {
+      "path": "outputs/publication/D5_monthly_coverage.parquet",
+      "size": 6919,
+      "sha256": "51e4fd571650b85d5e4d8c2aab7c0ca543cb81aff01517a7efacc70c08bea506"
+    },
+    {
+      "path": "outputs/publication/D5_outer_refit_deltas.parquet",
+      "size": 7921,
+      "sha256": "1601955bc59dfd0da87cd33e695f16ac974ad0be8ecacbdb23dfe465599ce7bf"
+    },
+    {
+      "path": "outputs/publication/D5_outer_refit_summary.parquet",
+      "size": 6681,
+      "sha256": "9ea7de7e9e34e2bc3b5c657dd72bded594918e0310ad7e231a2610ef45253f30"
+    },
+    {
+      "path": "outputs/publication/D5_publication_audit_manifest.json",
+      "size": 4364,
+      "sha256": "e3fb4bafbf07c9310f2c5afae1737d00b609f7d8c0f563b1d51366aab2cd3df3"
+    },
+    {
+      "path": "outputs/publication/D5_publication_audit_tables.xlsx",
+      "size": 23665,
+      "sha256": "f804b0704ef36c432f26f3faf80d6ad7cbf93f014ec02a34916644a509ae3dae"
+    },
+    {
+      "path": "outputs/publication/D5_PUBLICATION_READINESS_AUDIT_v1.0.md",
+      "size": 5709,
+      "sha256": "951b14afceb659a941306c90c0763fec61bf79de8cd0d5316024059cfbdf7bdf"
+    },
+    {
+      "path": "outputs/publication/D5_risk_coverage.parquet",
+      "size": 5064,
+      "sha256": "eb0caf68ddfdc8203a64254c3aa277304432bb3fa762cb19e0b9123740a49508"
+    },
+    {
+      "path": "outputs/publication/D5_support_sensitivity.parquet",
+      "size": 5871,
+      "sha256": "f6ee73f3893ed53682e63122e9220948cc97ffa0c9ead47b20b6b2c739de9fda"
+    },
+    {
+      "path": "outputs/publication/D5_target_influence.parquet",
+      "size": 8536,
+      "sha256": "77b6a0a69423e32f3f664790ccd0b4e841d967fce6370559b159ea50c758bdad"
+    },
+    {
+      "path": "outputs/publication/FigD5_6_validation_coverage_source_data.xlsx",
+      "size": 10606,
+      "sha256": "12a62815cd1300db24c3c293d091547a95a521a3b965009db4e36ff41493ada4"
+    },
+    {
+      "path": "outputs/publication/FigD5_7_D4_D5_complementarity_source_data.xlsx",
+      "size": 9134,
+      "sha256": "325b0094eb3ea93567482e7648b5740f141441b830fd2e540c5805c3120d5d52"
+    },
+    {
       "path": "outputs/reports/D5_CURRENT_RELEASE.md",
-      "size": 837,
-      "sha256": "f627a6c9567b234ae0b9c61c2b0681a6c7a74f46d30cb9f48806c4fa7e7ca7ed"
+      "size": 916,
+      "sha256": "de2a0d79f1cc37684c35cae1e61858482c4476d9951c724a1c28dd40af6c44d1"
     },
     {
       "path": "outputs/reports/D5_EXPERT_REPORT_v2.1.docx",
@@ -450,6 +575,16 @@
       "sha256": "93baa7ffe8d1d92abac60ce6896dd742d71410bb89c771ab5d8e73c9bc3d6b57"
     },
     {
+      "path": "outputs/reports/D5_EXPERT_REPORT_v2.4.docx",
+      "size": 3111730,
+      "sha256": "cc1e9c76ec52cffba4e49f71fddbcc746efd6c195e41cfda57373264bd57078b"
+    },
+    {
+      "path": "outputs/reports/D5_EXPERT_REPORT_v2.4.md",
+      "size": 9532,
+      "sha256": "fc5b363eb632924c649f82b46c9848f77eff3e0f4a430ceedd119e5b7542426c"
+    },
+    {
       "path": "outputs/reports/D5_FIGURE_CAPTIONS_v2.1.md",
       "size": 2282,
       "sha256": "dd5ca9eea1365f682a5166e6f8e11da3da1b6ce06652795ba6bd0112a5711bc0"
@@ -463,6 +598,11 @@
       "path": "outputs/reports/D5_FIGURE_CAPTIONS_v2.3.md",
       "size": 2471,
       "sha256": "5aace3b407bf260ee6a54a95a25736b01d1ec2831a95823a45288d40270b532c"
+    },
+    {
+      "path": "outputs/reports/D5_FIGURE_CAPTIONS_v2.4.md",
+      "size": 3600,
+      "sha256": "555abddc4fd206f1d6afe947be1fad9f7557a5162e37116fa4537fd8fcc087bb"
     },
     {
       "path": "outputs/reports/D5_PROJECT_DIRECTORY_GUIDE_v2.1.docx",
@@ -493,6 +633,16 @@
       "path": "outputs/reports/D5_PROJECT_DIRECTORY_GUIDE_v2.3.md",
       "size": 5459,
       "sha256": "0308ed8c677cbbb3581e4022bbc99623af3de79cf83fc9283b160fd54cb8d503"
+    },
+    {
+      "path": "outputs/reports/D5_PROJECT_DIRECTORY_GUIDE_v2.4.docx",
+      "size": 40366,
+      "sha256": "3306d9a6afcb510e296a5c9031cbe916a059fb0c52e6431ad4ac8d67bf146f58"
+    },
+    {
+      "path": "outputs/reports/D5_PROJECT_DIRECTORY_GUIDE_v2.4.md",
+      "size": 5670,
+      "sha256": "f68468aa772b22e9fd44f55c62997fa53699339f963e6de09346c7a502fec34e"
     },
     {
       "path": "outputs/reports/nature_figure_bundle_audit.json",

@@ -31,7 +31,9 @@ topology metadata. It never consumes D1-D4 scores or states.
 - The Local regime model is plant-global: QR/QIR, robust pooled DO/ORP level
   and dispersion, and cyclic time features define one shared process context.
   Gradient, rank and leave-one-out evidence are learned and evaluated within
-  that shared regime.
+  that shared regime. Each target has bounded influence on pooled context;
+  strict target exclusion is a publication sensitivity challenge, not a
+  production-model claim.
 - Family-level samples may support an analyte-regime-model family, but every
   node still requires its own blocked-temporal validation. L1 is diagnostic;
   L2 supports scientific scoring; only final node L3 can enter the pair-hour
@@ -45,7 +47,10 @@ topology metadata. It never consumes D1-D4 scores or states.
 
 See `configs/common/topology_evidence.yaml` for the research evidence ledger and
 `docs/D5_FIELD_VERIFICATION_REQUIREMENTS.md` for the production documentary and
-two-person approval gate. Statistical topology candidates cannot replace it.
+two-person approval gate. The frozen publication claim contract is
+`configs/publication/d5_final_contract.yaml`; its audits and source data are in
+`outputs/publication/`. Statistical topology candidates cannot replace these
+contracts.
 
 ## Reproduce
 
@@ -53,6 +58,7 @@ Run the complete release from `Project 1 Data Quality Assessment`:
 
 ```powershell
 python ".\D5 Topological Role Consistency and Structural Representativeness\scripts\run_d5_release.py"
+python ".\D5 Topological Role Consistency and Structural Representativeness\scripts\run_d5_publication_audit.py"
 python -m pytest ".\D5 Topological Role Consistency and Structural Representativeness\tests" -q
 ```
 

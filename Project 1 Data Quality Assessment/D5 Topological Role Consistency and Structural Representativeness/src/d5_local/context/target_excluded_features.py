@@ -49,9 +49,23 @@ class GlobalProcessContextBuilder:
         self.nodes = topology.nodes.set_index("sensor_id")
 
     def build(self, snapshots: pd.DataFrame) -> pd.DataFrame:
+        return self._build(snapshots, excluded_target=None)
+
+    def build_excluding(
+        self, snapshots: pd.DataFrame, target: str
+    ) -> pd.DataFrame:
+        if target not in self.nodes.index:
+            raise KeyError(f"Unknown D5 target: {target}")
+        return self._build(snapshots, excluded_target=target)
+
+    def _build(
+        self, snapshots: pd.DataFrame, excluded_target: str | None
+    ) -> pd.DataFrame:
         out = snapshots[["QR_1", "QR_2", "QIR_1", "QIR_2"]].copy()
         for analyte in ["DO", "ORP"]:
             sensors = self.nodes[self.nodes["analyte"].eq(analyte)].index.tolist()
+            if excluded_target in sensors:
+                sensors.remove(excluded_target)
             values = snapshots[sensors]
             center = values.median(axis=1)
             out[f"{analyte.lower()}_pool_median"] = center
