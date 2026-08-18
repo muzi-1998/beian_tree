@@ -1092,6 +1092,7 @@ The controlled-injection risk-coverage curve is not monotonic: retaining only th
         manifest = {
             "version": self.config["version"],
             "confirmatory_run_id": self.config["confirmatory_run_id"],
+            "sha256_policy": "canonical_lf_for_text_raw_bytes_for_binary",
             "summary": summary,
             "d4_dependency": d4_meta,
             "production_score_changed": False,
@@ -1134,6 +1135,9 @@ The controlled-injection risk-coverage curve is not monotonic: retaining only th
             }
             for relative, path in sorted(files.items())
         ]
+        manifest["sha256_policy"] = (
+            "canonical_lf_for_text_raw_bytes_for_binary"
+        )
         manifest["figure_bundle_finalized"] = True
         manifest["d4_dependency"] = self.d4_dependency_status()
         target.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
@@ -1142,6 +1146,21 @@ The controlled-injection risk-coverage curve is not monotonic: retaining only th
     @staticmethod
     def _sha256(path: Path) -> str:
         digest = hashlib.sha256()
+        text_suffixes = {
+            ".csv",
+            ".json",
+            ".md",
+            ".py",
+            ".svg",
+            ".toml",
+            ".txt",
+            ".yaml",
+            ".yml",
+        }
+        if path.suffix.lower() in text_suffixes:
+            content = path.read_bytes().replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+            digest.update(content)
+            return digest.hexdigest()
         with path.open("rb") as handle:
             for chunk in iter(lambda: handle.read(1024 * 1024), b""):
                 digest.update(chunk)

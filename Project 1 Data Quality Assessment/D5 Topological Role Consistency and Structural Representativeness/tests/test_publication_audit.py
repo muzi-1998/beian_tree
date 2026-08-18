@@ -42,6 +42,16 @@ def test_manifest_paths_are_portable_across_operating_systems() -> None:
     assert D5_ROOT / relative == expected
 
 
+def test_publication_text_hash_normalizes_line_endings(tmp_path) -> None:
+    lf_path = tmp_path / "lf.md"
+    crlf_path = tmp_path / "crlf.md"
+    lf_path.write_bytes(b"heading\nbody\n")
+    crlf_path.write_bytes(b"heading\r\nbody\r\n")
+    assert D5PublicationAudit._sha256(lf_path) == D5PublicationAudit._sha256(
+        crlf_path
+    )
+
+
 def test_d4_dependency_check_is_fail_closed(tmp_path) -> None:
     path = tmp_path / "D4_main_scores.xlsx"
     frame = pd.DataFrame(

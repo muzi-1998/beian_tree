@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import sys
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 
 import numpy as np
 import pandas as pd
@@ -47,8 +47,11 @@ def main() -> None:
         publication_manifest_path.read_text(encoding="utf-8")
     )
     publication_hashes_valid = all(
-        (ROOT / item["relative_path"]).exists()
-        and sha256_file(ROOT / item["relative_path"]) == item["sha256"]
+        (ROOT / Path(*PureWindowsPath(item["relative_path"]).parts)).exists()
+        and D5PublicationAudit._sha256(
+            ROOT / Path(*PureWindowsPath(item["relative_path"]).parts)
+        )
+        == item["sha256"]
         for item in publication_manifest["files"]
     )
     d4_dependency = D5PublicationAudit().d4_dependency_status()

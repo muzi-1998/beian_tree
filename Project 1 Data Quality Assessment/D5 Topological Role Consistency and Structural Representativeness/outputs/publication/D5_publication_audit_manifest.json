@@ -63,7 +63,7 @@
   "files": [
     {
       "relative_path": "outputs\\figures\\D5_figure_qa.json",
-      "sha256": "cfc1b4c9f71d05af39a974ef9463f90f52066b9e042c8f67b0930bec652f478f",
+      "sha256": "90012d15e1208fc2522820b82235cad8157c97a91993f341e2ff6f70a3d36475",
       "bytes": 4935
     },
     {
@@ -78,7 +78,7 @@
     },
     {
       "relative_path": "outputs\\figures\\FigD5_6_validation_coverage.svg",
-      "sha256": "60ed8eabe554b2a7c014a37929d2a8c0a6cf9253c107e31f49657ac47e37352b",
+      "sha256": "7dbd6664ebcc4ae1a266448ef77792c5a0c11cc9c466a4b1887185f33e1aa4b5",
       "bytes": 69085
     },
     {
@@ -98,7 +98,7 @@
     },
     {
       "relative_path": "outputs\\figures\\FigD5_7_D4_D5_complementarity.svg",
-      "sha256": "e76ef7bdd739d477778ddbb6fc7041afcc9fc3d9b292da5b92d1bd580c195934",
+      "sha256": "ce801c89c8c6ecfa4bad21793b769aba9fa9e489415f776cd42594a025f8c8ab",
       "bytes": 84804
     },
     {
@@ -118,7 +118,7 @@
     },
     {
       "relative_path": "outputs\\figures\\FigD5_8_dimension_availability_sensitivity.svg",
-      "sha256": "9c9db61371e8dadf062ac4589057466d04d3164a6219d6ae0526685644ae2279",
+      "sha256": "6e54a21b938f6edd0cbe0d6b6122a337b1e4b2b8f919363f11c53def397ae72d",
       "bytes": 69730
     },
     {
@@ -138,7 +138,7 @@
     },
     {
       "relative_path": "outputs\\figures\\FigD5_9_target_support_robustness.svg",
-      "sha256": "f8fdc6177a692a4ce6161c531314929cf6554203d8a30d815f015e6ec4eea8cd",
+      "sha256": "6d1f25b8692eac040a452ce0f0c1bd007cbd712f1d879c5ff0effe01b7f19047",
       "bytes": 35150
     },
     {
@@ -148,7 +148,7 @@
     },
     {
       "relative_path": "outputs\\publication\\D5_PUBLICATION_READINESS_AUDIT_v1.1.md",
-      "sha256": "3000fd27bd303e5413d1d7eb5b5d7a464ac2e416930890be51a8a1928182ab5f",
+      "sha256": "ece053bb6be394e571f34362354c6a3cb37f86be6ef86aaf7d2b5c585d31ef42",
       "bytes": 7400
     },
     {
@@ -247,5 +247,6 @@
       "bytes": 7501
     }
   ],
-  "figure_bundle_finalized": true
+  "figure_bundle_finalized": true,
+  "sha256_policy": "canonical_lf_for_text_raw_bytes_for_binary"
 }
