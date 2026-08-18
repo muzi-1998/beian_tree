@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from typing import Callable
 
 import numpy as np
@@ -104,7 +104,7 @@ class D5PublicationAudit:
             d4_meta,
         )
         report = self._build_report(summary, decisions, outer_deltas)
-        report_path = self.output_root / "D5_PUBLICATION_READINESS_AUDIT_v1.1.md"
+        report_path = self.output_root / "D5_PUBLICATION_READINESS_AUDIT_v1.2.md"
         report_path.write_text(report, encoding="utf-8")
         manifest = self._write_manifest(summary, tables, report_path, d4_meta)
         return {
@@ -414,7 +414,18 @@ class D5PublicationAudit:
         meta["n_pair_hours_by_scope"] = {
             scope: int(len(frame)) for scope, frame in valid_by_scope.items()
         }
-        return dependence, stratified, pd.DataFrame(composite_rows), meta
+        provenance = {
+            "source_D4_run_id": meta["d4_run_id"],
+            "source_D4_calibration_id": meta["d4_calibration_id"],
+            "source_D4_sha256": meta["d4_main_scores_sha256"],
+        }
+        for frame in (dependence, stratified):
+            for column, value in provenance.items():
+                frame[column] = value
+        composite = pd.DataFrame(composite_rows)
+        for column, value in provenance.items():
+            composite[column] = value
+        return dependence, stratified, composite, meta
 
     def _overall_d4_d5_dependence(
         self, frame: pd.DataFrame, score_column: str, scope: str
@@ -521,36 +532,51 @@ class D5PublicationAudit:
         minimum_hours = int(
             self.config["statistical_analysis"]["minimum_stratum_pair_hours"]
         )
-        minimum_blocks = int(
-            self.config["statistical_analysis"]["minimum_stratum_time_blocks"]
+        minimum_descriptive_blocks = int(
+            self.config["statistical_analysis"][
+                "minimum_stratum_time_blocks_descriptive"
+            ]
+        )
+        minimum_inferential_blocks = int(
+            self.config["statistical_analysis"][
+                "minimum_stratum_time_blocks_inferential"
+            ]
         )
         rows = []
         for stratum_type, column in strata.items():
             for value, group in frame.groupby(column, dropna=False, sort=True):
                 n_blocks = int(group["time_block"].nunique())
-                estimable = bool(
+                descriptive_estimable = bool(
                     len(group) >= minimum_hours
-                    and n_blocks >= minimum_blocks
+                    and n_blocks >= minimum_descriptive_blocks
                     and group["D4_raw"].nunique() > 1
                     and group[score_column].nunique() > 1
                 )
-                if estimable:
+                inferential_estimable = bool(
+                    descriptive_estimable
+                    and n_blocks >= minimum_inferential_blocks
+                )
+                if descriptive_estimable:
                     estimator = lambda sample: self._safe_spearman(
                         sample["D4_raw"], sample[score_column]
                     )
-                    low, high = self.cluster_bootstrap_interval(
-                        group,
-                        cluster="time_block",
-                        estimator=estimator,
-                        repetitions=int(
-                            self.config["statistical_analysis"][
-                                "bootstrap_repetitions"
-                            ]
-                        ),
-                        rng=self.rng,
-                    )
                     estimate = estimator(group)
-                    reason = "estimable"
+                    if inferential_estimable:
+                        low, high = self.cluster_bootstrap_interval(
+                            group,
+                            cluster="time_block",
+                            estimator=estimator,
+                            repetitions=int(
+                                self.config["statistical_analysis"][
+                                    "bootstrap_repetitions"
+                                ]
+                            ),
+                            rng=self.rng,
+                        )
+                        reason = "inferential_estimable"
+                    else:
+                        low, high = np.nan, np.nan
+                        reason = "descriptive_only_insufficient_independent_blocks_for_ci"
                 else:
                     estimate, low, high = np.nan, np.nan, np.nan
                     reason = "insufficient_hours_blocks_or_score_variation"
@@ -564,7 +590,9 @@ class D5PublicationAudit:
                         "ci95_high": high,
                         "n_pair_hours": len(group),
                         "n_time_blocks": n_blocks,
-                        "estimable": estimable,
+                        "estimable": descriptive_estimable,
+                        "descriptive_estimable": descriptive_estimable,
+                        "inferential_estimable": inferential_estimable,
                         "status_reason": reason,
                         "analysis_unit": "synchronized_7d_time_block",
                     }
@@ -881,9 +909,14 @@ class D5PublicationAudit:
         return tuple(np.quantile(estimates, [0.025, 0.975]).tolist())
 
     def _decision_register(self, d4_meta: dict[str, object]) -> pd.DataFrame:
+        overlap_decision = (
+            "accepted_executed_current"
+            if d4_meta["status"] == "current"
+            else "accepted_executed_stale_dependency"
+        )
         rows = [
             ("full_outer_fold_refit", "accepted_already_complete", "Six future-month folds; full, no exogenous, no regime and no hysteresis were refit from training data only."),
-            ("D4_D5_dual_scope_overlap", "accepted_executed_stale_dependency", f"Report-score and raw-calculable overlap are implemented with analyte/regime/month/pair strata; formal freezing is blocked because dependency status is {d4_meta['status']}."),
+            ("D4_D5_dual_scope_overlap", overlap_decision, f"Report-score and raw-calculable overlap use analyte/regime/month/pair strata with separate descriptive and inferential admission; dependency status is {d4_meta['status']}."),
             ("D4_dependency_fail_closed", "accepted_executed", "Current status requires exact run ID, calibration ID and D4 main-score SHA-256 with one unique run and calibration."),
             ("score_support_missingness_freeze", "accepted_executed", "Continuous scores retained; L1/L2/L3 and missing/OOD semantics frozen; A-E grades disabled."),
             ("controlled_perturbation_Top1_0_80_boundary", "accepted_executed", "Controlled perturbation localization below 0.80 blocks sensor-specific hard Veto only, not the continuous scientific score."),
@@ -926,6 +959,22 @@ class D5PublicationAudit:
                 selected = selected[selected[column].eq(value)]
             return float(selected["estimate"].iloc[0])
 
+        def stratum_stat(scope: str, column: str, *, rate: bool = False) -> float:
+            selected = stratified[stratified["overlap_scope"].eq(scope)]
+            if rate:
+                eligible = selected[selected["descriptive_estimable"]]
+                return (
+                    float(eligible["spearman_rho"].abs().lt(0.30).mean())
+                    if len(eligible)
+                    else np.nan
+                )
+            return float(selected[column].sum())
+
+        pooled_descriptive = stratified[stratified["descriptive_estimable"]]
+        pooled_weak_rate = float(
+            pooled_descriptive["spearman_rho"].abs().lt(0.30).mean()
+        )
+
         return {
             "contract_version": self.config["version"],
             "confirmatory_run_id": self.config["confirmatory_run_id"],
@@ -965,12 +1014,34 @@ class D5PublicationAudit:
                 overlap_scope="D5_report_score",
                 metric="low_score_Jaccard",
             ),
-            "D4_D5_strata_estimable": int(stratified["estimable"].sum()),
-            "D4_D5_strata_abs_rho_below_0_30_rate": float(
-                stratified.loc[stratified["estimable"], "spearman_rho"]
-                .abs()
-                .lt(0.30)
-                .mean()
+            "D4_D5_strata_descriptive_estimable": int(
+                stratified["descriptive_estimable"].sum()
+            ),
+            "D4_D5_strata_inferential_estimable": int(
+                stratified["inferential_estimable"].sum()
+            ),
+            "D4_D5_strata_abs_rho_below_0_30_rate_pooled": pooled_weak_rate,
+            "D4_D5_report_strata_descriptive_estimable": int(
+                stratum_stat("D5_report_score", "descriptive_estimable")
+            ),
+            "D4_D5_report_strata_inferential_estimable": int(
+                stratum_stat("D5_report_score", "inferential_estimable")
+            ),
+            "D4_D5_report_strata_abs_rho_below_0_30_rate": stratum_stat(
+                "D5_report_score",
+                "spearman_rho",
+                rate=True,
+            ),
+            "D4_D5_raw_strata_descriptive_estimable": int(
+                stratum_stat("D5_raw_calculable", "descriptive_estimable")
+            ),
+            "D4_D5_raw_strata_inferential_estimable": int(
+                stratum_stat("D5_raw_calculable", "inferential_estimable")
+            ),
+            "D4_D5_raw_strata_abs_rho_below_0_30_rate": stratum_stat(
+                "D5_raw_calculable",
+                "spearman_rho",
+                rate=True,
             ),
             "max_target_exclusion_disagreement": float(
                 influence["observed_map_disagreement_rate"].max()
@@ -985,6 +1056,8 @@ class D5PublicationAudit:
                 influence["injected_ood_rate_change"].max()
             ),
             "d4_run_id": d4_meta["d4_run_id"],
+            "d4_calibration_id": d4_meta["d4_calibration_id"],
+            "d4_main_scores_sha256": d4_meta["d4_main_scores_sha256"],
             "d4_audit_status": d4_meta["status"],
             "d4_dependency_current": bool(d4_meta["publication_freeze_allowed"]),
             "availability_aware_overall_coverage": float(
@@ -1028,7 +1101,12 @@ class D5PublicationAudit:
             f"| `{row.ablation_variant}` | {row.mean_delta_full_minus_ablation:.3f} | {row.ci95_low:.3f} to {row.ci95_high:.3f} |"
             for row in top1_delta.itertuples(index=False)
         )
-        return f"""# D5 Publication Readiness Audit v1.1
+        freeze_line = (
+            "- Ready: cross-dimensional D4-D5 publication values are bound to the exact frozen D4 artifact."
+            if summary["d4_dependency_current"]
+            else "- Blocked pending dependency refresh: cross-dimensional D4-D5 publication freeze and final Fig. 7 values."
+        )
+        return f"""# D5 Publication Readiness Audit v1.2
 
 ## Executive decision
 
@@ -1052,7 +1130,7 @@ The current node-level prototype gives {summary['availability_aware_overall_cove
 
 ## D4-D5 complementarity
 
-Against D4 run `{summary['d4_run_id']}`, report-score overlap Spearman rho is {summary['D4_D5_spearman_report']:.3f}, raw-calculable overlap rho is {summary['D4_D5_spearman_raw']:.3f}, adjusted report-score partial rank correlation is {summary['D4_D5_partial_rank']:.3f}, and report-score low-tail Jaccard is {summary['D4_D5_low_score_jaccard']:.3f}. Across estimable analyte, regime, month and pair strata, {summary['D4_D5_strata_abs_rho_below_0_30_rate']:.1%} have |rho| below 0.30. These are non-redundancy diagnostics, not proof of causal independence. Status is `{summary['d4_audit_status']}`; exact run, calibration and SHA-256 matching is required before manuscript numbers or Fig. 7 are frozen.
+Against D4 run `{summary['d4_run_id']}` and calibration `{summary['d4_calibration_id']}` (main-score SHA-256 `{summary['d4_main_scores_sha256']}`), report-score overlap Spearman rho is {summary['D4_D5_spearman_report']:.3f}, raw-calculable overlap rho is {summary['D4_D5_spearman_raw']:.3f}, adjusted report-score partial rank correlation is {summary['D4_D5_partial_rank']:.3f}, and report-score low-tail Jaccard is {summary['D4_D5_low_score_jaccard']:.3f}. For report-score strata, {summary['D4_D5_report_strata_abs_rho_below_0_30_rate']:.1%} of {summary['D4_D5_report_strata_descriptive_estimable']} descriptive strata have |rho| below 0.30; {summary['D4_D5_report_strata_inferential_estimable']} meet the six-independent-block CI criterion. For raw-calculable strata, the corresponding values are {summary['D4_D5_raw_strata_abs_rho_below_0_30_rate']:.1%}, {summary['D4_D5_raw_strata_descriptive_estimable']} and {summary['D4_D5_raw_strata_inferential_estimable']}. The pooled descriptive rate is {summary['D4_D5_strata_abs_rho_below_0_30_rate_pooled']:.1%}. Point estimates require at least two independent 7 d blocks; bootstrap CIs require at least six. These are non-redundancy diagnostics, not proof of causal independence. Status is `{summary['d4_audit_status']}`.
 
 ## Target influence
 
@@ -1072,7 +1150,7 @@ The controlled-injection risk-coverage curve is not monotonic: retaining only th
 
 - Ready: continuous D5 score, retrospective report interface and process-coherence attribution Guard.
 - Conditional: availability-aware aggregation is allowed only with explicit dimension-count and coverage outputs; fixed-dimension complete-evidence results must be reported separately.
-- Blocked pending dependency refresh: cross-dimensional D4-D5 publication freeze and final Fig. 7 values.
+{freeze_line}
 - Not ready: sensor-specific hard Veto, causal fault labels, prospective deployment, cross-plant generalization.
 - A-E grades remain disabled because no independent future data exist for cutpoint freezing.
 - New field data, maintenance truth and dual approval should be treated as external validation/deployment work, not silently imputed into the current retrospective analysis.
@@ -1096,14 +1174,7 @@ The controlled-injection risk-coverage curve is not monotonic: retaining only th
             "summary": summary,
             "d4_dependency": d4_meta,
             "production_score_changed": False,
-            "files": [
-                {
-                    "relative_path": str(path.relative_to(D5_ROOT)),
-                    "sha256": self._sha256(path),
-                    "bytes": path.stat().st_size,
-                }
-                for path in files
-            ],
+            "files": [self._manifest_record(path, d4_meta) for path in files],
         }
         target = self.output_root / "D5_publication_audit_manifest.json"
         target.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
@@ -1112,36 +1183,90 @@ The controlled-injection risk-coverage curve is not monotonic: retaining only th
     def finalize_figure_bundle(self) -> Path:
         target = self.output_root / "D5_publication_audit_manifest.json"
         manifest = json.loads(target.read_text(encoding="utf-8"))
+        recorded_dependency = manifest["d4_dependency"]
+        current_dependency = self.d4_dependency_status()
+        if not self._d4_identity_matches(recorded_dependency, current_dependency):
+            raise RuntimeError(
+                "D4 changed after the publication audit; rerun the full audit "
+                "before finalizing figures"
+            )
         files = {
-            str(item["relative_path"]): D5_ROOT / str(item["relative_path"])
+            str(item["relative_path"]): D5_ROOT
+            / Path(*PureWindowsPath(str(item["relative_path"])).parts)
             for item in manifest["files"]
         }
         for stem in self.config["publication_figures"]:
             for suffix in ["png", "pdf", "svg", "tiff"]:
                 path = self.paths.figure_root / f"{stem}.{suffix}"
                 if path.exists():
-                    files[str(path.relative_to(D5_ROOT))] = path
+                    files[path.relative_to(D5_ROOT).as_posix()] = path
             source = self.output_root / f"{stem}_source_data.xlsx"
             if source.exists():
-                files[str(source.relative_to(D5_ROOT))] = source
+                files[source.relative_to(D5_ROOT).as_posix()] = source
         figure_qa = self.paths.figure_root / "D5_figure_qa.json"
         if figure_qa.exists():
-            files[str(figure_qa.relative_to(D5_ROOT))] = figure_qa
+            files[figure_qa.relative_to(D5_ROOT).as_posix()] = figure_qa
         manifest["files"] = [
-            {
-                "relative_path": relative,
-                "sha256": self._sha256(path),
-                "bytes": path.stat().st_size,
-            }
+            self._manifest_record(path, recorded_dependency, relative=relative)
             for relative, path in sorted(files.items())
         ]
         manifest["sha256_policy"] = (
             "canonical_lf_for_text_raw_bytes_for_binary"
         )
         manifest["figure_bundle_finalized"] = True
-        manifest["d4_dependency"] = self.d4_dependency_status()
+        manifest["d4_dependency_verified_at_finalize"] = current_dependency
         target.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
         return target
+
+    @staticmethod
+    def _d4_identity(meta: dict[str, object]) -> dict[str, object]:
+        return {
+            "run_id": meta.get("d4_run_id", meta.get("run_id")),
+            "calibration_id": meta.get(
+                "d4_calibration_id", meta.get("calibration_id")
+            ),
+            "sha256": meta.get("d4_main_scores_sha256", meta.get("sha256")),
+        }
+
+    @classmethod
+    def _d4_identity_matches(
+        cls, recorded: dict[str, object], current: dict[str, object]
+    ) -> bool:
+        return cls._d4_identity(recorded) == cls._d4_identity(current)
+
+    @staticmethod
+    def _d4_dependent_relative(relative: str) -> bool:
+        name = PureWindowsPath(relative).name
+        return bool(
+            name.startswith("D5_d4_d5_")
+            or name.startswith("FigD5_7_D4_D5_complementarity")
+            or name
+            in {
+                "D5_PUBLICATION_READINESS_AUDIT_v1.2.md",
+                "D5_publication_audit_tables.xlsx",
+                "D5_decision_register.parquet",
+                "D5_figure_qa.json",
+            }
+        )
+
+    def _manifest_record(
+        self,
+        path: Path,
+        d4_meta: dict[str, object],
+        *,
+        relative: str | None = None,
+    ) -> dict[str, object]:
+        relative = relative or path.relative_to(D5_ROOT).as_posix()
+        record: dict[str, object] = {
+            "relative_path": relative,
+            "sha256": self._sha256(path),
+            "bytes": path.stat().st_size,
+        }
+        if self._d4_dependent_relative(relative):
+            record["source_dependencies"] = {
+                "D4": self._d4_identity(d4_meta)
+            }
+        return record
 
     @staticmethod
     def _sha256(path: Path) -> str:

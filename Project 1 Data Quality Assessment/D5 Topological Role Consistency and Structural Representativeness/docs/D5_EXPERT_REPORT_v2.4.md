@@ -2,7 +2,7 @@
 
 **Project:** Topological Role Consistency and Structural Representativeness
 **Run:** `D5-LOCAL-20260727T034533Z`
-**Generated:** 2026-08-18 10:57 CST
+**Generated:** 2026-08-18 11:58 CST
 **Decision:** Scientific D5 score released for final subscore aggregation; automated deployment remains gated.
 
 ## 1. Executive verdict
@@ -71,7 +71,7 @@ not alter the retrospective score. Current provisional report rows:
 
 Validation uses observed test-period spatial windows with frozen templates. Same-line, same-analyte position swaps are positive controls. Freeze, temporal ramps, common-mode and zone-coherent changes, DO4 floor behavior and dropout are negative/orthogonality controls. The swap detection metrics pass, but localization remains below the release criterion and must not be hidden by threshold tuning.
 
-The publication audit additionally reports six future-month controlled-challenge refits (discrimination AUROC 0.967, AUPRC 0.974, controlled-perturbation Top-1 localization 0.767), Top-2/MRR localization, synchronized 7-d D4-D5 dependence under report-score and raw-calculable overlap, target-influence sensitivity, monthly support migration and dimension-availability sensitivity. These are controlled observed-window challenges, not field fault-detection or localization accuracy. Confidence-risk coverage is not monotonic; the current confidence field remains evidence metadata and is not a calibrated hard-Veto gate.
+The publication audit additionally reports six future-month controlled-challenge refits (discrimination AUROC 0.967, AUPRC 0.974, controlled-perturbation Top-1 localization 0.767), Top-2/MRR localization, synchronized 7-d D4-D5 dependence under report-score and raw-calculable overlap, target-influence sensitivity, monthly support migration and dimension-availability sensitivity. Current D4-D5 Spearman rho is 0.119 for report scores and 0.171 for raw-calculable scores; the proportions of descriptive strata with |rho| below 0.30 are 94.7% and 86.4%, respectively. These are controlled observed-window challenges, not field fault-detection or localization accuracy. Confidence-risk coverage is not monotonic; the current confidence field remains evidence metadata and is not a calibrated hard-Veto gate.
 
 ## 6. Topology and D4 interface
 
@@ -103,10 +103,9 @@ The branch may enter final WW-DQS subscore aggregation as a **scientific impleme
 2. Use the separate gate interface only for final L3 nodes and treat process coherence as an attribution Guard, never as Veto.
 3. Keep sensor-specific hard Veto disabled until controlled blocked localization reaches Top-1 >=0.80.
 4. Report availability-aware and fixed-dimension complete-evidence WW-DQS separately; never interpret a dimension-availability shift as a quality trend.
-5. Freeze cross-dimensional manuscript values only after the D4 dependency check is current.
-4. Rerun the completed D4-D5 conditional dependence and ablation audit after the latest D4 release is merged, before freezing WW-DQS weights.
-5. Add field-confirmed topology and event cases as external validation when they become available.
-6. Complete documentary audit and dual approval before any automated plant-control deployment.
+5. Cross-dimensional manuscript values are frozen only while the exact D4 run, calibration and SHA-256 remain current; any D4 change requires a full audit rerun.
+6. Add field-confirmed topology and event cases as external validation when they become available.
+7. Complete documentary audit and dual approval before any automated plant-control deployment.
 
 The deployment evidence and role-separated approval procedure remain specified
 in `docs/D5_FIELD_VERIFICATION_REQUIREMENTS.md`; they are not prerequisites for

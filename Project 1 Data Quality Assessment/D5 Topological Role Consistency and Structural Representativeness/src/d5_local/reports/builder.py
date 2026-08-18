@@ -126,7 +126,7 @@ Generated: {self.generated}
 - Current report: `D5_EXPERT_REPORT_v2.4.md` / `.docx`.
 - Current directory guide: `D5_PROJECT_DIRECTORY_GUIDE_v2.4.md` / `.docx`.
 - Current figure captions: `D5_FIGURE_CAPTIONS_v2.4.md`.
-- Publication audit: `../publication/D5_PUBLICATION_READINESS_AUDIT_v1.1.md`.
+- Publication audit: `../publication/D5_PUBLICATION_READINESS_AUDIT_v1.2.md`.
 
 Files labelled v2.1 or v2.2 are retained only as immutable release history and
 must not be used as the current scientific result.
@@ -291,7 +291,7 @@ not alter the retrospective score. Current provisional report rows:
 
 Validation uses observed test-period spatial windows with frozen templates. Same-line, same-analyte position swaps are positive controls. Freeze, temporal ramps, common-mode and zone-coherent changes, DO4 floor behavior and dropout are negative/orthogonality controls. The swap detection metrics pass, but localization remains below the release criterion and must not be hidden by threshold tuning.
 
-The publication audit additionally reports six future-month controlled-challenge refits (discrimination AUROC {self.publication.get('full_outer_AUROC', float('nan')):.3f}, AUPRC {self.publication.get('full_outer_AUPRC', float('nan')):.3f}, controlled-perturbation Top-1 localization {self.publication.get('full_outer_Top1', float('nan')):.3f}), Top-2/MRR localization, synchronized 7-d D4-D5 dependence under report-score and raw-calculable overlap, target-influence sensitivity, monthly support migration and dimension-availability sensitivity. These are controlled observed-window challenges, not field fault-detection or localization accuracy. Confidence-risk coverage is not monotonic; the current confidence field remains evidence metadata and is not a calibrated hard-Veto gate.
+The publication audit additionally reports six future-month controlled-challenge refits (discrimination AUROC {self.publication.get('full_outer_AUROC', float('nan')):.3f}, AUPRC {self.publication.get('full_outer_AUPRC', float('nan')):.3f}, controlled-perturbation Top-1 localization {self.publication.get('full_outer_Top1', float('nan')):.3f}), Top-2/MRR localization, synchronized 7-d D4-D5 dependence under report-score and raw-calculable overlap, target-influence sensitivity, monthly support migration and dimension-availability sensitivity. Current D4-D5 Spearman rho is {self.publication.get('D4_D5_spearman_report', float('nan')):.3f} for report scores and {self.publication.get('D4_D5_spearman_raw', float('nan')):.3f} for raw-calculable scores; the proportions of descriptive strata with |rho| below 0.30 are {self.publication.get('D4_D5_report_strata_abs_rho_below_0_30_rate', float('nan')):.1%} and {self.publication.get('D4_D5_raw_strata_abs_rho_below_0_30_rate', float('nan')):.1%}, respectively. These are controlled observed-window challenges, not field fault-detection or localization accuracy. Confidence-risk coverage is not monotonic; the current confidence field remains evidence metadata and is not a calibrated hard-Veto gate.
 
 ## 6. Topology and D4 interface
 
@@ -323,10 +323,9 @@ The branch may enter final WW-DQS subscore aggregation as a **scientific impleme
 2. Use the separate gate interface only for final L3 nodes and treat process coherence as an attribution Guard, never as Veto.
 3. Keep sensor-specific hard Veto disabled until controlled blocked localization reaches Top-1 >=0.80.
 4. Report availability-aware and fixed-dimension complete-evidence WW-DQS separately; never interpret a dimension-availability shift as a quality trend.
-5. Freeze cross-dimensional manuscript values only after the D4 dependency check is current.
-4. Rerun the completed D4-D5 conditional dependence and ablation audit after the latest D4 release is merged, before freezing WW-DQS weights.
-5. Add field-confirmed topology and event cases as external validation when they become available.
-6. Complete documentary audit and dual approval before any automated plant-control deployment.
+5. Cross-dimensional manuscript values are frozen only while the exact D4 run, calibration and SHA-256 remain current; any D4 change requires a full audit rerun.
+6. Add field-confirmed topology and event cases as external validation when they become available.
+7. Complete documentary audit and dual approval before any automated plant-control deployment.
 
 The deployment evidence and role-separated approval procedure remain specified
 in `docs/D5_FIELD_VERIFICATION_REQUIREMENTS.md`; they are not prerequisites for
@@ -443,11 +442,11 @@ Use `python scripts/run_d5_release.py --include-local` after data, topology, tem
 
 ## 8. Current branch gate
 
-Current release classification: **D5 scientific score ready; cross-dimensional publication freeze dependency-gated; automated deployment blocked**. Node-specific hard Veto remains gated by controlled-perturbation Top-1 localization.
+Current release classification: **D5 scientific score ready; cross-dimensional publication freeze {'ready and hash-bound' if self.publication.get('d4_dependency_current', False) else 'dependency-gated'}; automated deployment blocked**. Node-specific hard Veto remains gated by controlled-perturbation Top-1 localization.
 """
 
     def _captions_markdown(self) -> str:
-        return """# D5 Figure Captions v2.4
+        return f"""# D5 Figure Captions v2.4
 
 ## Figure D5-1. Author-confirmed topology, applicability and scientific boundary
 
@@ -475,7 +474,7 @@ Current release classification: **D5 scientific score ready; cross-dimensional p
 
 ## Figure D5-7. D4-D5 complementarity and D5 robustness
 
-(a) Overall D4-D5 overlap under the formal report-score and extended raw-calculable estimands. (b,c) Spearman rho by analyte, pair, regime and month with synchronized 7-d block intervals; strata without sufficient hours, blocks or variation remain unestimated. (d) Pair-composite leave-D4-out and leave-D5-out sensitivity. (e) Leave-one-target-out regime disagreement and OOD response to controlled offsets. (f) Final-L3 count under prespecified support perturbations. Values remain dependency-blocked until D4 run, calibration and SHA-256 exactly match the frozen v1.5.1 contract.
+(a) Overall D4-D5 overlap under the formal report-score and extended raw-calculable estimands. (b,c) Spearman rho by analyte, pair, regime and month; filled symbols and intervals require at least six independent 7-d blocks, whereas open symbols retain descriptive point estimates based on at least two blocks. (d) Pair-composite leave-D4-out and leave-D5-out sensitivity. Values are bound to D4 run `{self.publication.get('d4_run_id', 'not_audited')}`, calibration `{self.publication.get('d4_calibration_id', 'not_audited')}` and the recorded main-score SHA-256.
 
 ## Figure D5-8. Dimension-availability sensitivity of the prototype WW-DQS
 
@@ -637,6 +636,16 @@ Current release classification: **D5 scientific score ready; cross-dimensional p
                 "coverage is not monotonic, so confidence is not a calibrated "
                 "sensor-Veto gate.",
             )
+            self._paragraph(
+                doc,
+                "D4-D5 Spearman rho is "
+                f"{self.publication['D4_D5_spearman_report']:.3f} for report scores "
+                f"and {self.publication['D4_D5_spearman_raw']:.3f} for raw-calculable scores. "
+                "Report/raw descriptive weak-association rates are "
+                f"{self.publication['D4_D5_report_strata_abs_rho_below_0_30_rate']:.1%} "
+                f"and {self.publication['D4_D5_raw_strata_abs_rho_below_0_30_rate']:.1%}; "
+                "only strata with at least six independent 7-d blocks receive bootstrap CIs.",
+            )
         invariance_rows = [
             [row.metric, f"{row.estimate:.3f}", row.criterion, "PASS" if row.passed else "FAIL"]
             for row in self.invariance.itertuples(index=False)
@@ -689,14 +698,20 @@ Current release classification: **D5 scientific score ready; cross-dimensional p
         self._heading(doc, "9. Release decision", 1)
         self._paragraph(
             doc,
-            "The D5 score is suitable for coverage-aware WW-DQS aggregation, but cross-dimensional manuscript freezing remains blocked until the exact D4 dependency is current. Automated plant-control deployment remains outside the present evidence scope.",
+            "The D5 score is suitable for coverage-aware WW-DQS aggregation. "
+            + (
+                "Cross-dimensional manuscript values are current and hash-bound to the frozen D4 artifact. "
+                if self.publication.get("d4_dependency_current", False)
+                else "Cross-dimensional manuscript freezing remains blocked until the exact D4 dependency is current. "
+            )
+            + "Automated plant-control deployment remains outside the present evidence scope.",
         )
         for item in [
             "Use score-eligible D5 rows with confidence-aware missing-dimension renormalization.",
             "Use process-coherence Guard only for persistent final-L3 evidence and never report it as Veto.",
             "Raise controlled blocked-holdout Top-1 localization to at least 0.80 without weakening negative-control FAR.",
             "Report availability-aware and fixed-dimension complete-evidence composites separately.",
-            "Rerun D4-D5 overlap and ablation analysis after the latest D4 merge before freezing WW-DQS weights.",
+            "Rerun the complete D4-D5 overlap and ablation audit whenever the frozen D4 artifact changes.",
             "Obtain documentary approval before automated deployment.",
         ]:
             self._number(doc, item)

@@ -1,4 +1,4 @@
-# D5 Publication Readiness Audit v1.1
+# D5 Publication Readiness Audit v1.2
 
 ## Executive decision
 
@@ -24,7 +24,7 @@ The current node-level prototype gives 99.6% availability-aware composite covera
 
 ## D4-D5 complementarity
 
-Against D4 run `D4V14_20260726_100717`, report-score overlap Spearman rho is 0.145, raw-calculable overlap rho is 0.138, adjusted report-score partial rank correlation is 0.136, and report-score low-tail Jaccard is 0.235. Across estimable analyte, regime, month and pair strata, 87.8% have |rho| below 0.30. These are non-redundancy diagnostics, not proof of causal independence. Status is `stale_dependency_blocked`; exact run, calibration and SHA-256 matching is required before manuscript numbers or Fig. 7 are frozen.
+Against D4 run `D4V151_20260813_083347` and calibration `D4CAL-V151-66fe1bb6b7d3` (main-score SHA-256 `c21738a331d19632cc915e4d29cf692920aeccd346a6c74912f0f52dd4a9ca04`), report-score overlap Spearman rho is 0.119, raw-calculable overlap rho is 0.171, adjusted report-score partial rank correlation is 0.108, and report-score low-tail Jaccard is 0.229. For report-score strata, 94.7% of 19 descriptive strata have |rho| below 0.30; 13 meet the six-independent-block CI criterion. For raw-calculable strata, the corresponding values are 86.4%, 22 and 15. The pooled descriptive rate is 90.2%. Point estimates require at least two independent 7 d blocks; bootstrap CIs require at least six. These are non-redundancy diagnostics, not proof of causal independence. Status is `current`.
 
 ## Target influence
 
@@ -39,7 +39,7 @@ The controlled-injection risk-coverage curve is not monotonic: retaining only th
 | Recommendation | Decision | Scientific rationale |
 |---|---|---|
 | `full_outer_fold_refit` | `accepted_already_complete` | Six future-month folds; full, no exogenous, no regime and no hysteresis were refit from training data only. |
-| `D4_D5_dual_scope_overlap` | `accepted_executed_stale_dependency` | Report-score and raw-calculable overlap are implemented with analyte/regime/month/pair strata; formal freezing is blocked because dependency status is stale_dependency_blocked. |
+| `D4_D5_dual_scope_overlap` | `accepted_executed_current` | Report-score and raw-calculable overlap use analyte/regime/month/pair strata with separate descriptive and inferential admission; dependency status is current. |
 | `D4_dependency_fail_closed` | `accepted_executed` | Current status requires exact run ID, calibration ID and D4 main-score SHA-256 with one unique run and calibration. |
 | `score_support_missingness_freeze` | `accepted_executed` | Continuous scores retained; L1/L2/L3 and missing/OOD semantics frozen; A-E grades disabled. |
 | `controlled_perturbation_Top1_0_80_boundary` | `accepted_executed` | Controlled perturbation localization below 0.80 blocks sensor-specific hard Veto only, not the continuous scientific score. |
@@ -59,7 +59,7 @@ The controlled-injection risk-coverage curve is not monotonic: retaining only th
 
 - Ready: continuous D5 score, retrospective report interface and process-coherence attribution Guard.
 - Conditional: availability-aware aggregation is allowed only with explicit dimension-count and coverage outputs; fixed-dimension complete-evidence results must be reported separately.
-- Blocked pending dependency refresh: cross-dimensional D4-D5 publication freeze and final Fig. 7 values.
+- Ready: cross-dimensional D4-D5 publication values are bound to the exact frozen D4 artifact.
 - Not ready: sensor-specific hard Veto, causal fault labels, prospective deployment, cross-plant generalization.
 - A-E grades remain disabled because no independent future data exist for cutpoint freezing.
 - New field data, maintenance truth and dual approval should be treated as external validation/deployment work, not silently imputed into the current retrospective analysis.

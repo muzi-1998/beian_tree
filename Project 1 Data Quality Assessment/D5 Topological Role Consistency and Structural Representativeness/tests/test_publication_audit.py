@@ -93,6 +93,17 @@ def test_stratified_overlap_retains_unestimable_cells() -> None:
     )
     assert set(result["stratum_type"]) == {"analyte", "regime", "month", "pair"}
     assert result["estimable"].all()
+    assert result["descriptive_estimable"].all()
+    assert not result["inferential_estimable"].any()
+    assert result["ci95_low"].isna().all()
+
+
+def test_d4_manifest_identity_requires_run_calibration_and_hash() -> None:
+    recorded = {"d4_run_id": "R1", "d4_calibration_id": "C1", "d4_main_scores_sha256": "H1"}
+    current = {"d4_run_id": "R1", "d4_calibration_id": "C1", "d4_main_scores_sha256": "H1"}
+    assert D5PublicationAudit._d4_identity_matches(recorded, current)
+    current["d4_main_scores_sha256"] = "H2"
+    assert not D5PublicationAudit._d4_identity_matches(recorded, current)
 
 
 def test_cluster_label_alignment_recovers_permutation() -> None:

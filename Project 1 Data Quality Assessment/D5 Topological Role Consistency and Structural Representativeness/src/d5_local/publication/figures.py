@@ -371,7 +371,7 @@ class D5PublicationFigureBuilder:
     ) -> None:
         frame = stratified[
             stratified["stratum_type"].isin(stratum_types)
-            & stratified["estimable"]
+            & stratified["descriptive_estimable"]
         ].copy()
         frame["display"] = (
             frame["stratum_type"].str.title()
@@ -392,29 +392,50 @@ class D5PublicationFigureBuilder:
             selected = frame[frame["overlap_scope"].eq(scope)]
             for row in selected.itertuples(index=False):
                 y = y_positions[row.display] + offset
-                xerr = np.array(
-                    [
-                        [row.spearman_rho - row.ci95_low],
-                        [row.ci95_high - row.spearman_rho],
-                    ]
-                )
-                ax.errorbar(
-                    row.spearman_rho,
-                    y,
-                    xerr=xerr,
-                    fmt=marker,
-                    color=color,
-                    ms=3.2,
-                    lw=0.7,
-                    capsize=1.5,
-                    label=label if y_positions[row.display] == 0 else None,
-                )
+                if row.inferential_estimable:
+                    xerr = np.array(
+                        [
+                            [row.spearman_rho - row.ci95_low],
+                            [row.ci95_high - row.spearman_rho],
+                        ]
+                    )
+                    ax.errorbar(
+                        row.spearman_rho,
+                        y,
+                        xerr=xerr,
+                        fmt=marker,
+                        color=color,
+                        ms=3.2,
+                        lw=0.7,
+                        capsize=1.5,
+                    )
+                else:
+                    ax.scatter(
+                        row.spearman_rho,
+                        y,
+                        marker=marker,
+                        facecolors="none",
+                        edgecolors=color,
+                        s=18,
+                        linewidths=0.8,
+                    )
         ax.axvline(0, color="#8A8A8A", lw=0.7)
         ax.set_yticks(np.arange(len(labels)), labels)
         ax.invert_yaxis()
         ax.set_xlim(-1.0, 1.0)
         ax.set_xlabel("Spearman rho")
         ax.set_title(title)
+        ax.text(
+            0.02,
+            0.98,
+            "Open symbols: descriptive only",
+            transform=ax.transAxes,
+            ha="left",
+            va="top",
+            fontsize=5.8,
+            color="#5F6368",
+            bbox={"facecolor": "white", "edgecolor": "none", "alpha": 0.85, "pad": 0.2},
+        )
         self._boxed(ax)
 
     def _target_support_robustness(self) -> list[Path]:

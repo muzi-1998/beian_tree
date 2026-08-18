@@ -1,6 +1,6 @@
 # D5 Project Directory Guide v2.4
 
-**Generated:** 2026-08-18 10:57 CST
+**Generated:** 2026-08-18 11:58 CST
 **Update rule:** every computational or figure change must rerun reports and release QA.
 
 ## 1. Project layout
@@ -103,4 +103,4 @@ Use `python scripts/run_d5_release.py --include-local` after data, topology, tem
 
 ## 8. Current branch gate
 
-Current release classification: **D5 scientific score ready; cross-dimensional publication freeze dependency-gated; automated deployment blocked**. Node-specific hard Veto remains gated by controlled-perturbation Top-1 localization.
+Current release classification: **D5 scientific score ready; cross-dimensional publication freeze ready and hash-bound; automated deployment blocked**. Node-specific hard Veto remains gated by controlled-perturbation Top-1 localization.

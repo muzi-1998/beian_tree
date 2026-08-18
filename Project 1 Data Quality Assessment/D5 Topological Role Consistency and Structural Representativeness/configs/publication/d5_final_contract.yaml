@@ -1,4 +1,4 @@
-version: d5-publication-contract-v1.1
+version: d5-publication-contract-v1.2
 confirmatory_run_id: D1D5V20-764c93bf3d95
 random_seed: 20260817
 
@@ -44,7 +44,8 @@ statistical_analysis:
   overlap_scopes: [D5_report_score, D5_raw_calculable]
   overlap_strata: [analyte, regime, month, pair]
   minimum_stratum_pair_hours: 24
-  minimum_stratum_time_blocks: 2
+  minimum_stratum_time_blocks_descriptive: 2
+  minimum_stratum_time_blocks_inferential: 6
 
 d4_dependency:
   policy: fail_closed_exact_artifact_match

@@ -26,7 +26,7 @@
 
 ## Figure D5-7. D4-D5 complementarity and D5 robustness
 
-(a) Overall D4-D5 overlap under the formal report-score and extended raw-calculable estimands. (b,c) Spearman rho by analyte, pair, regime and month with synchronized 7-d block intervals; strata without sufficient hours, blocks or variation remain unestimated. (d) Pair-composite leave-D4-out and leave-D5-out sensitivity. (e) Leave-one-target-out regime disagreement and OOD response to controlled offsets. (f) Final-L3 count under prespecified support perturbations. Values remain dependency-blocked until D4 run, calibration and SHA-256 exactly match the frozen v1.5.1 contract.
+(a) Overall D4-D5 overlap under the formal report-score and extended raw-calculable estimands. (b,c) Spearman rho by analyte, pair, regime and month; filled symbols and intervals require at least six independent 7-d blocks, whereas open symbols retain descriptive point estimates based on at least two blocks. (d) Pair-composite leave-D4-out and leave-D5-out sensitivity. Values are bound to D4 run `D4V151_20260813_083347`, calibration `D4CAL-V151-66fe1bb6b7d3` and the recorded main-score SHA-256.
 
 ## Figure D5-8. Dimension-availability sensitivity of the prototype WW-DQS
 

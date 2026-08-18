@@ -46,8 +46,10 @@ topology metadata. It never consumes D1-D4 scores or states.
   governance without rewriting the D4 numeric score.
 - D4-D5 non-redundancy is audited under two estimands: formal
   `D5_report_score` overlap and extended two-node `D5_raw` calculable overlap,
-  with analyte, regime, month and pair strata. Manuscript values freeze only
-  after exact D4 run, calibration and SHA-256 matching.
+  with analyte, regime, month and pair strata. Two independent 7 d blocks admit
+  a descriptive point estimate; at least six are required for a bootstrap CI.
+  Every D4-dependent artifact carries source run, calibration and SHA-256
+  provenance, and manuscript values freeze only after exact freshness matching.
 - Availability-aware and fixed-dimension complete-evidence WW-DQS summaries
   are separate estimands. Dimension count and coverage must accompany every
   temporal composite; missing D5 evidence is never encoded as low quality.
