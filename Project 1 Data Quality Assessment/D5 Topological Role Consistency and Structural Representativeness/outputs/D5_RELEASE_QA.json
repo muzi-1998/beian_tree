@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-08-18T02:58:10.972762+00:00",
+  "generated_utc": "2026-08-18T03:09:34.689307+00:00",
   "run_id": "D5-LOCAL-20260727T034533Z",
   "research_release_status": "complete_with_documented_caveats",
   "production_release_status": "blocked",
@@ -120,7 +120,7 @@
     {
       "path": "outputs/D5_RELEASE_QA.json",
       "size": 28805,
-      "sha256": "2996a12d5c57570b074196dd8036c29032857b9fde93df7aea352aa371992c38"
+      "sha256": "817b400fa63e6fab3ed0b096e5dd1c4d3e5b181c912be27e6dec22582da6ad1c"
     },
     {
       "path": "outputs/figures/D5_figure_qa.json",
@@ -329,8 +329,8 @@
     },
     {
       "path": "outputs/local/D5_audit_log.xlsx",
-      "size": 75667,
-      "sha256": "e6c5af19d0fc71dd80876b444f5272a8ca648d14ee9e8fbacfb99b71178a36a7"
+      "size": 75669,
+      "sha256": "bf0f605340ce0ce33a4bc9a3dd952bf55372ffa03a501a471da7472f9fe74554"
     },
     {
       "path": "outputs/local/D5_case_study_exports.xlsx",
@@ -589,8 +589,8 @@
     },
     {
       "path": "outputs/publication/D5_publication_audit_manifest.json",
-      "size": 10292,
-      "sha256": "5e18a160b4c90f186cc654abc505b2ee64abf30c70e3b7d4f659340665bb8336"
+      "size": 10358,
+      "sha256": "a6ea3da8d8d0928abbf9557443849e45ce01a97f2d7df368fc8c8c5c3a548501"
     },
     {
       "path": "outputs/publication/D5_publication_audit_tables.xlsx",
