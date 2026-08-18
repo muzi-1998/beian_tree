@@ -21,6 +21,7 @@ from d4.pipeline import _mapping_id, _phase_labels
 from d4.config import load_config
 from d4.validation import _inject, _time_block_ids
 from d4.episode_validation import _event_runs, _resample_boundaries, _summary
+from d4.publication import manifest_relative_path, publication_sha256
 
 
 def test_identical_pair_has_zero_distance_and_variance_risk():
@@ -316,4 +317,18 @@ def test_process_guard_suppresses_attribution_without_changing_d4_score() -> Non
     assert (
         output.loc[0, "causal_attribution"]
         == "coherent_process_change_not_sensor_fault"
+    )
+
+
+def test_publication_text_hash_normalizes_line_endings(tmp_path) -> None:
+    lf_path = tmp_path / "lf.md"
+    crlf_path = tmp_path / "crlf.md"
+    lf_path.write_bytes(b"heading\nbody\n")
+    crlf_path.write_bytes(b"heading\r\nbody\r\n")
+    assert publication_sha256(lf_path) == publication_sha256(crlf_path)
+
+
+def test_publication_manifest_paths_are_cross_platform() -> None:
+    assert manifest_relative_path(r"outputs\figures\figure.svg") == Path(
+        "outputs", "figures", "figure.svg"
     )

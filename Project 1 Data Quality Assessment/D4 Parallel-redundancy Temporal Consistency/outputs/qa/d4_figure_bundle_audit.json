@@ -1,6 +1,6 @@
 {
   "audit_version": "d4-nature-figure-audit-v1.0",
-  "created_at_utc": "2026-08-13T09:02:04.293377+00:00",
+  "created_at_utc": "2026-08-18T03:37:15.163685+00:00",
   "backend": "python",
   "figure_contract": {
     "main": 6,
@@ -26,24 +26,28 @@
         "svg": {
           "exists": true,
           "fresh": true,
+          "freshness_evidence": "publication_manifest_sha256",
           "bytes": 28061,
           "sha256": "dcacd9416e6e89465139c17119eac0c827ed6ee705c8c8241fc5b09d4536388a"
         },
         "pdf": {
           "exists": true,
           "fresh": true,
+          "freshness_evidence": "publication_manifest_sha256",
           "bytes": 51482,
           "sha256": "499dc6728f1edabc2c4d45f873c4a634ad5619ae08505da65a41649a15409227"
         },
         "png": {
           "exists": true,
           "fresh": true,
+          "freshness_evidence": "publication_manifest_sha256",
           "bytes": 357578,
           "sha256": "6ff6ba55ad63e464e930338123a72c30d6dc93eb451c1348f6a602b500a6f019"
         },
         "tiff": {
           "exists": true,
           "fresh": true,
+          "freshness_evidence": "publication_manifest_sha256",
           "bytes": 688534,
           "sha256": "6c6e9d16719902a74fe6f66c009b8d404f17001877c4b75854555037e518a322"
         }
@@ -73,24 +77,28 @@
         "svg": {
           "exists": true,
           "fresh": true,
+          "freshness_evidence": "publication_manifest_sha256",
           "bytes": 53401,
           "sha256": "06a11e8ba28e01890bf2fb4718cb52fd31ace21c48aa37554bc69cb37a226186"
         },
         "pdf": {
           "exists": true,
           "fresh": true,
+          "freshness_evidence": "publication_manifest_sha256",
           "bytes": 49084,
           "sha256": "55e5596cad5c1a38361d651f5f5e25709240cac08d43f8bd53c1761a6444e73b"
         },
         "png": {
           "exists": true,
           "fresh": true,
+          "freshness_evidence": "publication_manifest_sha256",
           "bytes": 329182,
           "sha256": "7b55dd1c4608743acc33c4ce8b9afa272b794a9459cc5cbbe5147519f03238ec"
         },
         "tiff": {
           "exists": true,
           "fresh": true,
+          "freshness_evidence": "publication_manifest_sha256",
           "bytes": 790394,
           "sha256": "57f72549b0846533d48eadd72dc6f04581084573e27ef7ae458ce08212f40fa4"
         }
@@ -120,24 +128,28 @@
         "svg": {
           "exists": true,
           "fresh": true,
+          "freshness_evidence": "publication_manifest_sha256",
           "bytes": 40622,
           "sha256": "843d2d298e4425b1b1674fe77ea9a74e6e81acb14dd0d5eaf8ca92fa18cf5bab"
         },
         "pdf": {
           "exists": true,
           "fresh": true,
+          "freshness_evidence": "publication_manifest_sha256",
           "bytes": 48857,
           "sha256": "7759f790bedaa4995869b6d3538471d78add379d0aef7a162efdd8f18db3dd09"
         },
         "png": {
           "exists": true,
           "fresh": true,
+          "freshness_evidence": "publication_manifest_sha256",
           "bytes": 401460,
           "sha256": "f6c8e9e34384e66792cbff51d8c4b72272f7824840c7befb3587dd373d1f57f5"
         },
         "tiff": {
           "exists": true,
           "fresh": true,
+          "freshness_evidence": "publication_manifest_sha256",
           "bytes": 2107528,
           "sha256": "2b2ca595b7b45e19a57c46b2b4f6865f92a204c3346469e3629640b20fd7eeeb"
         }
@@ -167,24 +179,28 @@
         "svg": {
           "exists": true,
           "fresh": true,
+          "freshness_evidence": "publication_manifest_sha256",
           "bytes": 203663,
           "sha256": "c0d3df75016298387fd6b0d04ea8dc9fbfc5fbdb6793684d307dad4ad60b68d7"
         },
         "pdf": {
           "exists": true,
           "fresh": true,
+          "freshness_evidence": "publication_manifest_sha256",
           "bytes": 94278,
           "sha256": "532cb35babbcc24c6f39fccbeea47c95f3d79cb721bd530bfc8a5e468b4e5f2b"
         },
         "png": {
           "exists": true,
           "fresh": true,
+          "freshness_evidence": "publication_manifest_sha256",
           "bytes": 1037265,
           "sha256": "f066d74c1c30ef8d9231b4f5036440d9f4f893e2ff6ebd51f42b515c7f17c137"
         },
         "tiff": {
           "exists": true,
           "fresh": true,
+          "freshness_evidence": "publication_manifest_sha256",
           "bytes": 1867560,
           "sha256": "54b4533514b8219b8b43fce6e6c57f8852cca4cb13c7985b02911a2d828dfe1e"
         }
@@ -214,24 +230,28 @@
         "svg": {
           "exists": true,
           "fresh": true,
+          "freshness_evidence": "publication_manifest_sha256",
           "bytes": 65203,
           "sha256": "3ae8b0718e518f4cb689b91ff8d7f81390feb4648f1b6efee31785944afed2e1"
         },
         "pdf": {
           "exists": true,
           "fresh": true,
+          "freshness_evidence": "publication_manifest_sha256",
           "bytes": 51646,
           "sha256": "6aae033b2f2016414032e46396a073d337371a96fdc0b0934a05368a1d9e0b31"
         },
         "png": {
           "exists": true,
           "fresh": true,
+          "freshness_evidence": "publication_manifest_sha256",
           "bytes": 671207,
           "sha256": "85ba3d6fa8c3937f77e941c6497be732e03d14bd9c77a2ff8af08cce94b7bd02"
         },
         "tiff": {
           "exists": true,
           "fresh": true,
+          "freshness_evidence": "publication_manifest_sha256",
           "bytes": 1272352,
           "sha256": "18b23981fa05c9d4d953174f8cdac4b12d641470e8f0bb34b3a55a7a4378baa8"
         }
@@ -261,24 +281,28 @@
         "svg": {
           "exists": true,
           "fresh": true,
+          "freshness_evidence": "publication_manifest_sha256",
           "bytes": 36822,
           "sha256": "e57c6c7704b3bee5dd5249e443b022104de7496c443891208de9e731414cfc86"
         },
         "pdf": {
           "exists": true,
           "fresh": true,
+          "freshness_evidence": "publication_manifest_sha256",
           "bytes": 49170,
           "sha256": "537d0bf1c630071d8ba9ec13c49cf9d231499060e69186bdd7afba48ebdb4530"
         },
         "png": {
           "exists": true,
           "fresh": true,
+          "freshness_evidence": "publication_manifest_sha256",
           "bytes": 361923,
           "sha256": "5562b9aad8ba0344a1b5178fa946f12e58707548142bcfd99b30332db025a268"
         },
         "tiff": {
           "exists": true,
           "fresh": true,
+          "freshness_evidence": "publication_manifest_sha256",
           "bytes": 1127406,
           "sha256": "82940dc292fdd2cf64b231c8b5dba0c18da09a917c78f0f9eb02b8f03124126e"
         }
@@ -308,24 +332,28 @@
         "svg": {
           "exists": true,
           "fresh": true,
+          "freshness_evidence": "publication_manifest_sha256",
           "bytes": 546025,
           "sha256": "502237335c4e5a68870a4c029e0c57c1474b5e8c5ca893f48ecbbf1bb7b8275e"
         },
         "pdf": {
           "exists": true,
           "fresh": true,
+          "freshness_evidence": "publication_manifest_sha256",
           "bytes": 179104,
           "sha256": "cc0b94b8681fc0d0c424742d2d76ea5126d245b04435f69b8d42eba5b1022e29"
         },
         "png": {
           "exists": true,
           "fresh": true,
+          "freshness_evidence": "publication_manifest_sha256",
           "bytes": 1618202,
           "sha256": "b3b633373500267a94108887553b8862656cad1928f8745298a2deab959b83fd"
         },
         "tiff": {
           "exists": true,
           "fresh": true,
+          "freshness_evidence": "publication_manifest_sha256",
           "bytes": 3440086,
           "sha256": "8d071d738ec699eac25a8dbb0d0e703d53623a48f8f78164f985ef091f24bda9"
         }
@@ -355,24 +383,28 @@
         "svg": {
           "exists": true,
           "fresh": true,
+          "freshness_evidence": "publication_manifest_sha256",
           "bytes": 22978,
           "sha256": "2c4a0881c49515ed6d870eed96d366ee87f225302d76ce89589944a852231799"
         },
         "pdf": {
           "exists": true,
           "fresh": true,
+          "freshness_evidence": "publication_manifest_sha256",
           "bytes": 36343,
           "sha256": "65c92d524a4accb0f5116a313a1fede9a8eb5d37b660780b1ced3616cd5e5cb0"
         },
         "png": {
           "exists": true,
           "fresh": true,
+          "freshness_evidence": "publication_manifest_sha256",
           "bytes": 133177,
           "sha256": "fc53ba23a78744ff9ac872c75053a1e6f6deaf46393575add8d9e9c6051017b9"
         },
         "tiff": {
           "exists": true,
           "fresh": true,
+          "freshness_evidence": "publication_manifest_sha256",
           "bytes": 390904,
           "sha256": "790723a31303df2a69f4209a7ea4c00348fdb91c8d543c7b1d736f6527d539d0"
         }
@@ -402,24 +434,28 @@
         "svg": {
           "exists": true,
           "fresh": true,
+          "freshness_evidence": "publication_manifest_sha256",
           "bytes": 19937,
           "sha256": "15c694463de8926f1173abbbcfa43af1c77e43406b1185834f65d8943a26b4f9"
         },
         "pdf": {
           "exists": true,
           "fresh": true,
+          "freshness_evidence": "publication_manifest_sha256",
           "bytes": 35537,
           "sha256": "ee4018a8bac67528328f2340962a67f91baad91ecc4053a90eb897e8b29a6708"
         },
         "png": {
           "exists": true,
           "fresh": true,
+          "freshness_evidence": "publication_manifest_sha256",
           "bytes": 179316,
           "sha256": "3a6c6acb07f2376be4774a41fcd32ea93dff9624e23ed7e1491078723574b5fa"
         },
         "tiff": {
           "exists": true,
           "fresh": true,
+          "freshness_evidence": "publication_manifest_sha256",
           "bytes": 613622,
           "sha256": "7a74f612c5b7cea953776d81d054085aa513aeb7a39cfa687fa9c5a92f569102"
         }
@@ -449,24 +485,28 @@
         "svg": {
           "exists": true,
           "fresh": true,
+          "freshness_evidence": "publication_manifest_sha256",
           "bytes": 24130,
           "sha256": "f7787b0e5c7e9a21b2ad730e3256c5e7904a0241a38479327e9a759ec944196c"
         },
         "pdf": {
           "exists": true,
           "fresh": true,
+          "freshness_evidence": "publication_manifest_sha256",
           "bytes": 45736,
           "sha256": "c182b20a09d90e60a46b6c36f1e335d97251fba5aeef9cf293878a90699effae"
         },
         "png": {
           "exists": true,
           "fresh": true,
+          "freshness_evidence": "publication_manifest_sha256",
           "bytes": 208906,
           "sha256": "a086e2c4f1084ddfd2c08fd7fb865d80935c1de276831d99a15e2008926bebaa"
         },
         "tiff": {
           "exists": true,
           "fresh": true,
+          "freshness_evidence": "publication_manifest_sha256",
           "bytes": 499442,
           "sha256": "a3fe626472645dbde5134e970881e5e4edb84c230ae7a89ce96dbee37fd749be"
         }
@@ -496,24 +536,28 @@
         "svg": {
           "exists": true,
           "fresh": true,
+          "freshness_evidence": "publication_manifest_sha256",
           "bytes": 36249,
           "sha256": "f4eec736401bf2c8c033d6f9e86f120eb05ecb22897f7ed5cc148e7e2b405a98"
         },
         "pdf": {
           "exists": true,
           "fresh": true,
+          "freshness_evidence": "publication_manifest_sha256",
           "bytes": 44814,
           "sha256": "914c278c6aac4138339648f9882454fc2c9c442eb3f8e97bb71d5792c64e7b34"
         },
         "png": {
           "exists": true,
           "fresh": true,
+          "freshness_evidence": "publication_manifest_sha256",
           "bytes": 244700,
           "sha256": "84aac71a4dd1cbbc7a75ff942d906a7f94e86c8fb59334bb53510184f960feb6"
         },
         "tiff": {
           "exists": true,
           "fresh": true,
+          "freshness_evidence": "publication_manifest_sha256",
           "bytes": 520156,
           "sha256": "509c0984665e515b71533d77ad4b95a5e74f2c86978c399eabe9674187ce0810"
         }
@@ -543,24 +587,28 @@
         "svg": {
           "exists": true,
           "fresh": true,
+          "freshness_evidence": "publication_manifest_sha256",
           "bytes": 25017,
           "sha256": "44f7832b6f5e879caa629bf23d15b5b21a97c7bed031f7ecd0594993e3ba50e4"
         },
         "pdf": {
           "exists": true,
           "fresh": true,
+          "freshness_evidence": "publication_manifest_sha256",
           "bytes": 39993,
           "sha256": "f9efbf6d50cd2ff515fd8d81c2deda09a1c875db475787c1a9cdea4fba27b763"
         },
         "png": {
           "exists": true,
           "fresh": true,
+          "freshness_evidence": "publication_manifest_sha256",
           "bytes": 203188,
           "sha256": "5697cf16a0672c16c9d3a5aa3e58fe720f282be50faff2b4588a71d218cc34cb"
         },
         "tiff": {
           "exists": true,
           "fresh": true,
+          "freshness_evidence": "publication_manifest_sha256",
           "bytes": 581854,
           "sha256": "edf5f0509e4378c72146481a0c7a5b631420b70c50525eabff54eb5250bd4722"
         }

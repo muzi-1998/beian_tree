@@ -1,0 +1,33 @@
+name: D4 publication bundle
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/d4-publication-ci.yml"
+      - "Project 1 Data Quality Assessment/D4 Parallel-redundancy Temporal Consistency/**"
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Project 1 Data Quality Assessment/D4 Parallel-redundancy Temporal Consistency
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: Project 1 Data Quality Assessment/D4 Parallel-redundancy Temporal Consistency/requirements-ci.txt
+      - name: Install locked CI dependencies
+        run: pip install -r requirements-ci.txt
+      - name: Run D4 tests
+        run: python -m pytest tests -q
+      - name: Recompute numerical QA
+        run: python scripts/check_d4_outputs.py
+      - name: Recompute figure QA
+        run: python scripts/audit_d4_figures.py
+      - name: Verify publication artifacts and hashes
+        run: python scripts/verify_d4_publication_bundle.py

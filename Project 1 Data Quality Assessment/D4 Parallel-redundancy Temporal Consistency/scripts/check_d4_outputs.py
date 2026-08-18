@@ -149,9 +149,13 @@ def main() -> None:
             (pd.to_datetime(params["fit_end"]) > pd.Timestamp("2026-01-24 23:59:59")).sum()
         ),
         "event_duration_violations": int(events["duration_h"].lt(3.0).sum()),
-        "final_D4_forDQR_nonnull": int(scores["D4_forDQR"].notna().sum()),
+        "core_final_D4_forDQR_preintegration_nonnull": int(
+            scores["D4_forDQR"].notna().sum()
+        ),
         "D5_proxy_rows": int(scores["D5_zone_consensus_label"].ne("not_available").sum()),
-        "integration_finalized_rows": int(integration_manifest["finalized_rows"]),
+        "integration_final_D4_forDQR_nonnull": int(
+            integration_manifest["finalized_rows"]
+        ),
         "integration_numeric_source": integration_manifest["numeric_source"],
         "integration_max_abs_numeric_adjustment": float(
             integration_manifest["max_abs_numeric_adjustment"]
@@ -212,9 +216,9 @@ def main() -> None:
         and checks["calibration_non_development_rows"] == 0
         and checks["calibration_after_fit_end_rows"] == 0
         and checks["event_duration_violations"] == 0
-        and checks["final_D4_forDQR_nonnull"] == 0
+        and checks["core_final_D4_forDQR_preintegration_nonnull"] == 0
         and checks["D5_proxy_rows"] == 0
-        and checks["integration_finalized_rows"] > 0
+        and checks["integration_final_D4_forDQR_nonnull"] > 0
         and checks["integration_numeric_source"] == "D4_raw"
         and checks["integration_max_abs_numeric_adjustment"] < 1e-12
         and checks["required_validation_failures"] == 0

@@ -18,6 +18,9 @@ numeric `D4_raw` score.
 - `python scripts/run_d4_d5_readiness.py` finalizes the scientific D4 value
   non-destructively from `D4_raw`. It verifies protected numeric columns and
   records whether any D5 action gate is applicable. No D5 proxy is generated.
+- The core `D4_forDQR` field is an intentionally withheld pre-integration
+  placeholder. The integration-layer `D4_forDQR` is the finalized output; QA
+  reports these lifecycle stages with separate, explicit field names.
 - D4 detects pair asymmetry. It cannot by itself attribute the cause to a sensor
   fault or a real local process asymmetry.
 
@@ -60,12 +63,16 @@ python ".\D4 Parallel-redundancy Temporal Consistency\scripts\audit_d4_figures.p
 python ".\D4 Parallel-redundancy Temporal Consistency\scripts\run_d4_d5_readiness.py"
 python ".\D4 Parallel-redundancy Temporal Consistency\scripts\run_d4_composite_refresh.py"
 python ".\D4 Parallel-redundancy Temporal Consistency\scripts\check_d4_outputs.py"
+python ".\D4 Parallel-redundancy Temporal Consistency\scripts\build_d4_publication_manifest.py"
+python ".\D4 Parallel-redundancy Temporal Consistency\scripts\verify_d4_publication_bundle.py"
 python -m pytest ".\D4 Parallel-redundancy Temporal Consistency\tests" -q
 ```
 
 The current production run is identified in
 `outputs/data/D4_run_manifest.json`; downstream users should verify its input
 hashes rather than rely on file modification times.
+The same tests, numerical QA, figure QA and publication-manifest verification
+run in `.github/workflows/d4-publication-ci.yml` on each relevant pull request.
 
 ## Current acceptance status
 
