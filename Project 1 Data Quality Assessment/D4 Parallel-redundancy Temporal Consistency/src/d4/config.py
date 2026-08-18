@@ -26,6 +26,9 @@ class D4Config:
     step_hours: int
     analysis_interval_minutes: int
     min_valid_fraction: float
+    phase_contract: dict[str, Any]
+    common_support: dict[str, Any]
+    distribution: dict[str, Any]
     pairs: tuple[PairConfig, ...]
     deadband: dict[str, float]
     weights: dict[str, float]
@@ -54,6 +57,9 @@ def load_config(path: Path, project_root: Path) -> D4Config:
         step_hours=int(raw["step_hours"]),
         analysis_interval_minutes=int(raw["analysis_interval_minutes"]),
         min_valid_fraction=float(raw["min_valid_fraction"]),
+        phase_contract=raw["phase_contract"],
+        common_support=raw["common_support"],
+        distribution=raw["distribution"],
         pairs=pairs,
         deadband={k: float(v) for k, v in raw["deadband"].items()},
         weights=weights,

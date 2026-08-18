@@ -1,15 +1,45 @@
 {
-  "run_id": "D4V14_20260726_100717",
-  "config_version": "d4-v1.4-canonical-d4-20260726",
-  "generated_utc": "2026-07-26T10:09:22.520041+00:00",
+  "run_id": "D4V151_20260813_083347",
+  "config_version": "d4-v1.5.1-statistical-dependence-audit-20260813",
+  "generated_utc": "2026-08-13T08:36:22.514300+00:00",
   "data_span": [
     "2025-08-01 00:00:00",
     "2026-04-13 23:50:00"
   ],
   "rows": 42847,
   "pairs": 7,
-  "d2_run_id": "D2V1_20260722_1714",
-  "calibration_id": "D4CAL-V14-7a16d7f511d3",
+  "d2_run_id": "D2V4_20260805_1127",
+  "calibration_id": "D4CAL-V151-66fe1bb6b7d3",
+  "phase_contract": {
+    "development_start": "2025-08-01 00:00:00",
+    "development_end": "2026-01-24 23:59:59",
+    "embargo_start": "2026-01-25 00:00:00",
+    "embargo_end": "2026-01-31 23:59:59",
+    "internal_validation_start": "2026-02-01 00:00:00",
+    "internal_validation_end": "2026-04-13 23:59:59",
+    "terminal_status": "pending_genuinely_unseen_future_period",
+    "upstream_transform_status": "retrospective_upstream_artifacts_previously_developed_on_study_period"
+  },
+  "common_support_contract": {
+    "min_fraction": 0.8,
+    "min_hour_fraction": 0.8,
+    "trend_min_common_hour_fraction": 0.8,
+    "policy": "synchronous_timestamp_primary"
+  },
+  "distribution_component_version": "full_w1_0.60_ks_0.40_development_frozen",
+  "calibration_support_contract": {
+    "min_stratum_windows": 100,
+    "min_variable_windows": 50,
+    "independent_block_days": 7,
+    "min_exact_independent_blocks": 6,
+    "percentile_precision": {
+      "quantile": 0.975,
+      "bootstrap_repetitions": 600,
+      "relative_ci_width_diagnostic_limit": 1.0,
+      "admission_role": "evidence_grade_only_pending_preregistered_precision_target"
+    }
+  },
+  "terminal_status": "pending_genuinely_unseen_future_period",
   "dependencies": [
     {
       "dependency": "residuals",
@@ -27,37 +57,37 @@
       "dependency": "d1_scores",
       "path_role": "D1_main_scores_min.xlsx",
       "sha256": "83207ca6f818dd309fe36cdb3adfdc9e569ea540fbca5c4acc0e45e8a321923c",
-      "modified_utc": "2026-07-26T10:03:42.151123+00:00"
+      "modified_utc": "2026-07-27T08:02:48.122703+00:00"
     },
     {
       "dependency": "regime_templates",
       "path_role": "D1_regime_templates.xlsx",
       "sha256": "3dcbb33f64e2b3ece25d6dddd57421cf2d2651e6324f5cd26e1b191fa6aab169",
-      "modified_utc": "2026-07-26T10:03:50.930617+00:00"
+      "modified_utc": "2026-07-27T08:02:48.137757+00:00"
     },
     {
       "dependency": "d2_scores",
       "path_role": "D2_main_scores_hourly.xlsx",
-      "sha256": "70a4a093f0900b090d49dbe8eda8a025e5eb840fce44a267f43636627029c08a",
-      "modified_utc": "2026-07-22T09:14:38.920336+00:00"
+      "sha256": "ac051d9a24a17523433c63187cf63f0128efb185325a1ea789633f7fc13d04a6",
+      "modified_utc": "2026-08-05T03:28:59.791070+00:00"
     },
     {
       "dependency": "d4_config",
       "path_role": "d4.yaml",
-      "sha256": "00722ca5647d83d906091cecba1bf6904ae93871102766d556416226153c73d7",
-      "modified_utc": "2026-07-26T09:43:55.829080+00:00"
+      "sha256": "213ecde94309486e5a09659e2306c3028459cc77786e175b98e381cba198df74",
+      "modified_utc": "2026-08-13T08:26:25.369829+00:00"
     },
     {
       "dependency": "d4_pipeline_code",
       "path_role": "pipeline.py",
-      "sha256": "f6b9f6de7d5159494bd45de3a04f3a57537869e4d2c70a0af8192fba77a0e58e",
-      "modified_utc": "2026-07-26T09:51:14.227894+00:00"
+      "sha256": "4c9dfbaa3c0068d0476fd8a2f6a1602802bacb31bb9c6c60f5bf7dfa0f79c5a6",
+      "modified_utc": "2026-08-13T08:33:10.776586+00:00"
     },
     {
       "dependency": "d4_scoring_code",
       "path_role": "scoring.py",
-      "sha256": "ddef43ff2e7d872c5c7a30e6485e7b856d058a96b800854fe40ac815a5b48120",
-      "modified_utc": "2026-07-26T08:43:40.442735+00:00"
+      "sha256": "1f7845876b73515ea34171dd34a50d279aa32d0fd3244226b8ab9774292f4bfe",
+      "modified_utc": "2026-08-13T02:48:32.786982+00:00"
     }
   ],
   "scientific_boundary": "D4_raw is the independent numeric dimension. D2 gates observability; D1 is interpretation-only; the separate D5 report/gate interface cannot rewrite D4_raw.",
