@@ -1,0 +1,105 @@
+schema_version: northbank-dqr-aggregation-v2.0
+contract_version: 2.0.0
+study:
+  start: "2025-08-01 00:00:00"
+  end: "2026-04-13 23:00:00"
+  decision_clock: hour_start_label_for_preceding_hour
+  plant_count: 1
+  future_holdout:
+    start: "2026-04-14 00:00:00"
+    end: "2026-07-31 23:00:00"
+    status: pending_not_executed_inputs_not_scored_by_frozen_D1_D5
+
+inputs:
+  D1:
+    path: D1 Sensor health/outputs/data/D1_main_scores_min.xlsx
+    manifest_path: D1 Sensor health/outputs/data/D1_release_manifest.json
+    sheet: D1_total_hourly
+    usable_sheet: usable_tag_hourly
+    expected_sha256: 83207ca6f818dd309fe36cdb3adfdc9e569ea540fbca5c4acc0e45e8a321923c
+    expected_manifest_sha256: bf56f0bf414e88a625d2be12cd8e7a07e16e4482477c25ebfd25311abc34b743
+    expected_run_id: d1-final-33fa914b2f71
+  D2:
+    path: D2 Temporal Continuity & Information Availability/artifacts/data/D2_main_scores_hourly.xlsx
+    manifest_path: D2 Temporal Continuity & Information Availability/artifacts/D2_release_manifest.json
+    sheet: D2_scores
+    expected_sha256: ac051d9a24a17523433c63187cf63f0128efb185325a1ea789633f7fc13d04a6
+    expected_manifest_sha256: 5cc638b1885e5c3d67742f4e0ad9562b3f1d289cac028fda327350340c93afbc
+    expected_run_id: D2V4_20260805_1127
+    expected_calibration_id: NorthBank_D2_v4_20260805
+  D3:
+    path: D3 Physical rationality and rate constraints/outputs/data/D3_window_scores.xlsx
+    manifest_path: D3 Physical rationality and rate constraints/outputs/manifest/run_manifest.json
+    expected_sha256: c98b59796f10c42377c210a5d5fbdf21d98b0b99e848ad2733a0507d9df1629a
+    expected_manifest_sha256: acba3dd3b937f220337f5fee506f403786565620cda1802a776488e92a228010
+    expected_run_id: RUN_D3_v2.7.0_20260811T031925Z_b3392abf
+    timestamp_role: end_exclusive
+  D4:
+    path: D4 Parallel-redundancy Temporal Consistency/outputs/data/D4_main_scores.xlsx
+    manifest_path: D4 Parallel-redundancy Temporal Consistency/outputs/data/D4_run_manifest.json
+    sheet: main_scores
+    expected_sha256: c21738a331d19632cc915e4d29cf692920aeccd346a6c74912f0f52dd4a9ca04
+    expected_manifest_sha256: 8523cf5941017e53d93b313b240347a0737574c18f7746959c1bba963cabb424
+    expected_run_id: D4V151_20260813_083347
+    expected_calibration_id: D4CAL-V151-66fe1bb6b7d3
+  D5:
+    path: D5 Topological Role Consistency and Structural Representativeness/outputs/local/D5_report_interface.parquet
+    raw_path: D5 Topological Role Consistency and Structural Representativeness/outputs/local/D5_main_scores_hourly.parquet
+    influence_path: D5 Topological Role Consistency and Structural Representativeness/outputs/local/D5_sensor_influence.parquet
+    case_path: D5 Topological Role Consistency and Structural Representativeness/outputs/local/D5_case_study_exports.xlsx
+    topology_path: D5 Topological Role Consistency and Structural Representativeness/outputs/local/D5_topology_registry.yaml
+    manifest_path: D5 Topological Role Consistency and Structural Representativeness/outputs/local/D5_run_manifest.json
+    publication_manifest_path: D5 Topological Role Consistency and Structural Representativeness/outputs/publication/D5_publication_audit_manifest.json
+    dependence_path: D5 Topological Role Consistency and Structural Representativeness/outputs/publication/D5_d4_d5_dependence.parquet
+    stratified_dependence_path: D5 Topological Role Consistency and Structural Representativeness/outputs/publication/D5_d4_d5_stratified_rho.parquet
+    expected_sha256: f057e0a8037282fb43a71a94d7043c7bd3de2b4c8fa9865365bcf0427195dbda
+    expected_raw_sha256: 64274562d7139d510dd3780dbd67bd2c2c5913908dbbec8ac7d4bcceb0418cd1
+    expected_manifest_sha256: cc813c7f7c8b873cf6ac7ab76015849c4a00591259d3abc2e7bfc494992523fd
+    expected_publication_manifest_sha256: ec401c6052d3c339e95f508a24baf4b7c5f74f499518bf71e2faebf27c0f79e7
+    expected_dependence_sha256: cc38200304298af4af8178ed2d35226ea9f75fb5608608fc83a1ee472b8d718b
+    expected_stratified_dependence_sha256: b551d102dd73641908975d207793d15f892655b9ce719faba40f8c390cfcd961
+    expected_influence_sha256: a9270494760fcb4ae501abcf54c50e813ca74d6306d7fbca94d7ef1a1d1730a2
+    expected_case_sha256: 060027cb3475620e45c16a5aed24ec4f94b00c01a7a3ba027a188963d7682dbc
+    expected_topology_sha256: 46e191549a0c768ee947bff4d98f26f38a93ecbce380ab4ff8114d2885dd29f9
+    expected_run_id: D5-LOCAL-20260727T034533Z
+    expected_topology_hash: 7b1ba852f0405944538e558e8df7fe74468789604eb0d90372b1762be3ca036a
+
+aggregation:
+  score_min: 1.0
+  score_max: 5.0
+  low_tail_threshold: 3.0
+  node_dimensions: [D1, D2, D5]
+  node_core_dimensions: [D1, D2]
+  pair_components: [left_node, right_node, D4]
+  D3_role: independent_non_compensatory_safety_gate
+  primary_aggregator: arithmetic_equal_weight
+  softmin_tau: 0.5
+  evidence_quality_multiplication: prohibited
+  D4_sensor_copy: prohibited
+  D5_missing_as_low: prohibited
+  D5_sensor_hard_veto: disabled_top1_below_0.80
+  A_E_grades: disabled_pending_prospective_and_downstream_validation
+  D1_hard_fault_interface: unavailable_not_reconstructed_from_score_threshold
+  measurement_assurance_status: not_available_not_scored
+
+statistics:
+  bootstrap_repetitions: 2000
+  bootstrap_seed: 20260818
+  block_hours: [48, 168, 336]
+  primary_block_hours: 168
+  descriptive_min_blocks: 2
+  inferential_min_blocks: 6
+  weight_draws: 500
+  weight_seed: 20260819
+  dirichlet_concentration: 18.0
+  weight_min: 0.15
+  weight_max: 0.60
+
+figures:
+  width_mm: 183.0
+  max_height_mm: 170.0
+  raster_dpi: 600
+  font_family: Arial
+  body_text_pt: 7.0
+  panel_label_pt: 8.0
+

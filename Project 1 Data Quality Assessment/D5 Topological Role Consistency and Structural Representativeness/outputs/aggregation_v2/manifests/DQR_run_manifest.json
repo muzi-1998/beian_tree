@@ -1,0 +1,523 @@
+{
+  "schema_version": "northbank-dqr-aggregation-v2.0",
+  "contract_version": "2.0.0",
+  "run_id": "DQRAGG-V20-4ae0082cf916",
+  "source_commit_base": "20332355a49ffc6a63524eb09d9eb08a8810383c",
+  "configuration": {
+    "path": "D5 Topological Role Consistency and Structural Representativeness/configs/aggregation_v2.yaml",
+    "sha256": "cfd83e0f52aed1e3c9f2948f272941024998e21353d44cd9f9a64af09c338ac3"
+  },
+  "code_sources": [
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_aggregation/__init__.py",
+      "sha256": "795b7676e8df27f7cac0717b4b422e0c687646a4530cdb33772c3d53655a03ea"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_aggregation/common.py",
+      "sha256": "52fdc928670081c5f4c4add02542cf46db10e95e5c86f673a97704181afcd6f1"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_aggregation/figures.py",
+      "sha256": "a0689552b55e8bc60033332c6099f0ecc13aa05545160e4178df831a637ac32f"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_aggregation/pipeline.py",
+      "sha256": "444b61dad64441b3d6bbe9dde1f40ab485430a7495bf0718bf3ea7b10d1b9244"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_aggregation/reports.py",
+      "sha256": "d3b5d30da0a669d70a9fe96086dee6bfef5d60cb89a88ab968d68941d7bfe502"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_aggregation/runner.py",
+      "sha256": "e72b5979b8f792eb7de1ca4385cd763c9ea0749c53c2c1ea05e770cc390bc460"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_aggregation/validation.py",
+      "sha256": "3ef9c437296a22af596b1038cf71280e95c50b46d298ef241610397a25be4b7e"
+    }
+  ],
+  "input_registry": [
+    {
+      "dimension": "D1",
+      "artifact_role": "path",
+      "relative_path": "D1 Sensor health/outputs/data/D1_main_scores_min.xlsx",
+      "exists": true,
+      "size_bytes": 4816428,
+      "expected_sha256": "83207ca6f818dd309fe36cdb3adfdc9e569ea540fbca5c4acc0e45e8a321923c",
+      "actual_sha256": "83207ca6f818dd309fe36cdb3adfdc9e569ea540fbca5c4acc0e45e8a321923c",
+      "sha256_match": true
+    },
+    {
+      "dimension": "D1",
+      "artifact_role": "manifest_path",
+      "relative_path": "D1 Sensor health/outputs/data/D1_release_manifest.json",
+      "exists": true,
+      "size_bytes": 3367,
+      "expected_sha256": "bf56f0bf414e88a625d2be12cd8e7a07e16e4482477c25ebfd25311abc34b743",
+      "actual_sha256": "bf56f0bf414e88a625d2be12cd8e7a07e16e4482477c25ebfd25311abc34b743",
+      "sha256_match": true
+    },
+    {
+      "dimension": "D2",
+      "artifact_role": "path",
+      "relative_path": "D2 Temporal Continuity & Information Availability/artifacts/data/D2_main_scores_hourly.xlsx",
+      "exists": true,
+      "size_bytes": 6379592,
+      "expected_sha256": "ac051d9a24a17523433c63187cf63f0128efb185325a1ea789633f7fc13d04a6",
+      "actual_sha256": "ac051d9a24a17523433c63187cf63f0128efb185325a1ea789633f7fc13d04a6",
+      "sha256_match": true
+    },
+    {
+      "dimension": "D2",
+      "artifact_role": "manifest_path",
+      "relative_path": "D2 Temporal Continuity & Information Availability/artifacts/D2_release_manifest.json",
+      "exists": true,
+      "size_bytes": 32217,
+      "expected_sha256": "5cc638b1885e5c3d67742f4e0ad9562b3f1d289cac028fda327350340c93afbc",
+      "actual_sha256": "5cc638b1885e5c3d67742f4e0ad9562b3f1d289cac028fda327350340c93afbc",
+      "sha256_match": true
+    },
+    {
+      "dimension": "D3",
+      "artifact_role": "path",
+      "relative_path": "D3 Physical rationality and rate constraints/outputs/data/D3_window_scores.xlsx",
+      "exists": true,
+      "size_bytes": 4895373,
+      "expected_sha256": "c98b59796f10c42377c210a5d5fbdf21d98b0b99e848ad2733a0507d9df1629a",
+      "actual_sha256": "c98b59796f10c42377c210a5d5fbdf21d98b0b99e848ad2733a0507d9df1629a",
+      "sha256_match": true
+    },
+    {
+      "dimension": "D3",
+      "artifact_role": "manifest_path",
+      "relative_path": "D3 Physical rationality and rate constraints/outputs/manifest/run_manifest.json",
+      "exists": true,
+      "size_bytes": 5285,
+      "expected_sha256": "acba3dd3b937f220337f5fee506f403786565620cda1802a776488e92a228010",
+      "actual_sha256": "acba3dd3b937f220337f5fee506f403786565620cda1802a776488e92a228010",
+      "sha256_match": true
+    },
+    {
+      "dimension": "D4",
+      "artifact_role": "path",
+      "relative_path": "D4 Parallel-redundancy Temporal Consistency/outputs/data/D4_main_scores.xlsx",
+      "exists": true,
+      "size_bytes": 9530131,
+      "expected_sha256": "c21738a331d19632cc915e4d29cf692920aeccd346a6c74912f0f52dd4a9ca04",
+      "actual_sha256": "c21738a331d19632cc915e4d29cf692920aeccd346a6c74912f0f52dd4a9ca04",
+      "sha256_match": true
+    },
+    {
+      "dimension": "D4",
+      "artifact_role": "manifest_path",
+      "relative_path": "D4 Parallel-redundancy Temporal Consistency/outputs/data/D4_run_manifest.json",
+      "exists": true,
+      "size_bytes": 3794,
+      "expected_sha256": "8523cf5941017e53d93b313b240347a0737574c18f7746959c1bba963cabb424",
+      "actual_sha256": "8523cf5941017e53d93b313b240347a0737574c18f7746959c1bba963cabb424",
+      "sha256_match": true
+    },
+    {
+      "dimension": "D5",
+      "artifact_role": "path",
+      "relative_path": "D5 Topological Role Consistency and Structural Representativeness/outputs/local/D5_report_interface.parquet",
+      "exists": true,
+      "size_bytes": 1171194,
+      "expected_sha256": "f057e0a8037282fb43a71a94d7043c7bd3de2b4c8fa9865365bcf0427195dbda",
+      "actual_sha256": "f057e0a8037282fb43a71a94d7043c7bd3de2b4c8fa9865365bcf0427195dbda",
+      "sha256_match": true
+    },
+    {
+      "dimension": "D5",
+      "artifact_role": "raw_path",
+      "relative_path": "D5 Topological Role Consistency and Structural Representativeness/outputs/local/D5_main_scores_hourly.parquet",
+      "exists": true,
+      "size_bytes": 7340495,
+      "expected_sha256": "64274562d7139d510dd3780dbd67bd2c2c5913908dbbec8ac7d4bcceb0418cd1",
+      "actual_sha256": "64274562d7139d510dd3780dbd67bd2c2c5913908dbbec8ac7d4bcceb0418cd1",
+      "sha256_match": true
+    },
+    {
+      "dimension": "D5",
+      "artifact_role": "manifest_path",
+      "relative_path": "D5 Topological Role Consistency and Structural Representativeness/outputs/local/D5_run_manifest.json",
+      "exists": true,
+      "size_bytes": 47240,
+      "expected_sha256": "cc813c7f7c8b873cf6ac7ab76015849c4a00591259d3abc2e7bfc494992523fd",
+      "actual_sha256": "cc813c7f7c8b873cf6ac7ab76015849c4a00591259d3abc2e7bfc494992523fd",
+      "sha256_match": true
+    },
+    {
+      "dimension": "D5",
+      "artifact_role": "publication_manifest_path",
+      "relative_path": "D5 Topological Role Consistency and Structural Representativeness/outputs/publication/D5_publication_audit_manifest.json",
+      "exists": true,
+      "size_bytes": 15638,
+      "expected_sha256": "ec401c6052d3c339e95f508a24baf4b7c5f74f499518bf71e2faebf27c0f79e7",
+      "actual_sha256": "ec401c6052d3c339e95f508a24baf4b7c5f74f499518bf71e2faebf27c0f79e7",
+      "sha256_match": true
+    },
+    {
+      "dimension": "D5",
+      "artifact_role": "dependence_path",
+      "relative_path": "D5 Topological Role Consistency and Structural Representativeness/outputs/publication/D5_d4_d5_dependence.parquet",
+      "exists": true,
+      "size_bytes": 8012,
+      "expected_sha256": "cc38200304298af4af8178ed2d35226ea9f75fb5608608fc83a1ee472b8d718b",
+      "actual_sha256": "cc38200304298af4af8178ed2d35226ea9f75fb5608608fc83a1ee472b8d718b",
+      "sha256_match": true
+    },
+    {
+      "dimension": "D5",
+      "artifact_role": "stratified_dependence_path",
+      "relative_path": "D5 Topological Role Consistency and Structural Representativeness/outputs/publication/D5_d4_d5_stratified_rho.parquet",
+      "exists": true,
+      "size_bytes": 12046,
+      "expected_sha256": "b551d102dd73641908975d207793d15f892655b9ce719faba40f8c390cfcd961",
+      "actual_sha256": "b551d102dd73641908975d207793d15f892655b9ce719faba40f8c390cfcd961",
+      "sha256_match": true
+    },
+    {
+      "dimension": "D5",
+      "artifact_role": "influence_path",
+      "relative_path": "D5 Topological Role Consistency and Structural Representativeness/outputs/local/D5_sensor_influence.parquet",
+      "exists": true,
+      "size_bytes": 6011187,
+      "expected_sha256": "a9270494760fcb4ae501abcf54c50e813ca74d6306d7fbca94d7ef1a1d1730a2",
+      "actual_sha256": "a9270494760fcb4ae501abcf54c50e813ca74d6306d7fbca94d7ef1a1d1730a2",
+      "sha256_match": true
+    },
+    {
+      "dimension": "D5",
+      "artifact_role": "case_path",
+      "relative_path": "D5 Topological Role Consistency and Structural Representativeness/outputs/local/D5_case_study_exports.xlsx",
+      "exists": true,
+      "size_bytes": 44198,
+      "expected_sha256": "060027cb3475620e45c16a5aed24ec4f94b00c01a7a3ba027a188963d7682dbc",
+      "actual_sha256": "060027cb3475620e45c16a5aed24ec4f94b00c01a7a3ba027a188963d7682dbc",
+      "sha256_match": true
+    },
+    {
+      "dimension": "D5",
+      "artifact_role": "topology_path",
+      "relative_path": "D5 Topological Role Consistency and Structural Representativeness/outputs/local/D5_topology_registry.yaml",
+      "exists": true,
+      "size_bytes": 2838,
+      "expected_sha256": "46e191549a0c768ee947bff4d98f26f38a93ecbce380ab4ff8114d2885dd29f9",
+      "actual_sha256": "46e191549a0c768ee947bff4d98f26f38a93ecbce380ab4ff8114d2885dd29f9",
+      "sha256_match": true
+    }
+  ],
+  "contracts": [
+    {
+      "check_id": "frozen_input_hashes",
+      "passed": true,
+      "interpretation": "all declared D1-D5 artifacts match the frozen SHA-256 registry"
+    },
+    {
+      "check_id": "D3_not_numerically_averaged",
+      "passed": true,
+      "interpretation": "D3 has diagnostic_score_1to5 and gate status only"
+    },
+    {
+      "check_id": "D4_pair_level_only",
+      "passed": true,
+      "interpretation": "native D4 is not copied into sensor rows"
+    },
+    {
+      "check_id": "D5_missing_not_low",
+      "passed": true,
+      "interpretation": "ineligible or missing D5 evidence remains NA"
+    },
+    {
+      "check_id": "node_score_range",
+      "passed": true,
+      "interpretation": "availability-aware node scores remain on the frozen 1-5 scale"
+    },
+    {
+      "check_id": "pair_score_range",
+      "passed": true,
+      "interpretation": "availability-aware pair scores remain on the frozen 1-5 scale"
+    },
+    {
+      "check_id": "node_evidence_range",
+      "passed": true,
+      "interpretation": "node evidence completeness remains in [0,1]"
+    },
+    {
+      "check_id": "pair_evidence_range",
+      "passed": true,
+      "interpretation": "pair evidence completeness remains in [0,1]"
+    },
+    {
+      "check_id": "complete_case_invariance",
+      "passed": true,
+      "interpretation": "Q_full equals Q_available on identical complete-evidence rows"
+    },
+    {
+      "check_id": "quality_not_multiplied_by_evidence",
+      "passed": true,
+      "interpretation": "Q and E remain separate published variables"
+    },
+    {
+      "check_id": "D5_hard_veto_disabled",
+      "passed": true,
+      "interpretation": "D5 report evidence cannot trigger a sensor hard Veto"
+    },
+    {
+      "check_id": "A_E_grades_disabled",
+      "passed": true,
+      "interpretation": "grades await prospective and downstream criterion validation"
+    },
+    {
+      "check_id": "strict_release_fail_closed",
+      "passed": true,
+      "interpretation": "D1 lacks a distinct validated hard-fault interface"
+    }
+  ],
+  "summary": {
+    "node_rows": 86016,
+    "pair_rows": 42847,
+    "node_coverage": {
+      "basic": 46004,
+      "full": 39606,
+      "limited": 406
+    },
+    "pair_coverage": {
+      "basic": 22583,
+      "full": 19774,
+      "limited": 490
+    },
+    "node_Q_full_nonnull": 39606,
+    "node_Q_available_nonnull": 85610,
+    "pair_Q_full_nonnull": 19774,
+    "pair_Q_available_nonnull": 42357,
+    "node_Q_full_mean": 4.251559612584058,
+    "node_Q_available_mean": 4.422449122545637,
+    "pair_Q_full_mean": 3.9045172017391687,
+    "pair_Q_available_mean": 4.011964184827522,
+    "D3_gate_status_node": {
+      "Pass": 68958,
+      "Warn": 16548,
+      "NotEvaluated": 510
+    },
+    "release_status": "retrospective_scientific_aggregation_ready_with_prespecified_pending_items",
+    "deployment_status": "not_released"
+  },
+  "validation_status": [
+    {
+      "validation_id": "V3-controlled-composite-discrimination",
+      "status": "pending_not_executed",
+      "reason": "no unified frozen event-truth matrix across native node and pair evidence",
+      "blocking_effect": "candidate aggregators remain sensitivity-only"
+    },
+    {
+      "validation_id": "V7-prospective-temporal-holdout",
+      "status": "pending_not_executed_inputs_not_scored_by_frozen_D1_D5",
+      "reason": "2026-04-14 to 2026-07-31 has not been scored by the frozen D1-D5 stack",
+      "blocking_effect": "no prospective effectiveness or A-E cutpoint claim"
+    },
+    {
+      "validation_id": "V8-downstream-fitness-for-use",
+      "status": "pending_not_executed",
+      "reason": "no frozen SUMO, EnKF or prediction endpoint bundle is available in this release",
+      "blocking_effect": "no optimized weights or criterion-referenced grades"
+    },
+    {
+      "validation_id": "D1-release-hard-fault-interface",
+      "status": "pending_interface",
+      "reason": "D1 release exports score and legacy score>=3 tag, not a distinct validated hard-fault field",
+      "blocking_effect": "Strict eligibility is a contract candidate, not an automated final release"
+    },
+    {
+      "validation_id": "measurement-assurance",
+      "status": "not_available_not_scored",
+      "reason": "maintenance and metrological records are not available",
+      "blocking_effect": "excluded rather than assigned a neutral or low value"
+    }
+  ],
+  "figure_qa_passed": true,
+  "artifacts": [
+    {
+      "relative_path": "data/DQR_coverage_monthly.parquet",
+      "size_bytes": 18694,
+      "sha256": "79899abd7d49056a5233f0da4e33913b07fbbb67b4da0c0114783df73b412090"
+    },
+    {
+      "relative_path": "data/DQR_dimension_long.parquet",
+      "size_bytes": 10219628,
+      "sha256": "ec6d95b94bc781b50c3640da240f1b7a93808b748c8c14d32ad440afd61b90cc"
+    },
+    {
+      "relative_path": "data/DQR_node_hourly.parquet",
+      "size_bytes": 4472523,
+      "sha256": "864b62728774ad3553f21f23a59fcc6f31d6778c0370f080e5d0b2398a6d636f"
+    },
+    {
+      "relative_path": "data/DQR_pair_hourly.parquet",
+      "size_bytes": 5194123,
+      "sha256": "291a296c89e25b1a5eca48e68f31e023f57193d7e97d4e61ceb3d8bc36e3b66b"
+    },
+    {
+      "relative_path": "figures/DQR_Fig01_hierarchical_contract.pdf",
+      "size_bytes": 59233,
+      "sha256": "99a219db550e97e3bd8678c3f75c3f534d14b74321965b9bb654189d5c570244"
+    },
+    {
+      "relative_path": "figures/DQR_Fig01_hierarchical_contract.png",
+      "size_bytes": 425780,
+      "sha256": "5ebd736e7be74f9147c3205b3fa5afaee5c888213d099427cca11f0e32879c11"
+    },
+    {
+      "relative_path": "figures/DQR_Fig01_hierarchical_contract.svg",
+      "size_bytes": 54360,
+      "sha256": "4086c942eebdc012bc4a2f731a03770ae49b6ff423ba3c054e74e52d8a3dd29c"
+    },
+    {
+      "relative_path": "figures/DQR_Fig01_hierarchical_contract.tiff",
+      "size_bytes": 1079146,
+      "sha256": "ea511c616c93f2501c31eaf0e2ceb0311d7d853d4b1b9399c83bc5f54dd58afb"
+    },
+    {
+      "relative_path": "figures/DQR_Fig02_evidence_availability.pdf",
+      "size_bytes": 52221,
+      "sha256": "df7c79314112f0b94628828719fc051464d8dfe94b94a9cf01c9b288e48c85bd"
+    },
+    {
+      "relative_path": "figures/DQR_Fig02_evidence_availability.png",
+      "size_bytes": 513490,
+      "sha256": "1bb8237475809428576c84e02264e989e154576d6cfae718fe25a035a40a40be"
+    },
+    {
+      "relative_path": "figures/DQR_Fig02_evidence_availability.svg",
+      "size_bytes": 57400,
+      "sha256": "51d248bb7c7a8250525739a78b8d6454239bfe5fcfaf35ac215fdfea02565943"
+    },
+    {
+      "relative_path": "figures/DQR_Fig02_evidence_availability.tiff",
+      "size_bytes": 1388846,
+      "sha256": "5d7fab78e225bee5aa92976b5357de771a786f6f78b8fe9ff9a15efa5874ee42"
+    },
+    {
+      "relative_path": "figures/DQR_Fig03_construct_complementarity.pdf",
+      "size_bytes": 53451,
+      "sha256": "80775b3c7a80fa57b773ecbe58d1ce658dcaf029c08135b4c48c5ccbe25778f9"
+    },
+    {
+      "relative_path": "figures/DQR_Fig03_construct_complementarity.png",
+      "size_bytes": 496110,
+      "sha256": "0a38a1efc18841f739adf7b4b50a4d4987351452573766c0f67eb9e7606de119"
+    },
+    {
+      "relative_path": "figures/DQR_Fig03_construct_complementarity.svg",
+      "size_bytes": 53066,
+      "sha256": "4782653da20f4fe009f05d9524a65a1f5c39d247287215e379bd0e2fbd676477"
+    },
+    {
+      "relative_path": "figures/DQR_Fig03_construct_complementarity.tiff",
+      "size_bytes": 2193070,
+      "sha256": "57ba06b06fb38faca1347950b5d7b5d9961084800da0e3ac2b41f6523de2726f"
+    },
+    {
+      "relative_path": "figures/DQR_Fig04_aggregation_robustness.pdf",
+      "size_bytes": 63786,
+      "sha256": "de57c28078812fb49ce866e6011e50d1fc57c2f324bcd860fbb184fe4afccbbb"
+    },
+    {
+      "relative_path": "figures/DQR_Fig04_aggregation_robustness.png",
+      "size_bytes": 745099,
+      "sha256": "30b518d6b49497147039f1e76e089b319ff082ad0b00912bb9e71a573231d056"
+    },
+    {
+      "relative_path": "figures/DQR_Fig04_aggregation_robustness.svg",
+      "size_bytes": 62825,
+      "sha256": "5fa40d53f16934256dbd23b7168b35826fd5a9acffa69d7beae5e7033e8b7ce7"
+    },
+    {
+      "relative_path": "figures/DQR_Fig04_aggregation_robustness.tiff",
+      "size_bytes": 1601798,
+      "sha256": "f44fbdb158a2e3fe657f432a8fb0604fd266592417a491f8c0395cc64c0d4a5e"
+    },
+    {
+      "relative_path": "figures/DQR_Fig05_representative_cases.pdf",
+      "size_bytes": 52227,
+      "sha256": "e373023fb7365992c8abdbab7863395805593bfd42b7c98fafcf3f66f025029e"
+    },
+    {
+      "relative_path": "figures/DQR_Fig05_representative_cases.png",
+      "size_bytes": 1044322,
+      "sha256": "04ad6640432ec6b006cd13e3e6c4d42d30ed36727a412fabef3c9a6be87b9f15"
+    },
+    {
+      "relative_path": "figures/DQR_Fig05_representative_cases.svg",
+      "size_bytes": 88319,
+      "sha256": "ced87dad951745a8e7c669886c22d952c14f2228ef779112d1d10ba552fe4aef"
+    },
+    {
+      "relative_path": "figures/DQR_Fig05_representative_cases.tiff",
+      "size_bytes": 2120454,
+      "sha256": "e6f92afafe348937b167c3d29148cd43c7ed672005f2e5c6c1c9cc801225a01f"
+    },
+    {
+      "relative_path": "reports/DQR_aggregation_directory_guide.md",
+      "size_bytes": 1484,
+      "sha256": "4891c147efe57fad98b9da335e73679ce948eed733a86c6ca313aace0f0644c5"
+    },
+    {
+      "relative_path": "reports/DQR_aggregation_scientific_report.md",
+      "size_bytes": 4640,
+      "sha256": "f67ad52d1073838737d9fac4c2922217aa23e94574e069f7f88848c3f047d242"
+    },
+    {
+      "relative_path": "reports/DQR_figure_captions.md",
+      "size_bytes": 1771,
+      "sha256": "6f9920b1d496b326f4409f65371cac4f7c7663e9ec952ee8d8f5e31b749de3f9"
+    },
+    {
+      "relative_path": "source_data/DQR_Fig01_source_data.xlsx",
+      "size_bytes": 3563647,
+      "sha256": "ba4e6069158af623b1a879f64c9f291ac96965cb498e3215c5036db13029bece"
+    },
+    {
+      "relative_path": "source_data/DQR_Fig02_source_data.xlsx",
+      "size_bytes": 8017,
+      "sha256": "f9df4b765dc8effab836561499a69d7814a4ab1b80667ca72e8a5f18109602b4"
+    },
+    {
+      "relative_path": "source_data/DQR_Fig03_source_data.xlsx",
+      "size_bytes": 10566,
+      "sha256": "637539cfbc255323b4c1a434e2361badb018f527cfd5673047b2b3e045e6b392"
+    },
+    {
+      "relative_path": "source_data/DQR_Fig04_source_data.xlsx",
+      "size_bytes": 149376,
+      "sha256": "b19299e5c5ae47f358c4078f627b2edba370682498b7099858814cb31896d310"
+    },
+    {
+      "relative_path": "source_data/DQR_Fig05_source_data.xlsx",
+      "size_bytes": 37477,
+      "sha256": "e84b5db8f090f399a3ca4cefe54d5ab828c4961ef171a3c779d0ed8cbafc3e5b"
+    },
+    {
+      "relative_path": "validation/DQR_aggregation_validation.xlsx",
+      "size_bytes": 164655,
+      "sha256": "84c1422295217ce5a008d5ee89accf7ed1dc3b9d34b7cb9d7b4671970c1f66e1"
+    },
+    {
+      "relative_path": "validation/DQR_contract_checks.json",
+      "size_bytes": 2570,
+      "sha256": "5021b479c4c5170a65f0333979d918f357da5796c5827b8740f48aa767e4712e"
+    },
+    {
+      "relative_path": "validation/DQR_downstream_validation.xlsx",
+      "size_bytes": 6295,
+      "sha256": "39b64e3a8be255d9627ea6cd1666c6ee7cef33ba4180cfe75b39404cb83a02bd"
+    },
+    {
+      "relative_path": "validation/DQR_figure_qa.json",
+      "size_bytes": 5025,
+      "sha256": "f9d75ade7ad227acb09816c50fb342eb05a830912f382f43e7a3d9b391c3f768"
+    }
+  ]
+}

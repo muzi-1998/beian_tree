@@ -75,6 +75,23 @@ python -m pytest ".\D5 Topological Role Consistency and Structural Representativ
 The report and directory guide are generated from the current manifest and
 artifact inventory. Every project rerun updates both documents.
 
+## D1-D5 hierarchical aggregation
+
+The frozen aggregation contract is implemented inside this project as a
+separate integration layer. It does not overwrite native D1-D5 artifacts.
+
+```powershell
+python ".\D5 Topological Role Consistency and Structural Representativeness\scripts\run_dqr_aggregation.py"
+python ".\D5 Topological Role Consistency and Structural Representativeness\scripts\verify_dqr_aggregation.py"
+```
+
+The release writes dimension-long, node-hour, native pair-hour and monthly
+coverage tables to `outputs/aggregation_v2/`. Node and pair quality are
+reported separately from evidence completeness; D3 remains a safety gate,
+D4 remains pair-level, and missing D5 evidence remains `NaN`. Prospective and
+downstream validation figures are intentionally pending until their frozen
+input bundles exist.
+
 ## Figure bundle
 
 The current nine-figure bundle follows a fixed 183 mm Nature-style contract.

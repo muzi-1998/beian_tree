@@ -1,0 +1,77 @@
+{
+  "run_id": "DQRAGG-V20-4ae0082cf916",
+  "passed": true,
+  "checks": [
+    {
+      "check_id": "frozen_input_hashes",
+      "passed": true,
+      "interpretation": "all declared D1-D5 artifacts match the frozen SHA-256 registry"
+    },
+    {
+      "check_id": "D3_not_numerically_averaged",
+      "passed": true,
+      "interpretation": "D3 has diagnostic_score_1to5 and gate status only"
+    },
+    {
+      "check_id": "D4_pair_level_only",
+      "passed": true,
+      "interpretation": "native D4 is not copied into sensor rows"
+    },
+    {
+      "check_id": "D5_missing_not_low",
+      "passed": true,
+      "interpretation": "ineligible or missing D5 evidence remains NA"
+    },
+    {
+      "check_id": "node_score_range",
+      "passed": true,
+      "interpretation": "availability-aware node scores remain on the frozen 1-5 scale"
+    },
+    {
+      "check_id": "pair_score_range",
+      "passed": true,
+      "interpretation": "availability-aware pair scores remain on the frozen 1-5 scale"
+    },
+    {
+      "check_id": "node_evidence_range",
+      "passed": true,
+      "interpretation": "node evidence completeness remains in [0,1]"
+    },
+    {
+      "check_id": "pair_evidence_range",
+      "passed": true,
+      "interpretation": "pair evidence completeness remains in [0,1]"
+    },
+    {
+      "check_id": "complete_case_invariance",
+      "passed": true,
+      "interpretation": "Q_full equals Q_available on identical complete-evidence rows"
+    },
+    {
+      "check_id": "quality_not_multiplied_by_evidence",
+      "passed": true,
+      "interpretation": "Q and E remain separate published variables"
+    },
+    {
+      "check_id": "D5_hard_veto_disabled",
+      "passed": true,
+      "interpretation": "D5 report evidence cannot trigger a sensor hard Veto"
+    },
+    {
+      "check_id": "A_E_grades_disabled",
+      "passed": true,
+      "interpretation": "grades await prospective and downstream criterion validation"
+    },
+    {
+      "check_id": "strict_release_fail_closed",
+      "passed": true,
+      "interpretation": "D1 lacks a distinct validated hard-fault interface"
+    }
+  ],
+  "table_hashes": {
+    "dimension_long": "726880c02873d8352a3995e65bf6d05c061b5b3572e5fcb49cfae83f8ff291d2",
+    "node_hourly": "1e851604ed6128dba85f0e1dbffe6501e9392ebd6609f4cb6ca95f585b65f393",
+    "pair_hourly": "b6d9e12c6e23b59b627fd06782dd5893a77cb23665b734fcf631178a39a5bae8",
+    "coverage_monthly": "5830df9a63713c28aa7351bc0076e352d22a4ff08a215728d801542b2d55da86"
+  }
+}

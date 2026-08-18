@@ -1,0 +1,191 @@
+{
+  "passed": true,
+  "contract": {
+    "width_mm": 183.0,
+    "max_height_mm": 170.0,
+    "raster_dpi": 600,
+    "font": "Arial",
+    "formats": [
+      "png",
+      "pdf",
+      "svg",
+      "tiff"
+    ]
+  },
+  "figures": [
+    {
+      "figure": "DQR_Fig01_hierarchical_contract",
+      "format": "png",
+      "exists": true,
+      "size_bytes": 425780,
+      "width_px": 4322,
+      "height_px": 2456,
+      "nonblank_std": 39.55894221367596,
+      "width_contract_passed": true,
+      "nonblank_passed": true
+    },
+    {
+      "figure": "DQR_Fig01_hierarchical_contract",
+      "format": "pdf",
+      "exists": true,
+      "size_bytes": 59233,
+      "width_mm": 183.00000559488933,
+      "height_mm": 104.00000423855252,
+      "size_contract_passed": true
+    },
+    {
+      "figure": "DQR_Fig01_hierarchical_contract",
+      "format": "svg",
+      "exists": true,
+      "size_bytes": 54360,
+      "arial_declared": true,
+      "editable_text_present": true
+    },
+    {
+      "figure": "DQR_Fig01_hierarchical_contract",
+      "format": "tiff",
+      "exists": true,
+      "size_bytes": 1079146
+    },
+    {
+      "figure": "DQR_Fig02_evidence_availability",
+      "format": "png",
+      "exists": true,
+      "size_bytes": 513490,
+      "width_px": 4322,
+      "height_px": 3637,
+      "nonblank_std": 50.94074379823351,
+      "width_contract_passed": true,
+      "nonblank_passed": true
+    },
+    {
+      "figure": "DQR_Fig02_evidence_availability",
+      "format": "pdf",
+      "exists": true,
+      "size_bytes": 52221,
+      "width_mm": 183.00000559488933,
+      "height_mm": 153.99999923706054,
+      "size_contract_passed": true
+    },
+    {
+      "figure": "DQR_Fig02_evidence_availability",
+      "format": "svg",
+      "exists": true,
+      "size_bytes": 57400,
+      "arial_declared": true,
+      "editable_text_present": true
+    },
+    {
+      "figure": "DQR_Fig02_evidence_availability",
+      "format": "tiff",
+      "exists": true,
+      "size_bytes": 1388846
+    },
+    {
+      "figure": "DQR_Fig03_construct_complementarity",
+      "format": "png",
+      "exists": true,
+      "size_bytes": 496110,
+      "width_px": 4322,
+      "height_px": 3732,
+      "nonblank_std": 65.62541447045754,
+      "width_contract_passed": true,
+      "nonblank_passed": true
+    },
+    {
+      "figure": "DQR_Fig03_construct_complementarity",
+      "format": "pdf",
+      "exists": true,
+      "size_bytes": 53451,
+      "width_mm": 183.00000559488933,
+      "height_mm": 158.0000027126736,
+      "size_contract_passed": true
+    },
+    {
+      "figure": "DQR_Fig03_construct_complementarity",
+      "format": "svg",
+      "exists": true,
+      "size_bytes": 53066,
+      "arial_declared": true,
+      "editable_text_present": true
+    },
+    {
+      "figure": "DQR_Fig03_construct_complementarity",
+      "format": "tiff",
+      "exists": true,
+      "size_bytes": 2193070
+    },
+    {
+      "figure": "DQR_Fig04_aggregation_robustness",
+      "format": "png",
+      "exists": true,
+      "size_bytes": 745099,
+      "width_px": 4322,
+      "height_px": 3566,
+      "nonblank_std": 41.698217615906096,
+      "width_contract_passed": true,
+      "nonblank_passed": true
+    },
+    {
+      "figure": "DQR_Fig04_aggregation_robustness",
+      "format": "pdf",
+      "exists": true,
+      "size_bytes": 63786,
+      "width_mm": 183.00000559488933,
+      "height_mm": 150.99999932183158,
+      "size_contract_passed": true
+    },
+    {
+      "figure": "DQR_Fig04_aggregation_robustness",
+      "format": "svg",
+      "exists": true,
+      "size_bytes": 62825,
+      "arial_declared": true,
+      "editable_text_present": true
+    },
+    {
+      "figure": "DQR_Fig04_aggregation_robustness",
+      "format": "tiff",
+      "exists": true,
+      "size_bytes": 1601798
+    },
+    {
+      "figure": "DQR_Fig05_representative_cases",
+      "format": "png",
+      "exists": true,
+      "size_bytes": 1044322,
+      "width_px": 4322,
+      "height_px": 3826,
+      "nonblank_std": 42.52613636679607,
+      "width_contract_passed": true,
+      "nonblank_passed": true
+    },
+    {
+      "figure": "DQR_Fig05_representative_cases",
+      "format": "pdf",
+      "exists": true,
+      "size_bytes": 52227,
+      "width_mm": 183.00000559488933,
+      "height_mm": 161.99999542236327,
+      "size_contract_passed": true
+    },
+    {
+      "figure": "DQR_Fig05_representative_cases",
+      "format": "svg",
+      "exists": true,
+      "size_bytes": 88319,
+      "arial_declared": true,
+      "editable_text_present": true
+    },
+    {
+      "figure": "DQR_Fig05_representative_cases",
+      "format": "tiff",
+      "exists": true,
+      "size_bytes": 2120454
+    }
+  ],
+  "pending_figures": {
+    "DQR_Fig06_prospective_validation": "pending_unscored_future_holdout",
+    "DQR_Fig07_downstream_validation": "pending_no_frozen_endpoint_bundle"
+  }
+}
