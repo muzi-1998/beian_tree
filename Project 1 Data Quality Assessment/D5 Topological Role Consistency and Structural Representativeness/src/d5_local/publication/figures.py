@@ -61,6 +61,8 @@ class D5PublicationFigureBuilder:
         outputs = []
         outputs.extend(self._validation_coverage())
         outputs.extend(self._complementarity())
+        outputs.extend(self._dimension_availability())
+        outputs.extend(self._target_support_robustness())
         return outputs
 
     @staticmethod
@@ -75,7 +77,12 @@ class D5PublicationFigureBuilder:
             ha="right",
             va="bottom",
             clip_on=False,
-            bbox={"facecolor": "white", "edgecolor": "none", "alpha": 0.88, "pad": 0.1},
+            bbox={
+                "facecolor": "white",
+                "edgecolor": "none",
+                "alpha": 0.88,
+                "pad": 0.1,
+            },
         )
 
     @staticmethod
@@ -140,19 +147,26 @@ class D5PublicationFigureBuilder:
             ax.errorbar(
                 x,
                 frame["estimate"],
-                yerr=[frame["estimate"] - frame["ci95_low"], frame["ci95_high"] - frame["estimate"]],
+                yerr=[
+                    frame["estimate"] - frame["ci95_low"],
+                    frame["ci95_high"] - frame["estimate"],
+                ],
                 fmt=markers[metric],
                 ms=4.2,
                 capsize=2,
                 lw=0.9,
-                color=COLORS["full_reference"] if metric == "AUROC" else COLORS[metric],
+                color=(
+                    COLORS["full_reference"]
+                    if metric == "AUROC"
+                    else COLORS[metric]
+                ),
                 label=metric,
             )
         ax.axhline(0.80, color="#8A8A8A", ls="--", lw=0.8)
         ax.set_xticks(np.arange(len(variants)), labels, rotation=18, ha="right")
         ax.set_ylim(0.55, 1.02)
-        ax.set_ylabel("Validation metric")
-        ax.set_title("Future-month structural refits")
+        ax.set_ylabel("Controlled-challenge metric")
+        ax.set_title("Future-month challenge discrimination")
         ax.legend(loc="lower left", ncol=3)
         self._boxed(ax)
         self._panel_label(ax, "a")
@@ -168,7 +182,11 @@ class D5PublicationFigureBuilder:
         scenarios = ["channel_swap", "role_substitution", "role_offset"]
         scenario_labels = ["Channel swap", "Role substitution", "Role offset"]
         for index, metric in enumerate(["Top1", "Top2", "MRR"]):
-            metric_frame = frame[frame["metric"].eq(metric)].set_index("scenario").loc[scenarios]
+            metric_frame = (
+                frame[frame["metric"].eq(metric)]
+                .set_index("scenario")
+                .loc[scenarios]
+            )
             x = np.arange(len(scenarios)) + (index - 1) * 0.22
             ax.errorbar(
                 x,
@@ -185,19 +203,42 @@ class D5PublicationFigureBuilder:
                 label=metric,
             )
         ax.axhline(0.80, color="#8A8A8A", ls="--", lw=0.8)
-        ax.set_xticks(np.arange(len(scenarios)), scenario_labels, rotation=16, ha="right")
+        ax.set_xticks(
+            np.arange(len(scenarios)), scenario_labels, rotation=16, ha="right"
+        )
         ax.set_ylim(0.25, 1.02)
-        ax.set_ylabel("Localization performance")
-        ax.set_title("Detection and localization boundary")
+        ax.set_ylabel("Controlled localization metric")
+        ax.set_title("Controlled perturbation localization")
         ax.legend(loc="lower left", ncol=3)
         self._boxed(ax)
         self._panel_label(ax, "b")
 
         ax = axes[1, 0]
         x = np.arange(len(monthly))
-        ax.plot(x, monthly["raw_score_coverage"], marker="o", ms=3.5, color=COLORS["raw"], label="Raw score")
-        ax.plot(x, monthly["report_score_coverage"], marker="s", ms=3.5, color=COLORS["report"], label="Report score")
-        ax.fill_between(x, 0, monthly["L1_rate"], color="#E76F51", alpha=0.16, label="L1 support")
+        ax.plot(
+            x,
+            monthly["raw_score_coverage"],
+            marker="o",
+            ms=3.5,
+            color=COLORS["raw"],
+            label="Raw score",
+        )
+        ax.plot(
+            x,
+            monthly["report_score_coverage"],
+            marker="s",
+            ms=3.5,
+            color=COLORS["report"],
+            label="Report score",
+        )
+        ax.fill_between(
+            x,
+            0,
+            monthly["L1_rate"],
+            color="#E76F51",
+            alpha=0.16,
+            label="L1 support",
+        )
         ax.set_xticks(x, monthly["month"].str.replace("-", "\n", regex=False))
         ax.set_ylim(0, 1.02)
         ax.set_ylabel("Fraction of sensor-hours")
@@ -208,7 +249,11 @@ class D5PublicationFigureBuilder:
         self._panel_label(ax, "c")
 
         ax = axes[1, 1]
-        risk_colors = {"top1": COLORS["Top1"], "top2": COLORS["Top2"], "mrr": COLORS["MRR"]}
+        risk_colors = {
+            "top1": COLORS["Top1"],
+            "top2": COLORS["Top2"],
+            "mrr": COLORS["MRR"],
+        }
         for metric, marker in [("top1", "o"), ("top2", "s"), ("mrr", "^")]:
             ax.plot(
                 risk["retained_fraction"],
@@ -221,8 +266,8 @@ class D5PublicationFigureBuilder:
         ax.axhline(0.80, color="#8A8A8A", ls="--", lw=0.8)
         ax.set_xlim(1.02, 0.35)
         ax.set_ylim(0.45, 1.02)
-        ax.set_xlabel("Retained controlled-injection trials")
-        ax.set_ylabel("Localization performance")
+        ax.set_xlabel("Retained controlled perturbations")
+        ax.set_ylabel("Controlled localization metric")
         ax.set_title("Confidence-risk coverage")
         ax.legend(loc="lower right", ncol=3)
         self._boxed(ax)
@@ -230,81 +275,324 @@ class D5PublicationFigureBuilder:
         return self._save(fig, "FigD5_6_validation_coverage")
 
     def _complementarity(self) -> list[Path]:
-        dependence = pd.read_parquet(self.audit_root / "D5_d4_d5_dependence.parquet")
-        composite = pd.read_parquet(self.audit_root / "D5_d4_d5_composite.parquet")
-        influence = pd.read_parquet(self.audit_root / "D5_target_influence.parquet")
-        support = pd.read_parquet(self.audit_root / "D5_support_sensitivity.parquet")
+        dependence = pd.read_parquet(
+            self.audit_root / "D5_d4_d5_dependence.parquet"
+        )
+        stratified = pd.read_parquet(
+            self.audit_root / "D5_d4_d5_stratified_rho.parquet"
+        )
+        composite = pd.read_parquet(
+            self.audit_root / "D5_d4_d5_composite.parquet"
+        )
         source = self.audit_root / "FigD5_7_D4_D5_complementarity_source_data.xlsx"
         with pd.ExcelWriter(source, engine="openpyxl") as writer:
             dependence.to_excel(writer, sheet_name="dependence", index=False)
+            stratified.to_excel(writer, sheet_name="stratified_rho", index=False)
             composite.to_excel(writer, sheet_name="composite_ablation", index=False)
-            influence.to_excel(writer, sheet_name="target_influence", index=False)
-            support.to_excel(writer, sheet_name="support_sensitivity", index=False)
 
-        fig, axes = plt.subplots(2, 2, figsize=(7.2, 5.45), constrained_layout=True)
+        fig, axes = plt.subplots(2, 2, figsize=(7.2, 6.2), constrained_layout=True)
         ax = axes[0, 0]
-        metrics = ["Spearman_rho", "Kendall_tau", "partial_rank_correlation", "low_score_Jaccard"]
-        labels = ["Spearman", "Kendall", "Partial rank", "Low-score\nJaccard"]
-        frame = dependence.set_index("metric").loc[metrics]
-        x = np.arange(len(frame))
-        lower = (frame["estimate"] - frame["ci95_low"]).fillna(0)
-        upper = (frame["ci95_high"] - frame["estimate"]).fillna(0)
-        ax.errorbar(x, frame["estimate"], yerr=[lower, upper], fmt="o", color="#168AAD", capsize=2, lw=0.9)
+        metrics = ["Spearman_rho", "partial_rank_correlation", "low_score_Jaccard"]
+        labels = ["Spearman", "Partial rank", "Low-tail\nJaccard"]
+        scopes = ["D5_report_score", "D5_raw_calculable"]
+        for index, (scope, label, color) in enumerate(
+            zip(scopes, ["Report score", "Raw calculable"], [COLORS["report"], COLORS["raw"]])
+        ):
+            frame = (
+                dependence[dependence["overlap_scope"].eq(scope)]
+                .set_index("metric")
+                .loc[metrics]
+            )
+            positions = np.arange(len(metrics)) + (index - 0.5) * 0.22
+            lower = (frame["estimate"] - frame["ci95_low"]).fillna(0)
+            upper = (frame["ci95_high"] - frame["estimate"]).fillna(0)
+            ax.errorbar(
+                positions,
+                frame["estimate"],
+                yerr=[lower, upper],
+                fmt=["o", "s"][index],
+                color=color,
+                capsize=2,
+                lw=0.9,
+                ms=4,
+                label=label,
+            )
         ax.axhline(0, color="#8A8A8A", lw=0.7)
-        ax.set_xticks(x, labels)
-        ax.set_ylim(-0.05, max(0.45, frame["estimate"].max() + 0.12))
+        ax.set_xticks(np.arange(len(metrics)), labels)
+        ax.set_ylim(-0.10, 0.55)
         ax.set_ylabel("Association estimate")
-        ax.set_title("D4-D5 relatedness")
+        ax.set_title("Overall D4-D5 overlap")
+        ax.legend(loc="upper left")
         self._boxed(ax)
         self._panel_label(ax, "a")
 
-        ax = axes[0, 1]
+        self._plot_stratified_rho(
+            axes[0, 1], stratified, ["analyte", "pair"], "Analyte and pair strata"
+        )
+        self._panel_label(axes[0, 1], "b")
+        self._plot_stratified_rho(
+            axes[1, 0], stratified, ["regime", "month"], "Regime and month strata"
+        )
+        self._panel_label(axes[1, 0], "c")
+
+        ax = axes[1, 1]
         y = np.arange(len(composite))
-        ax.scatter(composite["spearman_vs_full"], y, color="#2A9D8F", s=30, label="Rank agreement")
+        ax.scatter(composite["spearman_vs_full"], y, color="#2A9D8F", s=30)
         for ypos, row in zip(y, composite.itertuples(index=False)):
-            ax.plot([0, row.spearman_vs_full], [ypos, ypos], color="#A8B0B8", lw=0.8, zorder=0)
-            ax.text(row.spearman_vs_full + 0.015, ypos, f"P90 |Δ|={row.p90_absolute_change:.2f}", va="center", fontsize=6.5)
+            ax.plot(
+                [0, row.spearman_vs_full],
+                [ypos, ypos],
+                color="#A8B0B8",
+                lw=0.8,
+                zorder=0,
+            )
+            ax.text(
+                0.03,
+                ypos,
+                f"P90 absolute change = {row.p90_absolute_change:.2f}",
+                va="center",
+                fontsize=6.2,
+                bbox={"facecolor": "white", "edgecolor": "none", "alpha": 0.88, "pad": 0.2},
+            )
         ax.set_yticks(y, composite["variant"].str.replace("_", " ", regex=False))
         ax.set_xlim(0, 1.08)
         ax.set_xlabel("Spearman correlation with full pair score")
-        ax.set_title("Composite leave-one-dimension sensitivity")
+        ax.set_title("Leave-one-dimension sensitivity")
         self._boxed(ax)
-        self._panel_label(ax, "b")
+        self._panel_label(ax, "d")
+        return self._save(fig, "FigD5_7_D4_D5_complementarity")
 
-        ax = axes[1, 0]
+    def _plot_stratified_rho(
+        self,
+        ax: plt.Axes,
+        stratified: pd.DataFrame,
+        stratum_types: list[str],
+        title: str,
+    ) -> None:
+        frame = stratified[
+            stratified["stratum_type"].isin(stratum_types)
+            & stratified["estimable"]
+        ].copy()
+        frame["display"] = (
+            frame["stratum_type"].str.title()
+            + ": "
+            + frame["stratum_value"].astype(str)
+        )
+        order = frame[["stratum_type", "stratum_value", "display"]].drop_duplicates()
+        order["type_order"] = order["stratum_type"].map(
+            {value: index for index, value in enumerate(stratum_types)}
+        )
+        order = order.sort_values(["type_order", "stratum_value"])
+        labels = order["display"].tolist()
+        y_positions = {label: index for index, label in enumerate(labels)}
+        for scope, label, color, marker, offset in [
+            ("D5_report_score", "Report score", COLORS["report"], "o", -0.12),
+            ("D5_raw_calculable", "Raw calculable", COLORS["raw"], "s", 0.12),
+        ]:
+            selected = frame[frame["overlap_scope"].eq(scope)]
+            for row in selected.itertuples(index=False):
+                y = y_positions[row.display] + offset
+                xerr = np.array(
+                    [
+                        [row.spearman_rho - row.ci95_low],
+                        [row.ci95_high - row.spearman_rho],
+                    ]
+                )
+                ax.errorbar(
+                    row.spearman_rho,
+                    y,
+                    xerr=xerr,
+                    fmt=marker,
+                    color=color,
+                    ms=3.2,
+                    lw=0.7,
+                    capsize=1.5,
+                    label=label if y_positions[row.display] == 0 else None,
+                )
+        ax.axvline(0, color="#8A8A8A", lw=0.7)
+        ax.set_yticks(np.arange(len(labels)), labels)
+        ax.invert_yaxis()
+        ax.set_xlim(-1.0, 1.0)
+        ax.set_xlabel("Spearman rho")
+        ax.set_title(title)
+        self._boxed(ax)
+
+    def _target_support_robustness(self) -> list[Path]:
+        influence = pd.read_parquet(
+            self.audit_root / "D5_target_influence.parquet"
+        )
+        support = pd.read_parquet(
+            self.audit_root / "D5_support_sensitivity.parquet"
+        )
+        source = (
+            self.audit_root
+            / "FigD5_9_target_support_robustness_source_data.xlsx"
+        )
+        with pd.ExcelWriter(source, engine="openpyxl") as writer:
+            influence.to_excel(writer, sheet_name="target_influence", index=False)
+            support.to_excel(writer, sheet_name="support_sensitivity", index=False)
+
+        fig, axes = plt.subplots(1, 2, figsize=(7.2, 3.15), constrained_layout=True)
+        ax = axes[0]
         order = influence.sort_values(["analyte", "target_sensor"])
         x = np.arange(len(order))
-        ax.plot(x, order["observed_map_disagreement_rate"], marker="o", ms=3.2, color="#168AAD", label="Leave-one-target-out")
-        ax.plot(x, order["injected_ood_rate_change"], marker="s", ms=3.2, color="#D1495B", label="2.5-MAD offset: ΔOOD")
-        ax.set_xticks(x, order["target_sensor"].str.replace("_", "-", regex=False), rotation=55, ha="right")
+        ax.plot(
+            x,
+            order["observed_map_disagreement_rate"],
+            marker="o",
+            ms=3.2,
+            color=COLORS["raw"],
+            label="Leave-one-target-out",
+        )
+        ax.plot(
+            x,
+            order["injected_ood_rate_change"],
+            marker="s",
+            ms=3.2,
+            color=COLORS["report"],
+            label="2.5-MAD offset: change in OOD",
+        )
+        ax.set_xticks(x, order["target_sensor"], rotation=55, ha="right")
         ax.set_ylim(bottom=0)
         ax.set_ylabel("Fraction of 10-min contexts")
         ax.set_title("Bounded target influence")
         ax.legend(loc="upper left")
         self._boxed(ax)
-        self._panel_label(ax, "c")
+        self._panel_label(ax, "a")
 
-        ax = axes[1, 1]
-        selected = support[
-            support["L3_min_reference_coverage"].eq(0.80)
-        ].copy()
+        ax = axes[1]
+        selected = support[support["L3_min_reference_coverage"].eq(0.80)].copy()
         pivot = selected.pivot_table(
             index="L3_min_bootstrap_stability",
             columns="n_effective_multiplier",
             values="L3_templates",
             aggfunc="median",
         ).sort_index(ascending=False)
-        image = ax.imshow(pivot, cmap="YlGnBu", vmin=0, vmax=max(3, float(pivot.max().max())), aspect="auto")
+        image = ax.imshow(
+            pivot,
+            cmap="YlGnBu",
+            vmin=0,
+            vmax=max(3, float(pivot.max().max())),
+            aspect="auto",
+        )
         for row in range(pivot.shape[0]):
             for column in range(pivot.shape[1]):
-                ax.text(column, row, f"{pivot.iloc[row, column]:.0f}", ha="center", va="center", fontsize=7)
-        ax.set_xticks(np.arange(pivot.shape[1]), [f"{value:.1f}x" for value in pivot.columns])
-        ax.set_yticks(np.arange(pivot.shape[0]), [f"{value:.2f}" for value in pivot.index])
+                ax.text(
+                    column,
+                    row,
+                    f"{pivot.iloc[row, column]:.0f}",
+                    ha="center",
+                    va="center",
+                    fontsize=7,
+                )
+        ax.set_xticks(
+            np.arange(pivot.shape[1]), [f"{value:.1f}x" for value in pivot.columns]
+        )
+        ax.set_yticks(
+            np.arange(pivot.shape[0]), [f"{value:.2f}" for value in pivot.index]
+        )
         ax.set_xlabel("Effective-block threshold")
         ax.set_ylabel("L3 stability threshold")
         ax.set_title("L3 support sensitivity")
         colorbar = fig.colorbar(image, ax=ax, fraction=0.045, pad=0.025)
         colorbar.set_label("L3 templates")
         self._boxed(ax)
+        self._panel_label(ax, "b")
+        return self._save(fig, "FigD5_9_target_support_robustness")
+
+    def _dimension_availability(self) -> list[Path]:
+        table = pd.read_parquet(
+            self.audit_root / "D5_dimension_availability.parquet"
+        )
+        monthly = table[~table["scope"].eq("overall")].copy()
+        source = (
+            self.audit_root
+            / "FigD5_8_dimension_availability_sensitivity_source_data.xlsx"
+        )
+        with pd.ExcelWriter(source, engine="openpyxl") as writer:
+            table.to_excel(writer, sheet_name="dimension_availability", index=False)
+
+        x = np.arange(len(monthly))
+        labels = [pd.Period(value).strftime("%b\n%Y") for value in monthly["scope"]]
+        fig, axes = plt.subplots(2, 2, figsize=(7.2, 5.4), constrained_layout=True)
+
+        ax = axes[0, 0]
+        ax.plot(
+            x,
+            monthly["availability_aware_median"],
+            marker="o",
+            ms=3.5,
+            color=COLORS["raw"],
+            label="Availability-aware: all eligible",
+        )
+        ax.plot(
+            x,
+            monthly["fixed_dimension_median"],
+            marker="s",
+            ms=3.5,
+            color=COLORS["report"],
+            label="Fixed dimensions: complete evidence",
+        )
+        ax.set_xticks(x, labels)
+        ax.set_ylim(1.0, 5.05)
+        ax.set_ylabel("Monthly median prototype WW-DQS")
+        ax.set_title("Composite estimands are not interchangeable")
+        ax.legend(loc="lower left")
+        self._boxed(ax)
+        self._panel_label(ax, "a")
+
+        ax = axes[0, 1]
+        for column, label, color, marker in [
+            ("availability_aware_coverage", "Availability-aware", "#2A9D8F", "o"),
+            ("complete_evidence_coverage", "Complete evidence", COLORS["report"], "s"),
+            ("D5_available_rate", "D5 available", COLORS["raw"], "^"),
+        ]:
+            ax.plot(
+                x, monthly[column], marker=marker, ms=3.5, color=color, label=label
+            )
+        ax.set_xticks(x, labels)
+        ax.set_ylim(0, 1.02)
+        ax.set_ylabel("Fraction of sensor-hours")
+        ax.set_title("Dimension availability shift")
+        ax.legend(loc="lower left")
+        self._boxed(ax)
+        self._panel_label(ax, "b")
+
+        ax = axes[1, 0]
+        bottom = np.zeros(len(monthly))
+        for column, label, color in [
+            ("dimension_1_rate", "1 dimension", "#D9E2E8"),
+            ("dimension_2_rate", "2 dimensions", "#90C2D1"),
+            ("dimension_3_rate", "3 dimensions", "#168AAD"),
+        ]:
+            values = monthly[column].to_numpy(float)
+            ax.bar(x, values, bottom=bottom, color=color, width=0.72, label=label)
+            bottom += values
+        ax.set_xticks(x, labels)
+        ax.set_ylim(0, 1.0)
+        ax.set_ylabel("Fraction of sensor-hours")
+        ax.set_title("Effective numeric dimension count")
+        ax.legend(
+            loc="upper left",
+            bbox_to_anchor=(0.0, -0.20),
+            ncol=3,
+            borderaxespad=0,
+        )
+        self._boxed(ax)
+        self._panel_label(ax, "c")
+
+        ax = axes[1, 1]
+        shifts = monthly["descriptive_median_shift_all_minus_fixed"]
+        colors = np.where(shifts.ge(0), "#2A9D8F", "#D1495B")
+        ax.bar(x, shifts, color=colors, width=0.68)
+        missing = shifts.isna().to_numpy()
+        ax.scatter(x[missing], np.zeros(missing.sum()), marker="x", color="#6C757D", s=22)
+        for position in x[missing]:
+            ax.text(position, 0.018, "NA", ha="center", va="bottom", fontsize=6.5, color="#6C757D")
+        ax.axhline(0, color="#6C757D", lw=0.8)
+        ax.set_xticks(x, labels)
+        ax.set_ylabel("Median shift: available minus fixed")
+        ax.set_title("Trend sensitivity to evidence composition")
+        self._boxed(ax)
         self._panel_label(ax, "d")
-        return self._save(fig, "FigD5_7_D4_D5_complementarity")
+        return self._save(fig, "FigD5_8_dimension_availability_sensitivity")

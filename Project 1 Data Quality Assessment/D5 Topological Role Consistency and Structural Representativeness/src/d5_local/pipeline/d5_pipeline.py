@@ -11,7 +11,12 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from d5_common.config import D5_ROOT, load_yaml, resolve_paths
+from d5_common.config import (
+    D5_ROOT,
+    load_yaml,
+    reference_end_from_fraction,
+    resolve_paths,
+)
 from d5_common.hashing import hash_object
 from d5_local.adapters import CanonicalObservationAdapter
 from d5_local.context import (
@@ -83,9 +88,9 @@ class D5Pipeline:
         )
         snapshot_bundle = snapshot_builder.build(observations, floor_sensors)
         snapshots = snapshot_bundle.values
-        reference_end = snapshots.index[
-            max(0, int(len(snapshots) * float(self.template_config["reference_fraction"])) - 1)
-        ]
+        reference_end = reference_end_from_fraction(
+            snapshots.index, float(self.template_config["reference_fraction"])
+        )
 
         regime_state, regime_assets = self._build_regime_state(snapshots, reference_end, run_id)
         template_builder = SpatialTemplateBuilder(

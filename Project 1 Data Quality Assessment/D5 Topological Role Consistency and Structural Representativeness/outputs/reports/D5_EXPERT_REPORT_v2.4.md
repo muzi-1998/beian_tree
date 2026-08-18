@@ -2,14 +2,14 @@
 
 **Project:** Topological Role Consistency and Structural Representativeness
 **Run:** `D5-LOCAL-20260727T034533Z`
-**Generated:** 2026-08-17 17:51 CST
+**Generated:** 2026-08-18 10:57 CST
 **Decision:** Scientific D5 score released for final subscore aggregation; automated deployment remains gated.
 
 ## 1. Executive verdict
 
 The D5 v2.4 release retains the frozen v2.3 scoring implementation and adds publication-grade validation, coverage, complementarity and target-influence audits. Local, Sensitivity and Shadow V2 tracks, frozen templates, hourly scores, validation-graded admission, dual report/gate interfaces, plot data, SCI-ready figures, manifests and audit records are present. The Local Track remains logically independent of D1, D2, D3 and D4 and consumes only canonical observations, exogenous hydraulic/time context and declared D5 topology.
 
-The ordinal research topology is confirmed: process line, pool zone, longitudinal order, SCADA-to-physical-point identity and the absence of study-period probe/channel changes are author-confirmed; the installation register independently reconciles eight active DO and six active ORP instruments. Exact coordinates, asset IDs and maintenance records are not model inputs and therefore do not suppress retrospective scientific scores. They remain deployment-governance limitations. Family-level support identifies 8 L3 candidates, but node-specific blocked validation retains only 3 final L3 templates; the current effective distribution is L1=14, L2=39 and L3=3. `D5_report_score` contains 39,648 rows. Swap Top-1 is 0.70 (95% CI 0.57-0.80, n=60), so node-specific hard Veto remains disabled without blocking the score.
+The ordinal research topology is confirmed: process line, pool zone, longitudinal order, SCADA-to-physical-point identity and the absence of study-period probe/channel changes are author-confirmed; the installation register independently reconciles eight active DO and six active ORP instruments. Exact coordinates, asset IDs and maintenance records are not model inputs and therefore do not suppress retrospective scientific scores. They remain deployment-governance limitations. Family-level support identifies 8 L3 candidates, but node-specific blocked validation retains only 3 final L3 templates; the current effective distribution is L1=14, L2=39 and L3=3. `D5_report_score` contains 39,648 rows. Controlled-perturbation swap Top-1 is 0.70 (95% CI 0.57-0.80, n=60), so node-specific hard Veto remains disabled without blocking the score.
 
 ## 2. Scope and dimensional independence
 
@@ -59,9 +59,9 @@ not alter the retrospective score. Current provisional report rows:
 
 | Criterion | Estimate | Target | Result |
 |---|---:|---:|---|
-| Swap AUROC | 0.912 | >=0.90 | Pass |
-| Swap AUPRC | 0.870 | >=0.80 | Pass |
-| Swap Top-1 | 0.700 [0.575, 0.801], n=60 | >=0.80 | **Fail** |
+| Controlled swap discrimination AUROC | 0.912 | >=0.90 | Pass |
+| Controlled swap discrimination AUPRC | 0.870 | >=0.80 | Pass |
+| Controlled perturbation Top-1 localization | 0.700 [0.575, 0.801], n=60 | >=0.80 | **Fail** |
 | Common-mode FAR | 0.046 | <=0.10 | Pass |
 | Zone-coherent FAR | 0.057 | <=0.10 | Pass |
 | Switch chatter rate | 0.000 | <=0.05 | Pass |
@@ -71,7 +71,7 @@ not alter the retrospective score. Current provisional report rows:
 
 Validation uses observed test-period spatial windows with frozen templates. Same-line, same-analyte position swaps are positive controls. Freeze, temporal ramps, common-mode and zone-coherent changes, DO4 floor behavior and dropout are negative/orthogonality controls. The swap detection metrics pass, but localization remains below the release criterion and must not be hidden by threshold tuning.
 
-The publication audit additionally reports six future-month outer refits (full-model AUROC 0.967, AUPRC 0.974, Top-1 0.767), Top-2/MRR localization, synchronized 7-d D4-D5 dependence, target-influence sensitivity and monthly support migration. Confidence-risk coverage is not monotonic; the current confidence field remains evidence metadata and is not a calibrated hard-Veto gate.
+The publication audit additionally reports six future-month controlled-challenge refits (discrimination AUROC 0.967, AUPRC 0.974, controlled-perturbation Top-1 localization 0.767), Top-2/MRR localization, synchronized 7-d D4-D5 dependence under report-score and raw-calculable overlap, target-influence sensitivity, monthly support migration and dimension-availability sensitivity. These are controlled observed-window challenges, not field fault-detection or localization accuracy. Confidence-risk coverage is not monotonic; the current confidence field remains evidence metadata and is not a calibrated hard-Veto gate.
 
 ## 6. Topology and D4 interface
 
@@ -84,13 +84,13 @@ The publication audit additionally reports six future-month outer refits (full-m
 
 ## 7. Figure review
 
-Seven multi-panel figure groups are available as SVG, PDF, 600 dpi PNG and LZW-compressed 600 dpi TIFF. All use Arial, 0.8 pt boxed axes, inward ticks, unified panel labels, endpoint-aware scales and transparent label backgrounds where annotations cover data. Figure D5-6 reports future-month refits, localization and coverage; Figure D5-7 reports D4-D5 complementarity, composite ablation, target influence and support sensitivity. Automated counterpart/font/pixel QA passed: True.
+Nine multi-panel figure groups are available as SVG, PDF, 600 dpi PNG and LZW-compressed 600 dpi TIFF. All use Arial, 0.8 pt boxed axes, inward ticks, unified panel labels, endpoint-aware scales and transparent label backgrounds where annotations cover data. Figure D5-6 reports controlled challenge results and coverage; Figure D5-7 reports overall and stratified D4-D5 overlap; Figure D5-8 separates availability-aware and fixed-dimension composite estimands; Figure D5-9 reports target influence and support robustness. Automated counterpart/font/pixel QA passed: True.
 
 ## 8. Critical limitations
 
 1. Research topology is author-confirmed and inventory-reconciled, but production documentary audit, maintenance provenance and dual approval remain incomplete.
 2. Family-level L3 support does not imply node-level action validity: 8 family-L3 candidates reduce to 3 final node-L3 templates after blocked validation.
-3. Swap Top-1 localization is 0.700 (95% CI 0.575-0.801) versus the 0.80 target.
+3. Controlled-perturbation swap Top-1 localization is 0.700 (95% CI 0.575-0.801) versus the 0.80 target.
 4. The 529 candidate event windows have no external truth labels; event counts must not be reported as confirmed sensor faults.
 5. Regime transition FAR and topology candidate recall are not estimable without external regime/topology truth.
 6. `D5_raw` calibration is suitable for comparative research evidence, but operational event thresholds require labeled prospective confirmation.
@@ -101,7 +101,9 @@ The branch may enter final WW-DQS subscore aggregation as a **scientific impleme
 
 1. Use `D5_report_score` only where report eligibility is explicit; renormalize missing dimensions rather than substituting a low score.
 2. Use the separate gate interface only for final L3 nodes and treat process coherence as an attribution Guard, never as Veto.
-3. Keep sensor-specific hard Veto disabled until blocked localization reaches Top-1 >=0.80.
+3. Keep sensor-specific hard Veto disabled until controlled blocked localization reaches Top-1 >=0.80.
+4. Report availability-aware and fixed-dimension complete-evidence WW-DQS separately; never interpret a dimension-availability shift as a quality trend.
+5. Freeze cross-dimensional manuscript values only after the D4 dependency check is current.
 4. Rerun the completed D4-D5 conditional dependence and ablation audit after the latest D4 release is merged, before freezing WW-DQS weights.
 5. Add field-confirmed topology and event cases as external validation when they become available.
 6. Complete documentary audit and dual approval before any automated plant-control deployment.

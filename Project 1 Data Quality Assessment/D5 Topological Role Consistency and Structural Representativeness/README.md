@@ -44,6 +44,13 @@ topology metadata. It never consumes D1-D4 scores or states.
 - D5 exports separate report and gate interfaces. D4 finalizes
   non-destructively from `D4_raw`; D1 and D5 provide interpretation and action
   governance without rewriting the D4 numeric score.
+- D4-D5 non-redundancy is audited under two estimands: formal
+  `D5_report_score` overlap and extended two-node `D5_raw` calculable overlap,
+  with analyte, regime, month and pair strata. Manuscript values freeze only
+  after exact D4 run, calibration and SHA-256 matching.
+- Availability-aware and fixed-dimension complete-evidence WW-DQS summaries
+  are separate estimands. Dimension count and coverage must accompany every
+  temporal composite; missing D5 evidence is never encoded as low quality.
 
 See `configs/common/topology_evidence.yaml` for the research evidence ledger and
 `docs/D5_FIELD_VERIFICATION_REQUIREMENTS.md` for the production documentary and
@@ -59,6 +66,7 @@ Run the complete release from `Project 1 Data Quality Assessment`:
 ```powershell
 python ".\D5 Topological Role Consistency and Structural Representativeness\scripts\run_d5_release.py"
 python ".\D5 Topological Role Consistency and Structural Representativeness\scripts\run_d5_publication_audit.py"
+python ".\D5 Topological Role Consistency and Structural Representativeness\scripts\verify_d5_publication_bundle.py"
 python -m pytest ".\D5 Topological Role Consistency and Structural Representativeness\tests" -q
 ```
 

@@ -10,7 +10,12 @@ import pandas as pd
 from scipy.optimize import linear_sum_assignment
 from scipy.stats import kendalltau, rankdata, spearmanr
 
-from d5_common.config import D5_ROOT, load_yaml, resolve_paths
+from d5_common.config import (
+    D5_ROOT,
+    load_yaml,
+    reference_end_from_fraction,
+    resolve_paths,
+)
 from d5_local.context import ContextPosteriorModel, GlobalProcessContextBuilder
 from d5_local.contracts import TopologyRegistry
 from d5_local.data import SnapshotBuilder
@@ -26,6 +31,9 @@ class D5PublicationAudit:
         self.local_config = load_yaml(D5_ROOT / "configs" / "local" / "d5_local.yaml")
         self.windows = load_yaml(D5_ROOT / "configs" / "common" / "windows.yaml")
         self.aggregation = load_yaml(D5_ROOT / "configs" / "local" / "aggregation.yaml")
+        self.template_config = load_yaml(
+            D5_ROOT / "configs" / "local" / "templates.yaml"
+        )
         self.topology = TopologyRegistry.load(D5_ROOT / "configs" / "common")
         self.output_root = D5_ROOT / "outputs" / "publication"
         self.output_root.mkdir(parents=True, exist_ok=True)
@@ -56,7 +64,15 @@ class D5PublicationAudit:
         risk_coverage = self._risk_coverage(trials, main)
         monthly_coverage = self._monthly_coverage(main)
         support_sensitivity = self._support_sensitivity()
-        d4_dependence, d4_composite, d4_meta = self._d4_d5_audit(main, confirmatory)
+        (
+            d4_dependence,
+            d4_stratified,
+            d4_composite,
+            d4_meta,
+        ) = self._d4_d5_audit(main, confirmatory)
+        dimension_availability = self._dimension_availability_sensitivity(
+            confirmatory
+        )
         target_influence = self._target_influence_audit()
         decisions = self._decision_register(d4_meta)
 
@@ -69,7 +85,9 @@ class D5PublicationAudit:
             "monthly_coverage": monthly_coverage,
             "support_sensitivity": support_sensitivity,
             "d4_d5_dependence": d4_dependence,
+            "d4_d5_stratified_rho": d4_stratified,
             "d4_d5_composite": d4_composite,
+            "dimension_availability": dimension_availability,
             "target_influence": target_influence,
             "coverage_summary": coverage_summary,
             "coverage_strata": coverage_strata,
@@ -80,11 +98,13 @@ class D5PublicationAudit:
             localization,
             monthly_coverage,
             d4_dependence,
+            d4_stratified,
+            dimension_availability,
             target_influence,
             d4_meta,
         )
         report = self._build_report(summary, decisions, outer_deltas)
-        report_path = self.output_root / "D5_PUBLICATION_READINESS_AUDIT_v1.0.md"
+        report_path = self.output_root / "D5_PUBLICATION_READINESS_AUDIT_v1.1.md"
         report_path.write_text(report, encoding="utf-8")
         manifest = self._write_manifest(summary, tables, report_path, d4_meta)
         return {
@@ -298,7 +318,7 @@ class D5PublicationAudit:
 
     def _d4_d5_audit(
         self, main: pd.DataFrame, confirmatory: Path
-    ) -> tuple[pd.DataFrame, pd.DataFrame, dict[str, object]]:
+    ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, dict[str, object]]:
         d4 = pd.read_excel(
             self.paths.d4_scores,
             usecols=[
@@ -314,102 +334,45 @@ class D5PublicationAudit:
         )
         pair_d5 = (
             main.groupby(["timestamp", "pair_id"], as_index=False)
-            .agg(D5_pair=("D5_report_score", "mean"), d5_nodes=("D5_report_score", "count"))
+            .agg(
+                D5_pair_report=("D5_report_score", "mean"),
+                d5_report_nodes=("D5_report_score", "count"),
+                D5_pair_raw=("D5_raw", "mean"),
+                d5_raw_nodes=("D5_raw", "count"),
+            )
         )
         d4["timestamp"] = pd.to_datetime(d4["timestamp"])
         pair_d5["timestamp"] = pd.to_datetime(pair_d5["timestamp"])
         merged = d4.merge(pair_d5, on=["timestamp", "pair_id"], how="inner")
-        valid = merged[
-            merged["usable_for_D4"].fillna(False)
-            & merged["D4_raw"].notna()
-            & merged["D5_pair"].notna()
-            & merged["d5_nodes"].eq(2)
-        ].copy()
-        valid["month"] = valid["timestamp"].dt.to_period("M").astype(str)
-        valid["time_block"] = (
-            (valid["timestamp"] - valid["timestamp"].min()).dt.total_seconds()
+        merged["month"] = merged["timestamp"].dt.to_period("M").astype(str)
+        merged["time_block"] = (
+            (merged["timestamp"] - merged["timestamp"].min()).dt.total_seconds()
             // (int(self.config["statistical_analysis"]["synchronized_block_hours"]) * 3600)
         ).astype(int)
-        rho = float(spearmanr(valid["D4_raw"], valid["D5_pair"]).statistic)
-        tau = float(kendalltau(valid["D4_raw"], valid["D5_pair"]).statistic)
-        partial = self.partial_rank_correlation(
-            valid,
-            x="D4_raw",
-            y="D5_pair",
-            controls=["pair_id", "month", "regime_id"],
-        )
-        low_cut = float(self.config["statistical_analysis"]["low_score_threshold"])
+        scopes = {
+            "D5_report_score": ("D5_pair_report", "d5_report_nodes"),
+            "D5_raw_calculable": ("D5_pair_raw", "d5_raw_nodes"),
+        }
+        valid_by_scope: dict[str, pd.DataFrame] = {}
+        dependence_frames = []
+        stratified_frames = []
+        for scope, (score_column, count_column) in scopes.items():
+            valid = merged[
+                merged["usable_for_D4"].fillna(False)
+                & merged["D4_raw"].notna()
+                & merged[score_column].notna()
+                & merged[count_column].eq(2)
+            ].copy()
+            valid_by_scope[scope] = valid
+            dependence_frames.append(
+                self._overall_d4_d5_dependence(valid, score_column, scope)
+            )
+            stratified_frames.append(
+                self._stratified_d4_d5_rho(valid, score_column, scope)
+            )
+        dependence = pd.concat(dependence_frames, ignore_index=True)
+        stratified = pd.concat(stratified_frames, ignore_index=True)
 
-        def estimate_rho(frame: pd.DataFrame) -> float:
-            return float(spearmanr(frame["D4_raw"], frame["D5_pair"]).statistic)
-
-        def estimate_jaccard(frame: pd.DataFrame) -> float:
-            a = frame["D4_raw"].lt(low_cut)
-            b = frame["D5_pair"].lt(low_cut)
-            union = int((a | b).sum())
-            return float((a & b).sum() / union) if union else np.nan
-
-        rho_ci = self.cluster_bootstrap_interval(
-            valid,
-            cluster="time_block",
-            estimator=estimate_rho,
-            repetitions=int(self.config["statistical_analysis"]["bootstrap_repetitions"]),
-            rng=self.rng,
-        )
-        jaccard_ci = self.cluster_bootstrap_interval(
-            valid,
-            cluster="time_block",
-            estimator=estimate_jaccard,
-            repetitions=int(self.config["statistical_analysis"]["bootstrap_repetitions"]),
-            rng=self.rng,
-        )
-        a = valid["D4_raw"].lt(low_cut)
-        b = valid["D5_pair"].lt(low_cut)
-        joint_lift = float((a & b).mean() / max(a.mean() * b.mean(), 1e-12))
-        dependence = pd.DataFrame(
-            [
-                {
-                    "metric": "Spearman_rho",
-                    "estimate": rho,
-                    "ci95_low": rho_ci[0],
-                    "ci95_high": rho_ci[1],
-                    "n_pair_hours": len(valid),
-                    "analysis_unit": "synchronized_7d_time_block",
-                },
-                {
-                    "metric": "Kendall_tau",
-                    "estimate": tau,
-                    "ci95_low": np.nan,
-                    "ci95_high": np.nan,
-                    "n_pair_hours": len(valid),
-                    "analysis_unit": "pair_hour",
-                },
-                {
-                    "metric": "partial_rank_correlation",
-                    "estimate": partial,
-                    "ci95_low": np.nan,
-                    "ci95_high": np.nan,
-                    "n_pair_hours": len(valid),
-                    "analysis_unit": "rank_residual_pair_month_regime_adjusted",
-                },
-                {
-                    "metric": "low_score_Jaccard",
-                    "estimate": estimate_jaccard(valid),
-                    "ci95_low": jaccard_ci[0],
-                    "ci95_high": jaccard_ci[1],
-                    "n_pair_hours": len(valid),
-                    "analysis_unit": "synchronized_7d_time_block",
-                },
-                {
-                    "metric": "low_score_joint_lift",
-                    "estimate": joint_lift,
-                    "ci95_low": np.nan,
-                    "ci95_high": np.nan,
-                    "n_pair_hours": len(valid),
-                    "analysis_unit": "pair_hour",
-                },
-            ]
-        )
         pair_scores = pd.read_parquet(confirmatory / "WWDQS_pair_scores.parquet")
         node_scores = pd.read_parquet(confirmatory / "WWDQS_node_scores.parquet")
         no_d5 = node_scores.dropna(subset=["D1_total", "D2_total"]).copy()
@@ -447,19 +410,270 @@ class D5PublicationAudit:
                     "production_weights_changed": False,
                 }
             )
-        run_id = str(d4["run_id"].dropna().iloc[0])
-        meta = {
-            "d4_run_id": run_id,
-            "d4_calibration_id": str(d4["calibration_id"].dropna().iloc[0]),
-            "status": (
-                "provisional_rerun_after_latest_D4_merge"
-                if run_id
-                == self.config["statistical_analysis"]["d4_refresh_required_after_run_id"]
-                else "current"
-            ),
-            "n_pair_hours": len(valid),
+        meta = self.d4_dependency_status(d4)
+        meta["n_pair_hours_by_scope"] = {
+            scope: int(len(frame)) for scope, frame in valid_by_scope.items()
         }
-        return dependence, pd.DataFrame(composite_rows), meta
+        return dependence, stratified, pd.DataFrame(composite_rows), meta
+
+    def _overall_d4_d5_dependence(
+        self, frame: pd.DataFrame, score_column: str, scope: str
+    ) -> pd.DataFrame:
+        low_cut = float(self.config["statistical_analysis"]["low_score_threshold"])
+
+        def estimate_rho(sample: pd.DataFrame) -> float:
+            return self._safe_spearman(sample["D4_raw"], sample[score_column])
+
+        def estimate_jaccard(sample: pd.DataFrame) -> float:
+            a = sample["D4_raw"].lt(low_cut)
+            b = sample[score_column].lt(low_cut)
+            union = int((a | b).sum())
+            return float((a & b).sum() / union) if union else np.nan
+
+        rho_ci = self.cluster_bootstrap_interval(
+            frame,
+            cluster="time_block",
+            estimator=estimate_rho,
+            repetitions=int(self.config["statistical_analysis"]["bootstrap_repetitions"]),
+            rng=self.rng,
+        )
+        jaccard_ci = self.cluster_bootstrap_interval(
+            frame,
+            cluster="time_block",
+            estimator=estimate_jaccard,
+            repetitions=int(self.config["statistical_analysis"]["bootstrap_repetitions"]),
+            rng=self.rng,
+        )
+        a = frame["D4_raw"].lt(low_cut)
+        b = frame[score_column].lt(low_cut)
+        joint_lift = float((a & b).mean() / max(a.mean() * b.mean(), 1e-12))
+        return pd.DataFrame(
+            [
+                {
+                    "overlap_scope": scope,
+                    "metric": "Spearman_rho",
+                    "estimate": estimate_rho(frame),
+                    "ci95_low": rho_ci[0],
+                    "ci95_high": rho_ci[1],
+                    "n_pair_hours": len(frame),
+                    "n_time_blocks": frame["time_block"].nunique(),
+                    "analysis_unit": "synchronized_7d_time_block",
+                },
+                {
+                    "overlap_scope": scope,
+                    "metric": "Kendall_tau",
+                    "estimate": float(
+                        kendalltau(frame["D4_raw"], frame[score_column]).statistic
+                    ),
+                    "ci95_low": np.nan,
+                    "ci95_high": np.nan,
+                    "n_pair_hours": len(frame),
+                    "n_time_blocks": frame["time_block"].nunique(),
+                    "analysis_unit": "pair_hour_descriptive",
+                },
+                {
+                    "overlap_scope": scope,
+                    "metric": "partial_rank_correlation",
+                    "estimate": self.partial_rank_correlation(
+                        frame,
+                        x="D4_raw",
+                        y=score_column,
+                        controls=["pair_id", "month", "regime_id"],
+                    ),
+                    "ci95_low": np.nan,
+                    "ci95_high": np.nan,
+                    "n_pair_hours": len(frame),
+                    "n_time_blocks": frame["time_block"].nunique(),
+                    "analysis_unit": "rank_residual_pair_month_regime_adjusted",
+                },
+                {
+                    "overlap_scope": scope,
+                    "metric": "low_score_Jaccard",
+                    "estimate": estimate_jaccard(frame),
+                    "ci95_low": jaccard_ci[0],
+                    "ci95_high": jaccard_ci[1],
+                    "n_pair_hours": len(frame),
+                    "n_time_blocks": frame["time_block"].nunique(),
+                    "analysis_unit": "synchronized_7d_time_block",
+                },
+                {
+                    "overlap_scope": scope,
+                    "metric": "low_score_joint_lift",
+                    "estimate": joint_lift,
+                    "ci95_low": np.nan,
+                    "ci95_high": np.nan,
+                    "n_pair_hours": len(frame),
+                    "n_time_blocks": frame["time_block"].nunique(),
+                    "analysis_unit": "pair_hour_descriptive",
+                },
+            ]
+        )
+
+    def _stratified_d4_d5_rho(
+        self, frame: pd.DataFrame, score_column: str, scope: str
+    ) -> pd.DataFrame:
+        strata = {
+            "analyte": "variable",
+            "regime": "regime_id",
+            "month": "month",
+            "pair": "pair_id",
+        }
+        minimum_hours = int(
+            self.config["statistical_analysis"]["minimum_stratum_pair_hours"]
+        )
+        minimum_blocks = int(
+            self.config["statistical_analysis"]["minimum_stratum_time_blocks"]
+        )
+        rows = []
+        for stratum_type, column in strata.items():
+            for value, group in frame.groupby(column, dropna=False, sort=True):
+                n_blocks = int(group["time_block"].nunique())
+                estimable = bool(
+                    len(group) >= minimum_hours
+                    and n_blocks >= minimum_blocks
+                    and group["D4_raw"].nunique() > 1
+                    and group[score_column].nunique() > 1
+                )
+                if estimable:
+                    estimator = lambda sample: self._safe_spearman(
+                        sample["D4_raw"], sample[score_column]
+                    )
+                    low, high = self.cluster_bootstrap_interval(
+                        group,
+                        cluster="time_block",
+                        estimator=estimator,
+                        repetitions=int(
+                            self.config["statistical_analysis"][
+                                "bootstrap_repetitions"
+                            ]
+                        ),
+                        rng=self.rng,
+                    )
+                    estimate = estimator(group)
+                    reason = "estimable"
+                else:
+                    estimate, low, high = np.nan, np.nan, np.nan
+                    reason = "insufficient_hours_blocks_or_score_variation"
+                rows.append(
+                    {
+                        "overlap_scope": scope,
+                        "stratum_type": stratum_type,
+                        "stratum_value": str(value),
+                        "spearman_rho": estimate,
+                        "ci95_low": low,
+                        "ci95_high": high,
+                        "n_pair_hours": len(group),
+                        "n_time_blocks": n_blocks,
+                        "estimable": estimable,
+                        "status_reason": reason,
+                        "analysis_unit": "synchronized_7d_time_block",
+                    }
+                )
+        return pd.DataFrame(rows)
+
+    def d4_dependency_status(
+        self, d4: pd.DataFrame | None = None
+    ) -> dict[str, object]:
+        if d4 is None:
+            d4 = pd.read_excel(
+                self.paths.d4_scores, usecols=["run_id", "calibration_id"]
+            )
+        expected = self.config["d4_dependency"]
+        run_ids = sorted(d4["run_id"].dropna().astype(str).unique().tolist())
+        calibration_ids = sorted(
+            d4["calibration_id"].dropna().astype(str).unique().tolist()
+        )
+        actual_hash = self._sha256(self.paths.d4_scores)
+        checks = {
+            "single_run_id": len(run_ids) == 1,
+            "single_calibration_id": len(calibration_ids) == 1,
+            "run_id_exact_match": run_ids == [str(expected["expected_run_id"])],
+            "calibration_id_exact_match": calibration_ids
+            == [str(expected["expected_calibration_id"])],
+            "main_scores_sha256_exact_match": actual_hash
+            == str(expected["expected_main_scores_sha256"]),
+        }
+        current = bool(all(checks.values()))
+        return {
+            "status": "current" if current else "stale_dependency_blocked",
+            "publication_freeze_allowed": current,
+            "d4_run_id": run_ids[0] if len(run_ids) == 1 else None,
+            "d4_calibration_id": (
+                calibration_ids[0] if len(calibration_ids) == 1 else None
+            ),
+            "d4_main_scores_sha256": actual_hash,
+            "expected_run_id": str(expected["expected_run_id"]),
+            "expected_calibration_id": str(expected["expected_calibration_id"]),
+            "expected_main_scores_sha256": str(
+                expected["expected_main_scores_sha256"]
+            ),
+            "checks": checks,
+            "mismatch_reasons": [name for name, passed in checks.items() if not passed],
+        }
+
+    @staticmethod
+    def _safe_spearman(x: pd.Series, y: pd.Series) -> float:
+        selected = pd.DataFrame({"x": x, "y": y}).dropna()
+        if len(selected) < 2 or selected["x"].nunique() < 2 or selected["y"].nunique() < 2:
+            return np.nan
+        return float(spearmanr(selected["x"], selected["y"]).statistic)
+
+    def _dimension_availability_sensitivity(
+        self, confirmatory: Path
+    ) -> pd.DataFrame:
+        node = pd.read_parquet(confirmatory / "WWDQS_node_scores.parquet")
+        node["timestamp"] = pd.to_datetime(node["timestamp"])
+        node["month"] = node["timestamp"].dt.to_period("M").astype(str)
+        complete_class = str(
+            self.config["dimension_availability_sensitivity"][
+                "complete_evidence_class"
+            ]
+        )
+
+        def summarize(scope: str, frame: pd.DataFrame) -> dict[str, object]:
+            available = frame[frame["Q_node"].notna()]
+            complete = frame[
+                frame["coverage_class"].eq(complete_class)
+                & frame["Q_node_full"].notna()
+            ]
+            matched = complete.dropna(subset=["Q_node", "Q_node_full"])
+            counts = frame["effective_dimension_count"].value_counts(normalize=True)
+            return {
+                "scope": scope,
+                "sensor_hours": len(frame),
+                "availability_aware_coverage": frame["Q_node"].notna().mean(),
+                "complete_evidence_coverage": len(complete) / max(len(frame), 1),
+                "D5_available_rate": frame["contains_D5"].fillna(False).mean(),
+                "availability_aware_median": available["Q_node"].median(),
+                "availability_aware_p05": available["Q_node"].quantile(0.05),
+                "availability_aware_complete_median": matched["Q_node"].median(),
+                "fixed_dimension_median": matched["Q_node_full"].median(),
+                "descriptive_median_shift_all_minus_fixed": (
+                    available["Q_node"].median() - matched["Q_node_full"].median()
+                ),
+                "complete_case_contract_max_abs_diff": (
+                    (matched["Q_node"] - matched["Q_node_full"]).abs().max()
+                    if len(matched)
+                    else np.nan
+                ),
+                "mean_effective_dimension_count": frame[
+                    "effective_dimension_count"
+                ].mean(),
+                "dimension_1_rate": float(counts.get(1, 0.0)),
+                "dimension_2_rate": float(counts.get(2, 0.0)),
+                "dimension_3_rate": float(counts.get(3, 0.0)),
+                "estimand": (
+                    "current_node_level_D1_D2_D5_prototype_repeat_after_"
+                    "final_D1_D5_aggregation"
+                ),
+            }
+
+        rows = [summarize("overall", node)]
+        rows.extend(
+            summarize(str(month), frame)
+            for month, frame in node.groupby("month", sort=True)
+        )
+        return pd.DataFrame(rows)
 
     def _target_influence_audit(self) -> pd.DataFrame:
         observations = pd.read_parquet(self.paths.canonical_observations)
@@ -471,7 +685,9 @@ class D5PublicationAudit:
             int(self.windows["snapshot_main_minutes"]),
             int(self.windows["snapshot_min_observations"]),
         ).build(observations[columns], floor).values
-        reference_end = snapshots.index[int(len(snapshots) * 0.70)]
+        reference_end = reference_end_from_fraction(
+            snapshots.index, float(self.template_config["reference_fraction"])
+        )
         builder = GlobalProcessContextBuilder(self.topology)
         full_features = builder.build(snapshots)
         full_model = ContextPosteriorModel(
@@ -667,10 +883,13 @@ class D5PublicationAudit:
     def _decision_register(self, d4_meta: dict[str, object]) -> pd.DataFrame:
         rows = [
             ("full_outer_fold_refit", "accepted_already_complete", "Six future-month folds; full, no exogenous, no regime and no hysteresis were refit from training data only."),
-            ("D4_D5_incremental_information", "accepted_executed_provisional", f"Executed against {d4_meta['d4_run_id']}; rerun after the latest D4 release is merged."),
+            ("D4_D5_dual_scope_overlap", "accepted_executed_stale_dependency", f"Report-score and raw-calculable overlap are implemented with analyte/regime/month/pair strata; formal freezing is blocked because dependency status is {d4_meta['status']}."),
+            ("D4_dependency_fail_closed", "accepted_executed", "Current status requires exact run ID, calibration ID and D4 main-score SHA-256 with one unique run and calibration."),
             ("score_support_missingness_freeze", "accepted_executed", "Continuous scores retained; L1/L2/L3 and missing/OOD semantics frozen; A-E grades disabled."),
-            ("Top1_0_80_boundary", "accepted_executed", "Localization failure blocks sensor-specific hard Veto only, not the continuous scientific score."),
+            ("controlled_perturbation_Top1_0_80_boundary", "accepted_executed", "Controlled perturbation localization below 0.80 blocks sensor-specific hard Veto only, not the continuous scientific score."),
             ("risk_coverage_and_monthly_support", "accepted_executed_with_limitation", "Field evidence coverage and controlled-injection risk-coverage are separate; current confidence is not calibrated for selective localization."),
+            ("dimension_availability_sensitivity", "accepted_executed_prototype", "Availability-aware and fixed-dimension complete-evidence composites are reported separately; rerun after the final D1-D5 numeric contract is frozen."),
+            ("publication_ci", "accepted_executed", "Tests, artifact hashes, figure QA and exact D4 dependency are checked by one non-mutating publication bundle gate."),
             ("target_excluded_context", "accepted_with_modification", "Production is accurately named plant-global robust context; leave-one-target-out is an influence challenge, not a false production claim."),
             ("support_threshold_sensitivity", "accepted_executed", "Sensitivity only; no post-hoc production threshold changes."),
             ("untouched_future_test", "pending_external_data", "No untouched data after 2026-04-13 are currently available."),
@@ -696,6 +915,8 @@ class D5PublicationAudit:
         localization: pd.DataFrame,
         monthly: pd.DataFrame,
         dependence: pd.DataFrame,
+        stratified: pd.DataFrame,
+        dimension_availability: pd.DataFrame,
         influence: pd.DataFrame,
         d4_meta: dict[str, object],
     ) -> dict[str, object]:
@@ -719,9 +940,38 @@ class D5PublicationAudit:
             "local_swap_MRR": lookup(localization, scenario="channel_swap", analyte="all", metric="MRR"),
             "months_without_report_coverage": int(monthly["report_score_coverage"].eq(0).sum()),
             "minimum_monthly_report_coverage": float(monthly["report_score_coverage"].min()),
-            "D4_D5_spearman": lookup(dependence, metric="Spearman_rho"),
-            "D4_D5_partial_rank": lookup(dependence, metric="partial_rank_correlation"),
-            "D4_D5_low_score_jaccard": lookup(dependence, metric="low_score_Jaccard"),
+            "D4_D5_spearman": lookup(
+                dependence,
+                overlap_scope="D5_report_score",
+                metric="Spearman_rho",
+            ),
+            "D4_D5_spearman_report": lookup(
+                dependence,
+                overlap_scope="D5_report_score",
+                metric="Spearman_rho",
+            ),
+            "D4_D5_spearman_raw": lookup(
+                dependence,
+                overlap_scope="D5_raw_calculable",
+                metric="Spearman_rho",
+            ),
+            "D4_D5_partial_rank": lookup(
+                dependence,
+                overlap_scope="D5_report_score",
+                metric="partial_rank_correlation",
+            ),
+            "D4_D5_low_score_jaccard": lookup(
+                dependence,
+                overlap_scope="D5_report_score",
+                metric="low_score_Jaccard",
+            ),
+            "D4_D5_strata_estimable": int(stratified["estimable"].sum()),
+            "D4_D5_strata_abs_rho_below_0_30_rate": float(
+                stratified.loc[stratified["estimable"], "spearman_rho"]
+                .abs()
+                .lt(0.30)
+                .mean()
+            ),
             "max_target_exclusion_disagreement": float(
                 influence["observed_map_disagreement_rate"].max()
             ),
@@ -736,7 +986,29 @@ class D5PublicationAudit:
             ),
             "d4_run_id": d4_meta["d4_run_id"],
             "d4_audit_status": d4_meta["status"],
+            "d4_dependency_current": bool(d4_meta["publication_freeze_allowed"]),
+            "availability_aware_overall_coverage": float(
+                dimension_availability.loc[
+                    dimension_availability["scope"].eq("overall"),
+                    "availability_aware_coverage",
+                ].iloc[0]
+            ),
+            "fixed_dimension_overall_coverage": float(
+                dimension_availability.loc[
+                    dimension_availability["scope"].eq("overall"),
+                    "complete_evidence_coverage",
+                ].iloc[0]
+            ),
+            "dimension_availability_contract_max_abs_diff": float(
+                dimension_availability.loc[
+                    dimension_availability["scope"].eq("overall"),
+                    "complete_case_contract_max_abs_diff",
+                ].iloc[0]
+            ),
             "scientific_score_ready": True,
+            "cross_dimension_publication_freeze_ready": bool(
+                d4_meta["publication_freeze_allowed"]
+            ),
             "sensor_specific_hard_veto_ready": False,
             "deployment_ready": False,
         }
@@ -756,13 +1028,13 @@ class D5PublicationAudit:
             f"| `{row.ablation_variant}` | {row.mean_delta_full_minus_ablation:.3f} | {row.ci95_low:.3f} to {row.ci95_high:.3f} |"
             for row in top1_delta.itertuples(index=False)
         )
-        return f"""# D5 Publication Readiness Audit v1.0
+        return f"""# D5 Publication Readiness Audit v1.1
 
 ## Executive decision
 
 D5 is scientifically suitable for continuous-score aggregation in a retrospective single-plant study, with explicit support and coverage restrictions. It is not ready for sensor-specific hard Veto or automated deployment. The current production context is a plant-global robust context, not a strictly target-excluded model.
 
-The six-fold future-month refit achieved AUROC {summary['full_outer_AUROC']:.3f}, AUPRC {summary['full_outer_AUPRC']:.3f} and Top-1 {summary['full_outer_Top1']:.3f}. Top-1 remains below the prespecified 0.80 criterion and therefore blocks only node-specific hard Veto. Across all 180 local challenges, Top-1 was {summary['local_all_Top1']:.3f}, Top-2 {summary['local_all_Top2']:.3f} and MRR {summary['local_all_MRR']:.3f}; for the prespecified channel-swap endpoint these were {summary['local_swap_Top1']:.3f}, {summary['local_swap_Top2']:.3f} and {summary['local_swap_MRR']:.3f}, respectively.
+The six-fold future-month controlled-challenge refit achieved discrimination AUROC {summary['full_outer_AUROC']:.3f}, AUPRC {summary['full_outer_AUPRC']:.3f} and controlled-perturbation Top-1 localization {summary['full_outer_Top1']:.3f}. Top-1 remains below the prespecified 0.80 criterion and therefore blocks only node-specific hard Veto. Across all 180 controlled perturbations, Top-1 was {summary['local_all_Top1']:.3f}, Top-2 {summary['local_all_Top2']:.3f} and MRR {summary['local_all_MRR']:.3f}; for the prespecified channel-swap endpoint these were {summary['local_swap_Top1']:.3f}, {summary['local_swap_Top2']:.3f} and {summary['local_swap_MRR']:.3f}, respectively. These quantities are not field sensor-fault detection or localization accuracy.
 
 ## Structural ablation
 
@@ -770,15 +1042,17 @@ The six-fold future-month refit achieved AUROC {summary['full_outer_AUROC']:.3f}
 |---|---:|---:|
 {delta_lines}
 
-No-regime conditioning caused the clearest AUROC/AUPRC detection loss, while removing hydraulic/time context caused the clearest Top-1 localization loss. Hysteresis produced a small incremental gain. These results support regime conditioning and exogenous context, but do not justify tuning on the terminal folds.
+No-regime conditioning caused the clearest controlled-challenge AUROC/AUPRC discrimination loss, while removing hydraulic/time context caused the clearest controlled-perturbation Top-1 localization loss. Hysteresis produced a small incremental gain. These results support regime conditioning and exogenous context, but do not justify tuning on the terminal folds.
 
 ## Coverage and selection
 
 There are {summary['months_without_report_coverage']} months with zero formal D5 report coverage; the minimum monthly report coverage is {summary['minimum_monthly_report_coverage']:.1%}. This is driven primarily by L1 support/OOD migration, so formal composite results represent a complete-evidence subset and cannot be extrapolated to all sensor-hours. Raw scientific evidence remains separately available where calculable.
 
+The current node-level prototype gives {summary['availability_aware_overall_coverage']:.1%} availability-aware composite coverage but only {summary['fixed_dimension_overall_coverage']:.1%} fixed-dimension complete-evidence coverage. These are different estimands and must be shown separately. The calculation currently covers the available D1/D2/D5 node contract and must be repeated after the final five-dimension WW-DQS contract is frozen.
+
 ## D4-D5 complementarity
 
-Against D4 run `{summary['d4_run_id']}`, Spearman rho is {summary['D4_D5_spearman']:.3f}, adjusted partial rank correlation is {summary['D4_D5_partial_rank']:.3f}, and low-score Jaccard is {summary['D4_D5_low_score_jaccard']:.3f}. This supports related but non-identical constructs. Status is `{summary['d4_audit_status']}`: the audit must be rerun after the latest D4 branch is merged before manuscript numbers are frozen.
+Against D4 run `{summary['d4_run_id']}`, report-score overlap Spearman rho is {summary['D4_D5_spearman_report']:.3f}, raw-calculable overlap rho is {summary['D4_D5_spearman_raw']:.3f}, adjusted report-score partial rank correlation is {summary['D4_D5_partial_rank']:.3f}, and report-score low-tail Jaccard is {summary['D4_D5_low_score_jaccard']:.3f}. Across estimable analyte, regime, month and pair strata, {summary['D4_D5_strata_abs_rho_below_0_30_rate']:.1%} have |rho| below 0.30. These are non-redundancy diagnostics, not proof of causal independence. Status is `{summary['d4_audit_status']}`; exact run, calibration and SHA-256 matching is required before manuscript numbers or Fig. 7 are frozen.
 
 ## Target influence
 
@@ -796,7 +1070,9 @@ The controlled-injection risk-coverage curve is not monotonic: retaining only th
 
 ## Final claim boundary
 
-- Ready: continuous D5 score, retrospective report interface, process-coherence attribution Guard, final subscore aggregation with explicit coverage.
+- Ready: continuous D5 score, retrospective report interface and process-coherence attribution Guard.
+- Conditional: availability-aware aggregation is allowed only with explicit dimension-count and coverage outputs; fixed-dimension complete-evidence results must be reported separately.
+- Blocked pending dependency refresh: cross-dimensional D4-D5 publication freeze and final Fig. 7 values.
 - Not ready: sensor-specific hard Veto, causal fault labels, prospective deployment, cross-plant generalization.
 - A-E grades remain disabled because no independent future data exist for cutpoint freezing.
 - New field data, maintenance truth and dual approval should be treated as external validation/deployment work, not silently imputed into the current retrospective analysis.
@@ -829,6 +1105,37 @@ The controlled-injection risk-coverage curve is not monotonic: retaining only th
             ],
         }
         target = self.output_root / "D5_publication_audit_manifest.json"
+        target.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+        return target
+
+    def finalize_figure_bundle(self) -> Path:
+        target = self.output_root / "D5_publication_audit_manifest.json"
+        manifest = json.loads(target.read_text(encoding="utf-8"))
+        files = {
+            str(item["relative_path"]): D5_ROOT / str(item["relative_path"])
+            for item in manifest["files"]
+        }
+        for stem in self.config["publication_figures"]:
+            for suffix in ["png", "pdf", "svg", "tiff"]:
+                path = self.paths.figure_root / f"{stem}.{suffix}"
+                if path.exists():
+                    files[str(path.relative_to(D5_ROOT))] = path
+            source = self.output_root / f"{stem}_source_data.xlsx"
+            if source.exists():
+                files[str(source.relative_to(D5_ROOT))] = source
+        figure_qa = self.paths.figure_root / "D5_figure_qa.json"
+        if figure_qa.exists():
+            files[str(figure_qa.relative_to(D5_ROOT))] = figure_qa
+        manifest["files"] = [
+            {
+                "relative_path": relative,
+                "sha256": self._sha256(path),
+                "bytes": path.stat().st_size,
+            }
+            for relative, path in sorted(files.items())
+        ]
+        manifest["figure_bundle_finalized"] = True
+        manifest["d4_dependency"] = self.d4_dependency_status()
         target.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
         return target
 

@@ -1,8 +1,8 @@
 {
-  "version": "d5-publication-contract-v1.0",
+  "version": "d5-publication-contract-v1.1",
   "confirmatory_run_id": "D1D5V20-764c93bf3d95",
   "summary": {
-    "contract_version": "d5-publication-contract-v1.0",
+    "contract_version": "d5-publication-contract-v1.1",
     "confirmatory_run_id": "D1D5V20-764c93bf3d95",
     "full_outer_AUROC": 0.9666666666666668,
     "full_outer_AUPRC": 0.9741901154401155,
@@ -16,85 +16,145 @@
     "months_without_report_coverage": 3,
     "minimum_monthly_report_coverage": 0.0,
     "D4_D5_spearman": 0.14478442031176914,
+    "D4_D5_spearman_report": 0.14478442031176914,
+    "D4_D5_spearman_raw": 0.13841813773740375,
     "D4_D5_partial_rank": 0.13588443079683482,
     "D4_D5_low_score_jaccard": 0.23535532202684425,
-    "max_target_exclusion_disagreement": 0.18004014756944445,
-    "max_postreference_target_exclusion_disagreement": 0.002351026313409892,
+    "D4_D5_strata_estimable": 41,
+    "D4_D5_strata_abs_rho_below_0_30_rate": 0.8780487804878049,
+    "max_target_exclusion_disagreement": 0.1789279513888889,
+    "max_postreference_target_exclusion_disagreement": 0.00216998191681736,
     "max_injected_context_switch_rate": 0.0,
     "max_injected_ood_rate_change": 0.05787037037037037,
     "d4_run_id": "D4V14_20260726_100717",
-    "d4_audit_status": "provisional_rerun_after_latest_D4_merge",
+    "d4_audit_status": "stale_dependency_blocked",
+    "d4_dependency_current": false,
+    "availability_aware_overall_coverage": 0.9957682291666666,
+    "fixed_dimension_overall_coverage": 0.46044921875,
+    "dimension_availability_contract_max_abs_diff": 0.0,
     "scientific_score_ready": true,
+    "cross_dimension_publication_freeze_ready": false,
     "sensor_specific_hard_veto_ready": false,
     "deployment_ready": false
   },
   "d4_dependency": {
+    "status": "stale_dependency_blocked",
+    "publication_freeze_allowed": false,
     "d4_run_id": "D4V14_20260726_100717",
     "d4_calibration_id": "D4CAL-V14-7a16d7f511d3",
-    "status": "provisional_rerun_after_latest_D4_merge",
-    "n_pair_hours": 18376
+    "d4_main_scores_sha256": "b153f56cf488e482084373ecad98c1aa9c9097c6c65bc0d32888c6398a60caf2",
+    "expected_run_id": "D4V151_20260813_083347",
+    "expected_calibration_id": "D4CAL-V151-66fe1bb6b7d3",
+    "expected_main_scores_sha256": "c21738a331d19632cc915e4d29cf692920aeccd346a6c74912f0f52dd4a9ca04",
+    "checks": {
+      "single_run_id": true,
+      "single_calibration_id": true,
+      "run_id_exact_match": false,
+      "calibration_id_exact_match": false,
+      "main_scores_sha256_exact_match": false
+    },
+    "mismatch_reasons": [
+      "run_id_exact_match",
+      "calibration_id_exact_match",
+      "main_scores_sha256_exact_match"
+    ]
   },
   "production_score_changed": false,
   "files": [
     {
-      "relative_path": "outputs\\publication\\D5_PUBLICATION_READINESS_AUDIT_v1.0.md",
-      "sha256": "951b14afceb659a941306c90c0763fec61bf79de8cd0d5316024059cfbdf7bdf",
-      "bytes": 5709
+      "relative_path": "outputs\\figures\\D5_figure_qa.json",
+      "sha256": "cfc1b4c9f71d05af39a974ef9463f90f52066b9e042c8f67b0930bec652f478f",
+      "bytes": 4935
     },
     {
-      "relative_path": "outputs\\publication\\D5_publication_audit_tables.xlsx",
-      "sha256": "f804b0704ef36c432f26f3faf80d6ad7cbf93f014ec02a34916644a509ae3dae",
-      "bytes": 23665
+      "relative_path": "outputs\\figures\\FigD5_6_validation_coverage.pdf",
+      "sha256": "ff8beec018d4d331224ef2236e7fbe172b41f929f356e23c19359572ec4fb2e3",
+      "bytes": 54719
     },
     {
-      "relative_path": "outputs\\publication\\D5_decision_register.parquet",
-      "sha256": "8c888a1b2a0a3790d1333395853deb23b7c145c3a9489c8464c595fef28427f9",
-      "bytes": 4691
+      "relative_path": "outputs\\figures\\FigD5_6_validation_coverage.png",
+      "sha256": "a5d0f89175f27a60c6eeca284615c672b5fa47f41fbbecf3c25d67ee17718553",
+      "bytes": 656187
     },
     {
-      "relative_path": "outputs\\publication\\D5_outer_refit_summary.parquet",
-      "sha256": "9ea7de7e9e34e2bc3b5c657dd72bded594918e0310ad7e231a2610ef45253f30",
-      "bytes": 6681
+      "relative_path": "outputs\\figures\\FigD5_6_validation_coverage.svg",
+      "sha256": "60ed8eabe554b2a7c014a37929d2a8c0a6cf9253c107e31f49657ac47e37352b",
+      "bytes": 69085
     },
     {
-      "relative_path": "outputs\\publication\\D5_outer_refit_deltas.parquet",
-      "sha256": "1601955bc59dfd0da87cd33e695f16ac974ad0be8ecacbdb23dfe465599ce7bf",
-      "bytes": 7921
+      "relative_path": "outputs\\figures\\FigD5_6_validation_coverage.tiff",
+      "sha256": "767b8e085c5fa28f4211ab49ed95097a666f52963742ae45fec71e2bfe93b160",
+      "bytes": 1389316
     },
     {
-      "relative_path": "outputs\\publication\\D5_localization.parquet",
-      "sha256": "e63682e2c8a0ebeb772d9d0eae21b4be654b370f853eb939376249c595ddfcff",
-      "bytes": 6980
+      "relative_path": "outputs\\figures\\FigD5_7_D4_D5_complementarity.pdf",
+      "sha256": "1fc0731d8363ad2cc56a344a8b3410c920a9f51d34c938199548bfd4ef4d10a3",
+      "bytes": 58126
     },
     {
-      "relative_path": "outputs\\publication\\D5_risk_coverage.parquet",
-      "sha256": "eb0caf68ddfdc8203a64254c3aa277304432bb3fa762cb19e0b9123740a49508",
-      "bytes": 5064
+      "relative_path": "outputs\\figures\\FigD5_7_D4_D5_complementarity.png",
+      "sha256": "f4ee30551e441baa0c19c936f58a704a215e523c88e99bdec6a4f281fc9bf8be",
+      "bytes": 556320
     },
     {
-      "relative_path": "outputs\\publication\\D5_monthly_coverage.parquet",
-      "sha256": "51e4fd571650b85d5e4d8c2aab7c0ca543cb81aff01517a7efacc70c08bea506",
-      "bytes": 6919
+      "relative_path": "outputs\\figures\\FigD5_7_D4_D5_complementarity.svg",
+      "sha256": "e76ef7bdd739d477778ddbb6fc7041afcc9fc3d9b292da5b92d1bd580c195934",
+      "bytes": 84804
     },
     {
-      "relative_path": "outputs\\publication\\D5_support_sensitivity.parquet",
-      "sha256": "f6ee73f3893ed53682e63122e9220948cc97ffa0c9ead47b20b6b2c739de9fda",
-      "bytes": 5871
+      "relative_path": "outputs\\figures\\FigD5_7_D4_D5_complementarity.tiff",
+      "sha256": "e5e1d869d315617342e7703e07263104717240eefe21046d9d6eaee2da0a0cac",
+      "bytes": 1186676
     },
     {
-      "relative_path": "outputs\\publication\\D5_d4_d5_dependence.parquet",
-      "sha256": "a18b2d57e0affd0fdf036d32f43b988f92c6866b4300aa8cfa798991759f1268",
-      "bytes": 4364
+      "relative_path": "outputs\\figures\\FigD5_8_dimension_availability_sensitivity.pdf",
+      "sha256": "49e7849bed2cbf5a3af29f9bfa72488baeb1f04a062c690e04d1a806be450f8c",
+      "bytes": 53301
     },
     {
-      "relative_path": "outputs\\publication\\D5_d4_d5_composite.parquet",
-      "sha256": "54eed66c77212702829f3d4bc85907babd66e415997082a0a86a8b49ea1b4556",
-      "bytes": 4352
+      "relative_path": "outputs\\figures\\FigD5_8_dimension_availability_sensitivity.png",
+      "sha256": "25eed423cc1a6f55d00a2658d7ce4a3fd7a3e60bad1fdf6a6f6f4ff5cc3d51cb",
+      "bytes": 535313
     },
     {
-      "relative_path": "outputs\\publication\\D5_target_influence.parquet",
-      "sha256": "77b6a0a69423e32f3f664790ccd0b4e841d967fce6370559b159ea50c758bdad",
-      "bytes": 8536
+      "relative_path": "outputs\\figures\\FigD5_8_dimension_availability_sensitivity.svg",
+      "sha256": "9c9db61371e8dadf062ac4589057466d04d3164a6219d6ae0526685644ae2279",
+      "bytes": 69730
+    },
+    {
+      "relative_path": "outputs\\figures\\FigD5_8_dimension_availability_sensitivity.tiff",
+      "sha256": "5e3895e9fe1ed2a5ad7e18aba0096ca11933e581e01f1cfc3cd65a08927cc045",
+      "bytes": 1406590
+    },
+    {
+      "relative_path": "outputs\\figures\\FigD5_9_target_support_robustness.pdf",
+      "sha256": "8967eaf6d8533c8a760b891ff04aa2f0a23251f9bbfb462bb6fddbf45c30a018",
+      "bytes": 48906
+    },
+    {
+      "relative_path": "outputs\\figures\\FigD5_9_target_support_robustness.png",
+      "sha256": "fd0415d6e3ed87344cc5140186fd9b86626bfd1225dfd72662dae3042f1f5360",
+      "bytes": 406917
+    },
+    {
+      "relative_path": "outputs\\figures\\FigD5_9_target_support_robustness.svg",
+      "sha256": "f8fdc6177a692a4ce6161c531314929cf6554203d8a30d815f015e6ec4eea8cd",
+      "bytes": 35150
+    },
+    {
+      "relative_path": "outputs\\figures\\FigD5_9_target_support_robustness.tiff",
+      "sha256": "88af281d37f8851618be048e49a8313a4a1a8a3a1e1d3f452a9b911daca6168d",
+      "bytes": 1040878
+    },
+    {
+      "relative_path": "outputs\\publication\\D5_PUBLICATION_READINESS_AUDIT_v1.1.md",
+      "sha256": "3000fd27bd303e5413d1d7eb5b5d7a464ac2e416930890be51a8a1928182ab5f",
+      "bytes": 7400
+    },
+    {
+      "relative_path": "outputs\\publication\\D5_coverage_strata.parquet",
+      "sha256": "f4da589996c29b4e710131be262c3efdaa0fb822e051293f1310365aaf0e7b75",
+      "bytes": 5837
     },
     {
       "relative_path": "outputs\\publication\\D5_coverage_summary.parquet",
@@ -102,9 +162,90 @@
       "bytes": 2879
     },
     {
-      "relative_path": "outputs\\publication\\D5_coverage_strata.parquet",
-      "sha256": "f4da589996c29b4e710131be262c3efdaa0fb822e051293f1310365aaf0e7b75",
-      "bytes": 5837
+      "relative_path": "outputs\\publication\\D5_d4_d5_composite.parquet",
+      "sha256": "54eed66c77212702829f3d4bc85907babd66e415997082a0a86a8b49ea1b4556",
+      "bytes": 4352
+    },
+    {
+      "relative_path": "outputs\\publication\\D5_d4_d5_dependence.parquet",
+      "sha256": "5a460deb7c3336af77955fa2de04d3386bb208a978ec8998174b14ce2f505fa3",
+      "bytes": 5734
+    },
+    {
+      "relative_path": "outputs\\publication\\D5_d4_d5_stratified_rho.parquet",
+      "sha256": "4e274bbb6e5a161f0079a012dd37cdd2d20d7558f1b2e2ac004d56269c814ddd",
+      "bytes": 8751
+    },
+    {
+      "relative_path": "outputs\\publication\\D5_decision_register.parquet",
+      "sha256": "710460457bcba4163b5d64d66b94ca476495f41a95378efddd2581ffa32a0196",
+      "bytes": 4974
+    },
+    {
+      "relative_path": "outputs\\publication\\D5_dimension_availability.parquet",
+      "sha256": "f34750499b681fb5eefe3f811fbbec3a4d0570f45ca71a850a191b4a67c93680",
+      "bytes": 12550
+    },
+    {
+      "relative_path": "outputs\\publication\\D5_localization.parquet",
+      "sha256": "e63682e2c8a0ebeb772d9d0eae21b4be654b370f853eb939376249c595ddfcff",
+      "bytes": 6980
+    },
+    {
+      "relative_path": "outputs\\publication\\D5_monthly_coverage.parquet",
+      "sha256": "51e4fd571650b85d5e4d8c2aab7c0ca543cb81aff01517a7efacc70c08bea506",
+      "bytes": 6919
+    },
+    {
+      "relative_path": "outputs\\publication\\D5_outer_refit_deltas.parquet",
+      "sha256": "1601955bc59dfd0da87cd33e695f16ac974ad0be8ecacbdb23dfe465599ce7bf",
+      "bytes": 7921
+    },
+    {
+      "relative_path": "outputs\\publication\\D5_outer_refit_summary.parquet",
+      "sha256": "9ea7de7e9e34e2bc3b5c657dd72bded594918e0310ad7e231a2610ef45253f30",
+      "bytes": 6681
+    },
+    {
+      "relative_path": "outputs\\publication\\D5_publication_audit_tables.xlsx",
+      "sha256": "600e9aefde2898da31fc87ba4ca5d2878324ba73ec76f2b6b0d4704887c36794",
+      "bytes": 30537
+    },
+    {
+      "relative_path": "outputs\\publication\\D5_risk_coverage.parquet",
+      "sha256": "eb0caf68ddfdc8203a64254c3aa277304432bb3fa762cb19e0b9123740a49508",
+      "bytes": 5064
+    },
+    {
+      "relative_path": "outputs\\publication\\D5_support_sensitivity.parquet",
+      "sha256": "f6ee73f3893ed53682e63122e9220948cc97ffa0c9ead47b20b6b2c739de9fda",
+      "bytes": 5871
+    },
+    {
+      "relative_path": "outputs\\publication\\D5_target_influence.parquet",
+      "sha256": "13af4a843ab3f1942fe634e88b6bb8badd884917e8a2533d602bff89b59f54ff",
+      "bytes": 8537
+    },
+    {
+      "relative_path": "outputs\\publication\\FigD5_6_validation_coverage_source_data.xlsx",
+      "sha256": "c3a6003ecea1362dab936bfbad45fc6ef37294636555b31a7aa505186cff8080",
+      "bytes": 10606
+    },
+    {
+      "relative_path": "outputs\\publication\\FigD5_7_D4_D5_complementarity_source_data.xlsx",
+      "sha256": "8c27e8a3c215ea325839dc203b968a69582e270588e1d5bb0fca1759624c4210",
+      "bytes": 10601
+    },
+    {
+      "relative_path": "outputs\\publication\\FigD5_8_dimension_availability_sensitivity_source_data.xlsx",
+      "sha256": "7619005d9470f6485750c452ea79fcfbff717ebab60ac2fb072170b5be2dd583",
+      "bytes": 6490
+    },
+    {
+      "relative_path": "outputs\\publication\\FigD5_9_target_support_robustness_source_data.xlsx",
+      "sha256": "300a6cb9e7b6f8c6c8ef1f043ddea916673046772105d1209cb6d9b1dbcabf3c",
+      "bytes": 7501
     }
-  ]
+  ],
+  "figure_bundle_finalized": true
 }

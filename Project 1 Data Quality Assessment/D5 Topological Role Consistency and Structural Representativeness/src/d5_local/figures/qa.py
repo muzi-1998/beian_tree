@@ -18,6 +18,8 @@ def run_figure_qa() -> dict[str, object]:
         (1, "framework"), (2, "spatiotemporal"), (3, "evidence"),
         (4, "validation"), (5, "governance"),
         (6, "validation_coverage"), (7, "D4_D5_complementarity"),
+        (8, "dimension_availability_sensitivity"),
+        (9, "target_support_robustness"),
     ]]
     for stem in stems:
         counterparts = [

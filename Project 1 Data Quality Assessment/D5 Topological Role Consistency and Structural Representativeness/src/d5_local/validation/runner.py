@@ -11,7 +11,12 @@ import pandas as pd
 from scipy.stats import spearmanr
 from sklearn.metrics import average_precision_score, roc_auc_score
 
-from d5_common.config import D5_ROOT, load_yaml, resolve_paths
+from d5_common.config import (
+    D5_ROOT,
+    load_yaml,
+    reference_end_from_fraction,
+    resolve_paths,
+)
 from d5_local.contracts import TopologyRegistry
 from d5_local.data import SnapshotBuilder
 from d5_local.evidence import SpatialEvidenceEngine
@@ -27,6 +32,9 @@ class D5ValidationRunner:
         self.topology = TopologyRegistry.load(D5_ROOT / "configs" / "common")
         self.windows = load_yaml(D5_ROOT / "configs" / "common" / "windows.yaml")
         self.aggregation = load_yaml(D5_ROOT / "configs" / "local" / "aggregation.yaml")
+        self.template_config = load_yaml(
+            D5_ROOT / "configs" / "local" / "templates.yaml"
+        )
         self.exporter = D5OutputExporter(self.paths.local_output_root)
 
     def run(self) -> dict[str, Any]:
@@ -188,7 +196,9 @@ class D5ValidationRunner:
         nodes = self.topology.nodes.set_index("sensor_id")
         evidence["zone_id"] = evidence["sensor_id"].map(nodes["zone_id"])
         timestamps = pd.DatetimeIndex(sorted(evidence["timestamp"].unique()))
-        reference_end = timestamps[int(len(timestamps) * 0.70)]
+        reference_end = reference_end_from_fraction(
+            timestamps, float(self.template_config["reference_fraction"])
+        )
         reference = evidence[
             (evidence["timestamp"] <= reference_end) & evidence["window_coverage"].ge(0.80)
         ]
@@ -210,7 +220,9 @@ class D5ValidationRunner:
         return output
 
     def _test_starts(self, snapshots: pd.DataFrame) -> pd.DatetimeIndex:
-        reference_end = snapshots.index[int(len(snapshots) * 0.70)]
+        reference_end = reference_end_from_fraction(
+            snapshots.index, float(self.template_config["reference_fraction"])
+        )
         start = reference_end.ceil("D") + pd.Timedelta(days=7)
         end = snapshots.index.max() - pd.Timedelta(days=2)
         return pd.date_range(start, end, freq="24h")

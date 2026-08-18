@@ -3,8 +3,9 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 import yaml
+from dataclasses import replace
 
-from d5_common.config import D5_ROOT
+from d5_common.config import D5_ROOT, reference_end_from_fraction
 from d5_local.publication.audit import D5PublicationAudit
 
 
@@ -22,6 +23,57 @@ def test_publication_contract_keeps_scores_continuous_and_grades_disabled() -> N
     assert contract["claim_boundaries"]["top1_failure_blocks"] == (
         "sensor_specific_hard_veto"
     )
+    assert contract["d4_dependency"]["policy"] == (
+        "fail_closed_exact_artifact_match"
+    )
+
+
+def test_reference_endpoint_uses_inclusive_shared_contract() -> None:
+    index = pd.date_range("2025-01-01", periods=10, freq="10min")
+    assert reference_end_from_fraction(index, 0.70) == index[6]
+
+
+def test_d4_dependency_check_is_fail_closed(tmp_path) -> None:
+    path = tmp_path / "D4_main_scores.xlsx"
+    frame = pd.DataFrame(
+        {"run_id": ["R1", "R1"], "calibration_id": ["C1", "C1"]}
+    )
+    frame.to_excel(path, index=False)
+    audit = D5PublicationAudit()
+    audit.paths = replace(audit.paths, d4_scores=path)
+    audit.config["d4_dependency"].update(
+        {
+            "expected_run_id": "R1",
+            "expected_calibration_id": "C1",
+            "expected_main_scores_sha256": audit._sha256(path),
+        }
+    )
+    assert audit.d4_dependency_status()["status"] == "current"
+    frame.loc[1, "run_id"] = "R2"
+    frame.to_excel(path, index=False)
+    assert audit.d4_dependency_status()["status"] == "stale_dependency_blocked"
+
+
+def test_stratified_overlap_retains_unestimable_cells() -> None:
+    audit = D5PublicationAudit()
+    timestamps = pd.date_range("2025-01-01", periods=48, freq="1h")
+    frame = pd.DataFrame(
+        {
+            "timestamp": timestamps,
+            "D4_raw": np.linspace(1.0, 5.0, 48),
+            "D5_pair": np.linspace(1.2, 4.8, 48),
+            "variable": ["DO"] * 48,
+            "regime_id": [1] * 48,
+            "month": ["2025-01"] * 48,
+            "pair_id": ["PAIR_DO11"] * 48,
+            "time_block": np.repeat([0, 1], 24),
+        }
+    )
+    result = audit._stratified_d4_d5_rho(
+        frame, "D5_pair", "D5_raw_calculable"
+    )
+    assert set(result["stratum_type"]) == {"analyte", "regime", "month", "pair"}
+    assert result["estimable"].all()
 
 
 def test_cluster_label_alignment_recovers_permutation() -> None:

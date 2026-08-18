@@ -1,6 +1,6 @@
 # D5 Project Directory Guide v2.4
 
-**Generated:** 2026-08-17 17:51 CST
+**Generated:** 2026-08-18 10:57 CST
 **Update rule:** every computational or figure change must rerun reports and release QA.
 
 ## 1. Project layout
@@ -82,7 +82,7 @@ Use `python scripts/run_d5_release.py --include-local` after data, topology, tem
 - [ ] Topology validity interval covers the evaluated data.
 - [ ] All topology-bound template hashes are regenerated.
 - [ ] Required support tiers and ORP exit criteria pass.
-- [ ] Swap AUROC/AUPRC and Top-1 pass blocked validation.
+- [ ] Controlled swap AUROC/AUPRC and Top-1 pass blocked validation.
 - [ ] Transition FAR and topology tests have external truth.
 - [ ] Local-Sensitivity invariance gates pass.
 - [ ] D4 protected columns have max absolute difference zero.
@@ -103,4 +103,4 @@ Use `python scripts/run_d5_release.py --include-local` after data, topology, tem
 
 ## 8. Current branch gate
 
-Current release classification: **scientific score ready for final subscore aggregation; automated deployment blocked**. Node-specific hard Veto remains gated by Top-1 localization.
+Current release classification: **D5 scientific score ready; cross-dimensional publication freeze dependency-gated; automated deployment blocked**. Node-specific hard Veto remains gated by controlled-perturbation Top-1 localization.
