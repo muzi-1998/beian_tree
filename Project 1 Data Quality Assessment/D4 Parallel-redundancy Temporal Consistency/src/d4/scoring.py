@@ -19,14 +19,22 @@ def robust_iqr(values: np.ndarray) -> float:
     return float(np.quantile(values, 0.75) - np.quantile(values, 0.25))
 
 
-def _hourly_medians(values: np.ndarray, points_per_hour: int) -> np.ndarray:
+def _hourly_medians(
+    values: np.ndarray,
+    points_per_hour: int,
+    min_valid_fraction: float = 0.80,
+) -> np.ndarray:
     n = len(values) // points_per_hour
     if n == 0:
         return np.asarray([], dtype=float)
     arr = values[-n * points_per_hour :].reshape(n, points_per_hour)
+    minimum = int(np.ceil(points_per_hour * min_valid_fraction))
+    valid = np.isfinite(arr).sum(axis=1)
     with np.errstate(all="ignore"), warnings.catch_warnings():
         warnings.simplefilter("ignore", category=RuntimeWarning)
-        return np.nanmedian(arr, axis=1)
+        medians = np.nanmedian(arr, axis=1)
+    medians[valid < minimum] = np.nan
+    return medians
 
 
 def _theil_slope(values: np.ndarray) -> float:
@@ -41,8 +49,14 @@ def _theil_slope(values: np.ndarray) -> float:
 class WindowMetrics:
     n_target: int
     n_reference: int
+    n_common: int
+    n_common_hours: int
     valid_fraction_target: float
     valid_fraction_reference: float
+    valid_fraction_common: float
+    valid_fraction_common_hours: float
+    asymmetric_missing_fraction: float
+    support_jaccard: float
     d_w1: float
     d_ks: float
     beta_target: float
@@ -57,6 +71,8 @@ class WindowMetrics:
     cp_one_sided: bool
     deadband_active: bool
     risk_dist: float
+    risk_dist_w1: float
+    risk_dist_ks: float
     risk_trend: float
     risk_var: float
     risk_cp: float
@@ -69,31 +85,53 @@ def compute_window_metrics(
     *,
     deadband: float,
     points_per_hour: int,
+    min_common_hour_fraction: float = 0.80,
+    distribution_weights: dict[str, float] | None = None,
 ) -> WindowMetrics:
     target = np.asarray(target, dtype=float)
     reference = np.asarray(reference, dtype=float)
+    if len(target) != len(reference):
+        raise ValueError("Paired windows must have identical timestamp support")
     finite_target = np.isfinite(target)
     finite_reference = np.isfinite(reference)
+    common = finite_target & finite_reference
+    union = finite_target | finite_reference
     n_total = max(len(target), 1)
-    t = target[finite_target]
-    r = reference[finite_reference]
+    t = target[common]
+    r = reference[common]
     iqr_t = robust_iqr(t)
     iqr_r = robust_iqr(r)
+    common_target = np.where(common, target, np.nan)
+    common_reference = np.where(common, reference, np.nan)
+    ht = _hourly_medians(
+        common_target, points_per_hour, min_valid_fraction=min_common_hour_fraction
+    )
+    hr = _hourly_medians(
+        common_reference, points_per_hour, min_valid_fraction=min_common_hour_fraction
+    )
+    common_hours = np.isfinite(ht) & np.isfinite(hr)
+    n_hours = max(len(ht), 1)
+    weights = distribution_weights or {"w1": 0.60, "ks": 0.40}
+    if set(weights) != {"w1", "ks"} or not np.isclose(sum(weights.values()), 1.0):
+        raise ValueError("Distribution weights must define w1/ks and sum to 1")
+    support_jaccard = float(common.sum() / union.sum()) if union.any() else 0.0
     if min(t.size, r.size) < 20:
         nan = float("nan")
         return WindowMetrics(
-            t.size, r.size, t.size / n_total, r.size / n_total,
-            nan, nan, nan, nan, nan, iqr_t, iqr_r, nan,
-            nan, nan, nan, False, False, nan, nan, nan, nan, nan,
+            int(finite_target.sum()), int(finite_reference.sum()), int(common.sum()),
+            int(common_hours.sum()), finite_target.mean(), finite_reference.mean(),
+            common.mean(), common_hours.sum() / n_hours, (finite_target ^ finite_reference).mean(),
+            support_jaccard, nan, nan, nan, nan, nan, iqr_t, iqr_r, nan,
+            nan, nan, nan, False, False, nan, nan, nan, nan, nan, nan, nan,
         )
 
     pooled_scale = max(np.nanmean([iqr_t, iqr_r]), deadband)
     d_w1 = float(wasserstein_distance(t, r))
     d_ks = float(ks_2samp(t, r, method="asymp").statistic)
-    risk_dist = 0.60 * (d_w1 / pooled_scale) + 0.40 * d_ks
+    risk_dist_w1 = d_w1 / pooled_scale
+    risk_dist_ks = d_ks
+    risk_dist = weights["w1"] * risk_dist_w1 + weights["ks"] * risk_dist_ks
 
-    ht = _hourly_medians(target, points_per_hour)
-    hr = _hourly_medians(reference, points_per_hour)
     beta_t = _theil_slope(ht)
     beta_r = _theil_slope(hr)
     d_beta = abs(beta_t - beta_r)
@@ -105,10 +143,14 @@ def compute_window_metrics(
     risk_var = 0.0 if deadband_active else d_var
 
     return WindowMetrics(
-        t.size, r.size, t.size / n_total, r.size / n_total,
+        int(finite_target.sum()), int(finite_reference.sum()), int(common.sum()),
+        int(common_hours.sum()), finite_target.mean(), finite_reference.mean(),
+        common.mean(), common_hours.sum() / n_hours, (finite_target ^ finite_reference).mean(),
+        support_jaccard,
         d_w1, d_ks, beta_t, beta_r, d_beta, iqr_t, iqr_r, d_var,
         np.nan, np.nan, 0.0, False, deadband_active,
-        float(risk_dist), float(risk_trend), float(risk_var), 0.0, 5.0,
+        float(risk_dist), float(risk_dist_w1), float(risk_dist_ks),
+        float(risk_trend), float(risk_var), 0.0, 5.0,
     )
 
 

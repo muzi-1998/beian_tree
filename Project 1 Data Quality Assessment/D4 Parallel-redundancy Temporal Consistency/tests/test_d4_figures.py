@@ -47,5 +47,7 @@ def test_calibration_provenance_retains_public_scope_and_support() -> None:
     orp_row = output[(output["variable"] == "ORP") & (output["regime_id"] == 1)].iloc[0]
     assert do_row["sample_size"] == 100
     assert do_row["exact_stratum_size"] == 100
+    assert np.isnan(do_row["exact_independent_blocks"])
+    assert do_row["percentile_precision_grade"] == "not_reported"
     assert orp_row["mapping_scope"] == "variable_fallback"
     assert orp_row["calibration_quality"] == "limited"

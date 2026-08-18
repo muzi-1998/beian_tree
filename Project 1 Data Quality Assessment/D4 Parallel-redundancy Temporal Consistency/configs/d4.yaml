@@ -1,8 +1,29 @@
-version: d4-v1.4-canonical-d4-20260726
+version: d4-v1.5.1-statistical-dependence-audit-20260813
 window_hours: 24
 step_hours: 1
 analysis_interval_minutes: 10
 min_valid_fraction: 0.80
+
+phase_contract:
+  development_start: 2025-08-01 00:00:00
+  development_end: 2026-01-24 23:59:59
+  embargo_start: 2026-01-25 00:00:00
+  embargo_end: 2026-01-31 23:59:59
+  internal_validation_start: 2026-02-01 00:00:00
+  internal_validation_end: 2026-04-13 23:59:59
+  terminal_status: pending_genuinely_unseen_future_period
+  upstream_transform_status: retrospective_upstream_artifacts_previously_developed_on_study_period
+
+common_support:
+  min_fraction: 0.80
+  min_hour_fraction: 0.80
+  trend_min_common_hour_fraction: 0.80
+  policy: synchronous_timestamp_primary
+
+distribution:
+  component_version: full_w1_0.60_ks_0.40_development_frozen
+  primary: full
+  weights: {w1: 0.60, ks: 0.40}
 
 change_point:
   auxiliary_window_days: 7
@@ -35,6 +56,14 @@ benchmark:
   min_variable_windows: 50
   quantiles: [0.50, 0.75, 0.90, 0.975]
   d5_screen_status: external_D5_gate_not_applied_in_core
+  independent_block_days: 7
+  min_exact_independent_blocks: 6
+  percentile_precision:
+    quantile: 0.975
+    bootstrap_repetitions: 600
+    relative_ci_width_diagnostic_limit: 1.00
+    admission_role: evidence_grade_only_pending_preregistered_precision_target
+  independent_block_rationale: provisional_six_week_identifiability_floor_not_precision_guarantee
 
 arbitration:
   d1_unreliable_below: 2.5
