@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import sys
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -15,13 +15,18 @@ def sha256(path: Path) -> str:
     return D5PublicationAudit._sha256(path)
 
 
+def manifest_relative_path(value: str) -> Path:
+    """Interpret persisted manifest paths consistently on Windows and POSIX."""
+    return Path(*PureWindowsPath(value).parts)
+
+
 def main() -> None:
     audit = D5PublicationAudit()
     manifest_path = ROOT / "outputs" / "publication" / "D5_publication_audit_manifest.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     failures: list[str] = []
     for item in manifest.get("files", []):
-        path = ROOT / item["relative_path"]
+        path = ROOT / manifest_relative_path(item["relative_path"])
         if not path.exists():
             failures.append(f"missing:{item['relative_path']}")
         elif sha256(path) != item["sha256"]:

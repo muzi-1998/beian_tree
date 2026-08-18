@@ -7,6 +7,7 @@ from dataclasses import replace
 
 from d5_common.config import D5_ROOT, reference_end_from_fraction
 from d5_local.publication.audit import D5PublicationAudit
+from scripts.verify_d5_publication_bundle import manifest_relative_path
 
 
 def test_publication_contract_keeps_scores_continuous_and_grades_disabled() -> None:
@@ -31,6 +32,14 @@ def test_publication_contract_keeps_scores_continuous_and_grades_disabled() -> N
 def test_reference_endpoint_uses_inclusive_shared_contract() -> None:
     index = pd.date_range("2025-01-01", periods=10, freq="10min")
     assert reference_end_from_fraction(index, 0.70) == index[6]
+
+
+def test_manifest_paths_are_portable_across_operating_systems() -> None:
+    expected = D5_ROOT / "outputs" / "figures" / "D5_figure_qa.json"
+    relative = manifest_relative_path(
+        r"outputs\figures\D5_figure_qa.json"
+    )
+    assert D5_ROOT / relative == expected
 
 
 def test_d4_dependency_check_is_fail_closed(tmp_path) -> None:
