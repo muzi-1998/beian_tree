@@ -1,0 +1,29 @@
+name: D5 publication bundle
+
+on:
+  pull_request:
+    paths:
+      - "Project 1 Data Quality Assessment/D5 Topological Role Consistency and Structural Representativeness/**"
+      - "Project 1 Data Quality Assessment/D4 Parallel-redundancy Temporal Consistency/outputs/data/D4_main_scores.xlsx"
+      - ".github/workflows/d5-publication-ci.yml"
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Project 1 Data Quality Assessment/D5 Topological Role Consistency and Structural Representativeness
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: pip
+          cache-dependency-path: Project 1 Data Quality Assessment/D5 Topological Role Consistency and Structural Representativeness/requirements-lock.txt
+      - name: Install locked scientific environment
+        run: pip install -r requirements-lock.txt pytest
+      - name: Run D5 contract tests
+        run: python -m pytest tests -q
+      - name: Verify publication artifacts, figures and D4 dependency
+        run: python scripts/verify_d5_publication_bundle.py

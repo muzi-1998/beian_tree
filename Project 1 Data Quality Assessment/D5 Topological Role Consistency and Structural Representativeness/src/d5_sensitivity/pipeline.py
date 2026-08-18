@@ -8,7 +8,12 @@ import numpy as np
 import pandas as pd
 from scipy.stats import spearmanr
 
-from d5_common.config import D5_ROOT, load_yaml, resolve_paths
+from d5_common.config import (
+    D5_ROOT,
+    load_yaml,
+    reference_end_from_fraction,
+    resolve_paths,
+)
 from d5_common.hashing import hash_file, hash_object
 from d5_common.math.calibration import empirical_quality_score
 
@@ -28,6 +33,9 @@ class D5SensitivityPipeline:
         self.config = load_yaml(D5_ROOT / "configs" / "sensitivity" / "d5_sensitivity.yaml")
         self.mapping = load_yaml(D5_ROOT / "configs" / "local" / "mapping.yaml")
         self.aggregation = load_yaml(D5_ROOT / "configs" / "local" / "aggregation.yaml")
+        self.template_config = load_yaml(
+            D5_ROOT / "configs" / "local" / "templates.yaml"
+        )
         self.output_root = self.paths.sensitivity_output_root
         self.output_root.mkdir(parents=True, exist_ok=True)
 
@@ -46,7 +54,12 @@ class D5SensitivityPipeline:
         shadow["upstream_filter_pass"] = (
             shadow[["D1_score", "D2_score", "D3_score"]].ge(3.0).all(axis=1)
         )
-        reference_end = local["timestamp"].sort_values().iloc[int(len(local) * 0.70)]
+        timestamps = pd.DatetimeIndex(
+            sorted(pd.to_datetime(local["timestamp"]).dropna().unique())
+        )
+        reference_end = reference_end_from_fraction(
+            timestamps, float(self.template_config["reference_fraction"])
+        )
         mapping_rows: list[dict[str, Any]] = []
         shift_rows: list[dict[str, Any]] = []
         for risk, q_column in self.RISK_TO_Q.items():

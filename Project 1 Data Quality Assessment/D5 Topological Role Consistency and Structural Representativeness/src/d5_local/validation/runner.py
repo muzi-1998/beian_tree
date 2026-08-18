@@ -11,7 +11,12 @@ import pandas as pd
 from scipy.stats import spearmanr
 from sklearn.metrics import average_precision_score, roc_auc_score
 
-from d5_common.config import D5_ROOT, load_yaml, resolve_paths
+from d5_common.config import (
+    D5_ROOT,
+    load_yaml,
+    reference_end_from_fraction,
+    resolve_paths,
+)
 from d5_local.contracts import TopologyRegistry
 from d5_local.data import SnapshotBuilder
 from d5_local.evidence import SpatialEvidenceEngine
@@ -27,6 +32,9 @@ class D5ValidationRunner:
         self.topology = TopologyRegistry.load(D5_ROOT / "configs" / "common")
         self.windows = load_yaml(D5_ROOT / "configs" / "common" / "windows.yaml")
         self.aggregation = load_yaml(D5_ROOT / "configs" / "local" / "aggregation.yaml")
+        self.template_config = load_yaml(
+            D5_ROOT / "configs" / "local" / "templates.yaml"
+        )
         self.exporter = D5OutputExporter(self.paths.local_output_root)
 
     def run(self) -> dict[str, Any]:
@@ -62,6 +70,11 @@ class D5ValidationRunner:
                 delta_stat = injected_localization - baseline_localization
                 ranks = delta_stat.rank(ascending=False, method="min")
                 rank = int(ranks[affected].min())
+                predicted_sensor = str(delta_stat.idxmax())
+                hop_error = min(
+                    self._topological_distance(predicted_sensor, sensor)
+                    for sensor in affected
+                )
                 trial_rows.append(
                     {
                         "trial_id": f"D5-INJ-{scenario}-{trial_no + 1:03d}",
@@ -83,6 +96,11 @@ class D5ValidationRunner:
                         "statistic_delta": target_injected - target_baseline,
                         "target_rank": rank,
                         "top1_hit": rank == 1,
+                        "top2_hit": rank <= 2,
+                        "reciprocal_rank": 1.0 / rank,
+                        "predicted_sensor": predicted_sensor,
+                        "predicted_analyte": predicted_sensor.split("_", 1)[0],
+                        "topological_hop_error": hop_error,
                         "localization_statistic": "Q_rep_injected_minus_paired_baseline",
                         "max_affected_localization_delta": float(delta_stat[affected].max()),
                     }
@@ -128,6 +146,32 @@ class D5ValidationRunner:
             "n_negative_controls": len(negative),
         }
 
+    def _topological_distance(self, source: str, target: str) -> int:
+        if source == target:
+            return 0
+        adjacency = {sensor: set() for sensor in self.topology.node_ids()}
+        for edge in self.topology.edges.itertuples(index=False):
+            adjacency[str(edge.source)].add(str(edge.target))
+            adjacency[str(edge.target)].add(str(edge.source))
+        for pair in self.topology.twin_pairs.itertuples(index=False):
+            adjacency[str(pair.sensor_a)].add(str(pair.sensor_b))
+            adjacency[str(pair.sensor_b)].add(str(pair.sensor_a))
+        frontier = {source}
+        visited = {source}
+        for distance in range(1, len(adjacency) + 1):
+            frontier = {
+                neighbor
+                for node in frontier
+                for neighbor in adjacency[node]
+                if neighbor not in visited
+            }
+            if target in frontier:
+                return distance
+            visited.update(frontier)
+            if not frontier:
+                break
+        return len(adjacency)
+
     def _load_snapshots(self) -> pd.DataFrame:
         observations = pd.read_parquet(self.paths.canonical_observations)
         columns = [*self.topology.node_ids(), "QR_1", "QR_2", "QIR_1", "QIR_2"]
@@ -152,7 +196,9 @@ class D5ValidationRunner:
         nodes = self.topology.nodes.set_index("sensor_id")
         evidence["zone_id"] = evidence["sensor_id"].map(nodes["zone_id"])
         timestamps = pd.DatetimeIndex(sorted(evidence["timestamp"].unique()))
-        reference_end = timestamps[int(len(timestamps) * 0.70)]
+        reference_end = reference_end_from_fraction(
+            timestamps, float(self.template_config["reference_fraction"])
+        )
         reference = evidence[
             (evidence["timestamp"] <= reference_end) & evidence["window_coverage"].ge(0.80)
         ]
@@ -174,7 +220,9 @@ class D5ValidationRunner:
         return output
 
     def _test_starts(self, snapshots: pd.DataFrame) -> pd.DatetimeIndex:
-        reference_end = snapshots.index[int(len(snapshots) * 0.70)]
+        reference_end = reference_end_from_fraction(
+            snapshots.index, float(self.template_config["reference_fraction"])
+        )
         start = reference_end.ceil("D") + pd.Timedelta(days=7)
         end = snapshots.index.max() - pd.Timedelta(days=2)
         return pd.date_range(start, end, freq="24h")

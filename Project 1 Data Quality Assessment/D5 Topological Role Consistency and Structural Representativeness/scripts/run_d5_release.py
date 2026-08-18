@@ -38,6 +38,7 @@ if __name__ == "__main__":
         "finalize_d5_admission.py",
         "run_d5_topology_review.py",
         "run_d5_shadow_v2.py",
+        "run_d5_publication_audit.py",
     ]:
         run(script)
     run_d4_readiness()

@@ -100,6 +100,22 @@ def test_global_context_is_shared_and_robust_to_one_extreme_sensor() -> None:
     assert perturbed.loc[index[0], "do_pool_median"] == 1.0
 
 
+def test_global_context_target_exclusion_is_an_explicit_sensitivity() -> None:
+    registry = topology()
+    index = pd.date_range("2025-08-01", periods=4, freq="10min")
+    columns = [*registry.node_ids(), "QR_1", "QR_2", "QIR_1", "QIR_2"]
+    snapshots = pd.DataFrame(1.0, index=index, columns=columns)
+    builder = GlobalProcessContextBuilder(registry)
+    included = builder.build(snapshots)
+    excluded = builder.build_excluding(snapshots, "DO_1_1")
+    assert included.columns.tolist() == excluded.columns.tolist()
+    snapshots.loc[index[0], "DO_1_1"] = -1000.0
+    excluded_perturbed = builder.build_excluding(snapshots, "DO_1_1")
+    pd.testing.assert_series_equal(
+        excluded["do_pool_median"], excluded_perturbed["do_pool_median"]
+    )
+
+
 def test_research_topology_enables_scientific_score_without_deployment() -> None:
     frame = pd.DataFrame(
         {

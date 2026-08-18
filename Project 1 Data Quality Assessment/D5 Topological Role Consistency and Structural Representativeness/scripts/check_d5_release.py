@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import sys
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 
 import numpy as np
 import pandas as pd
@@ -14,6 +14,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from d5_common.config import resolve_paths  # noqa: E402
 from d5_common.hashing import hash_object  # noqa: E402
 from d5_local.outputs.manifest import sha256_file  # noqa: E402
+from d5_local.publication import D5PublicationAudit  # noqa: E402
 
 
 def main() -> None:
@@ -39,6 +40,21 @@ def main() -> None:
     figure_qa = json.loads(
         (paths.figure_root / "D5_figure_qa.json").read_text(encoding="utf-8")
     )
+    publication_manifest_path = (
+        ROOT / "outputs" / "publication" / "D5_publication_audit_manifest.json"
+    )
+    publication_manifest = json.loads(
+        publication_manifest_path.read_text(encoding="utf-8")
+    )
+    publication_hashes_valid = all(
+        (ROOT / Path(*PureWindowsPath(item["relative_path"]).parts)).exists()
+        and D5PublicationAudit._sha256(
+            ROOT / Path(*PureWindowsPath(item["relative_path"]).parts)
+        )
+        == item["sha256"]
+        for item in publication_manifest["files"]
+    )
+    d4_dependency = D5PublicationAudit().d4_dependency_status()
     orp = support[support["analyte"] == "ORP"]
     template_bundle = json.loads(
         (
@@ -211,6 +227,22 @@ def main() -> None:
             "passed": bool(figure_qa["passed"]),
             "detail": "SVG/PDF/600dpi PNG/TIFF and frozen plot data",
         },
+        {
+            "check": "publication_artifact_hash_integrity",
+            "passed": bool(
+                publication_hashes_valid
+                and publication_manifest.get("figure_bundle_finalized", False)
+            ),
+            "detail": "publication tables, source data and figure bundle match manifest SHA-256",
+        },
+        {
+            "check": "d4_publication_dependency_current",
+            "passed": d4_dependency["status"] == "current",
+            "detail": (
+                "exact single D4 run/calibration and main-score SHA-256; status="
+                f"{d4_dependency['status']}"
+            ),
+        },
     ]
     outputs_root = ROOT / "outputs"
     inventory = []
@@ -232,14 +264,22 @@ def main() -> None:
     ]
     if not top1_passed:
         production_blockers.append("swap_Top1_below_0.80")
+    integration_blockers = []
+    if d4_dependency["status"] != "current":
+        integration_blockers.append("D4_publication_dependency_stale")
     qa = {
         "generated_utc": pd.Timestamp.utcnow().isoformat(),
         "run_id": main_scores["run_id"].iloc[0],
         "research_release_status": "complete_with_documented_caveats",
         "production_release_status": "blocked",
+        "cross_dimension_integration_status": (
+            "ready" if not integration_blockers else "blocked_stale_dependency"
+        ),
         "checks": checks,
         "failed_checks": failures,
         "production_blockers": production_blockers,
+        "integration_blockers": integration_blockers,
+        "d4_dependency": d4_dependency,
         "artifact_count": len(inventory),
         "artifact_inventory": inventory,
     }
@@ -249,17 +289,25 @@ def main() -> None:
     manifest["release_qa"] = {
         "research_release_status": qa["research_release_status"],
         "production_release_status": qa["production_release_status"],
+        "cross_dimension_integration_status": qa[
+            "cross_dimension_integration_status"
+        ],
         "failed_checks": failures,
         "production_blockers": production_blockers,
+        "integration_blockers": integration_blockers,
         "release_qa_path": str(qa_path.relative_to(ROOT)).replace("\\", "/"),
     }
     manifest["validation_acceptance"] = validation.to_dict("records")
     manifest["track_invariance"] = invariance.to_dict("records")
     manifest["release_artifacts"] = inventory
     manifest["acceptance"] = {
-        "acceptance_status": "scientific_score_released_deployment_blocked",
+        "acceptance_status": (
+            "scientific_score_released_integration_ready_deployment_blocked"
+            if not integration_blockers
+            else "scientific_score_released_integration_dependency_blocked"
+        ),
         "failed_contracts": failures,
-        "limitations": production_blockers,
+        "limitations": [*production_blockers, *integration_blockers],
         "release_target": "final_subscore_aggregation_with_claim_specific_gates",
     }
     manifest_path.write_text(
@@ -274,7 +322,7 @@ def main() -> None:
     with pd.ExcelWriter(audit_path, engine="openpyxl") as writer:
         for name, frame in sheets.items():
             frame.to_excel(writer, sheet_name=name[:31], index=False)
-    print(json.dumps({key: qa[key] for key in ["research_release_status", "production_release_status", "failed_checks", "production_blockers", "artifact_count"]}, indent=2))
+    print(json.dumps({key: qa[key] for key in ["research_release_status", "production_release_status", "cross_dimension_integration_status", "failed_checks", "production_blockers", "integration_blockers", "artifact_count"]}, indent=2))
 
 
 if __name__ == "__main__":

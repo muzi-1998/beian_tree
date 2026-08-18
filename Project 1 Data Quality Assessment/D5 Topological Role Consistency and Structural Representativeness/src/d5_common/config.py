@@ -19,6 +19,16 @@ def load_yaml(path: str | Path) -> dict[str, Any]:
     return data
 
 
+def reference_end_from_fraction(index: Any, fraction: float) -> Any:
+    """Return the inclusive frozen-reference endpoint for an ordered index."""
+    if not 0.0 < float(fraction) < 1.0:
+        raise ValueError("reference fraction must be strictly between 0 and 1")
+    if len(index) == 0:
+        raise ValueError("reference index must not be empty")
+    position = max(0, min(len(index) - 1, int(len(index) * float(fraction)) - 1))
+    return index[position]
+
+
 @dataclass(frozen=True)
 class D5Paths:
     project_root: Path

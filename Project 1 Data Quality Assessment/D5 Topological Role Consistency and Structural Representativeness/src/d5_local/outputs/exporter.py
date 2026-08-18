@@ -99,7 +99,7 @@ class D5OutputExporter:
                         "node_id": node,
                         "center": center,
                         "scale": scale,
-                        "sensor_policy": "target_excluded_context_only",
+                        "sensor_policy": "plant_global_context_with_target_specific_spatial_template",
                     }
                 )
             for i, row_node in enumerate(template.sensor_order):

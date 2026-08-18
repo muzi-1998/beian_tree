@@ -31,7 +31,9 @@ topology metadata. It never consumes D1-D4 scores or states.
 - The Local regime model is plant-global: QR/QIR, robust pooled DO/ORP level
   and dispersion, and cyclic time features define one shared process context.
   Gradient, rank and leave-one-out evidence are learned and evaluated within
-  that shared regime.
+  that shared regime. Each target has bounded influence on pooled context;
+  strict target exclusion is a publication sensitivity challenge, not a
+  production-model claim.
 - Family-level samples may support an analyte-regime-model family, but every
   node still requires its own blocked-temporal validation. L1 is diagnostic;
   L2 supports scientific scoring; only final node L3 can enter the pair-hour
@@ -42,10 +44,22 @@ topology metadata. It never consumes D1-D4 scores or states.
 - D5 exports separate report and gate interfaces. D4 finalizes
   non-destructively from `D4_raw`; D1 and D5 provide interpretation and action
   governance without rewriting the D4 numeric score.
+- D4-D5 non-redundancy is audited under two estimands: formal
+  `D5_report_score` overlap and extended two-node `D5_raw` calculable overlap,
+  with analyte, regime, month and pair strata. Two independent 7 d blocks admit
+  a descriptive point estimate; at least six are required for a bootstrap CI.
+  Every D4-dependent artifact carries source run, calibration and SHA-256
+  provenance, and manuscript values freeze only after exact freshness matching.
+- Availability-aware and fixed-dimension complete-evidence WW-DQS summaries
+  are separate estimands. Dimension count and coverage must accompany every
+  temporal composite; missing D5 evidence is never encoded as low quality.
 
 See `configs/common/topology_evidence.yaml` for the research evidence ledger and
 `docs/D5_FIELD_VERIFICATION_REQUIREMENTS.md` for the production documentary and
-two-person approval gate. Statistical topology candidates cannot replace it.
+two-person approval gate. The frozen publication claim contract is
+`configs/publication/d5_final_contract.yaml`; its audits and source data are in
+`outputs/publication/`. Statistical topology candidates cannot replace these
+contracts.
 
 ## Reproduce
 
@@ -53,6 +67,8 @@ Run the complete release from `Project 1 Data Quality Assessment`:
 
 ```powershell
 python ".\D5 Topological Role Consistency and Structural Representativeness\scripts\run_d5_release.py"
+python ".\D5 Topological Role Consistency and Structural Representativeness\scripts\run_d5_publication_audit.py"
+python ".\D5 Topological Role Consistency and Structural Representativeness\scripts\verify_d5_publication_bundle.py"
 python -m pytest ".\D5 Topological Role Consistency and Structural Representativeness\tests" -q
 ```
 
