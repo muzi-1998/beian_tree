@@ -32,6 +32,12 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+def sha256_text_lf(path: Path) -> str:
+    """Hash UTF-8 text after newline normalization for cross-platform provenance."""
+    text = path.read_text(encoding="utf-8-sig").replace("\r\n", "\n").replace("\r", "\n")
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
 def stable_frame_hash(frame: pd.DataFrame) -> str:
     normalized = frame.copy()
     normalized.columns = normalized.columns.astype(str)

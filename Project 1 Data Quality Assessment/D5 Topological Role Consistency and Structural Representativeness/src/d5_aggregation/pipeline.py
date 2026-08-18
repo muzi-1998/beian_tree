@@ -7,7 +7,13 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from .common import PROJECT_ROOT, combine_gate, expand_end_exclusive_windows, sha256_file
+from .common import (
+    PROJECT_ROOT,
+    combine_gate,
+    expand_end_exclusive_windows,
+    sha256_file,
+    sha256_text_lf,
+)
 
 
 def _path(relative: str) -> Path:
@@ -33,7 +39,18 @@ def verify_frozen_inputs(config: dict[str, Any]) -> pd.DataFrame:
         for path_key, hash_key in normalized:
             path = _path(spec[path_key])
             exists = path.exists()
-            actual = sha256_file(path) if exists else None
+            hash_method = (
+                "sha256_utf8_lf_canonical"
+                if path_key.endswith("manifest_path")
+                else "sha256_raw_bytes"
+            )
+            actual = (
+                sha256_text_lf(path)
+                if exists and hash_method == "sha256_utf8_lf_canonical"
+                else sha256_file(path)
+                if exists
+                else None
+            )
             expected = str(spec[hash_key]).lower()
             match = bool(exists and actual == expected)
             rows.append(
@@ -46,6 +63,7 @@ def verify_frozen_inputs(config: dict[str, Any]) -> pd.DataFrame:
                     "expected_sha256": expected,
                     "actual_sha256": actual,
                     "sha256_match": match,
+                    "hash_method": hash_method,
                 }
             )
     registry = pd.DataFrame(rows)

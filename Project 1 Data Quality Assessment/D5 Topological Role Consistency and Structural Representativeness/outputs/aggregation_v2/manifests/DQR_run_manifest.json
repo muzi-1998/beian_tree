@@ -1,11 +1,11 @@
 {
   "schema_version": "northbank-dqr-aggregation-v2.0",
   "contract_version": "2.0.0",
-  "run_id": "DQRAGG-V20-4ae0082cf916",
-  "source_commit_base": "20332355a49ffc6a63524eb09d9eb08a8810383c",
+  "run_id": "DQRAGG-V20-8ee60c79241e",
+  "source_commit_base": "533e01324e39c0732112e85c50abd0823ce43c98",
   "configuration": {
     "path": "D5 Topological Role Consistency and Structural Representativeness/configs/aggregation_v2.yaml",
-    "sha256": "cfd83e0f52aed1e3c9f2948f272941024998e21353d44cd9f9a64af09c338ac3"
+    "sha256": "b3de2b8c00cced089e209296d81c54601f14d9a7a29db2a4faf505c624aaa017"
   },
   "code_sources": [
     {
@@ -14,7 +14,7 @@
     },
     {
       "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_aggregation/common.py",
-      "sha256": "52fdc928670081c5f4c4add02542cf46db10e95e5c86f673a97704181afcd6f1"
+      "sha256": "99a3f5b6bfa6e084a2f1fd898092d2acf252130014ef4bbbc3e4e64a09969006"
     },
     {
       "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_aggregation/figures.py",
@@ -22,7 +22,7 @@
     },
     {
       "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_aggregation/pipeline.py",
-      "sha256": "444b61dad64441b3d6bbe9dde1f40ab485430a7495bf0718bf3ea7b10d1b9244"
+      "sha256": "8736e3186f6d82433642e9017339f6559a9e1798ca2b5a89e0755a4e22a9d17c"
     },
     {
       "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_aggregation/reports.py",
@@ -46,7 +46,8 @@
       "size_bytes": 4816428,
       "expected_sha256": "83207ca6f818dd309fe36cdb3adfdc9e569ea540fbca5c4acc0e45e8a321923c",
       "actual_sha256": "83207ca6f818dd309fe36cdb3adfdc9e569ea540fbca5c4acc0e45e8a321923c",
-      "sha256_match": true
+      "sha256_match": true,
+      "hash_method": "sha256_raw_bytes"
     },
     {
       "dimension": "D1",
@@ -54,9 +55,10 @@
       "relative_path": "D1 Sensor health/outputs/data/D1_release_manifest.json",
       "exists": true,
       "size_bytes": 3367,
-      "expected_sha256": "bf56f0bf414e88a625d2be12cd8e7a07e16e4482477c25ebfd25311abc34b743",
-      "actual_sha256": "bf56f0bf414e88a625d2be12cd8e7a07e16e4482477c25ebfd25311abc34b743",
-      "sha256_match": true
+      "expected_sha256": "a32bf94f989fc19cbcfc57a1b00e1dff50c742b4b586c51f6750383d9ef24788",
+      "actual_sha256": "a32bf94f989fc19cbcfc57a1b00e1dff50c742b4b586c51f6750383d9ef24788",
+      "sha256_match": true,
+      "hash_method": "sha256_utf8_lf_canonical"
     },
     {
       "dimension": "D2",
@@ -66,7 +68,8 @@
       "size_bytes": 6379592,
       "expected_sha256": "ac051d9a24a17523433c63187cf63f0128efb185325a1ea789633f7fc13d04a6",
       "actual_sha256": "ac051d9a24a17523433c63187cf63f0128efb185325a1ea789633f7fc13d04a6",
-      "sha256_match": true
+      "sha256_match": true,
+      "hash_method": "sha256_raw_bytes"
     },
     {
       "dimension": "D2",
@@ -74,9 +77,10 @@
       "relative_path": "D2 Temporal Continuity & Information Availability/artifacts/D2_release_manifest.json",
       "exists": true,
       "size_bytes": 32217,
-      "expected_sha256": "5cc638b1885e5c3d67742f4e0ad9562b3f1d289cac028fda327350340c93afbc",
-      "actual_sha256": "5cc638b1885e5c3d67742f4e0ad9562b3f1d289cac028fda327350340c93afbc",
-      "sha256_match": true
+      "expected_sha256": "2cbc9dd6ce88ade8e73a7b09acd46a06d39e34b3e1acfdef77529763633cfea9",
+      "actual_sha256": "2cbc9dd6ce88ade8e73a7b09acd46a06d39e34b3e1acfdef77529763633cfea9",
+      "sha256_match": true,
+      "hash_method": "sha256_utf8_lf_canonical"
     },
     {
       "dimension": "D3",
@@ -86,7 +90,8 @@
       "size_bytes": 4895373,
       "expected_sha256": "c98b59796f10c42377c210a5d5fbdf21d98b0b99e848ad2733a0507d9df1629a",
       "actual_sha256": "c98b59796f10c42377c210a5d5fbdf21d98b0b99e848ad2733a0507d9df1629a",
-      "sha256_match": true
+      "sha256_match": true,
+      "hash_method": "sha256_raw_bytes"
     },
     {
       "dimension": "D3",
@@ -94,9 +99,10 @@
       "relative_path": "D3 Physical rationality and rate constraints/outputs/manifest/run_manifest.json",
       "exists": true,
       "size_bytes": 5285,
-      "expected_sha256": "acba3dd3b937f220337f5fee506f403786565620cda1802a776488e92a228010",
-      "actual_sha256": "acba3dd3b937f220337f5fee506f403786565620cda1802a776488e92a228010",
-      "sha256_match": true
+      "expected_sha256": "c15b6316f74f1f165914ed4ba1118c25754301b2cb8ee00fea38126c0e7b41b6",
+      "actual_sha256": "c15b6316f74f1f165914ed4ba1118c25754301b2cb8ee00fea38126c0e7b41b6",
+      "sha256_match": true,
+      "hash_method": "sha256_utf8_lf_canonical"
     },
     {
       "dimension": "D4",
@@ -106,7 +112,8 @@
       "size_bytes": 9530131,
       "expected_sha256": "c21738a331d19632cc915e4d29cf692920aeccd346a6c74912f0f52dd4a9ca04",
       "actual_sha256": "c21738a331d19632cc915e4d29cf692920aeccd346a6c74912f0f52dd4a9ca04",
-      "sha256_match": true
+      "sha256_match": true,
+      "hash_method": "sha256_raw_bytes"
     },
     {
       "dimension": "D4",
@@ -114,9 +121,10 @@
       "relative_path": "D4 Parallel-redundancy Temporal Consistency/outputs/data/D4_run_manifest.json",
       "exists": true,
       "size_bytes": 3794,
-      "expected_sha256": "8523cf5941017e53d93b313b240347a0737574c18f7746959c1bba963cabb424",
-      "actual_sha256": "8523cf5941017e53d93b313b240347a0737574c18f7746959c1bba963cabb424",
-      "sha256_match": true
+      "expected_sha256": "fff48c27a9245aca07c9f4900f30aa130b576c297e7e6fca6ef1c901e97759e7",
+      "actual_sha256": "fff48c27a9245aca07c9f4900f30aa130b576c297e7e6fca6ef1c901e97759e7",
+      "sha256_match": true,
+      "hash_method": "sha256_utf8_lf_canonical"
     },
     {
       "dimension": "D5",
@@ -126,7 +134,8 @@
       "size_bytes": 1171194,
       "expected_sha256": "f057e0a8037282fb43a71a94d7043c7bd3de2b4c8fa9865365bcf0427195dbda",
       "actual_sha256": "f057e0a8037282fb43a71a94d7043c7bd3de2b4c8fa9865365bcf0427195dbda",
-      "sha256_match": true
+      "sha256_match": true,
+      "hash_method": "sha256_raw_bytes"
     },
     {
       "dimension": "D5",
@@ -136,7 +145,8 @@
       "size_bytes": 7340495,
       "expected_sha256": "64274562d7139d510dd3780dbd67bd2c2c5913908dbbec8ac7d4bcceb0418cd1",
       "actual_sha256": "64274562d7139d510dd3780dbd67bd2c2c5913908dbbec8ac7d4bcceb0418cd1",
-      "sha256_match": true
+      "sha256_match": true,
+      "hash_method": "sha256_raw_bytes"
     },
     {
       "dimension": "D5",
@@ -144,9 +154,10 @@
       "relative_path": "D5 Topological Role Consistency and Structural Representativeness/outputs/local/D5_run_manifest.json",
       "exists": true,
       "size_bytes": 47240,
-      "expected_sha256": "cc813c7f7c8b873cf6ac7ab76015849c4a00591259d3abc2e7bfc494992523fd",
-      "actual_sha256": "cc813c7f7c8b873cf6ac7ab76015849c4a00591259d3abc2e7bfc494992523fd",
-      "sha256_match": true
+      "expected_sha256": "af675865af284c30f8a44d3b7aacca3a99ed5370eece6b1b5c9bb31ff8bcd79a",
+      "actual_sha256": "af675865af284c30f8a44d3b7aacca3a99ed5370eece6b1b5c9bb31ff8bcd79a",
+      "sha256_match": true,
+      "hash_method": "sha256_utf8_lf_canonical"
     },
     {
       "dimension": "D5",
@@ -154,9 +165,10 @@
       "relative_path": "D5 Topological Role Consistency and Structural Representativeness/outputs/publication/D5_publication_audit_manifest.json",
       "exists": true,
       "size_bytes": 15638,
-      "expected_sha256": "ec401c6052d3c339e95f508a24baf4b7c5f74f499518bf71e2faebf27c0f79e7",
-      "actual_sha256": "ec401c6052d3c339e95f508a24baf4b7c5f74f499518bf71e2faebf27c0f79e7",
-      "sha256_match": true
+      "expected_sha256": "8566e80da99727602e35eb127221e9a61c6f781b79cdd42a2f8117c34e5fbf7e",
+      "actual_sha256": "8566e80da99727602e35eb127221e9a61c6f781b79cdd42a2f8117c34e5fbf7e",
+      "sha256_match": true,
+      "hash_method": "sha256_utf8_lf_canonical"
     },
     {
       "dimension": "D5",
@@ -166,7 +178,8 @@
       "size_bytes": 8012,
       "expected_sha256": "cc38200304298af4af8178ed2d35226ea9f75fb5608608fc83a1ee472b8d718b",
       "actual_sha256": "cc38200304298af4af8178ed2d35226ea9f75fb5608608fc83a1ee472b8d718b",
-      "sha256_match": true
+      "sha256_match": true,
+      "hash_method": "sha256_raw_bytes"
     },
     {
       "dimension": "D5",
@@ -176,7 +189,8 @@
       "size_bytes": 12046,
       "expected_sha256": "b551d102dd73641908975d207793d15f892655b9ce719faba40f8c390cfcd961",
       "actual_sha256": "b551d102dd73641908975d207793d15f892655b9ce719faba40f8c390cfcd961",
-      "sha256_match": true
+      "sha256_match": true,
+      "hash_method": "sha256_raw_bytes"
     },
     {
       "dimension": "D5",
@@ -186,7 +200,8 @@
       "size_bytes": 6011187,
       "expected_sha256": "a9270494760fcb4ae501abcf54c50e813ca74d6306d7fbca94d7ef1a1d1730a2",
       "actual_sha256": "a9270494760fcb4ae501abcf54c50e813ca74d6306d7fbca94d7ef1a1d1730a2",
-      "sha256_match": true
+      "sha256_match": true,
+      "hash_method": "sha256_raw_bytes"
     },
     {
       "dimension": "D5",
@@ -196,7 +211,8 @@
       "size_bytes": 44198,
       "expected_sha256": "060027cb3475620e45c16a5aed24ec4f94b00c01a7a3ba027a188963d7682dbc",
       "actual_sha256": "060027cb3475620e45c16a5aed24ec4f94b00c01a7a3ba027a188963d7682dbc",
-      "sha256_match": true
+      "sha256_match": true,
+      "hash_method": "sha256_raw_bytes"
     },
     {
       "dimension": "D5",
@@ -206,7 +222,8 @@
       "size_bytes": 2838,
       "expected_sha256": "46e191549a0c768ee947bff4d98f26f38a93ecbce380ab4ff8114d2885dd29f9",
       "actual_sha256": "46e191549a0c768ee947bff4d98f26f38a93ecbce380ab4ff8114d2885dd29f9",
-      "sha256_match": true
+      "sha256_match": true,
+      "hash_method": "sha256_raw_bytes"
     }
   ],
   "contracts": [
@@ -362,7 +379,7 @@
     {
       "relative_path": "figures/DQR_Fig01_hierarchical_contract.pdf",
       "size_bytes": 59233,
-      "sha256": "99a219db550e97e3bd8678c3f75c3f534d14b74321965b9bb654189d5c570244"
+      "sha256": "1cb382267a0773eb2fcdc3b0340fcf9eca50cdd1d2600e04c100aef377a6558f"
     },
     {
       "relative_path": "figures/DQR_Fig01_hierarchical_contract.png",
@@ -372,7 +389,7 @@
     {
       "relative_path": "figures/DQR_Fig01_hierarchical_contract.svg",
       "size_bytes": 54360,
-      "sha256": "4086c942eebdc012bc4a2f731a03770ae49b6ff423ba3c054e74e52d8a3dd29c"
+      "sha256": "b65bad2c27d048c7e8f780c39c38ff7dc4960f6fee59e7c9459e3f1f0b6f11f7"
     },
     {
       "relative_path": "figures/DQR_Fig01_hierarchical_contract.tiff",
@@ -382,7 +399,7 @@
     {
       "relative_path": "figures/DQR_Fig02_evidence_availability.pdf",
       "size_bytes": 52221,
-      "sha256": "df7c79314112f0b94628828719fc051464d8dfe94b94a9cf01c9b288e48c85bd"
+      "sha256": "39c665cb60e3596a0690d65271ab3ace8d5f31e65cbd6fd1206752304663aef3"
     },
     {
       "relative_path": "figures/DQR_Fig02_evidence_availability.png",
@@ -392,7 +409,7 @@
     {
       "relative_path": "figures/DQR_Fig02_evidence_availability.svg",
       "size_bytes": 57400,
-      "sha256": "51d248bb7c7a8250525739a78b8d6454239bfe5fcfaf35ac215fdfea02565943"
+      "sha256": "e1af792e9b40ca54aba8a337ae125e0d267cfee62b0abd82e8add10ea8af098d"
     },
     {
       "relative_path": "figures/DQR_Fig02_evidence_availability.tiff",
@@ -402,7 +419,7 @@
     {
       "relative_path": "figures/DQR_Fig03_construct_complementarity.pdf",
       "size_bytes": 53451,
-      "sha256": "80775b3c7a80fa57b773ecbe58d1ce658dcaf029c08135b4c48c5ccbe25778f9"
+      "sha256": "74c1476a0d228243f39d36dca5063f37377652b24b5838d52d0ecde69b77e015"
     },
     {
       "relative_path": "figures/DQR_Fig03_construct_complementarity.png",
@@ -412,7 +429,7 @@
     {
       "relative_path": "figures/DQR_Fig03_construct_complementarity.svg",
       "size_bytes": 53066,
-      "sha256": "4782653da20f4fe009f05d9524a65a1f5c39d247287215e379bd0e2fbd676477"
+      "sha256": "df4e6232668ac764c9028b753ee4cdf6d322cff1ac0e7f4a0996d44f6a692dd2"
     },
     {
       "relative_path": "figures/DQR_Fig03_construct_complementarity.tiff",
@@ -422,7 +439,7 @@
     {
       "relative_path": "figures/DQR_Fig04_aggregation_robustness.pdf",
       "size_bytes": 63786,
-      "sha256": "de57c28078812fb49ce866e6011e50d1fc57c2f324bcd860fbb184fe4afccbbb"
+      "sha256": "bf32f2418f2cb5a9e4ebefdce48c28578d030bdc4ad9e4f208329eb0463486eb"
     },
     {
       "relative_path": "figures/DQR_Fig04_aggregation_robustness.png",
@@ -432,7 +449,7 @@
     {
       "relative_path": "figures/DQR_Fig04_aggregation_robustness.svg",
       "size_bytes": 62825,
-      "sha256": "5fa40d53f16934256dbd23b7168b35826fd5a9acffa69d7beae5e7033e8b7ce7"
+      "sha256": "2c69a74200dc0f01df176b52a96163fe1415d3667159d3e31da34292a3928d11"
     },
     {
       "relative_path": "figures/DQR_Fig04_aggregation_robustness.tiff",
@@ -442,7 +459,7 @@
     {
       "relative_path": "figures/DQR_Fig05_representative_cases.pdf",
       "size_bytes": 52227,
-      "sha256": "e373023fb7365992c8abdbab7863395805593bfd42b7c98fafcf3f66f025029e"
+      "sha256": "538878343427552f105167569267611b7f38b62b4ccedec890dc3298f3679716"
     },
     {
       "relative_path": "figures/DQR_Fig05_representative_cases.png",
@@ -452,7 +469,7 @@
     {
       "relative_path": "figures/DQR_Fig05_representative_cases.svg",
       "size_bytes": 88319,
-      "sha256": "ced87dad951745a8e7c669886c22d952c14f2228ef779112d1d10ba552fe4aef"
+      "sha256": "20f8705744e55b5c734383707d492a502bffdfa139adb3d15911ab1994c52045"
     },
     {
       "relative_path": "figures/DQR_Fig05_representative_cases.tiff",
@@ -467,7 +484,7 @@
     {
       "relative_path": "reports/DQR_aggregation_scientific_report.md",
       "size_bytes": 4640,
-      "sha256": "f67ad52d1073838737d9fac4c2922217aa23e94574e069f7f88848c3f047d242"
+      "sha256": "2947b96b807116ea227808aa0f485e1f896238b92184e7c34966939fab2435fc"
     },
     {
       "relative_path": "reports/DQR_figure_captions.md",
@@ -476,43 +493,43 @@
     },
     {
       "relative_path": "source_data/DQR_Fig01_source_data.xlsx",
-      "size_bytes": 3563647,
-      "sha256": "ba4e6069158af623b1a879f64c9f291ac96965cb498e3215c5036db13029bece"
+      "size_bytes": 3563645,
+      "sha256": "5e0d774bb1a9e5e01a9e4b085c06203a7ed85de92f8603eaeff271cfd3ef068d"
     },
     {
       "relative_path": "source_data/DQR_Fig02_source_data.xlsx",
       "size_bytes": 8017,
-      "sha256": "f9df4b765dc8effab836561499a69d7814a4ab1b80667ca72e8a5f18109602b4"
+      "sha256": "c81fcb2d92d85889a9be396a4f1b972094f05a6c21d4fe1d37bb6e8cab8fc83d"
     },
     {
       "relative_path": "source_data/DQR_Fig03_source_data.xlsx",
       "size_bytes": 10566,
-      "sha256": "637539cfbc255323b4c1a434e2361badb018f527cfd5673047b2b3e045e6b392"
+      "sha256": "12376df2823cfdeb406c4f390ca86822e873e6984a880f4b69608d7ee0c7086d"
     },
     {
       "relative_path": "source_data/DQR_Fig04_source_data.xlsx",
-      "size_bytes": 149376,
-      "sha256": "b19299e5c5ae47f358c4078f627b2edba370682498b7099858814cb31896d310"
+      "size_bytes": 149377,
+      "sha256": "40acfe30b70d590eab1b0a986ba55fd51c3fd008bc721dff88b969c1edd95cc1"
     },
     {
       "relative_path": "source_data/DQR_Fig05_source_data.xlsx",
-      "size_bytes": 37477,
-      "sha256": "e84b5db8f090f399a3ca4cefe54d5ab828c4961ef171a3c779d0ed8cbafc3e5b"
+      "size_bytes": 37476,
+      "sha256": "52c4bcb18f1bb9c1a5f08745153b77d2c1e433138c2a45754e7c43194dbf88cd"
     },
     {
       "relative_path": "validation/DQR_aggregation_validation.xlsx",
-      "size_bytes": 164655,
-      "sha256": "84c1422295217ce5a008d5ee89accf7ed1dc3b9d34b7cb9d7b4671970c1f66e1"
+      "size_bytes": 164763,
+      "sha256": "9b024abab7cd9235cce3c338ec68e08ecf56cce7a592ce977c10f6791fb9f459"
     },
     {
       "relative_path": "validation/DQR_contract_checks.json",
       "size_bytes": 2570,
-      "sha256": "5021b479c4c5170a65f0333979d918f357da5796c5827b8740f48aa767e4712e"
+      "sha256": "2dbbafbfc503012e3458dfedfe26da6ccfbda8351fcd4e0935faeb63bdfec9f4"
     },
     {
       "relative_path": "validation/DQR_downstream_validation.xlsx",
-      "size_bytes": 6295,
-      "sha256": "39b64e3a8be255d9627ea6cd1666c6ee7cef33ba4180cfe75b39404cb83a02bd"
+      "size_bytes": 6294,
+      "sha256": "cee90dc57ab279feec63063fcf68e1a41963c78cb7b8d4ff9d10c94c4c14426c"
     },
     {
       "relative_path": "validation/DQR_figure_qa.json",
