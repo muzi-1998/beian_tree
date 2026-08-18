@@ -304,7 +304,7 @@ The publication audit additionally reports six future-month controlled-challenge
 
 ## 7. Figure review
 
-Nine multi-panel figure groups are available as SVG, PDF, 600 dpi PNG and LZW-compressed 600 dpi TIFF. All use Arial, 0.8 pt boxed axes, inward ticks, unified panel labels, endpoint-aware scales and transparent label backgrounds where annotations cover data. Figure D5-6 reports controlled challenge results and coverage; Figure D5-7 reports overall and stratified D4-D5 overlap; Figure D5-8 separates availability-aware and fixed-dimension composite estimands; Figure D5-9 reports target influence and support robustness. Automated counterpart/font/pixel QA passed: {f['figure_qa']}.
+Nine multi-panel figure groups are available as editable SVG/PDF, 600 dpi PNG and LZW-compressed 600 dpi TIFF on a fixed 183 mm canvas. All use Arial and 0.8 pt axes; open plots use outward ticks, whereas genuinely full-boxed maps use inward ticks. Panel labels, annotation backgrounds and endpoint-aware scales follow one shared style contract. Figures D5-1-D5-3 now connect declared topology, score applicability and case-level evidence; Figure D5-6 reports criterion margins, localization and evidence coverage; Figure D5-7 reports joint density, stratified D4-D5 overlap and exact low-tail concordance; Figure D5-8 separates availability-aware, matched complete-case and fixed-dimension estimands; Figure D5-9 reports post-reference target influence and the full reference-fraction support grid. Automated export/layout QA passed: {f['figure_qa']}.
 
 ## 8. Critical limitations
 
@@ -443,26 +443,41 @@ Use `python scripts/run_d5_release.py --include-local` after data, topology, tem
 ## 8. Current branch gate
 
 Current release classification: **D5 scientific score ready; cross-dimensional publication freeze {'ready and hash-bound' if self.publication.get('d4_dependency_current', False) else 'dependency-gated'}; automated deployment blocked**. Node-specific hard Veto remains gated by controlled-perturbation Top-1 localization.
+
+## 9. Figure publication contract
+
+- All nine registered figure groups use the Python/Matplotlib backend, a fixed
+  183 mm double-column canvas, Arial text, 0.8 pt axes and editable SVG/PDF.
+- Figures D5-1, D5-2 and D5-3 communicate topology, score applicability and
+  case-level structural evidence. Figures D5-6 and D5-7 carry the principal
+  validation and cross-dimensional claims.
+- Figures D5-4, D5-5 and D5-9 retain detailed validation, governance and
+  robustness evidence for Extended Data or Supplementary Information.
+- Figure D5-8 is a main figure only in the future integrated WW-DQS paper. In
+  the standalone D5 module it is an Extended Data prototype and is not the
+  final five-dimension aggregate.
+- Every quantitative panel is traceable to frozen Parquet or Excel source data.
+  Automated QA does not replace visual inspection at final publication scale.
 """
 
     def _captions_markdown(self) -> str:
         return f"""# D5 Figure Captions v2.4
 
-## Figure D5-1. Author-confirmed topology, applicability and scientific boundary
+## Figure D5-1. Author-confirmed topology, applicability and scientific workflow
 
-(a) Author-confirmed longitudinal DO/ORP topology for two parallel process lines; coordinates are schematic encodings of ordinal position, not surveyed distances. (b) Local Track applicability states across hourly sensor windows. (c) Claim-specific release matrix separating the scientific report interface, process-coherence attribution Guard, node-specific hard Veto and deployment approval.
+(a) Author-confirmed longitudinal and parallel-peer topology for two process lines. Solid arrows encode within-line ordinal adjacency and dashed links encode seven homologous cross-line peers; coordinates are schematic rather than surveyed distances. (b) D5 applicability states stratified by analyte. (c) Scientific workflow from context assignment through regime-conditioned role templates and four structural components to the report-or-abstain interface. Governance and deployment approval remain separate from the scoring workflow.
 
-## Figure D5-2. Spatiotemporal score structure and effective template support
+## Figure D5-2. Spatiotemporal score, eligibility and support structure
 
-(a) Daily lower-quartile `D5_raw` for 14 DO/ORP positions. (b) Score distributions by analyte. (c) Counts of regime templates by validation-graded support tier. L2/L3 are scientifically score eligible, whereas only validated L3 is action eligible.
+(a) Daily lower-quartile `D5_raw` for 14 ordered DO/ORP positions, with report-eligibility and out-of-template ribbons. Gray cells denote days with less than 50% report-eligible coverage; A-C mark the lowest-score candidate windows used for case review. The value 3 is an analysis reference, not a validated fault threshold. (b) Sensor-level median and interquartile range; point area represents the fraction below the analysis reference. (c) Monthly raw calculability, report eligibility, out-of-template rate and L1 support. Missing or weakly supported evidence is displayed as abstention, not as low quality.
 
-## Figure D5-3. Evidence decomposition and node attribution
+## Figure D5-3. Case-level structural evidence and attribution
 
-(a) Four spatial quality components and `D5_raw` around an unlabeled persistent low-score window. The case is evidence for review, not a confirmed fault. (b) Weighted leave-one-out structural contribution decomposed into reconstruction, graph-energy and gradient terms at the case center; this is not a Shapley estimate. (c) Distribution of zone-consensus labels supplied to non-destructive D4 arbitration.
+(a) Raw target, homologous parallel peer and same-line neighbor around an unlabeled low-score candidate, with the regime-specific target template and OOD/regime strip. (b) Four structural components and `D5_raw`; the dashed line at 3 is an analysis reference. (c) Normalized diagnostic contributions at the case center and a topology residual map showing node residuals and edge inconsistency. Contributions are diagnostic leave-one-out quantities, not Shapley values. This case is evidence for review and is not a confirmed sensor fault.
 
 ## Figure D5-4. Frozen-template validation and track invariance
 
-(a) Release criteria for controlled same-line position swaps, negative controls and regime chatter; dashed segments denote targets and error bars show 95% intervals where estimable. (b) Controlled-perturbation Top-1 localization by D5-relevant scenario with Wilson 95% intervals. (c) False alarm rates and empirical 95% ranges for orthogonality controls. (d) Local-Sensitivity invariance metrics. These are controlled observed-window challenges, not field fault accuracy.
+(a) Criterion margins for controlled same-line position swaps, negative controls and regime chatter; zero indicates the prespecified release boundary and positive values pass. Error bars show 95% intervals where estimable. (b) Controlled-perturbation Top-1 localization by D5-relevant scenario with Wilson 95% intervals. (c) False alarm rates and empirical 95% ranges for orthogonality controls. (d) Local-Sensitivity invariance criterion margins. These are controlled observed-window challenges, not field fault accuracy.
 
 ## Figure D5-5. Hierarchical admission and dimension-independent integration
 
@@ -470,19 +485,19 @@ Current release classification: **D5 scientific score ready; cross-dimensional p
 
 ## Figure D5-6. Validation, localization and evidence coverage boundary
 
-(a) Six future-month complete refits of the full model and three prespecified structural ablations; points show controlled-challenge metrics and fold-cluster 95% intervals. (b) Top-1, Top-2 and mean reciprocal rank for three controlled spatial perturbations. (c) Monthly coverage of calculable raw evidence and support-eligible report scores; shading denotes L1 support. (d) Controlled-perturbation risk-coverage analysis. These are not field fault-accuracy estimates; the non-monotonic curve shows that confidence is not calibrated as a selective-localization probability.
+(a) Estimate-minus-criterion margins from six future-month complete refits of the full model and three prespecified structural ablations. AUROC is compared with 0.90; AUPRC and Top-1 are compared with 0.80. (b) Top-1 localization with fold-cluster 95% intervals and the distribution of topological hop error for three controlled perturbations. (c) Monthly raw calculability, report eligibility, OOD and L1 support. (d) Top-1-only risk-coverage analysis with retained block counts and cluster intervals. Confidence is not calibrated as a selective-localization probability, and these results are not field fault-accuracy estimates.
 
-## Figure D5-7. D4-D5 complementarity and D5 robustness
+## Figure D5-7. D4-D5 complementarity across report and raw estimands
 
-(a) Overall D4-D5 overlap under the formal report-score and extended raw-calculable estimands. (b,c) Spearman rho by analyte, pair, regime and month; filled symbols and intervals require at least six independent 7-d blocks, whereas open symbols retain descriptive point estimates based on at least two blocks. (d) Pair-composite leave-D4-out and leave-D5-out sensitivity. Values are bound to D4 run `{self.publication.get('d4_run_id', 'not_audited')}`, calibration `{self.publication.get('d4_calibration_id', 'not_audited')}` and the recorded main-score SHA-256.
+(a) Joint density of D4 raw and D5 pair report scores. Overall report-score and raw-calculable Spearman correlations and the descriptive covariate-adjusted rank marker are annotated; the latter is not a causal estimand. (b,c) Spearman rho by analyte, pair, regime and month. The shaded band denotes weak association, |rho| < 0.30. Filled symbols and intervals require at least six independent non-overlapping 7-d process-time blocks; open symbols retain descriptive point estimates based on at least two blocks. (d) Exact low-tail overlap at the prespecified analysis reference of 3. Pair-composite leave-one-dimension sensitivity remains in source data. Values are bound to D4 run `{self.publication.get('d4_run_id', 'not_audited')}`, calibration `{self.publication.get('d4_calibration_id', 'not_audited')}` and the recorded main-score SHA-256.
 
 ## Figure D5-8. Dimension-availability sensitivity of the prototype WW-DQS
 
-(a) Monthly medians for the availability-aware estimand and the fixed-dimension complete-evidence estimand. (b) Availability-aware, complete-evidence and D5 coverage. (c) Effective numeric dimension count. (d) Descriptive monthly median shift between the two estimands. The current calculation covers the D1/D2/D5 node prototype and must be repeated under the final five-dimension contract.
+(a) Monthly medians for the availability-aware prototype, with open markers showing the same estimator restricted to matched complete-evidence sensor-hours, and the fixed-dimension complete-evidence estimator. (b) Availability-aware and complete-evidence coverage together with D5 availability. (c) Effective numeric dimension count. (d) Descriptive monthly median shift between availability-aware and fixed-dimension estimands. The current calculation covers the D1/D2/D5 node prototype and must be repeated under the final five-dimension contract.
 
 ## Figure D5-9. Target-influence and support-threshold robustness
 
-(a) Leave-one-target-out regime disagreement and OOD-rate response to controlled target offsets. (b) Final-L3 template count under prespecified effective-block and bootstrap-stability perturbations. These analyses diagnose model robustness and do not change production templates or thresholds.
+(a) Whole-period and post-reference leave-one-target-out regime disagreement together with OOD-rate response to controlled target offsets. (b) Final-L3 template count across the full prespecified 0.70, 0.80 and 0.90 reference-fraction sensitivity grid and support thresholds. Production thresholds and the 0.70 reference fraction remain frozen. These analyses diagnose model robustness and do not change production templates or thresholds.
 """
 
     def _new_document(self, title: str, subtitle: str, status: str) -> Document:
@@ -664,15 +679,15 @@ Current release classification: **D5 scientific score ready; cross-dimensional p
         doc.add_page_break()
         self._heading(doc, "7. SCI figure review", 1)
         captions = [
-            "Figure D5-1 | Author-confirmed topology, applicability and release boundary.",
-            "Figure D5-2 | Spatiotemporal D5 structure and effective support.",
-            "Figure D5-3 | Evidence decomposition, node influence and zone consensus.",
+            "Figure D5-1 | Author-confirmed longitudinal/peer topology, applicability and scientific workflow.",
+            "Figure D5-2 | Spatiotemporal D5 score, report eligibility, OOD and support structure.",
+            "Figure D5-3 | Case-level raw trajectories, structural components, attribution and topology residuals.",
             "Figure D5-4 | Validation and Local-Sensitivity invariance.",
             "Figure D5-5 | Support, regime, topology and release governance.",
-            "Figure D5-6 | Future-month validation, localization and evidence coverage.",
-            "Figure D5-7 | D4-D5 complementarity and D5 robustness.",
-            "Figure D5-8 | Dimension-availability sensitivity of the prototype WW-DQS.",
-            "Figure D5-9 | Target-influence and support-threshold robustness.",
+            "Figure D5-6 | Criterion margins, topological localization, coverage and risk-coverage limits.",
+            "Figure D5-7 | D4-D5 joint structure, stratified dependence and low-tail overlap.",
+            "Figure D5-8 | Availability-aware, matched complete-case and fixed-dimension prototype estimands.",
+            "Figure D5-9 | Whole/post-reference target influence and full support-threshold grid.",
         ]
         stems = ["FigD5_1_framework", "FigD5_2_spatiotemporal", "FigD5_3_evidence", "FigD5_4_validation", "FigD5_5_governance", "FigD5_6_validation_coverage", "FigD5_7_D4_D5_complementarity", "FigD5_8_dimension_availability_sensitivity", "FigD5_9_target_support_robustness"]
         for stem, caption in zip(stems, captions):

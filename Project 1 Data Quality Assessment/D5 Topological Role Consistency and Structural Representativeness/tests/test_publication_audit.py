@@ -144,5 +144,46 @@ def test_cluster_bootstrap_samples_whole_clusters() -> None:
     assert high == 1.0
 
 
+def test_monthly_ood_uses_out_of_template_status() -> None:
+    timestamps = pd.date_range("2025-01-01", periods=4, freq="1h")
+    frame = pd.DataFrame(
+        {
+            "timestamp": timestamps,
+            "D5_raw": [4.0, 4.0, 4.0, 4.0],
+            "D5_report_score": [4.0, np.nan, np.nan, 4.0],
+            "support_level": ["L3", "L1", "L2", "L3"],
+            "evaluation_status": [
+                "evaluable",
+                "limited_support",
+                "out_of_template",
+                "evaluable",
+            ],
+        }
+    )
+    result = D5PublicationAudit._monthly_coverage(frame)
+    assert result.loc[0, "ood_rate"] == 0.25
+
+
+def test_publication_dual_scope_sources_are_provenance_ready() -> None:
+    audit = D5PublicationAudit()
+    for name in [
+        "D5_d4_d5_joint_sample.parquet",
+        "D5_d4_d5_low_tail_overlap.parquet",
+    ]:
+        path = audit.output_root / name
+        if not path.exists():
+            continue
+        frame = pd.read_parquet(path)
+        assert set(frame["overlap_scope"].unique()) == {
+            "D5_report_score",
+            "D5_raw_calculable",
+        }
+        assert {
+            "source_D4_run_id",
+            "source_D4_calibration_id",
+            "source_D4_sha256",
+        }.issubset(frame.columns)
+
+
 def spearman_like(x: pd.Series, y: pd.Series) -> float:
     return float(x.rank().corr(y.rank()))

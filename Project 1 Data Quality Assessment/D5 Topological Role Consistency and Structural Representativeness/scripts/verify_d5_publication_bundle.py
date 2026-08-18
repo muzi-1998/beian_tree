@@ -72,6 +72,8 @@ def main() -> None:
         "D5_d4_d5_dependence.parquet",
         "D5_d4_d5_stratified_rho.parquet",
         "D5_d4_d5_composite.parquet",
+        "D5_d4_d5_joint_sample.parquet",
+        "D5_d4_d5_low_tail_overlap.parquet",
     ]:
         frame = pd.read_parquet(ROOT / "outputs" / "publication" / name)
         for column, expected in expected_columns.items():
@@ -84,7 +86,13 @@ def main() -> None:
         / "publication"
         / "FigD5_7_D4_D5_complementarity_source_data.xlsx"
     )
-    for sheet in ["dependence", "stratified_rho", "composite_ablation"]:
+    for sheet in [
+        "dependence",
+        "stratified_rho",
+        "joint_density_sample",
+        "low_tail_overlap",
+        "composite_ablation",
+    ]:
         frame = pd.read_excel(figure_source, sheet_name=sheet)
         for column, expected in expected_columns.items():
             values = frame[column].dropna().astype(str).unique().tolist()

@@ -2,7 +2,7 @@
 
 Current release: **D5 v2.4**
 
-Generated: 2026-08-18 11:58 CST
+Generated: 2026-08-18 18:58 CST
 
 - Scientific status: ready for final subscore aggregation with explicit
   eligibility.

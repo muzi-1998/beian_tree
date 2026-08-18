@@ -74,3 +74,13 @@ python -m pytest ".\D5 Topological Role Consistency and Structural Representativ
 
 The report and directory guide are generated from the current manifest and
 artifact inventory. Every project rerun updates both documents.
+
+## Figure bundle
+
+The current nine-figure bundle follows a fixed 183 mm Nature-style contract.
+Figures 1-3 provide topology, applicability and case-level evidence; Figures 6-7
+carry the principal validation and D4-D5 complementarity claims. Figures 4, 5
+and 9 are detailed Extended Data/Supplementary analyses. Figure 8 is an
+integrated-WW-DQS prototype and must not be described as the final five-
+dimension composite. All quantitative panels have frozen source-data outputs,
+and `outputs/figures/D5_figure_qa.json` records export and layout checks.

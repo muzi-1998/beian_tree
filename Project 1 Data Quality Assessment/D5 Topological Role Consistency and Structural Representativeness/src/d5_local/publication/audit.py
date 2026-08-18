@@ -68,6 +68,8 @@ class D5PublicationAudit:
             d4_dependence,
             d4_stratified,
             d4_composite,
+            d4_joint_sample,
+            d4_low_tail_overlap,
             d4_meta,
         ) = self._d4_d5_audit(main, confirmatory)
         dimension_availability = self._dimension_availability_sensitivity(
@@ -87,6 +89,8 @@ class D5PublicationAudit:
             "d4_d5_dependence": d4_dependence,
             "d4_d5_stratified_rho": d4_stratified,
             "d4_d5_composite": d4_composite,
+            "d4_d5_joint_sample": d4_joint_sample,
+            "d4_d5_low_tail_overlap": d4_low_tail_overlap,
             "dimension_availability": dimension_availability,
             "target_influence": target_influence,
             "coverage_summary": coverage_summary,
@@ -209,6 +213,7 @@ class D5PublicationAudit:
                     "top1_hit": bool(trial.top1_hit),
                     "top2_hit": bool(trial.top2_hit),
                     "reciprocal_rank": float(trial.reciprocal_rank),
+                    "blocked_fold": str(trial.blocked_fold),
                 }
             )
         frame = pd.DataFrame(trial_rows).dropna(subset=["confidence"])
@@ -216,14 +221,26 @@ class D5PublicationAudit:
         for retained_fraction in [1.0, 0.8, 0.6, 0.4]:
             retained = max(1, int(np.ceil(len(frame) * retained_fraction)))
             selected = frame.nlargest(retained, "confidence")
+            top1_ci = self.cluster_bootstrap_interval(
+                selected,
+                cluster="blocked_fold",
+                estimator=lambda sample: float(sample["top1_hit"].mean()),
+                repetitions=int(self.config["statistical_analysis"]["bootstrap_repetitions"]),
+                rng=self.rng,
+            )
             rows.append(
                 {
                     "retained_fraction": retained / len(frame),
                     "minimum_confidence": selected["confidence"].min(),
                     "top1": selected["top1_hit"].mean(),
+                    "top1_ci95_low": top1_ci[0],
+                    "top1_ci95_high": top1_ci[1],
                     "top2": selected["top2_hit"].mean(),
                     "mrr": selected["reciprocal_rank"].mean(),
                     "n_trials": len(selected),
+                    "n_month_blocks": selected["blocked_fold"].nunique(),
+                    "analysis_unit": "injected_24h_window",
+                    "ci_method": "blocked_month_cluster_bootstrap",
                     "interpretation": "controlled_injection_risk_coverage_not_field_error_rate",
                 }
             )
@@ -242,7 +259,7 @@ class D5PublicationAudit:
                     "sensor_hours": len(group),
                     "raw_score_coverage": group["D5_raw"].notna().mean(),
                     "report_score_coverage": group["D5_report_score"].notna().mean(),
-                    "ood_rate": group["evaluation_status"].eq("ood_context").mean(),
+                    "ood_rate": group["evaluation_status"].eq("out_of_template").mean(),
                     "L1_rate": group["support_level"].eq("L1").mean(),
                     "L2_rate": group["support_level"].eq("L2").mean(),
                     "L3_rate": group["support_level"].eq("L3").mean(),
@@ -318,7 +335,14 @@ class D5PublicationAudit:
 
     def _d4_d5_audit(
         self, main: pd.DataFrame, confirmatory: Path
-    ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, dict[str, object]]:
+    ) -> tuple[
+        pd.DataFrame,
+        pd.DataFrame,
+        pd.DataFrame,
+        pd.DataFrame,
+        pd.DataFrame,
+        dict[str, object],
+    ]:
         d4 = pd.read_excel(
             self.paths.d4_scores,
             usecols=[
@@ -372,6 +396,41 @@ class D5PublicationAudit:
             )
         dependence = pd.concat(dependence_frames, ignore_index=True)
         stratified = pd.concat(stratified_frames, ignore_index=True)
+        joint_rows = []
+        low_tail_rows = []
+        low_cut = float(self.config["statistical_analysis"]["low_score_threshold"])
+        for scope, (score_column, _) in scopes.items():
+            valid = valid_by_scope[scope].sort_values(["timestamp", "pair_id"])
+            step = max(1, int(np.floor(len(valid) / 12000)))
+            sampled = valid.iloc[::step].head(12000).copy()
+            sampled = sampled[
+                ["timestamp", "pair_id", "variable", "regime_id", "month", "time_block", "D4_raw", score_column]
+            ].rename(columns={score_column: "D5_score"})
+            sampled["overlap_scope"] = scope
+            sampled["display_sampling"] = "deterministic_time_order_thinning_max_12000"
+            sampled["source_rows"] = len(valid)
+            joint_rows.append(sampled)
+            d4_low = valid["D4_raw"].lt(low_cut)
+            d5_low = valid[score_column].lt(low_cut)
+            categories = {
+                "neither_low": ~d4_low & ~d5_low,
+                "D4_only_low": d4_low & ~d5_low,
+                "D5_only_low": ~d4_low & d5_low,
+                "both_low": d4_low & d5_low,
+            }
+            for category, mask in categories.items():
+                low_tail_rows.append(
+                    {
+                        "overlap_scope": scope,
+                        "category": category,
+                        "count": int(mask.sum()),
+                        "fraction": float(mask.mean()),
+                        "n_pair_hours": len(valid),
+                        "threshold": low_cut,
+                    }
+                )
+        joint_sample = pd.concat(joint_rows, ignore_index=True)
+        low_tail_overlap = pd.DataFrame(low_tail_rows)
 
         pair_scores = pd.read_parquet(confirmatory / "WWDQS_pair_scores.parquet")
         node_scores = pd.read_parquet(confirmatory / "WWDQS_node_scores.parquet")
@@ -419,13 +478,13 @@ class D5PublicationAudit:
             "source_D4_calibration_id": meta["d4_calibration_id"],
             "source_D4_sha256": meta["d4_main_scores_sha256"],
         }
-        for frame in (dependence, stratified):
+        for frame in (dependence, stratified, joint_sample, low_tail_overlap):
             for column, value in provenance.items():
                 frame[column] = value
         composite = pd.DataFrame(composite_rows)
         for column, value in provenance.items():
             composite[column] = value
-        return dependence, stratified, composite, meta
+        return dependence, stratified, composite, joint_sample, low_tail_overlap, meta
 
     def _overall_d4_d5_dependence(
         self, frame: pd.DataFrame, score_column: str, scope: str
