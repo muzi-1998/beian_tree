@@ -819,20 +819,9 @@ def _extended_pair_weighting_figure(
         max(sweep["low_tail_jaccard"].max(), sweep["decision_flip_rate"].max())
     )
     ax.set_ylim(0, max(0.08, min(1.0, ymax * 1.22)))
-    ax.set_xlabel("Low-tail threshold, Q")
+    ax.set_xlabel("Low-tail threshold, Q; formal = 3.0")
     ax.set_ylabel("Proportion")
     ax.legend(loc="upper left")
-    ax.text(
-        formal_threshold,
-        0.96,
-        "Formal",
-        transform=ax.get_xaxis_transform(),
-        color=PALETTE["gray"],
-        ha="right",
-        va="top",
-        rotation=90,
-        fontsize=6.0,
-    )
     style_axes(ax)
     write_workbook(
         source_root / "DQR_ExtFig01_source_data.xlsx",
