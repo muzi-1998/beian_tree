@@ -13,6 +13,9 @@ sys.path.insert(0, str(ROOT / "src"))
 
 from dqr_aggregation.common import (  # noqa: E402
     OUTPUT_ROOT,
+    generation_configuration_record,
+    generation_content_sha256,
+    generation_source_registry,
     load_config,
     sha256_file,
     sha256_text_lf,
@@ -23,7 +26,7 @@ from dqr_aggregation.pipeline import verify_frozen_inputs  # noqa: E402
 
 def verify() -> dict[str, object]:
     config = load_config()
-    verify_frozen_inputs(config)
+    current_inputs = verify_frozen_inputs(config)
     node = pd.read_parquet(OUTPUT_ROOT / "data" / "DQR_node_hourly.parquet")
     pair = pd.read_parquet(OUTPUT_ROOT / "data" / "DQR_pair_hourly.parquet")
     dimension = pd.read_parquet(OUTPUT_ROOT / "data" / "DQR_dimension_long.parquet")
@@ -62,6 +65,52 @@ def verify() -> dict[str, object]:
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     run_manifest_path = OUTPUT_ROOT / "manifests" / "DQR_run_manifest.json"
     run_manifest = json.loads(run_manifest_path.read_text(encoding="utf-8"))
+    current_configuration = generation_configuration_record()
+    current_code_sources = generation_source_registry()
+    checks["current_configuration_exact_match"] = bool(
+        run_manifest.get("configuration") == current_configuration
+    )
+    checks["current_code_sources_exact_match"] = bool(
+        sorted(run_manifest.get("code_sources", []), key=lambda item: item["path"])
+        == current_code_sources
+    )
+
+    input_keys = (
+        "dimension",
+        "artifact_role",
+        "relative_path",
+        "actual_sha256",
+        "hash_method",
+    )
+
+    def input_signature(records: list[dict[str, object]]) -> list[dict[str, object]]:
+        selected = [
+            {key: record.get(key) for key in input_keys}
+            for record in records
+        ]
+        return sorted(
+            selected,
+            key=lambda item: (str(item["dimension"]), str(item["artifact_role"])),
+        )
+
+    current_input_records = current_inputs.to_dict("records")
+    manifest_input_records = run_manifest.get("input_registry", [])
+    checks["current_frozen_inputs_exact_match"] = bool(
+        input_signature(manifest_input_records)
+        == input_signature(current_input_records)
+    )
+    current_generation_hash = generation_content_sha256(
+        current_configuration, current_code_sources, current_inputs
+    )
+    checks["scientific_generation_content_hash"] = bool(
+        run_manifest.get("provenance", {}).get(
+            "scientific_generation_content_sha256"
+        )
+        == current_generation_hash
+    )
+    checks["publication_provenance_consistency"] = bool(
+        manifest.get("provenance") == run_manifest.get("provenance")
+    )
     hash_checks = []
     for artifact in manifest["artifacts"]:
         path = OUTPUT_ROOT / artifact["relative_path"]
@@ -96,6 +145,33 @@ def verify() -> dict[str, object]:
         ]
         <= 1e-12
     )
+    threshold_sweep = pd.read_parquet(
+        OUTPUT_ROOT / "data" / "DQR_pair_low_tail_threshold_sweep.parquet"
+    )
+    formal_threshold = float(config["aggregation"]["low_tail_threshold"])
+    formal = threshold_sweep.loc[
+        np.isclose(threshold_sweep["threshold"], formal_threshold)
+    ]
+    checks["pair_low_tail_formal_threshold_unique"] = bool(len(formal) == 1)
+    if len(formal) == 1:
+        item = formal.iloc[0]
+        checks["pair_low_tail_partition_closure"] = bool(
+            item["both_count"]
+            + item["hierarchical_only_count"]
+            + item["native_atom_only_count"]
+            + item["neither_count"]
+            == item["n_complete_pair_hours"]
+            and item["hierarchical_low_tail_count"]
+            == item["both_count"] + item["hierarchical_only_count"]
+            and item["native_atom_low_tail_count"]
+            == item["both_count"] + item["native_atom_only_count"]
+            and item["union_count"]
+            == item["both_count"]
+            + item["hierarchical_only_count"]
+            + item["native_atom_only_count"]
+        )
+    else:
+        checks["pair_low_tail_partition_closure"] = False
     passed = all(checks.values())
     result = {"passed": passed, "checks": checks, "run_id": manifest["run_id"]}
     if not passed:

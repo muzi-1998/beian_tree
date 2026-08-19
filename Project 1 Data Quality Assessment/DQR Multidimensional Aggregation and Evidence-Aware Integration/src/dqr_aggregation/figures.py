@@ -280,10 +280,10 @@ def _figure_2(
 
     effect_order = [
         "selection_only",
-        "D5_composition",
+        "within_Full_D5_compositional_contribution",
         "total_observed_estimand_shift",
     ]
-    effect_labels = ["Selection", "D5 composition", "Total shift"]
+    effect_labels = ["Selection", "Within-Full D5\ncontribution", "Total shift"]
     overall = (
         decomposition.loc[
             decomposition["stratum_type"].eq("overall")
@@ -733,8 +733,10 @@ def _extended_pair_weighting_figure(
     source_root: Path,
     summary: pd.DataFrame,
     rows: pd.DataFrame,
+    threshold_sweep: pd.DataFrame,
+    episodes: pd.DataFrame,
 ) -> list[Path]:
-    fig, axes = _new_figure(88, columns=2)
+    fig, axes = _new_figure(88, columns=3)
     ax = axes[0, 0]
     panel_label(ax, "a")
     ax.set_title("Pair weighting estimands", loc="left")
@@ -790,9 +792,55 @@ def _extended_pair_weighting_figure(
         bbox={"facecolor": "white", "edgecolor": "none", "alpha": 0.78, "pad": 1.5},
     )
     style_axes(ax)
+
+    sweep = threshold_sweep.sort_values("threshold")
+    formal_threshold = float(summary.iloc[0]["formal_low_tail_threshold"])
+    ax = axes[0, 2]
+    panel_label(ax, "c")
+    ax.set_title("Threshold sensitivity", loc="left")
+    ax.plot(
+        sweep["threshold"],
+        sweep["low_tail_jaccard"],
+        color=PALETTE["teal"],
+        marker="o",
+        markersize=3.2,
+        label="Low-tail Jaccard",
+    )
+    ax.plot(
+        sweep["threshold"],
+        sweep["decision_flip_rate"],
+        color=PALETTE["red"],
+        marker="s",
+        markersize=3.0,
+        label="Decision-flip fraction",
+    )
+    ax.axvline(formal_threshold, color=PALETTE["gray"], lw=0.7, ls="--")
+    ymax = float(
+        max(sweep["low_tail_jaccard"].max(), sweep["decision_flip_rate"].max())
+    )
+    ax.set_ylim(0, max(0.08, min(1.0, ymax * 1.22)))
+    ax.set_xlabel("Low-tail threshold, Q")
+    ax.set_ylabel("Proportion")
+    ax.legend(loc="upper left")
+    ax.text(
+        formal_threshold,
+        ax.get_ylim()[1] * 0.04,
+        "Formal",
+        color=PALETTE["gray"],
+        ha="center",
+        va="bottom",
+        fontsize=6.0,
+        bbox={"facecolor": "white", "edgecolor": "none", "alpha": 0.82, "pad": 0.7},
+    )
+    style_axes(ax)
     write_workbook(
         source_root / "DQR_ExtFig01_source_data.xlsx",
-        {"summary": summary, "complete_pair_hours": rows},
+        {
+            "summary": summary,
+            "complete_pair_hours": rows,
+            "threshold_sweep": threshold_sweep,
+            "low_tail_episodes": episodes,
+        },
     )
     return save_figure(fig, figure_root, EXT_STEMS[0])
 
@@ -811,6 +859,8 @@ def build_all_figures(
     decomposition: pd.DataFrame,
     pair_weighting_summary: pd.DataFrame,
     pair_weighting_rows: pd.DataFrame,
+    pair_threshold_sweep: pd.DataFrame,
+    pair_low_tail_episodes: pd.DataFrame,
 ) -> list[Path]:
     configure_style()
     figure_root = output_root / "figures"
@@ -823,7 +873,12 @@ def build_all_figures(
     paths.extend(_figure_5(config, figure_root, source_root, node, pair))
     paths.extend(
         _extended_pair_weighting_figure(
-            figure_root, source_root, pair_weighting_summary, pair_weighting_rows
+            figure_root,
+            source_root,
+            pair_weighting_summary,
+            pair_weighting_rows,
+            pair_threshold_sweep,
+            pair_low_tail_episodes,
         )
     )
     return paths

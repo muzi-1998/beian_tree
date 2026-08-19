@@ -38,6 +38,65 @@ def sha256_text_lf(path: Path) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
+def generation_configuration_record() -> dict[str, str]:
+    return {
+        "path": CONFIG_PATH.relative_to(PROJECT_ROOT).as_posix(),
+        "sha256": sha256_text_lf(CONFIG_PATH),
+        "hash_method": "sha256_utf8_lf_canonical",
+    }
+
+
+def generation_source_registry() -> list[dict[str, str]]:
+    source_paths = [
+        *Path(__file__).parent.glob("*.py"),
+        *(DQR_ROOT / "scripts").glob("*.py"),
+    ]
+    return [
+        {
+            "path": path.relative_to(PROJECT_ROOT).as_posix(),
+            "sha256": sha256_text_lf(path),
+            "hash_method": "sha256_utf8_lf_canonical",
+        }
+        for path in sorted(source_paths)
+    ]
+
+
+def generation_content_sha256(
+    configuration: dict[str, Any],
+    code_sources: list[dict[str, Any]],
+    input_registry: pd.DataFrame | list[dict[str, Any]],
+) -> str:
+    records = (
+        input_registry.to_dict("records")
+        if isinstance(input_registry, pd.DataFrame)
+        else input_registry
+    )
+    inputs = [
+        {
+            key: record.get(key)
+            for key in (
+                "dimension",
+                "artifact_role",
+                "relative_path",
+                "actual_sha256",
+                "hash_method",
+            )
+        }
+        for record in records
+    ]
+    payload = {
+        "configuration": configuration,
+        "code_sources": sorted(code_sources, key=lambda item: item["path"]),
+        "frozen_inputs": sorted(
+            inputs, key=lambda item: (item["dimension"], item["artifact_role"])
+        ),
+    }
+    canonical = json.dumps(
+        payload, ensure_ascii=True, sort_keys=True, separators=(",", ":")
+    )
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
 def stable_frame_hash(frame: pd.DataFrame) -> str:
     normalized = frame.copy()
     normalized.columns = normalized.columns.astype(str)
@@ -143,11 +202,11 @@ def combine_gate(left: pd.Series, right: pd.Series) -> pd.Series:
 
 
 def make_run_id(config: dict[str, Any]) -> str:
-    payload = CONFIG_PATH.read_bytes()
-    for source in sorted(Path(__file__).parent.glob("*.py")):
-        payload += source.name.encode("utf-8") + source.read_bytes()
+    payload = sha256_text_lf(CONFIG_PATH).encode("ascii")
+    for source in generation_source_registry():
+        payload += source["path"].encode("utf-8") + source["sha256"].encode("ascii")
     for spec in config["inputs"].values():
         for key, value in sorted(spec.items()):
             if key.startswith("expected_") and key.endswith("sha256"):
                 payload += str(value).encode("ascii")
-    return f"DQRAGG-V21-{hashlib.sha256(payload).hexdigest()[:12]}"
+    return f"DQRAGG-V22-{hashlib.sha256(payload).hexdigest()[:12]}"

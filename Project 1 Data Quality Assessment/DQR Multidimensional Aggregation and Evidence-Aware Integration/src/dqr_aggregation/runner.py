@@ -7,8 +7,10 @@ import numpy as np
 import pandas as pd
 
 from .common import (
-    CONFIG_PATH,
     OUTPUT_ROOT,
+    generation_configuration_record,
+    generation_content_sha256,
+    generation_source_registry,
     git_commit,
     load_config,
     make_run_id,
@@ -59,9 +61,32 @@ def _contract_checks(
     pair: pd.DataFrame,
     invariance: pd.DataFrame,
     decomposition: pd.DataFrame,
+    pair_threshold_sweep: pd.DataFrame,
 ) -> pd.DataFrame:
     score_min = float(config["aggregation"]["score_min"])
     score_max = float(config["aggregation"]["score_max"])
+    low_tail_threshold = float(config["aggregation"]["low_tail_threshold"])
+    formal_rows = pair_threshold_sweep.loc[
+        np.isclose(pair_threshold_sweep["threshold"], low_tail_threshold)
+    ]
+    partitions_close = bool(
+        len(formal_rows) == 1
+        and (
+            formal_rows["both_count"]
+            + formal_rows["hierarchical_only_count"]
+            + formal_rows["native_atom_only_count"]
+            + formal_rows["neither_count"]
+        ).iloc[0]
+        == formal_rows["n_complete_pair_hours"].iloc[0]
+        and formal_rows["hierarchical_low_tail_count"].iloc[0]
+        == (
+            formal_rows["both_count"] + formal_rows["hierarchical_only_count"]
+        ).iloc[0]
+        and formal_rows["native_atom_low_tail_count"].iloc[0]
+        == (
+            formal_rows["both_count"] + formal_rows["native_atom_only_count"]
+        ).iloc[0]
+    )
     checks = [
         (
             "frozen_input_hashes",
@@ -150,7 +175,12 @@ def _contract_checks(
         (
             "selection_composition_exact_closure",
             bool(decomposition["overall_closure_error"].abs().le(1e-12).all()),
-            "total observed shift equals selection-only plus D5 composition",
+            "total observed shift equals selection-only plus within-Full D5 contribution",
+        ),
+        (
+            "pair_low_tail_partition_exact_closure",
+            partitions_close,
+            "formal-threshold overlap cells partition all complete pair-hours exactly",
         ),
     ]
     return pd.DataFrame(checks, columns=["check_id", "passed", "interpretation"])
@@ -225,7 +255,9 @@ def _summary(
         },
         "selection_composition_decomposition": {
             "selection_only": float(effects.loc["selection_only", "estimate"]),
-            "D5_composition": float(effects.loc["D5_composition", "estimate"]),
+            "within_Full_D5_compositional_contribution": float(
+                effects.loc["within_Full_D5_compositional_contribution", "estimate"]
+            ),
             "total_observed_estimand_shift": float(
                 effects.loc["total_observed_estimand_shift", "estimate"]
             ),
@@ -238,6 +270,22 @@ def _summary(
             "spearman": float(sensitivity["spearman"]),
             "low_tail_jaccard": float(sensitivity["low_tail_jaccard"]),
             "decision_flip_rate_at_3": float(sensitivity["decision_flip_rate_at_3"]),
+            "hierarchical_low_tail_count": int(
+                sensitivity["hierarchical_low_tail_count"]
+            ),
+            "native_atom_low_tail_count": int(
+                sensitivity["native_atom_low_tail_count"]
+            ),
+            "intersection_both_count": int(sensitivity["intersection_both_count"]),
+            "union_count": int(sensitivity["union_count"]),
+            "hierarchical_event_count": int(sensitivity["hierarchical_event_count"]),
+            "native_atom_event_count": int(sensitivity["native_atom_event_count"]),
+            "hierarchical_median_episode_duration_h": float(
+                sensitivity["hierarchical_median_episode_duration_h"]
+            ),
+            "native_atom_median_episode_duration_h": float(
+                sensitivity["native_atom_median_episode_duration_h"]
+            ),
             "formal_model_changed": False,
         },
         "D3_gate_status_node": {
@@ -279,7 +327,12 @@ def run_aggregation() -> dict[str, Any]:
     decomposition, decomposition_draws = selection_composition_decomposition(config, node)
     block_summary = block_bootstrap_summary(config, node, pair)
     construct = construct_validity(config, pair)
-    pair_weighting, pair_weighting_rows = pair_weighting_sensitivity(config, pair)
+    (
+        pair_weighting,
+        pair_weighting_rows,
+        pair_threshold_sweep,
+        pair_low_tail_episodes,
+    ) = pair_weighting_sensitivity(config, pair)
     pending = pending_validation_registry(config)
     contracts = _contract_checks(
         config,
@@ -289,6 +342,7 @@ def run_aggregation() -> dict[str, Any]:
         pair=pair,
         invariance=invariance,
         decomposition=decomposition,
+        pair_threshold_sweep=pair_threshold_sweep,
     )
     if not contracts["passed"].all():
         failed = contracts.loc[~contracts["passed"], "check_id"].tolist()
@@ -302,6 +356,8 @@ def run_aggregation() -> dict[str, Any]:
         "estimand_decomposition": data_root / "DQR_estimand_decomposition.parquet",
         "estimand_decomposition_bootstrap": data_root / "DQR_estimand_decomposition_bootstrap.parquet",
         "pair_weighting_sensitivity": data_root / "DQR_pair_weighting_sensitivity.parquet",
+        "pair_low_tail_threshold_sweep": data_root / "DQR_pair_low_tail_threshold_sweep.parquet",
+        "pair_low_tail_episodes": data_root / "DQR_pair_low_tail_episodes.parquet",
     }
     dimension_long.to_parquet(data_paths["dimension_long"], index=False)
     node.to_parquet(data_paths["node_hourly"], index=False)
@@ -312,6 +368,12 @@ def run_aggregation() -> dict[str, Any]:
         data_paths["estimand_decomposition_bootstrap"], index=False
     )
     pair_weighting_rows.to_parquet(data_paths["pair_weighting_sensitivity"], index=False)
+    pair_threshold_sweep.to_parquet(
+        data_paths["pair_low_tail_threshold_sweep"], index=False
+    )
+    pair_low_tail_episodes.to_parquet(
+        data_paths["pair_low_tail_episodes"], index=False
+    )
 
     validation_path = validation_root / "DQR_aggregation_validation.xlsx"
     write_workbook(
@@ -330,6 +392,8 @@ def run_aggregation() -> dict[str, Any]:
             "block_bootstrap": block_summary,
             "construct_validity": construct,
             "pair_weighting": pair_weighting,
+            "pair_threshold_sweep": pair_threshold_sweep,
+            "pair_low_tail_episodes": pair_low_tail_episodes,
             "pending_registry": pending,
         },
     )
@@ -362,6 +426,8 @@ def run_aggregation() -> dict[str, Any]:
                 "coverage_monthly": stable_frame_hash(monthly),
                 "estimand_decomposition": stable_frame_hash(decomposition),
                 "pair_weighting_sensitivity": stable_frame_hash(pair_weighting_rows),
+                "pair_low_tail_threshold_sweep": stable_frame_hash(pair_threshold_sweep),
+                "pair_low_tail_episodes": stable_frame_hash(pair_low_tail_episodes),
             },
         },
     )
@@ -379,6 +445,8 @@ def run_aggregation() -> dict[str, Any]:
         decomposition=decomposition,
         pair_weighting_summary=pair_weighting,
         pair_weighting_rows=pair_weighting_rows,
+        pair_threshold_sweep=pair_threshold_sweep,
+        pair_low_tail_episodes=pair_low_tail_episodes,
     )
     figure_qa = run_figure_qa(
         output_root / "figures", validation_root / "DQR_figure_qa.json"
@@ -398,6 +466,7 @@ def run_aggregation() -> dict[str, Any]:
         construct=construct,
         decomposition=decomposition,
         pair_weighting=pair_weighting,
+        pair_threshold_sweep=pair_threshold_sweep,
         pending=pending,
     )
     write_directory_guide(report_root / "DQR_aggregation_directory_guide.md")
@@ -405,20 +474,25 @@ def run_aggregation() -> dict[str, Any]:
 
     run_manifest_path = manifest_root / "DQR_run_manifest.json"
     publication_manifest_path = manifest_root / "DQR_publication_manifest.json"
-    source_files = sorted((Path(__file__).parent).glob("*.py"))
+    configuration = generation_configuration_record()
+    code_sources = generation_source_registry()
+    scientific_content_sha256 = generation_content_sha256(
+        configuration, code_sources, input_registry
+    )
+    scientific_generation_commit = git_commit()
     run_manifest = {
         "schema_version": config["schema_version"],
         "contract_version": config["contract_version"],
         "run_id": run_id,
-        "source_commit_base": git_commit(),
-        "configuration": {
-            "path": str(CONFIG_PATH.relative_to(CONFIG_PATH.parents[2])).replace("\\", "/"),
-            "sha256": sha256_file(CONFIG_PATH),
+        "provenance": {
+            "scientific_generation_commit": scientific_generation_commit,
+            "scientific_generation_content_sha256": scientific_content_sha256,
+            "authority": "code_config_and_frozen_input_content_hashes",
+            "publication_bundle_commit": "external_release_commit_or_tag_not_embedded_to_avoid_self_reference",
+            "packaging_changes_after_generation": "permitted_only_when_scientific_content_hash_remains_exact",
         },
-        "code_sources": [
-            {"path": str(path.relative_to(CONFIG_PATH.parents[2])).replace("\\", "/"), "sha256": sha256_file(path)}
-            for path in source_files
-        ],
+        "configuration": configuration,
+        "code_sources": code_sources,
         "input_registry": input_registry.to_dict("records"),
         "contracts": contracts.to_dict("records"),
         "summary": _summary(
@@ -432,8 +506,9 @@ def run_aggregation() -> dict[str, Any]:
     }
     write_json(run_manifest_path, run_manifest)
     publication_manifest = {
-        "schema_version": "northbank-dqr-publication-manifest-v2.1",
+        "schema_version": "northbank-dqr-publication-manifest-v2.2",
         "run_id": run_id,
+        "provenance": run_manifest["provenance"],
         "release_status": run_manifest["summary"]["release_status"],
         "claim_boundary": {
             "A_E_grades": "disabled",

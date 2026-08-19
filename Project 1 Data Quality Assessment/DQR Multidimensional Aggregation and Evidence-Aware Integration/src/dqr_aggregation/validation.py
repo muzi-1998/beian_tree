@@ -356,7 +356,7 @@ def selection_composition_decomposition(
         boot_quality_full = np.divide(sum_quality_full, n_quality_full)
         samples = {
             "selection_only": boot_core_full - boot_core_basic,
-            "D5_composition": boot_quality_full - boot_core_full,
+            "within_Full_D5_compositional_contribution": boot_quality_full - boot_core_full,
             "total_observed_estimand_shift": boot_quality_full - boot_core_basic,
         }
         core_full = float(frame.loc[is_full, "Q_core_D1_D2"].mean())
@@ -364,7 +364,7 @@ def selection_composition_decomposition(
         quality_full = float(frame.loc[is_full, "Q_node_full"].mean())
         estimates = {
             "selection_only": core_full - core_basic,
-            "D5_composition": quality_full - core_full,
+            "within_Full_D5_compositional_contribution": quality_full - core_full,
             "total_observed_estimand_shift": quality_full - core_basic,
         }
         for effect, estimate in estimates.items():
@@ -404,16 +404,19 @@ def selection_composition_decomposition(
     closure = float(
         overall["total_observed_estimand_shift"]
         - overall["selection_only"]
-        - overall["D5_composition"]
+        - overall["within_Full_D5_compositional_contribution"]
     )
     summary["overall_closure_error"] = closure
     summary["interpretation"] = "descriptive_estimand_decomposition_not_causal"
     return summary, draws
 
 
-def _event_burden(
-    frame: pd.DataFrame, score_column: str, low_threshold: float
-) -> tuple[float, float, int]:
+def _extract_low_tail_episodes(
+    frame: pd.DataFrame,
+    score_column: str,
+    low_threshold: float,
+    model: str,
+) -> pd.DataFrame:
     ordered = frame.sort_values(["pair_id", "timestamp"]).copy()
     low = ordered[score_column].lt(low_threshold)
     same_pair = ordered["pair_id"].eq(ordered["pair_id"].shift())
@@ -421,14 +424,48 @@ def _event_burden(
         pd.Timedelta(hours=1)
     )
     event_start = low & ~(low.shift(fill_value=False) & same_pair & contiguous)
-    hours_per_1000 = float(low.mean() * 1000.0)
-    events_per_1000 = float(event_start.sum() / len(ordered) * 1000.0)
-    return hours_per_1000, events_per_1000, int(event_start.sum())
+    ordered["_episode_number"] = event_start.groupby(ordered["pair_id"]).cumsum()
+    events = (
+        ordered.loc[low]
+        .groupby(["pair_id", "_episode_number"], observed=True)
+        .agg(
+            start_timestamp=("timestamp", "min"),
+            end_timestamp=("timestamp", "max"),
+            duration_h=("timestamp", "size"),
+            minimum_score=(score_column, "min"),
+            mean_score=(score_column, "mean"),
+        )
+        .reset_index(drop=False)
+    )
+    events.insert(0, "model", model)
+    events.insert(1, "threshold", float(low_threshold))
+    events["episode_id"] = (
+        events["model"]
+        + "_Qlt"
+        + events["threshold"].map(lambda value: f"{value:.2f}")
+        + "_"
+        + events["pair_id"].astype(str)
+        + "_"
+        + events["_episode_number"].astype(int).astype(str).str.zfill(4)
+    )
+    return events.drop(columns="_episode_number")
+
+
+def _episode_summary(
+    events: pd.DataFrame, *, n_pair_hours: int
+) -> dict[str, float | int]:
+    return {
+        "event_count": int(len(events)),
+        "events_per_1000_pair_hours": float(len(events) / n_pair_hours * 1000.0),
+        "median_episode_duration_h": (
+            float(events["duration_h"].median()) if len(events) else np.nan
+        ),
+    }
 
 
 def pair_weighting_sensitivity(
     config: dict[str, Any], pair: pd.DataFrame
-) -> tuple[pd.DataFrame, pd.DataFrame]:
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """Compare hierarchical component weighting with equal native-atom weighting."""
     source = pair.loc[pair["Q_pair_full"].notna()].copy()
     atoms = [
@@ -443,34 +480,109 @@ def pair_weighting_sensitivity(
     source["Q_pair_hierarchical"] = source["Q_pair_full"]
     source["Q_pair_native_atom_equal"] = source[atoms].mean(axis=1)
     threshold = float(config["aggregation"]["low_tail_threshold"])
+    thresholds = sorted(
+        {float(value) for value in config["statistics"]["low_tail_threshold_sweep"]}
+        | {threshold}
+    )
     hierarchy = source["Q_pair_hierarchical"].to_numpy(float)
     atom = source["Q_pair_native_atom_equal"].to_numpy(float)
-    hierarchy_hours, hierarchy_events, hierarchy_n_events = _event_burden(
-        source, "Q_pair_hierarchical", threshold
-    )
-    atom_hours, atom_events, atom_n_events = _event_burden(
-        source, "Q_pair_native_atom_equal", threshold
-    )
+    threshold_rows: list[dict[str, Any]] = []
+    episode_frames: list[pd.DataFrame] = []
+    for candidate in thresholds:
+        hierarchy_low = hierarchy < candidate
+        atom_low = atom < candidate
+        both = hierarchy_low & atom_low
+        union = hierarchy_low | atom_low
+        hierarchy_events = _extract_low_tail_episodes(
+            source, "Q_pair_hierarchical", candidate, "hierarchical"
+        )
+        atom_events = _extract_low_tail_episodes(
+            source, "Q_pair_native_atom_equal", candidate, "native_atom_equal"
+        )
+        episode_frames.extend([hierarchy_events, atom_events])
+        hierarchy_episode_summary = _episode_summary(
+            hierarchy_events, n_pair_hours=len(source)
+        )
+        atom_episode_summary = _episode_summary(atom_events, n_pair_hours=len(source))
+        threshold_rows.append(
+            {
+                "threshold": candidate,
+                "n_complete_pair_hours": len(source),
+                "hierarchical_low_tail_count": int(hierarchy_low.sum()),
+                "native_atom_low_tail_count": int(atom_low.sum()),
+                "intersection_both_count": int(both.sum()),
+                "union_count": int(union.sum()),
+                "hierarchical_only_count": int((hierarchy_low & ~atom_low).sum()),
+                "native_atom_only_count": int((atom_low & ~hierarchy_low).sum()),
+                "both_count": int(both.sum()),
+                "neither_count": int((~hierarchy_low & ~atom_low).sum()),
+                "low_tail_jaccard": _jaccard(hierarchy_low, atom_low),
+                "decision_flip_rate": float(np.mean(hierarchy_low != atom_low)),
+                "hierarchical_low_hours_per_1000": float(hierarchy_low.mean() * 1000.0),
+                "native_atom_low_hours_per_1000": float(atom_low.mean() * 1000.0),
+                "hierarchical_event_count": hierarchy_episode_summary["event_count"],
+                "native_atom_event_count": atom_episode_summary["event_count"],
+                "hierarchical_events_per_1000": hierarchy_episode_summary[
+                    "events_per_1000_pair_hours"
+                ],
+                "native_atom_events_per_1000": atom_episode_summary[
+                    "events_per_1000_pair_hours"
+                ],
+                "hierarchical_median_episode_duration_h": hierarchy_episode_summary[
+                    "median_episode_duration_h"
+                ],
+                "native_atom_median_episode_duration_h": atom_episode_summary[
+                    "median_episode_duration_h"
+                ],
+                "threshold_role": (
+                    "formal_primary" if np.isclose(candidate, threshold) else "sensitivity"
+                ),
+            }
+        )
+    threshold_sweep = pd.DataFrame(threshold_rows)
+    episodes = pd.concat(episode_frames, ignore_index=True)
+    primary = threshold_sweep.loc[np.isclose(threshold_sweep["threshold"], threshold)].iloc[0]
     summary = pd.DataFrame(
         [
             {
                 "comparison": "hierarchical_equal_component_vs_native_atom_equal",
                 "n_complete_pair_hours": len(source),
                 "spearman": _spearman(hierarchy, atom),
-                "low_tail_jaccard": _jaccard(hierarchy < threshold, atom < threshold),
-                "decision_flip_rate_at_3": float(
-                    np.mean((hierarchy < threshold) != (atom < threshold))
-                ),
+                "formal_low_tail_threshold": threshold,
+                "low_tail_jaccard": float(primary["low_tail_jaccard"]),
+                "decision_flip_rate_at_3": float(primary["decision_flip_rate"]),
                 "hierarchical_mean": float(np.mean(hierarchy)),
                 "native_atom_mean": float(np.mean(atom)),
                 "mean_native_minus_hierarchical": float(np.mean(atom - hierarchy)),
                 "p90_absolute_change": float(np.quantile(np.abs(atom - hierarchy), 0.90)),
-                "hierarchical_low_hours_per_1000": hierarchy_hours,
-                "native_atom_low_hours_per_1000": atom_hours,
-                "hierarchical_events_per_1000": hierarchy_events,
-                "native_atom_events_per_1000": atom_events,
-                "hierarchical_event_count": hierarchy_n_events,
-                "native_atom_event_count": atom_n_events,
+                "hierarchical_low_tail_count": int(primary["hierarchical_low_tail_count"]),
+                "native_atom_low_tail_count": int(primary["native_atom_low_tail_count"]),
+                "intersection_both_count": int(primary["intersection_both_count"]),
+                "union_count": int(primary["union_count"]),
+                "hierarchical_only_count": int(primary["hierarchical_only_count"]),
+                "native_atom_only_count": int(primary["native_atom_only_count"]),
+                "both_count": int(primary["both_count"]),
+                "neither_count": int(primary["neither_count"]),
+                "hierarchical_low_hours_per_1000": float(
+                    primary["hierarchical_low_hours_per_1000"]
+                ),
+                "native_atom_low_hours_per_1000": float(
+                    primary["native_atom_low_hours_per_1000"]
+                ),
+                "hierarchical_events_per_1000": float(
+                    primary["hierarchical_events_per_1000"]
+                ),
+                "native_atom_events_per_1000": float(
+                    primary["native_atom_events_per_1000"]
+                ),
+                "hierarchical_event_count": int(primary["hierarchical_event_count"]),
+                "native_atom_event_count": int(primary["native_atom_event_count"]),
+                "hierarchical_median_episode_duration_h": float(
+                    primary["hierarchical_median_episode_duration_h"]
+                ),
+                "native_atom_median_episode_duration_h": float(
+                    primary["native_atom_median_episode_duration_h"]
+                ),
                 "formal_model_changed": False,
                 "interpretation": "supplementary_weighting_sensitivity_not_model_selection",
             }
@@ -490,7 +602,7 @@ def pair_weighting_sensitivity(
     rows["absolute_change"] = (
         rows["Q_pair_native_atom_equal"] - rows["Q_pair_hierarchical"]
     ).abs()
-    return summary, rows
+    return summary, rows, threshold_sweep, episodes
 
 
 def _circular_block_bootstrap_mean(

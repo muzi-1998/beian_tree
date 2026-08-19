@@ -1,5 +1,5 @@
-schema_version: northbank-dqr-aggregation-v2.1
-contract_version: 2.1.0
+schema_version: northbank-dqr-aggregation-v2.2
+contract_version: 2.2.0
 study:
   start: "2025-08-01 00:00:00"
   end: "2026-04-13 23:00:00"
@@ -96,6 +96,7 @@ statistics:
   dirichlet_concentration: 18.0
   weight_min: 0.15
   weight_max: 0.60
+  low_tail_threshold_sweep: [2.50, 2.75, 3.00, 3.25, 3.50]
 
 figures:
   width_mm: 183.0

@@ -48,6 +48,7 @@ def write_scientific_report(
     construct: pd.DataFrame,
     decomposition: pd.DataFrame,
     pair_weighting: pd.DataFrame,
+    pair_threshold_sweep: pd.DataFrame,
     pending: pd.DataFrame,
 ) -> None:
     node_counts = node["coverage_class"].value_counts()
@@ -137,9 +138,11 @@ def write_scientific_report(
         f"{effects.loc['selection_only', 'estimate']:.3f} "
         f"(95% block CI {effects.loc['selection_only', 'ci_low']:.3f} to "
         f"{effects.loc['selection_only', 'ci_high']:.3f}) from a within-Full D5 "
-        f"composition effect of {effects.loc['D5_composition', 'estimate']:.3f} "
-        f"({effects.loc['D5_composition', 'ci_low']:.3f} to "
-        f"{effects.loc['D5_composition', 'ci_high']:.3f}). Their sum equals the total "
+        f"compositional contribution of "
+        f"{effects.loc['within_Full_D5_compositional_contribution', 'estimate']:.3f} "
+        f"({effects.loc['within_Full_D5_compositional_contribution', 'ci_low']:.3f} to "
+        f"{effects.loc['within_Full_D5_compositional_contribution', 'ci_high']:.3f}). "
+        f"Their sum equals the total "
         f"observed estimand shift of "
         f"{effects.loc['total_observed_estimand_shift', 'estimate']:.3f}; absolute "
         f"closure error was {abs(effects['overall_closure_error'].iloc[0]):.2g}. This is "
@@ -165,6 +168,28 @@ def write_scientific_report(
         "Thus global ranking was broadly concordant but rare low-tail episode identity "
         "was not robust to flattening the hierarchy. This is a supplementary robustness "
         "comparison; the formal hierarchical model was not selected or changed from these data.",
+        "",
+        f"At the formal Q < {pair_native['formal_low_tail_threshold']:.2f} threshold, "
+        f"the hierarchical and native-atom estimands identified "
+        f"{int(pair_native['hierarchical_low_tail_count']):,} and "
+        f"{int(pair_native['native_atom_low_tail_count']):,} low-tail pair-hours, "
+        f"respectively. Their partition comprised {int(pair_native['both_count']):,} both, "
+        f"{int(pair_native['hierarchical_only_count']):,} hierarchical-only, "
+        f"{int(pair_native['native_atom_only_count']):,} native-atom-only and "
+        f"{int(pair_native['neither_count']):,} neither hours. The corresponding episode "
+        f"counts were {int(pair_native['hierarchical_event_count']):,} and "
+        f"{int(pair_native['native_atom_event_count']):,}, with median durations of "
+        f"{pair_native['hierarchical_median_episode_duration_h']:.1f} h and "
+        f"{pair_native['native_atom_median_episode_duration_h']:.1f} h.",
+        "",
+        f"Across the prespecified Q < {pair_threshold_sweep['threshold'].min():.2f}-"
+        f"{pair_threshold_sweep['threshold'].max():.2f} sensitivity range, low-tail "
+        f"Jaccard ranged from {pair_threshold_sweep['low_tail_jaccard'].min():.3f} to "
+        f"{pair_threshold_sweep['low_tail_jaccard'].max():.3f}, while decision-flip "
+        f"fractions ranged from {pair_threshold_sweep['decision_flip_rate'].min():.3f} "
+        f"to {pair_threshold_sweep['decision_flip_rate'].max():.3f}. The sweep tests "
+        "whether the formal Q < 3 result is threshold-local; it is not used to choose "
+        "a replacement threshold or weighting model.",
         "",
         "## Statistical interpretation",
         "",
@@ -235,6 +260,12 @@ overwritten.
 - `outputs/aggregation_v2/reports/`: scientific report, captions and this guide.
 - `outputs/aggregation_v2/manifests/`: frozen run and publication manifests.
 
+The run manifest records the scientific-generation commit for orientation, but
+publication freshness is governed by exact canonical hashes of the current
+configuration, every aggregation source module and all frozen D1-D5 inputs. The
+publication-bundle commit or release tag is external metadata so that a manifest
+never attempts to hash a commit that contains itself.
+
 Figures 6 and 7 specified in the study plan are intentionally absent until the
 prospective holdout and downstream endpoint bundles become available. Their
 absence is a prespecified pending status, not a missing build artifact.
@@ -254,7 +285,7 @@ non-compensatory gate. Quality and evidence completeness occupy separate axes.
 **Figure 2 | Evidence availability and estimand stability across the study period.**
 Monthly coverage and D5 L1-L3/OOD support migration are shown with Full and
 availability-aware quality, evidence completeness, and the selection-only,
-D5-composition and total observed estimand shifts. Full and availability-aware
+within-Full D5 compositional contribution and total observed estimand shifts. Full and availability-aware
 series are distinct estimands and must not be pooled.
 
 **Figure 3 | Pairwise construct complementarity across D1-D5.**
@@ -278,7 +309,8 @@ figure does not claim maintenance-confirmed fault truth.
 **Extended Data Figure 1 | Pair hierarchical versus native-atom weighting.**
 Complete-evidence pair-hours compare the formal equal-component hierarchy with
 equal weighting of seven native atoms. Score concordance, low-tail hours,
-episode burden and decision flips are sensitivity evidence, not model selection.
+exact overlap partitions, episode burden and a prespecified Q-threshold sweep are
+sensitivity evidence, not model selection.
 
 Figures 6 and 7 remain pending because prospective holdout scores and frozen
 downstream endpoint bundles are unavailable.

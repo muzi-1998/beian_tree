@@ -35,7 +35,7 @@ jobs:
         run: python -m pip install -r requirements-lock.txt pytest
       - name: Run synthetic and release-contract tests
         run: python -m pytest tests -q
-      - name: Verify publication bundle and frozen provenance
+      - name: Verify publication bundle and exact source freshness
         run: python scripts/verify_dqr_aggregation.py
       - name: Check patch whitespace
         working-directory: ${{ github.workspace }}

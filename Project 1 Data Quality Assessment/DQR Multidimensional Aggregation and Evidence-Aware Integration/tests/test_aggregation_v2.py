@@ -3,8 +3,15 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from dqr_aggregation.common import OUTPUT_ROOT, expand_end_exclusive_windows, load_config
+from dqr_aggregation.common import (
+    OUTPUT_ROOT,
+    expand_end_exclusive_windows,
+    generation_configuration_record,
+    generation_source_registry,
+    load_config,
+)
 from dqr_aggregation.pipeline import resolve_release_status, verify_frozen_inputs
+from dqr_aggregation.validation import pair_weighting_sensitivity
 
 
 def test_d3_end_exclusive_two_hour_window_maps_to_preceding_hours() -> None:
@@ -74,3 +81,52 @@ def test_d3_gate_does_not_overwrite_diagnostic_quality() -> None:
         pd.Series(["full", "limited"]),
     )
     pd.testing.assert_series_equal(quality, original)
+
+
+def test_pair_low_tail_overlap_partition_and_episode_contract() -> None:
+    hierarchy = np.array([2.8, 2.7, 3.2, 2.9, 2.8, 4.0, 4.0, 2.5])
+    native_atom = np.array([2.9, 3.1, 2.8, 2.9, 3.2, 4.0, 4.0, 2.6])
+    frame = pd.DataFrame(
+        {
+            "timestamp": pd.date_range("2026-01-01", periods=8, freq="1h"),
+            "pair_id": "PAIR_DO11",
+            "variable": "DO",
+            "Q_pair_full": hierarchy,
+        }
+    )
+    for column in (
+        "left_D1_total",
+        "left_D2_total",
+        "left_D5_report_score",
+        "right_D1_total",
+        "right_D2_total",
+        "right_D5_report_score",
+        "D4_raw",
+    ):
+        frame[column] = native_atom
+
+    summary, _, sweep, episodes = pair_weighting_sensitivity(load_config(), frame)
+    formal = sweep.loc[sweep["threshold_role"].eq("formal_primary")].iloc[0]
+    assert formal["threshold"] == 3.0
+    assert formal["hierarchical_low_tail_count"] == 5
+    assert formal["native_atom_low_tail_count"] == 4
+    assert formal["both_count"] == 3
+    assert formal["hierarchical_only_count"] == 2
+    assert formal["native_atom_only_count"] == 1
+    assert formal["neither_count"] == 2
+    assert formal["union_count"] == 6
+    assert summary.iloc[0]["formal_model_changed"] == False  # noqa: E712
+    formal_episodes = episodes.loc[np.isclose(episodes["threshold"], 3.0)]
+    assert len(formal_episodes.loc[formal_episodes["model"].eq("hierarchical")]) == 3
+    assert len(formal_episodes.loc[formal_episodes["model"].eq("native_atom_equal")]) == 3
+    assert formal["hierarchical_median_episode_duration_h"] == 2.0
+    assert formal["native_atom_median_episode_duration_h"] == 1.0
+
+
+def test_generation_registry_uses_canonical_text_hashes() -> None:
+    configuration = generation_configuration_record()
+    sources = generation_source_registry()
+    assert configuration["hash_method"] == "sha256_utf8_lf_canonical"
+    assert sources
+    assert len({item["path"] for item in sources}) == len(sources)
+    assert all(item["hash_method"] == "sha256_utf8_lf_canonical" for item in sources)
