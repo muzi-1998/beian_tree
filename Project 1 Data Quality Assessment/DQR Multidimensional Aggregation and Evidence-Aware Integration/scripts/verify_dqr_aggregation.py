@@ -11,7 +11,12 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from dqr_aggregation.common import OUTPUT_ROOT, load_config, sha256_file  # noqa: E402
+from dqr_aggregation.common import (  # noqa: E402
+    OUTPUT_ROOT,
+    load_config,
+    sha256_file,
+    sha256_text_lf,
+)
 from dqr_aggregation.figures import ALL_STEMS, STEMS  # noqa: E402
 from dqr_aggregation.pipeline import verify_frozen_inputs  # noqa: E402
 
@@ -60,7 +65,15 @@ def verify() -> dict[str, object]:
     hash_checks = []
     for artifact in manifest["artifacts"]:
         path = OUTPUT_ROOT / artifact["relative_path"]
-        hash_checks.append(path.exists() and sha256_file(path) == artifact["sha256"])
+        if not path.exists():
+            hash_checks.append(False)
+            continue
+        actual = (
+            sha256_text_lf(path)
+            if artifact.get("hash_method") == "sha256_utf8_lf_canonical"
+            else sha256_file(path)
+        )
+        hash_checks.append(actual == artifact["sha256"])
     checks["publication_manifest_hashes"] = bool(hash_checks and all(hash_checks))
     checks["manifest_run_id_consistency"] = bool(
         manifest["run_id"] == run_manifest["run_id"]

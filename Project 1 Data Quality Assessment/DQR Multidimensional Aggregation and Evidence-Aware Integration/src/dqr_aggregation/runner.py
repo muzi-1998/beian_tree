@@ -13,6 +13,7 @@ from .common import (
     load_config,
     make_run_id,
     sha256_file,
+    sha256_text_lf,
     stable_frame_hash,
     write_json,
 )
@@ -157,14 +158,19 @@ def _contract_checks(
 
 def _artifact_inventory(output_root: Path, *, exclude: set[Path]) -> list[dict[str, Any]]:
     rows = []
+    canonical_text_suffixes = {".csv", ".json", ".md", ".svg", ".txt", ".yaml", ".yml"}
     for path in sorted(item for item in output_root.rglob("*") if item.is_file()):
         if path in exclude:
             continue
+        canonical_text = path.suffix.lower() in canonical_text_suffixes
         rows.append(
             {
                 "relative_path": path.relative_to(output_root).as_posix(),
                 "size_bytes": path.stat().st_size,
-                "sha256": sha256_file(path),
+                "sha256": sha256_text_lf(path) if canonical_text else sha256_file(path),
+                "hash_method": (
+                    "sha256_utf8_lf_canonical" if canonical_text else "sha256_raw_bytes"
+                ),
             }
         )
     return rows
