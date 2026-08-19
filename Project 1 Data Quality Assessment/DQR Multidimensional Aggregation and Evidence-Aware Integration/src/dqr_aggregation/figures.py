@@ -824,13 +824,14 @@ def _extended_pair_weighting_figure(
     ax.legend(loc="upper left")
     ax.text(
         formal_threshold,
-        ax.get_ylim()[1] * 0.04,
+        0.96,
         "Formal",
+        transform=ax.get_xaxis_transform(),
         color=PALETTE["gray"],
-        ha="center",
-        va="bottom",
+        ha="right",
+        va="top",
+        rotation=90,
         fontsize=6.0,
-        bbox={"facecolor": "white", "edgecolor": "none", "alpha": 0.82, "pad": 0.7},
     )
     style_axes(ax)
     write_workbook(
