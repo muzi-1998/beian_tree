@@ -1,0 +1,40 @@
+schema_version: d1-challenger-sap-v1.1
+random_seed: 20260802
+scientific_status: retrospective_development_and_terminal_shadow
+production_write_access: false
+frozen_release_unchanged: true
+chronological_split:
+  development_end: "2025-12-31 23:59:59"
+  internal_validation_end: "2026-02-21 23:59:59"
+  shadow_start: "2026-02-22 00:00:00"
+threshold_selection:
+  source: clean_development_observations_only
+  target_far_events_per_sensor_day: 0.10
+  far_ci95_upper_max: 0.15
+  track_allocation_events_per_sensor_day:
+    minute_glr: 0.05
+    hourly_glr: 0.05
+  comparator:
+    primary: baseline_recalibrated_to_same_track_far
+    secondary: released_operating_point_unchanged
+  sensor_specific_thresholds: prohibited
+  analyte_specific_thresholds: prohibited
+  optimize_on_injected_recall: prohibited
+inference:
+  primary_unit: sensor_onset_event
+  confidence_interval: paired_cluster_bootstrap
+  bootstrap_repetitions: 2000
+  cluster_columns: [sensor_id, base_block]
+  point_adjustment: prohibited
+acceptance:
+  recall_delta_min: 0.15
+  recall_delta_ci95_low_min_exclusive: 0.0
+  key_stratum_noninferiority_margin: 0.05
+  fixed_far_required: true
+  mechanism_specific_promotion: true
+  external_confirmation_required_for_release_replacement: true
+reporting:
+  auroc_auprc_role: supplementary
+  sparse_cell_min_clusters: 5
+  failed_strata_must_be_retained: true
+  confirmation_label_until_new_data: pending
