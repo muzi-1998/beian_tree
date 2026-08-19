@@ -1,5 +1,5 @@
 {
-  "run_id": "DQRAGG-V21-c139d526c9d0",
+  "run_id": "DQRAGG-V22-c8979a0fc1e2",
   "passed": true,
   "checks": [
     {
@@ -70,7 +70,12 @@
     {
       "check_id": "selection_composition_exact_closure",
       "passed": true,
-      "interpretation": "total observed shift equals selection-only plus D5 composition"
+      "interpretation": "total observed shift equals selection-only plus within-Full D5 contribution"
+    },
+    {
+      "check_id": "pair_low_tail_partition_exact_closure",
+      "passed": true,
+      "interpretation": "formal-threshold overlap cells partition all complete pair-hours exactly"
     }
   ],
   "table_hashes": {
@@ -78,7 +83,9 @@
     "node_hourly": "1e851604ed6128dba85f0e1dbffe6501e9392ebd6609f4cb6ca95f585b65f393",
     "pair_hourly": "b6d9e12c6e23b59b627fd06782dd5893a77cb23665b734fcf631178a39a5bae8",
     "coverage_monthly": "5830df9a63713c28aa7351bc0076e352d22a4ff08a215728d801542b2d55da86",
-    "estimand_decomposition": "4eeffad5bf22fde24f240c52e76e5f7e1bed2af2fd21b40b1b4bde4bbce47aae",
-    "pair_weighting_sensitivity": "e604b1c69d880b4fc9cf70a0a976104a3f70e1ab5ecb0b8e8d0211f2099e2d25"
+    "estimand_decomposition": "73990219fa534aba0b79acd1500cce64abbd2bbe010f20fed51cf7401c46f4b8",
+    "pair_weighting_sensitivity": "e604b1c69d880b4fc9cf70a0a976104a3f70e1ab5ecb0b8e8d0211f2099e2d25",
+    "pair_low_tail_threshold_sweep": "97425dbfe4d7a67db62d2acad15609472954e43bca35b8ec154fc7d5c0d8061b",
+    "pair_low_tail_episodes": "af92ec262ec4f20951a67db29507689cea06fd7a566a6d87ab799d035e0803ba"
   }
 }

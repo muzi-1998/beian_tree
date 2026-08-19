@@ -1,6 +1,6 @@
 # D1-D5 hierarchical data-quality aggregation report
 
-Run ID: `DQRAGG-V21-c139d526c9d0`
+Run ID: `DQRAGG-V22-c8979a0fc1e2`
 
 ## Confirmatory estimands
 
@@ -22,13 +22,17 @@ Sensor-hour pooled means were 4.252 (node Full), 4.422 (node availability-aware)
 
 The Full and Basic node subsets are not exchangeable: their overall standardized mean difference was -0.86 and Wasserstein distance was 0.32. Full is therefore the complete-evidence estimand; availability-aware Basic extends coverage but must be displayed separately.
 
-The sensor-hour estimand decomposition separated a selection-only shift of 0.069 (95% block CI 0.030 to 0.113) from a within-Full D5 composition effect of -0.387 (-0.447 to -0.329). Their sum equals the total observed estimand shift of -0.318; absolute closure error was 0. This is a descriptive estimand decomposition, not a causal effect decomposition.
+The sensor-hour estimand decomposition separated a selection-only shift of 0.069 (95% block CI 0.030 to 0.113) from a within-Full D5 compositional contribution of -0.387 (-0.447 to -0.329). Their sum equals the total observed estimand shift of -0.318; absolute closure error was 0. This is a descriptive estimand decomposition, not a causal effect decomposition.
 
 Across constrained prespecified weights, median Spearman agreement with equal weights was 0.992 for nodes and 0.985 for pairs. This supports rank robustness within the examined weight region, but does not identify optimal weights because no frozen downstream criterion is available.
 
 D4 showed modest association with both formal D5_report (Spearman rho = 0.119, 7 d synchronized-block 95% CI 0.046 to 0.198) and calculable D5_raw (rho = 0.171, 95% CI 0.092 to 0.246). The dual scope supports complementarity without asserting causal independence.
 
 At pair level, hierarchical equal-component and seven-atom equal weighting had Spearman rho = 0.892, low-tail Jaccard = 0.048, and 1.1% decision flips at Q < 3. Thus global ranking was broadly concordant but rare low-tail episode identity was not robust to flattening the hierarchy. This is a supplementary robustness comparison; the formal hierarchical model was not selected or changed from these data.
+
+At the formal Q < 3.00 threshold, the hierarchical and native-atom estimands identified 229 and 11 low-tail pair-hours, respectively. Their partition comprised 11 both, 218 hierarchical-only, 0 native-atom-only and 19,545 neither hours. The corresponding episode counts were 99 and 6, with median durations of 2.0 h and 1.5 h.
+
+Across the prespecified Q < 2.50-3.50 sensitivity range, low-tail Jaccard ranged from 0.000 to 0.235, while decision-flip fractions ranged from 0.000 to 0.110. The sweep tests whether the formal Q < 3 result is threshold-local; it is not used to choose a replacement threshold or weighting model.
 
 ## Statistical interpretation
 

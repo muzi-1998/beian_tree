@@ -8,7 +8,7 @@ non-compensatory gate. Quality and evidence completeness occupy separate axes.
 **Figure 2 | Evidence availability and estimand stability across the study period.**
 Monthly coverage and D5 L1-L3/OOD support migration are shown with Full and
 availability-aware quality, evidence completeness, and the selection-only,
-D5-composition and total observed estimand shifts. Full and availability-aware
+within-Full D5 compositional contribution and total observed estimand shifts. Full and availability-aware
 series are distinct estimands and must not be pooled.
 
 **Figure 3 | Pairwise construct complementarity across D1-D5.**
@@ -32,7 +32,8 @@ figure does not claim maintenance-confirmed fault truth.
 **Extended Data Figure 1 | Pair hierarchical versus native-atom weighting.**
 Complete-evidence pair-hours compare the formal equal-component hierarchy with
 equal weighting of seven native atoms. Score concordance, low-tail hours,
-episode burden and decision flips are sensitivity evidence, not model selection.
+exact overlap partitions, episode burden and a prespecified Q-threshold sweep are
+sensitivity evidence, not model selection.
 
 Figures 6 and 7 remain pending because prospective holdout scores and frozen
 downstream endpoint bundles are unavailable.

@@ -22,6 +22,12 @@ overwritten.
 - `outputs/aggregation_v2/reports/`: scientific report, captions and this guide.
 - `outputs/aggregation_v2/manifests/`: frozen run and publication manifests.
 
+The run manifest records the scientific-generation commit for orientation, but
+publication freshness is governed by exact canonical hashes of the current
+configuration, every aggregation source module and all frozen D1-D5 inputs. The
+publication-bundle commit or release tag is external metadata so that a manifest
+never attempts to hash a commit that contains itself.
+
 Figures 6 and 7 specified in the study plan are intentionally absent until the
 prospective holdout and downstream endpoint bundles become available. Their
 absence is a prespecified pending status, not a missing build artifact.
