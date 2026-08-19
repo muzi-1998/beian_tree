@@ -1,0 +1,225 @@
+{
+  "passed": true,
+  "contract": {
+    "width_mm": 183.0,
+    "max_height_mm": 170.0,
+    "raster_dpi": 600,
+    "font": "Arial",
+    "formats": [
+      "png",
+      "pdf",
+      "svg",
+      "tiff"
+    ]
+  },
+  "figures": [
+    {
+      "figure": "DQR_Fig01_hierarchical_contract",
+      "format": "png",
+      "exists": true,
+      "size_bytes": 426187,
+      "width_px": 4322,
+      "height_px": 2456,
+      "nonblank_std": 39.5199022637132,
+      "width_contract_passed": true,
+      "nonblank_passed": true
+    },
+    {
+      "figure": "DQR_Fig01_hierarchical_contract",
+      "format": "pdf",
+      "exists": true,
+      "size_bytes": 59249,
+      "width_mm": 183.00000559488933,
+      "height_mm": 104.00000423855252,
+      "size_contract_passed": true
+    },
+    {
+      "figure": "DQR_Fig01_hierarchical_contract",
+      "format": "svg",
+      "exists": true,
+      "size_bytes": 54374,
+      "arial_declared": true,
+      "editable_text_present": true
+    },
+    {
+      "figure": "DQR_Fig01_hierarchical_contract",
+      "format": "tiff",
+      "exists": true,
+      "size_bytes": 1074786
+    },
+    {
+      "figure": "DQR_Fig02_evidence_availability",
+      "format": "png",
+      "exists": true,
+      "size_bytes": 577453,
+      "width_px": 4322,
+      "height_px": 3968,
+      "nonblank_std": 50.968414744991755,
+      "width_contract_passed": true,
+      "nonblank_passed": true
+    },
+    {
+      "figure": "DQR_Fig02_evidence_availability",
+      "format": "pdf",
+      "exists": true,
+      "size_bytes": 58035,
+      "width_mm": 183.00000559488933,
+      "height_mm": 167.99999525282115,
+      "size_contract_passed": true
+    },
+    {
+      "figure": "DQR_Fig02_evidence_availability",
+      "format": "svg",
+      "exists": true,
+      "size_bytes": 85097,
+      "arial_declared": true,
+      "editable_text_present": true
+    },
+    {
+      "figure": "DQR_Fig02_evidence_availability",
+      "format": "tiff",
+      "exists": true,
+      "size_bytes": 1616540
+    },
+    {
+      "figure": "DQR_Fig03_construct_complementarity",
+      "format": "png",
+      "exists": true,
+      "size_bytes": 495944,
+      "width_px": 4322,
+      "height_px": 3732,
+      "nonblank_std": 65.191063964432,
+      "width_contract_passed": true,
+      "nonblank_passed": true
+    },
+    {
+      "figure": "DQR_Fig03_construct_complementarity",
+      "format": "pdf",
+      "exists": true,
+      "size_bytes": 53372,
+      "width_mm": 183.00000559488933,
+      "height_mm": 158.0000027126736,
+      "size_contract_passed": true
+    },
+    {
+      "figure": "DQR_Fig03_construct_complementarity",
+      "format": "svg",
+      "exists": true,
+      "size_bytes": 53057,
+      "arial_declared": true,
+      "editable_text_present": true
+    },
+    {
+      "figure": "DQR_Fig03_construct_complementarity",
+      "format": "tiff",
+      "exists": true,
+      "size_bytes": 2175916
+    },
+    {
+      "figure": "DQR_Fig04_aggregation_robustness",
+      "format": "png",
+      "exists": true,
+      "size_bytes": 745099,
+      "width_px": 4322,
+      "height_px": 3566,
+      "nonblank_std": 41.698217615906096,
+      "width_contract_passed": true,
+      "nonblank_passed": true
+    },
+    {
+      "figure": "DQR_Fig04_aggregation_robustness",
+      "format": "pdf",
+      "exists": true,
+      "size_bytes": 63786,
+      "width_mm": 183.00000559488933,
+      "height_mm": 150.99999932183158,
+      "size_contract_passed": true
+    },
+    {
+      "figure": "DQR_Fig04_aggregation_robustness",
+      "format": "svg",
+      "exists": true,
+      "size_bytes": 62825,
+      "arial_declared": true,
+      "editable_text_present": true
+    },
+    {
+      "figure": "DQR_Fig04_aggregation_robustness",
+      "format": "tiff",
+      "exists": true,
+      "size_bytes": 1601798
+    },
+    {
+      "figure": "DQR_Fig05_representative_cases",
+      "format": "png",
+      "exists": true,
+      "size_bytes": 1051713,
+      "width_px": 4322,
+      "height_px": 3826,
+      "nonblank_std": 42.73571401933648,
+      "width_contract_passed": true,
+      "nonblank_passed": true
+    },
+    {
+      "figure": "DQR_Fig05_representative_cases",
+      "format": "pdf",
+      "exists": true,
+      "size_bytes": 54295,
+      "width_mm": 183.00000559488933,
+      "height_mm": 161.99999542236327,
+      "size_contract_passed": true
+    },
+    {
+      "figure": "DQR_Fig05_representative_cases",
+      "format": "svg",
+      "exists": true,
+      "size_bytes": 87978,
+      "arial_declared": true,
+      "editable_text_present": true
+    },
+    {
+      "figure": "DQR_Fig05_representative_cases",
+      "format": "tiff",
+      "exists": true,
+      "size_bytes": 2188688
+    },
+    {
+      "figure": "DQR_ExtFig01_pair_weighting_sensitivity",
+      "format": "png",
+      "exists": true,
+      "size_bytes": 384832,
+      "width_px": 4322,
+      "height_px": 2078,
+      "nonblank_std": 59.255252343276304,
+      "width_contract_passed": true,
+      "nonblank_passed": true
+    },
+    {
+      "figure": "DQR_ExtFig01_pair_weighting_sensitivity",
+      "format": "pdf",
+      "exists": true,
+      "size_bytes": 52116,
+      "width_mm": 183.00000559488933,
+      "height_mm": 88.00000110202365,
+      "size_contract_passed": true
+    },
+    {
+      "figure": "DQR_ExtFig01_pair_weighting_sensitivity",
+      "format": "svg",
+      "exists": true,
+      "size_bytes": 94093,
+      "arial_declared": true,
+      "editable_text_present": true
+    },
+    {
+      "figure": "DQR_ExtFig01_pair_weighting_sensitivity",
+      "format": "tiff",
+      "exists": true,
+      "size_bytes": 1097674
+    }
+  ],
+  "pending_figures": {
+    "DQR_Fig06_prospective_validation": "pending_unscored_future_holdout",
+    "DQR_Fig07_downstream_validation": "pending_no_frozen_endpoint_bundle"
+  }
+}

@@ -1,0 +1,439 @@
+{
+  "schema_version": "northbank-dqr-publication-manifest-v2.1",
+  "run_id": "DQRAGG-V21-c625c1a2edc9",
+  "release_status": "retrospective_scientific_aggregation_ready_with_prespecified_pending_items",
+  "claim_boundary": {
+    "A_E_grades": "disabled",
+    "D5_hard_veto": "disabled",
+    "prospective_validation": "pending_not_executed_inputs_not_scored_by_frozen_D1_D5",
+    "downstream_validation": "pending_not_executed",
+    "deployment": "not_released"
+  },
+  "source_dependencies": [
+    {
+      "dimension": "D1",
+      "artifact_role": "path",
+      "relative_path": "D1 Sensor health/outputs/data/D1_main_scores_min.xlsx",
+      "exists": true,
+      "size_bytes": 4816428,
+      "expected_sha256": "83207ca6f818dd309fe36cdb3adfdc9e569ea540fbca5c4acc0e45e8a321923c",
+      "actual_sha256": "83207ca6f818dd309fe36cdb3adfdc9e569ea540fbca5c4acc0e45e8a321923c",
+      "sha256_match": true,
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "dimension": "D1",
+      "artifact_role": "manifest_path",
+      "relative_path": "D1 Sensor health/outputs/data/D1_release_manifest.json",
+      "exists": true,
+      "size_bytes": 3367,
+      "expected_sha256": "a32bf94f989fc19cbcfc57a1b00e1dff50c742b4b586c51f6750383d9ef24788",
+      "actual_sha256": "a32bf94f989fc19cbcfc57a1b00e1dff50c742b4b586c51f6750383d9ef24788",
+      "sha256_match": true,
+      "hash_method": "sha256_utf8_lf_canonical"
+    },
+    {
+      "dimension": "D2",
+      "artifact_role": "path",
+      "relative_path": "D2 Temporal Continuity & Information Availability/artifacts/data/D2_main_scores_hourly.xlsx",
+      "exists": true,
+      "size_bytes": 6379592,
+      "expected_sha256": "ac051d9a24a17523433c63187cf63f0128efb185325a1ea789633f7fc13d04a6",
+      "actual_sha256": "ac051d9a24a17523433c63187cf63f0128efb185325a1ea789633f7fc13d04a6",
+      "sha256_match": true,
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "dimension": "D2",
+      "artifact_role": "manifest_path",
+      "relative_path": "D2 Temporal Continuity & Information Availability/artifacts/D2_release_manifest.json",
+      "exists": true,
+      "size_bytes": 32217,
+      "expected_sha256": "2cbc9dd6ce88ade8e73a7b09acd46a06d39e34b3e1acfdef77529763633cfea9",
+      "actual_sha256": "2cbc9dd6ce88ade8e73a7b09acd46a06d39e34b3e1acfdef77529763633cfea9",
+      "sha256_match": true,
+      "hash_method": "sha256_utf8_lf_canonical"
+    },
+    {
+      "dimension": "D3",
+      "artifact_role": "path",
+      "relative_path": "D3 Physical rationality and rate constraints/outputs/data/D3_window_scores.xlsx",
+      "exists": true,
+      "size_bytes": 4895373,
+      "expected_sha256": "c98b59796f10c42377c210a5d5fbdf21d98b0b99e848ad2733a0507d9df1629a",
+      "actual_sha256": "c98b59796f10c42377c210a5d5fbdf21d98b0b99e848ad2733a0507d9df1629a",
+      "sha256_match": true,
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "dimension": "D3",
+      "artifact_role": "manifest_path",
+      "relative_path": "D3 Physical rationality and rate constraints/outputs/manifest/run_manifest.json",
+      "exists": true,
+      "size_bytes": 5285,
+      "expected_sha256": "c15b6316f74f1f165914ed4ba1118c25754301b2cb8ee00fea38126c0e7b41b6",
+      "actual_sha256": "c15b6316f74f1f165914ed4ba1118c25754301b2cb8ee00fea38126c0e7b41b6",
+      "sha256_match": true,
+      "hash_method": "sha256_utf8_lf_canonical"
+    },
+    {
+      "dimension": "D4",
+      "artifact_role": "path",
+      "relative_path": "D4 Parallel-redundancy Temporal Consistency/outputs/data/D4_main_scores.xlsx",
+      "exists": true,
+      "size_bytes": 9530131,
+      "expected_sha256": "c21738a331d19632cc915e4d29cf692920aeccd346a6c74912f0f52dd4a9ca04",
+      "actual_sha256": "c21738a331d19632cc915e4d29cf692920aeccd346a6c74912f0f52dd4a9ca04",
+      "sha256_match": true,
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "dimension": "D4",
+      "artifact_role": "manifest_path",
+      "relative_path": "D4 Parallel-redundancy Temporal Consistency/outputs/data/D4_run_manifest.json",
+      "exists": true,
+      "size_bytes": 3794,
+      "expected_sha256": "fff48c27a9245aca07c9f4900f30aa130b576c297e7e6fca6ef1c901e97759e7",
+      "actual_sha256": "fff48c27a9245aca07c9f4900f30aa130b576c297e7e6fca6ef1c901e97759e7",
+      "sha256_match": true,
+      "hash_method": "sha256_utf8_lf_canonical"
+    },
+    {
+      "dimension": "D4",
+      "artifact_role": "formal_case_path",
+      "relative_path": "D4 Parallel-redundancy Temporal Consistency/outputs/figure_source_data/FigD4_4_formal_episode_cases_source_data.xlsx",
+      "exists": true,
+      "size_bytes": 99720,
+      "expected_sha256": "90a3cd2201e8a6f7c0fa70f04c51bf0465a6e8e0f8c86bd93455c365eecd490a",
+      "actual_sha256": "90a3cd2201e8a6f7c0fa70f04c51bf0465a6e8e0f8c86bd93455c365eecd490a",
+      "sha256_match": true,
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "dimension": "D5",
+      "artifact_role": "path",
+      "relative_path": "D5 Topological Role Consistency and Structural Representativeness/outputs/local/D5_report_interface.parquet",
+      "exists": true,
+      "size_bytes": 1171194,
+      "expected_sha256": "f057e0a8037282fb43a71a94d7043c7bd3de2b4c8fa9865365bcf0427195dbda",
+      "actual_sha256": "f057e0a8037282fb43a71a94d7043c7bd3de2b4c8fa9865365bcf0427195dbda",
+      "sha256_match": true,
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "dimension": "D5",
+      "artifact_role": "raw_path",
+      "relative_path": "D5 Topological Role Consistency and Structural Representativeness/outputs/local/D5_main_scores_hourly.parquet",
+      "exists": true,
+      "size_bytes": 7340495,
+      "expected_sha256": "64274562d7139d510dd3780dbd67bd2c2c5913908dbbec8ac7d4bcceb0418cd1",
+      "actual_sha256": "64274562d7139d510dd3780dbd67bd2c2c5913908dbbec8ac7d4bcceb0418cd1",
+      "sha256_match": true,
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "dimension": "D5",
+      "artifact_role": "manifest_path",
+      "relative_path": "D5 Topological Role Consistency and Structural Representativeness/outputs/local/D5_run_manifest.json",
+      "exists": true,
+      "size_bytes": 47240,
+      "expected_sha256": "af675865af284c30f8a44d3b7aacca3a99ed5370eece6b1b5c9bb31ff8bcd79a",
+      "actual_sha256": "af675865af284c30f8a44d3b7aacca3a99ed5370eece6b1b5c9bb31ff8bcd79a",
+      "sha256_match": true,
+      "hash_method": "sha256_utf8_lf_canonical"
+    },
+    {
+      "dimension": "D5",
+      "artifact_role": "publication_manifest_path",
+      "relative_path": "D5 Topological Role Consistency and Structural Representativeness/outputs/publication/D5_publication_audit_manifest.json",
+      "exists": true,
+      "size_bytes": 15638,
+      "expected_sha256": "8566e80da99727602e35eb127221e9a61c6f781b79cdd42a2f8117c34e5fbf7e",
+      "actual_sha256": "8566e80da99727602e35eb127221e9a61c6f781b79cdd42a2f8117c34e5fbf7e",
+      "sha256_match": true,
+      "hash_method": "sha256_utf8_lf_canonical"
+    },
+    {
+      "dimension": "D5",
+      "artifact_role": "dependence_path",
+      "relative_path": "D5 Topological Role Consistency and Structural Representativeness/outputs/publication/D5_d4_d5_dependence.parquet",
+      "exists": true,
+      "size_bytes": 8012,
+      "expected_sha256": "cc38200304298af4af8178ed2d35226ea9f75fb5608608fc83a1ee472b8d718b",
+      "actual_sha256": "cc38200304298af4af8178ed2d35226ea9f75fb5608608fc83a1ee472b8d718b",
+      "sha256_match": true,
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "dimension": "D5",
+      "artifact_role": "stratified_dependence_path",
+      "relative_path": "D5 Topological Role Consistency and Structural Representativeness/outputs/publication/D5_d4_d5_stratified_rho.parquet",
+      "exists": true,
+      "size_bytes": 12046,
+      "expected_sha256": "b551d102dd73641908975d207793d15f892655b9ce719faba40f8c390cfcd961",
+      "actual_sha256": "b551d102dd73641908975d207793d15f892655b9ce719faba40f8c390cfcd961",
+      "sha256_match": true,
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "dimension": "D5",
+      "artifact_role": "influence_path",
+      "relative_path": "D5 Topological Role Consistency and Structural Representativeness/outputs/local/D5_sensor_influence.parquet",
+      "exists": true,
+      "size_bytes": 6011187,
+      "expected_sha256": "a9270494760fcb4ae501abcf54c50e813ca74d6306d7fbca94d7ef1a1d1730a2",
+      "actual_sha256": "a9270494760fcb4ae501abcf54c50e813ca74d6306d7fbca94d7ef1a1d1730a2",
+      "sha256_match": true,
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "dimension": "D5",
+      "artifact_role": "case_path",
+      "relative_path": "D5 Topological Role Consistency and Structural Representativeness/outputs/local/D5_case_study_exports.xlsx",
+      "exists": true,
+      "size_bytes": 44198,
+      "expected_sha256": "060027cb3475620e45c16a5aed24ec4f94b00c01a7a3ba027a188963d7682dbc",
+      "actual_sha256": "060027cb3475620e45c16a5aed24ec4f94b00c01a7a3ba027a188963d7682dbc",
+      "sha256_match": true,
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "dimension": "D5",
+      "artifact_role": "topology_path",
+      "relative_path": "D5 Topological Role Consistency and Structural Representativeness/outputs/local/D5_topology_registry.yaml",
+      "exists": true,
+      "size_bytes": 2838,
+      "expected_sha256": "46e191549a0c768ee947bff4d98f26f38a93ecbce380ab4ff8114d2885dd29f9",
+      "actual_sha256": "46e191549a0c768ee947bff4d98f26f38a93ecbce380ab4ff8114d2885dd29f9",
+      "sha256_match": true,
+      "hash_method": "sha256_raw_bytes"
+    }
+  ],
+  "artifacts": [
+    {
+      "relative_path": "data/DQR_coverage_monthly.parquet",
+      "size_bytes": 18694,
+      "sha256": "79899abd7d49056a5233f0da4e33913b07fbbb67b4da0c0114783df73b412090"
+    },
+    {
+      "relative_path": "data/DQR_dimension_long.parquet",
+      "size_bytes": 10219628,
+      "sha256": "ec6d95b94bc781b50c3640da240f1b7a93808b748c8c14d32ad440afd61b90cc"
+    },
+    {
+      "relative_path": "data/DQR_estimand_decomposition.parquet",
+      "size_bytes": 10030,
+      "sha256": "fcb4893832c37fe4f9182b4ef97fafb7da629238d20bf373297274a69942d4d6"
+    },
+    {
+      "relative_path": "data/DQR_estimand_decomposition_bootstrap.parquet",
+      "size_bytes": 194270,
+      "sha256": "a2f6cf2d8e05ea668fbd612a57f57d0e2501f20effc95fc48d58816eac558120"
+    },
+    {
+      "relative_path": "data/DQR_node_hourly.parquet",
+      "size_bytes": 4472523,
+      "sha256": "864b62728774ad3553f21f23a59fcc6f31d6778c0370f080e5d0b2398a6d636f"
+    },
+    {
+      "relative_path": "data/DQR_pair_hourly.parquet",
+      "size_bytes": 5194123,
+      "sha256": "291a296c89e25b1a5eca48e68f31e023f57193d7e97d4e61ceb3d8bc36e3b66b"
+    },
+    {
+      "relative_path": "data/DQR_pair_weighting_sensitivity.parquet",
+      "size_bytes": 629924,
+      "sha256": "e82e5aa41527005451cdae80cda4d57da1055fda2fdef0a4118df717f60f0816"
+    },
+    {
+      "relative_path": "figures/DQR_ExtFig01_pair_weighting_sensitivity.pdf",
+      "size_bytes": 52116,
+      "sha256": "3e91e0285868b50ac3d24b6df23f2fdc506e72a834dd32a4e61a33bb5c43e587"
+    },
+    {
+      "relative_path": "figures/DQR_ExtFig01_pair_weighting_sensitivity.png",
+      "size_bytes": 384832,
+      "sha256": "ad8329aed84e49569f4303419cbdb55903bdc026524c0c5bf24ec4ae40a7c03f"
+    },
+    {
+      "relative_path": "figures/DQR_ExtFig01_pair_weighting_sensitivity.svg",
+      "size_bytes": 94093,
+      "sha256": "515cb56c45275b495bb8fc1ca6c01d0281b9cd3fe82aa69ea38b2f0c194e4917"
+    },
+    {
+      "relative_path": "figures/DQR_ExtFig01_pair_weighting_sensitivity.tiff",
+      "size_bytes": 1097674,
+      "sha256": "45269fa6d458cbbac86a5143a1c2ff32707f50397ec76506c188098bf8b4934f"
+    },
+    {
+      "relative_path": "figures/DQR_Fig01_hierarchical_contract.pdf",
+      "size_bytes": 59249,
+      "sha256": "4c2ca315b9b4c8ba5bda6899ebbacb845f9be8ada21d94665f690173894ef33f"
+    },
+    {
+      "relative_path": "figures/DQR_Fig01_hierarchical_contract.png",
+      "size_bytes": 426187,
+      "sha256": "7e428d5e289307fd3aa53dbdc10e7b23b862b7e257a8feeb90759365ad829bb7"
+    },
+    {
+      "relative_path": "figures/DQR_Fig01_hierarchical_contract.svg",
+      "size_bytes": 54374,
+      "sha256": "78f5546947756a7d667388352d554610828fe5053807b7c4ae178225af899901"
+    },
+    {
+      "relative_path": "figures/DQR_Fig01_hierarchical_contract.tiff",
+      "size_bytes": 1074786,
+      "sha256": "c74f561bda5d945cfc08062f305ca637b858d7ad75c149fc5cc214e1e080ddcf"
+    },
+    {
+      "relative_path": "figures/DQR_Fig02_evidence_availability.pdf",
+      "size_bytes": 58035,
+      "sha256": "f8aaeae37537b5b28f3e5130e71a828ae9db96330c667d91719e4af9410a58d9"
+    },
+    {
+      "relative_path": "figures/DQR_Fig02_evidence_availability.png",
+      "size_bytes": 577453,
+      "sha256": "51cabce52cb69ed9ea18d0aa2912d2a77924aa11f9ee046a7fa8276decb552eb"
+    },
+    {
+      "relative_path": "figures/DQR_Fig02_evidence_availability.svg",
+      "size_bytes": 85097,
+      "sha256": "060845f6f9a94fb3501b48d7d7ab0247a7767cb39deed38ea88cb91176b34ed0"
+    },
+    {
+      "relative_path": "figures/DQR_Fig02_evidence_availability.tiff",
+      "size_bytes": 1616540,
+      "sha256": "a9508f1836cbff0cc873c565483b199fac3a4c8ac08b596ce99151d52d90379e"
+    },
+    {
+      "relative_path": "figures/DQR_Fig03_construct_complementarity.pdf",
+      "size_bytes": 53372,
+      "sha256": "941ece5a287cece1f0d623e367dfdc58362b0da33bbd8650da5396cd3ad66952"
+    },
+    {
+      "relative_path": "figures/DQR_Fig03_construct_complementarity.png",
+      "size_bytes": 495944,
+      "sha256": "76b08c46829eb692a7520bb906c9b7f1c88ba8dbd8a78e02542b376784876536"
+    },
+    {
+      "relative_path": "figures/DQR_Fig03_construct_complementarity.svg",
+      "size_bytes": 53057,
+      "sha256": "55a24a1e34b21e8e8bfd02a5bfb2ac4eae2a664a86108eb19b1363f8ae816b18"
+    },
+    {
+      "relative_path": "figures/DQR_Fig03_construct_complementarity.tiff",
+      "size_bytes": 2175916,
+      "sha256": "a4eec41adc1813b971ae7a9da8e83bf4bc2288572de524d38e91b437e0ecc803"
+    },
+    {
+      "relative_path": "figures/DQR_Fig04_aggregation_robustness.pdf",
+      "size_bytes": 63786,
+      "sha256": "5d91009b3c19b18e9b0b3c940c4e693ae203d89154dda55fcb1053cca3f68cb0"
+    },
+    {
+      "relative_path": "figures/DQR_Fig04_aggregation_robustness.png",
+      "size_bytes": 745099,
+      "sha256": "30b518d6b49497147039f1e76e089b319ff082ad0b00912bb9e71a573231d056"
+    },
+    {
+      "relative_path": "figures/DQR_Fig04_aggregation_robustness.svg",
+      "size_bytes": 62825,
+      "sha256": "96dfea6fc38ed6759379eb60ce951991c03c7681e5c21d167591921fbf16e025"
+    },
+    {
+      "relative_path": "figures/DQR_Fig04_aggregation_robustness.tiff",
+      "size_bytes": 1601798,
+      "sha256": "f44fbdb158a2e3fe657f432a8fb0604fd266592417a491f8c0395cc64c0d4a5e"
+    },
+    {
+      "relative_path": "figures/DQR_Fig05_representative_cases.pdf",
+      "size_bytes": 54295,
+      "sha256": "349c7087a5ebcfa36373c69d62daf617594537fbfbf9cfd6e46a8b298dea84a5"
+    },
+    {
+      "relative_path": "figures/DQR_Fig05_representative_cases.png",
+      "size_bytes": 1051713,
+      "sha256": "775900a7d501da0be598dcdc097daaf1a2a9b18b5d956121acda92ced1cb357f"
+    },
+    {
+      "relative_path": "figures/DQR_Fig05_representative_cases.svg",
+      "size_bytes": 87978,
+      "sha256": "9ac320a20c1c7d82b4dd8e862a0320ef6ea358ae43fb7a7804db2382572fca36"
+    },
+    {
+      "relative_path": "figures/DQR_Fig05_representative_cases.tiff",
+      "size_bytes": 2188688,
+      "sha256": "b1f958b4ae245c2e6dc210cfc4796503f8a5f64a871956d1d19f02cf145ad531"
+    },
+    {
+      "relative_path": "manifests/DQR_run_manifest.json",
+      "size_bytes": 25723,
+      "sha256": "9c6642621d4889699352f3dc54ced95f8a49bb9f830931a52c4163372150087c"
+    },
+    {
+      "relative_path": "reports/DQR_aggregation_directory_guide.md",
+      "size_bytes": 1484,
+      "sha256": "2c3dc833f1c07655a832bea5826899aa1cac9cd55a634948dd9ab05d792afb61"
+    },
+    {
+      "relative_path": "reports/DQR_aggregation_scientific_report.md",
+      "size_bytes": 5753,
+      "sha256": "4c865e14013c8c6795d0b98a51483f42566b0cf966466268d64aa39494aea690"
+    },
+    {
+      "relative_path": "reports/DQR_figure_captions.md",
+      "size_bytes": 2276,
+      "sha256": "4d78d91a647437d758b29ee589dc77716b2a8d592e53c77711b22046be9cbedf"
+    },
+    {
+      "relative_path": "source_data/DQR_ExtFig01_source_data.xlsx",
+      "size_bytes": 1254178,
+      "sha256": "915e182e9492072b5cbf92dda557538b9d6b5d21afaa588f5fd20dde3096e4ad"
+    },
+    {
+      "relative_path": "source_data/DQR_Fig01_source_data.xlsx",
+      "size_bytes": 3563647,
+      "sha256": "1e051f790e0ca6cdd66bf32dd3aee88afd3953aa1d179db84c4de54dc14f7b50"
+    },
+    {
+      "relative_path": "source_data/DQR_Fig02_source_data.xlsx",
+      "size_bytes": 9921,
+      "sha256": "c8a6ef7512e919beba83b835a9ba4c20bb270e357fd08189c34e19033d7b9ee6"
+    },
+    {
+      "relative_path": "source_data/DQR_Fig03_source_data.xlsx",
+      "size_bytes": 10565,
+      "sha256": "c0dd643cf3f3f616912fd51dd1f1e996e0167a545b58394b2bfd866fc812f4d6"
+    },
+    {
+      "relative_path": "source_data/DQR_Fig04_source_data.xlsx",
+      "size_bytes": 149377,
+      "sha256": "bcf96e2b9577a496567ec83e096e47cba05e524eadadeab082418c3d109b07eb"
+    },
+    {
+      "relative_path": "source_data/DQR_Fig05_source_data.xlsx",
+      "size_bytes": 37534,
+      "sha256": "edce746b4dc811fa595e6b98f24c037c32397b7425cc9dd89c600a631b02875b"
+    },
+    {
+      "relative_path": "validation/DQR_aggregation_validation.xlsx",
+      "size_bytes": 752176,
+      "sha256": "ad4e2935c65ebf4c41bfd62d3eda741b43c50ba831723d1eb287c0bd115581f2"
+    },
+    {
+      "relative_path": "validation/DQR_contract_checks.json",
+      "size_bytes": 2958,
+      "sha256": "7a69b93927e58f43e013dfbd78f0e4c5b05d2cde70fb1543f45224f199bd5b42"
+    },
+    {
+      "relative_path": "validation/DQR_downstream_validation.xlsx",
+      "size_bytes": 6295,
+      "sha256": "309f85ea997253eb354dc6d1998b93e1831e32b3db0bb0a3b484f97e4ad8f9a0"
+    },
+    {
+      "relative_path": "validation/DQR_figure_qa.json",
+      "size_bytes": 5971,
+      "sha256": "e4655290c96aa1b5b52cf83b424a7517fea790018375358dbc71fa958e6d67fe"
+    }
+  ]
+}
