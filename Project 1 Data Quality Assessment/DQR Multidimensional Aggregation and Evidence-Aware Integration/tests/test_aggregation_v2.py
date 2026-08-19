@@ -107,6 +107,9 @@ def test_pair_low_tail_overlap_partition_and_episode_contract() -> None:
 
     summary, _, sweep, episodes = pair_weighting_sensitivity(load_config(), frame)
     formal = sweep.loc[sweep["threshold_role"].eq("formal_primary")].iloc[0]
+    empty_tail = sweep.loc[sweep["threshold"].eq(2.5)].iloc[0]
+    assert not empty_tail["jaccard_estimable"]
+    assert np.isnan(empty_tail["low_tail_jaccard"])
     assert formal["threshold"] == 3.0
     assert formal["hierarchical_low_tail_count"] == 5
     assert formal["native_atom_low_tail_count"] == 4

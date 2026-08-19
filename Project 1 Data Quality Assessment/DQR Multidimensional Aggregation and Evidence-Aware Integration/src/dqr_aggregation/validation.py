@@ -516,7 +516,10 @@ def pair_weighting_sensitivity(
                 "native_atom_only_count": int((atom_low & ~hierarchy_low).sum()),
                 "both_count": int(both.sum()),
                 "neither_count": int((~hierarchy_low & ~atom_low).sum()),
-                "low_tail_jaccard": _jaccard(hierarchy_low, atom_low),
+                "low_tail_jaccard": (
+                    _jaccard(hierarchy_low, atom_low) if union.any() else np.nan
+                ),
+                "jaccard_estimable": bool(union.any()),
                 "decision_flip_rate": float(np.mean(hierarchy_low != atom_low)),
                 "hierarchical_low_hours_per_1000": float(hierarchy_low.mean() * 1000.0),
                 "native_atom_low_hours_per_1000": float(atom_low.mean() * 1000.0),
