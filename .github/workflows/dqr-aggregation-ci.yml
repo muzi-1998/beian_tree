@@ -1,0 +1,42 @@
+name: DQR aggregation publication bundle
+
+on:
+  pull_request:
+    paths:
+      - "Project 1 Data Quality Assessment/DQR Multidimensional Aggregation and Evidence-Aware Integration/**"
+      - "Project 1 Data Quality Assessment/D1 Sensor health/outputs/data/D1_main_scores_min.xlsx"
+      - "Project 1 Data Quality Assessment/D1 Sensor health/outputs/data/D1_release_manifest.json"
+      - "Project 1 Data Quality Assessment/D2 Temporal Continuity & Information Availability/artifacts/data/D2_main_scores_hourly.xlsx"
+      - "Project 1 Data Quality Assessment/D2 Temporal Continuity & Information Availability/artifacts/D2_release_manifest.json"
+      - "Project 1 Data Quality Assessment/D3 Physical rationality and rate constraints/outputs/data/D3_window_scores.xlsx"
+      - "Project 1 Data Quality Assessment/D3 Physical rationality and rate constraints/outputs/manifest/run_manifest.json"
+      - "Project 1 Data Quality Assessment/D4 Parallel-redundancy Temporal Consistency/outputs/data/D4_main_scores.xlsx"
+      - "Project 1 Data Quality Assessment/D4 Parallel-redundancy Temporal Consistency/outputs/data/D4_run_manifest.json"
+      - "Project 1 Data Quality Assessment/D5 Topological Role Consistency and Structural Representativeness/outputs/**"
+      - ".github/workflows/dqr-aggregation-ci.yml"
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: "Project 1 Data Quality Assessment/DQR Multidimensional Aggregation and Evidence-Aware Integration"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: "Project 1 Data Quality Assessment/DQR Multidimensional Aggregation and Evidence-Aware Integration/requirements-lock.txt"
+      - name: Install locked runtime
+        run: python -m pip install -r requirements-lock.txt pytest
+      - name: Run synthetic and release-contract tests
+        run: python -m pytest tests -q
+      - name: Verify publication bundle and exact source freshness
+        run: python scripts/verify_dqr_aggregation.py
+      - name: Check patch whitespace
+        working-directory: ${{ github.workspace }}
+        run: git diff --check HEAD^ HEAD

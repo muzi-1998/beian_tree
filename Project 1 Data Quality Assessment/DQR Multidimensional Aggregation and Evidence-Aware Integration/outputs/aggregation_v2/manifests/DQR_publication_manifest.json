@@ -1,0 +1,503 @@
+{
+  "schema_version": "northbank-dqr-publication-manifest-v2.2",
+  "run_id": "DQRAGG-V22-c8979a0fc1e2",
+  "provenance": {
+    "scientific_generation_commit": "e49ec6c592506f79457fd1f5a7a520f9bc03f345",
+    "scientific_generation_content_sha256": "4e0da857473b11e2ba8b5c8157e7c0ec887da97e8e99f4b866f2b32548e9639b",
+    "authority": "code_config_and_frozen_input_content_hashes",
+    "publication_bundle_commit": "external_release_commit_or_tag_not_embedded_to_avoid_self_reference",
+    "packaging_changes_after_generation": "permitted_only_when_scientific_content_hash_remains_exact"
+  },
+  "release_status": "retrospective_scientific_aggregation_ready_with_prespecified_pending_items",
+  "claim_boundary": {
+    "A_E_grades": "disabled",
+    "D5_hard_veto": "disabled",
+    "prospective_validation": "pending_not_executed_inputs_not_scored_by_frozen_D1_D5",
+    "downstream_validation": "pending_not_executed",
+    "deployment": "not_released"
+  },
+  "source_dependencies": [
+    {
+      "dimension": "D1",
+      "artifact_role": "path",
+      "relative_path": "D1 Sensor health/outputs/data/D1_main_scores_min.xlsx",
+      "exists": true,
+      "size_bytes": 4816428,
+      "expected_sha256": "83207ca6f818dd309fe36cdb3adfdc9e569ea540fbca5c4acc0e45e8a321923c",
+      "actual_sha256": "83207ca6f818dd309fe36cdb3adfdc9e569ea540fbca5c4acc0e45e8a321923c",
+      "sha256_match": true,
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "dimension": "D1",
+      "artifact_role": "manifest_path",
+      "relative_path": "D1 Sensor health/outputs/data/D1_release_manifest.json",
+      "exists": true,
+      "size_bytes": 3367,
+      "expected_sha256": "a32bf94f989fc19cbcfc57a1b00e1dff50c742b4b586c51f6750383d9ef24788",
+      "actual_sha256": "a32bf94f989fc19cbcfc57a1b00e1dff50c742b4b586c51f6750383d9ef24788",
+      "sha256_match": true,
+      "hash_method": "sha256_utf8_lf_canonical"
+    },
+    {
+      "dimension": "D2",
+      "artifact_role": "path",
+      "relative_path": "D2 Temporal Continuity & Information Availability/artifacts/data/D2_main_scores_hourly.xlsx",
+      "exists": true,
+      "size_bytes": 6379592,
+      "expected_sha256": "ac051d9a24a17523433c63187cf63f0128efb185325a1ea789633f7fc13d04a6",
+      "actual_sha256": "ac051d9a24a17523433c63187cf63f0128efb185325a1ea789633f7fc13d04a6",
+      "sha256_match": true,
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "dimension": "D2",
+      "artifact_role": "manifest_path",
+      "relative_path": "D2 Temporal Continuity & Information Availability/artifacts/D2_release_manifest.json",
+      "exists": true,
+      "size_bytes": 32217,
+      "expected_sha256": "2cbc9dd6ce88ade8e73a7b09acd46a06d39e34b3e1acfdef77529763633cfea9",
+      "actual_sha256": "2cbc9dd6ce88ade8e73a7b09acd46a06d39e34b3e1acfdef77529763633cfea9",
+      "sha256_match": true,
+      "hash_method": "sha256_utf8_lf_canonical"
+    },
+    {
+      "dimension": "D3",
+      "artifact_role": "path",
+      "relative_path": "D3 Physical rationality and rate constraints/outputs/data/D3_window_scores.xlsx",
+      "exists": true,
+      "size_bytes": 4895373,
+      "expected_sha256": "c98b59796f10c42377c210a5d5fbdf21d98b0b99e848ad2733a0507d9df1629a",
+      "actual_sha256": "c98b59796f10c42377c210a5d5fbdf21d98b0b99e848ad2733a0507d9df1629a",
+      "sha256_match": true,
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "dimension": "D3",
+      "artifact_role": "manifest_path",
+      "relative_path": "D3 Physical rationality and rate constraints/outputs/manifest/run_manifest.json",
+      "exists": true,
+      "size_bytes": 5285,
+      "expected_sha256": "c15b6316f74f1f165914ed4ba1118c25754301b2cb8ee00fea38126c0e7b41b6",
+      "actual_sha256": "c15b6316f74f1f165914ed4ba1118c25754301b2cb8ee00fea38126c0e7b41b6",
+      "sha256_match": true,
+      "hash_method": "sha256_utf8_lf_canonical"
+    },
+    {
+      "dimension": "D4",
+      "artifact_role": "path",
+      "relative_path": "D4 Parallel-redundancy Temporal Consistency/outputs/data/D4_main_scores.xlsx",
+      "exists": true,
+      "size_bytes": 9530131,
+      "expected_sha256": "c21738a331d19632cc915e4d29cf692920aeccd346a6c74912f0f52dd4a9ca04",
+      "actual_sha256": "c21738a331d19632cc915e4d29cf692920aeccd346a6c74912f0f52dd4a9ca04",
+      "sha256_match": true,
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "dimension": "D4",
+      "artifact_role": "manifest_path",
+      "relative_path": "D4 Parallel-redundancy Temporal Consistency/outputs/data/D4_run_manifest.json",
+      "exists": true,
+      "size_bytes": 3794,
+      "expected_sha256": "fff48c27a9245aca07c9f4900f30aa130b576c297e7e6fca6ef1c901e97759e7",
+      "actual_sha256": "fff48c27a9245aca07c9f4900f30aa130b576c297e7e6fca6ef1c901e97759e7",
+      "sha256_match": true,
+      "hash_method": "sha256_utf8_lf_canonical"
+    },
+    {
+      "dimension": "D4",
+      "artifact_role": "formal_case_path",
+      "relative_path": "D4 Parallel-redundancy Temporal Consistency/outputs/figure_source_data/FigD4_4_formal_episode_cases_source_data.xlsx",
+      "exists": true,
+      "size_bytes": 99720,
+      "expected_sha256": "90a3cd2201e8a6f7c0fa70f04c51bf0465a6e8e0f8c86bd93455c365eecd490a",
+      "actual_sha256": "90a3cd2201e8a6f7c0fa70f04c51bf0465a6e8e0f8c86bd93455c365eecd490a",
+      "sha256_match": true,
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "dimension": "D5",
+      "artifact_role": "path",
+      "relative_path": "D5 Topological Role Consistency and Structural Representativeness/outputs/local/D5_report_interface.parquet",
+      "exists": true,
+      "size_bytes": 1171194,
+      "expected_sha256": "f057e0a8037282fb43a71a94d7043c7bd3de2b4c8fa9865365bcf0427195dbda",
+      "actual_sha256": "f057e0a8037282fb43a71a94d7043c7bd3de2b4c8fa9865365bcf0427195dbda",
+      "sha256_match": true,
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "dimension": "D5",
+      "artifact_role": "raw_path",
+      "relative_path": "D5 Topological Role Consistency and Structural Representativeness/outputs/local/D5_main_scores_hourly.parquet",
+      "exists": true,
+      "size_bytes": 7340495,
+      "expected_sha256": "64274562d7139d510dd3780dbd67bd2c2c5913908dbbec8ac7d4bcceb0418cd1",
+      "actual_sha256": "64274562d7139d510dd3780dbd67bd2c2c5913908dbbec8ac7d4bcceb0418cd1",
+      "sha256_match": true,
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "dimension": "D5",
+      "artifact_role": "manifest_path",
+      "relative_path": "D5 Topological Role Consistency and Structural Representativeness/outputs/local/D5_run_manifest.json",
+      "exists": true,
+      "size_bytes": 47240,
+      "expected_sha256": "af675865af284c30f8a44d3b7aacca3a99ed5370eece6b1b5c9bb31ff8bcd79a",
+      "actual_sha256": "af675865af284c30f8a44d3b7aacca3a99ed5370eece6b1b5c9bb31ff8bcd79a",
+      "sha256_match": true,
+      "hash_method": "sha256_utf8_lf_canonical"
+    },
+    {
+      "dimension": "D5",
+      "artifact_role": "publication_manifest_path",
+      "relative_path": "D5 Topological Role Consistency and Structural Representativeness/outputs/publication/D5_publication_audit_manifest.json",
+      "exists": true,
+      "size_bytes": 15638,
+      "expected_sha256": "8566e80da99727602e35eb127221e9a61c6f781b79cdd42a2f8117c34e5fbf7e",
+      "actual_sha256": "8566e80da99727602e35eb127221e9a61c6f781b79cdd42a2f8117c34e5fbf7e",
+      "sha256_match": true,
+      "hash_method": "sha256_utf8_lf_canonical"
+    },
+    {
+      "dimension": "D5",
+      "artifact_role": "dependence_path",
+      "relative_path": "D5 Topological Role Consistency and Structural Representativeness/outputs/publication/D5_d4_d5_dependence.parquet",
+      "exists": true,
+      "size_bytes": 8012,
+      "expected_sha256": "cc38200304298af4af8178ed2d35226ea9f75fb5608608fc83a1ee472b8d718b",
+      "actual_sha256": "cc38200304298af4af8178ed2d35226ea9f75fb5608608fc83a1ee472b8d718b",
+      "sha256_match": true,
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "dimension": "D5",
+      "artifact_role": "stratified_dependence_path",
+      "relative_path": "D5 Topological Role Consistency and Structural Representativeness/outputs/publication/D5_d4_d5_stratified_rho.parquet",
+      "exists": true,
+      "size_bytes": 12046,
+      "expected_sha256": "b551d102dd73641908975d207793d15f892655b9ce719faba40f8c390cfcd961",
+      "actual_sha256": "b551d102dd73641908975d207793d15f892655b9ce719faba40f8c390cfcd961",
+      "sha256_match": true,
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "dimension": "D5",
+      "artifact_role": "influence_path",
+      "relative_path": "D5 Topological Role Consistency and Structural Representativeness/outputs/local/D5_sensor_influence.parquet",
+      "exists": true,
+      "size_bytes": 6011187,
+      "expected_sha256": "a9270494760fcb4ae501abcf54c50e813ca74d6306d7fbca94d7ef1a1d1730a2",
+      "actual_sha256": "a9270494760fcb4ae501abcf54c50e813ca74d6306d7fbca94d7ef1a1d1730a2",
+      "sha256_match": true,
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "dimension": "D5",
+      "artifact_role": "case_path",
+      "relative_path": "D5 Topological Role Consistency and Structural Representativeness/outputs/local/D5_case_study_exports.xlsx",
+      "exists": true,
+      "size_bytes": 44198,
+      "expected_sha256": "060027cb3475620e45c16a5aed24ec4f94b00c01a7a3ba027a188963d7682dbc",
+      "actual_sha256": "060027cb3475620e45c16a5aed24ec4f94b00c01a7a3ba027a188963d7682dbc",
+      "sha256_match": true,
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "dimension": "D5",
+      "artifact_role": "topology_path",
+      "relative_path": "D5 Topological Role Consistency and Structural Representativeness/outputs/local/D5_topology_registry.yaml",
+      "exists": true,
+      "size_bytes": 2838,
+      "expected_sha256": "46e191549a0c768ee947bff4d98f26f38a93ecbce380ab4ff8114d2885dd29f9",
+      "actual_sha256": "46e191549a0c768ee947bff4d98f26f38a93ecbce380ab4ff8114d2885dd29f9",
+      "sha256_match": true,
+      "hash_method": "sha256_raw_bytes"
+    }
+  ],
+  "artifacts": [
+    {
+      "relative_path": "data/DQR_coverage_monthly.parquet",
+      "size_bytes": 18694,
+      "sha256": "79899abd7d49056a5233f0da4e33913b07fbbb67b4da0c0114783df73b412090",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "data/DQR_dimension_long.parquet",
+      "size_bytes": 10219628,
+      "sha256": "ec6d95b94bc781b50c3640da240f1b7a93808b748c8c14d32ad440afd61b90cc",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "data/DQR_estimand_decomposition.parquet",
+      "size_bytes": 10082,
+      "sha256": "cbb9391665c1580172b3d8b92df09fe3027956271553aeb456bf1cc3b056d61d",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "data/DQR_estimand_decomposition_bootstrap.parquet",
+      "size_bytes": 194322,
+      "sha256": "21429808ce7924e70f1eee6a445e674883d0fdd9048865adb6106beeaf7eb72b",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "data/DQR_node_hourly.parquet",
+      "size_bytes": 4472523,
+      "sha256": "864b62728774ad3553f21f23a59fcc6f31d6778c0370f080e5d0b2398a6d636f",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "data/DQR_pair_hourly.parquet",
+      "size_bytes": 5194123,
+      "sha256": "291a296c89e25b1a5eca48e68f31e023f57193d7e97d4e61ceb3d8bc36e3b66b",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "data/DQR_pair_low_tail_episodes.parquet",
+      "size_bytes": 53095,
+      "sha256": "264f7ea133524b45c7da99c871b630ff21b05510d343dc40fa394ec9927934b7",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "data/DQR_pair_low_tail_threshold_sweep.parquet",
+      "size_bytes": 15831,
+      "sha256": "74bea316738c9a6e2f54beeddf217d061cc45c02c212d8813255db89642ca027",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "data/DQR_pair_weighting_sensitivity.parquet",
+      "size_bytes": 629924,
+      "sha256": "e82e5aa41527005451cdae80cda4d57da1055fda2fdef0a4118df717f60f0816",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "figures/DQR_ExtFig01_pair_weighting_sensitivity.pdf",
+      "size_bytes": 54297,
+      "sha256": "57ba043a40dd81fcf95462607d45d23425531243e3dc7753f26b415dcbf262e1",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "figures/DQR_ExtFig01_pair_weighting_sensitivity.png",
+      "size_bytes": 457725,
+      "sha256": "cfc336eec79900e88add2022e02b7ed02eefb5ab00f00168ce4b6174b5d9a18d",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "figures/DQR_ExtFig01_pair_weighting_sensitivity.svg",
+      "size_bytes": 102030,
+      "sha256": "9f747b0b5a980a4eb9d157eb429fe8f32f674eb19575fd849b151e23d83b46a4",
+      "hash_method": "sha256_utf8_lf_canonical"
+    },
+    {
+      "relative_path": "figures/DQR_ExtFig01_pair_weighting_sensitivity.tiff",
+      "size_bytes": 1077194,
+      "sha256": "5ca3efe24c450ddc44ab12aa794798b4bb64ce91ab8ca94d0bb63138642634ed",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "figures/DQR_Fig01_hierarchical_contract.pdf",
+      "size_bytes": 59249,
+      "sha256": "cbbd9c71742fdf7e45abd66dfdaa9f3d4e230627742a330c372d64b7376fc8c0",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "figures/DQR_Fig01_hierarchical_contract.png",
+      "size_bytes": 426187,
+      "sha256": "7e428d5e289307fd3aa53dbdc10e7b23b862b7e257a8feeb90759365ad829bb7",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "figures/DQR_Fig01_hierarchical_contract.svg",
+      "size_bytes": 54374,
+      "sha256": "8f5c4104a5951d5879374b284dbfd739e7c4931f39c649b5281b3b0a071418ba",
+      "hash_method": "sha256_utf8_lf_canonical"
+    },
+    {
+      "relative_path": "figures/DQR_Fig01_hierarchical_contract.tiff",
+      "size_bytes": 1074786,
+      "sha256": "c74f561bda5d945cfc08062f305ca637b858d7ad75c149fc5cc214e1e080ddcf",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "figures/DQR_Fig02_evidence_availability.pdf",
+      "size_bytes": 58631,
+      "sha256": "474f00563d7f6e9b233b716dbd5db78b68b468281b0986249c185aa06b664ecd",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "figures/DQR_Fig02_evidence_availability.png",
+      "size_bytes": 583032,
+      "sha256": "e6eacd9f056bd78dd42128a9b2afca532d8047cf76b416f23661e065db212b8c",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "figures/DQR_Fig02_evidence_availability.svg",
+      "size_bytes": 85240,
+      "sha256": "2795eea39d1ba38a0aad5b7da9338e076dc1a3669ae76e81149e74503fd217dd",
+      "hash_method": "sha256_utf8_lf_canonical"
+    },
+    {
+      "relative_path": "figures/DQR_Fig02_evidence_availability.tiff",
+      "size_bytes": 1613674,
+      "sha256": "a55467b669c96bc99e4ee07b20ce12b07c013a658564375eed8965e12bb11479",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "figures/DQR_Fig03_construct_complementarity.pdf",
+      "size_bytes": 53372,
+      "sha256": "30fb16d47efc03b5cac2bd653bce5b14d8a1622eb4f2233be37e357ff3e45ab5",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "figures/DQR_Fig03_construct_complementarity.png",
+      "size_bytes": 495944,
+      "sha256": "76b08c46829eb692a7520bb906c9b7f1c88ba8dbd8a78e02542b376784876536",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "figures/DQR_Fig03_construct_complementarity.svg",
+      "size_bytes": 53057,
+      "sha256": "39c22015d3d38f97d66d3fd56bf3123b9e3cb388298960106e67b25877176fd3",
+      "hash_method": "sha256_utf8_lf_canonical"
+    },
+    {
+      "relative_path": "figures/DQR_Fig03_construct_complementarity.tiff",
+      "size_bytes": 2175916,
+      "sha256": "a4eec41adc1813b971ae7a9da8e83bf4bc2288572de524d38e91b437e0ecc803",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "figures/DQR_Fig04_aggregation_robustness.pdf",
+      "size_bytes": 63786,
+      "sha256": "b88c62f49525284b0a412c67ff781b5914128033e2ad31c967aaffd63ddd63b3",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "figures/DQR_Fig04_aggregation_robustness.png",
+      "size_bytes": 745099,
+      "sha256": "30b518d6b49497147039f1e76e089b319ff082ad0b00912bb9e71a573231d056",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "figures/DQR_Fig04_aggregation_robustness.svg",
+      "size_bytes": 62825,
+      "sha256": "f67489a283442a230658d6ecab15f47e113bdbc357e6f062c3d357226e8ea870",
+      "hash_method": "sha256_utf8_lf_canonical"
+    },
+    {
+      "relative_path": "figures/DQR_Fig04_aggregation_robustness.tiff",
+      "size_bytes": 1601798,
+      "sha256": "f44fbdb158a2e3fe657f432a8fb0604fd266592417a491f8c0395cc64c0d4a5e",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "figures/DQR_Fig05_representative_cases.pdf",
+      "size_bytes": 54295,
+      "sha256": "159304c3a2f46668766761c09236dd406571f80a5b3b13aa971154f0307d2c06",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "figures/DQR_Fig05_representative_cases.png",
+      "size_bytes": 1051713,
+      "sha256": "775900a7d501da0be598dcdc097daaf1a2a9b18b5d956121acda92ced1cb357f",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "figures/DQR_Fig05_representative_cases.svg",
+      "size_bytes": 87978,
+      "sha256": "90033093bb113b1f6e63bc2d132d6359185bd8be9bcf5d5026dbe8f0eb9d25f4",
+      "hash_method": "sha256_utf8_lf_canonical"
+    },
+    {
+      "relative_path": "figures/DQR_Fig05_representative_cases.tiff",
+      "size_bytes": 2188688,
+      "sha256": "b1f958b4ae245c2e6dc210cfc4796503f8a5f64a871956d1d19f02cf145ad531",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "manifests/DQR_run_manifest.json",
+      "size_bytes": 30107,
+      "sha256": "e3a3ab948db8c1a54c1539cf2afaa49a9481cc95f51fdfa14d156a36ab3494d1",
+      "hash_method": "sha256_utf8_lf_canonical"
+    },
+    {
+      "relative_path": "reports/DQR_aggregation_directory_guide.md",
+      "size_bytes": 1860,
+      "sha256": "7dbe77457a4ed55d7133b442c2f1f1ce0ed1d0f5e1c44e9fb651e4e174bc7645",
+      "hash_method": "sha256_utf8_lf_canonical"
+    },
+    {
+      "relative_path": "reports/DQR_aggregation_scientific_report.md",
+      "size_bytes": 6391,
+      "sha256": "ae6c6fe84a23b9351c14c324ff64d3962d327b594ee53c2398f3e96140b31c2a",
+      "hash_method": "sha256_utf8_lf_canonical"
+    },
+    {
+      "relative_path": "reports/DQR_figure_captions.md",
+      "size_bytes": 2348,
+      "sha256": "778a92d80ab974619b13b204888d5e32a2d8ea9d239c4a2903d650f71f64b558",
+      "hash_method": "sha256_utf8_lf_canonical"
+    },
+    {
+      "relative_path": "source_data/DQR_ExtFig01_source_data.xlsx",
+      "size_bytes": 1340923,
+      "sha256": "9e58bd216c4315664b627cd383084831942556983d6950ae22c435506ee02a33",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "source_data/DQR_Fig01_source_data.xlsx",
+      "size_bytes": 3563646,
+      "sha256": "b748b144f1c60c8ac21001fbdc5a02a160eea9cbc0177ce5c62f8ad44898eab2",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "source_data/DQR_Fig02_source_data.xlsx",
+      "size_bytes": 9939,
+      "sha256": "9117585c5c06084b2730ca3044c137bd29c569ddf2f22a00bc421e408c675081",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "source_data/DQR_Fig03_source_data.xlsx",
+      "size_bytes": 10567,
+      "sha256": "af5f48fa67563d88837f2f7ff7a7dd441c2d5fc28acecf7a4c45ebf2a8ebb6b5",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "source_data/DQR_Fig04_source_data.xlsx",
+      "size_bytes": 149381,
+      "sha256": "123fe57240207a97deff96f310354a07f70e85cba2e2921199f21ce451c71ae3",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "source_data/DQR_Fig05_source_data.xlsx",
+      "size_bytes": 37534,
+      "sha256": "71da9a79bc55ec8cfba6f9acf978f3c7c0621cdd1c4454b11dca2a093e7065c0",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "validation/DQR_aggregation_validation.xlsx",
+      "size_bytes": 840743,
+      "sha256": "431d518e3ae6a4a3ea855b7241a2e81c83d324ba0ce198cedc33363c9b9ecf07",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "validation/DQR_contract_checks.json",
+      "size_bytes": 3374,
+      "sha256": "5eacae745f87ae7e90ba7375f1ac045be93bd6cc30cedfdb4c3c8803044fe8c2",
+      "hash_method": "sha256_utf8_lf_canonical"
+    },
+    {
+      "relative_path": "validation/DQR_downstream_validation.xlsx",
+      "size_bytes": 6295,
+      "sha256": "f05e44a9bbd68898d2059c2072d810ca3f061e8b671ad18bcdf1216b688b7855",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "validation/DQR_figure_qa.json",
+      "size_bytes": 5970,
+      "sha256": "2357334ea40edf0cf1b30224a60a7a422482d4b69d1fe98e0400ad28d06f93bc",
+      "hash_method": "sha256_utf8_lf_canonical"
+    }
+  ]
+}
