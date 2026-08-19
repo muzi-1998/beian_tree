@@ -143,64 +143,74 @@ class D5PlotDataBuilder:
                     value=float(coordinate[1]),
                     group=edge["edge_id"],
                     sensor_id=sensor,
+                    context=edge["edge_type"],
                     annotation=edge["direction"],
                     order=order,
                 )
-        status = self.main["evaluation_status"].value_counts(normalize=True)
-        for order, (name, value) in enumerate(status.items()):
-            self._add(
-                rows,
-                figure_id="FigD5_1_framework",
-                panel="b",
-                record_type="status_rate",
-                x=name,
-                x_numeric=order,
-                y="window_fraction",
-                value=float(value),
-                group="Local Track",
-                annotation=f"{value:.1%}",
-                order=order,
-            )
-        facts = [
-            ("Raw evidence", 1.0, "D5_raw retained when calculable"),
-            (
-                "Report interface",
-                float(self.report_interface["D5_report_score"].notna().any()),
-                "Scientific score is independent of action admission",
-            ),
-            (
-                "Pair action gate",
-                float(self.gate_interface["d5_action_ready"].any()),
-                "Requires both nodes to pass final L3 validation",
-            ),
-            (
-                "Process Guard claim",
-                float(self.gate_interface["detection_validation_passed"].any()),
-                "Validated attribution suppression, not a Veto",
-            ),
-            (
-                "Sensor Veto claim",
-                float(self.gate_interface["localization_validation_passed"].any()),
-                "Requires validated sensor-identity localization",
-            ),
-            (
-                "Deployment",
-                float(self.topology["production_approval_status"] == "approved"),
-                "Documentary audit and dual approval pending",
-            ),
+        for pair in self.topology["twin_pairs"]:
+            for order, sensor in enumerate([pair["sensor_a"], pair["sensor_b"]]):
+                coordinate = coordinates[sensor]
+                self._add(
+                    rows,
+                    figure_id="FigD5_1_framework",
+                    panel="a",
+                    record_type="edge",
+                    x=pair["pair_id"],
+                    x_numeric=float(coordinate[0]),
+                    y=str(coordinate[1]),
+                    value=float(coordinate[1]),
+                    group=pair["pair_id"],
+                    sensor_id=sensor,
+                    context="parallel_peer",
+                    annotation="bidirectional_peer",
+                    order=order,
+                )
+
+        status_order = [
+            "evaluable",
+            "limited_support",
+            "out_of_template",
+            "not_evaluable",
         ]
-        for order, (label, value, annotation) in enumerate(facts):
+        for analyte in ["DO", "ORP", "All"]:
+            frame = self.main if analyte == "All" else self.main[self.main["analyte"].eq(analyte)]
+            fractions = frame["evaluation_status"].value_counts(normalize=True)
+            for order, name in enumerate(status_order):
+                value = float(fractions.get(name, 0.0))
+                self._add(
+                    rows,
+                    figure_id="FigD5_1_framework",
+                    panel="b",
+                    record_type="status_rate",
+                    x=analyte,
+                    x_numeric=["DO", "ORP", "All"].index(analyte),
+                    y=name,
+                    value=value,
+                    group=name,
+                    analyte=analyte,
+                    annotation=f"{value:.1%}",
+                    order=order,
+                )
+
+        stages = [
+            ("Global context", "QR/QIR + time-of-day", "context"),
+            ("Regime state", "Frozen regime assignment", "regime"),
+            ("Role template", "Longitudinal + peer structure", "template"),
+            ("Four evidence scores", "Profile / gradient / rank / representation", "evidence"),
+            ("D5 raw", "Continuous structural score", "score"),
+            ("Report or abstain", "Support- and OOD-aware interface", "report"),
+        ]
+        for order, (label, annotation, group) in enumerate(stages):
             self._add(
                 rows,
                 figure_id="FigD5_1_framework",
                 panel="c",
-                record_type="boundary_gate",
+                record_type="method_stage",
                 x=label,
                 x_numeric=order,
-                y="gate_state",
-                value=value,
-                target=1.0,
-                group="pass" if value else "blocked",
+                y="method_pipeline",
+                value=float(order),
+                group=group,
                 annotation=annotation,
                 order=order,
             )
@@ -208,58 +218,107 @@ class D5PlotDataBuilder:
     def _figure_2(self, rows: list[dict[str, Any]]) -> None:
         daily = self.main.copy()
         daily["date"] = daily["timestamp"].dt.floor("D")
-        daily = daily.groupby(["date", "sensor_id", "analyte"], as_index=False)["D5_raw"].quantile(0.25)
+        daily["report_eligible_numeric"] = daily["D5_report_score"].notna().astype(float)
+        daily["ood_numeric"] = daily["evaluation_status"].eq("out_of_template").astype(float)
+        daily["l1_numeric"] = daily["support_level"].eq("L1").astype(float)
+        daily = daily.groupby(["date", "sensor_id", "analyte"], as_index=False).agg(
+            D5_raw=("D5_raw", lambda values: values.quantile(0.25)),
+            report_eligible_rate=("report_eligible_numeric", "mean"),
+            ood_rate=("ood_numeric", "mean"),
+            l1_rate=("l1_numeric", "mean"),
+        )
         sensor_order = self.sensors.sort_values(["analyte", "line_id", "position_order"])["sensor_id"].tolist()
         for record in daily.itertuples(index=False):
+            for record_type, value in [
+                ("daily_p25", record.D5_raw),
+                ("report_eligible_rate", record.report_eligible_rate),
+                ("ood_rate", record.ood_rate),
+                ("l1_rate", record.l1_rate),
+            ]:
+                self._add(
+                    rows,
+                    figure_id="FigD5_2_spatiotemporal",
+                    panel="a",
+                    record_type=record_type,
+                    x=record.date.isoformat(),
+                    x_numeric=float(record.date.value / 1e9),
+                    y=record.sensor_id,
+                    value=float(value) if np.isfinite(value) else np.nan,
+                    group=record.analyte,
+                    sensor_id=record.sensor_id,
+                    analyte=record.analyte,
+                    order=sensor_order.index(record.sensor_id),
+                )
+        for event in self.events.sort_values(["min_D5_raw", "duration_h"]).head(3).itertuples(index=False):
             self._add(
                 rows,
                 figure_id="FigD5_2_spatiotemporal",
                 panel="a",
-                record_type="daily_p25",
-                x=record.date.isoformat(),
-                x_numeric=float(record.date.value / 1e9),
-                y=record.sensor_id,
-                value=float(record.D5_raw),
-                group=record.analyte,
-                sensor_id=record.sensor_id,
-                analyte=record.analyte,
-                order=sensor_order.index(record.sensor_id),
+                record_type="case_window",
+                x=pd.Timestamp(event.start_ts).isoformat(),
+                x_numeric=float(pd.Timestamp(event.start_ts).value / 1e9),
+                y=event.sensor_id,
+                value=float(pd.Timestamp(event.end_ts).value / 1e9),
+                group=event.event_type,
+                sensor_id=event.sensor_id,
+                event_id=event.event_id,
+                annotation="unlabeled candidate",
             )
+
         distribution = self.main.dropna(subset=["D5_raw"])
-        step = max(len(distribution) // 12000, 1)
-        for record in distribution.iloc[::step].itertuples(index=False):
+        sensor_stats = distribution.groupby(
+            ["sensor_id", "analyte", "line_id", "position_order"], as_index=False
+        ).agg(
+            median=("D5_raw", "median"),
+            q25=("D5_raw", lambda values: values.quantile(0.25)),
+            q75=("D5_raw", lambda values: values.quantile(0.75)),
+            low_fraction=("D5_raw", lambda values: values.lt(3.0).mean()),
+            n_hours=("D5_raw", "size"),
+        ).sort_values(["analyte", "position_order", "line_id"])
+        for order, record in enumerate(sensor_stats.itertuples(index=False)):
             self._add(
                 rows,
                 figure_id="FigD5_2_spatiotemporal",
                 panel="b",
-                record_type="score_distribution",
-                x=record.analyte,
-                x_numeric=np.nan,
+                record_type="sensor_score_summary",
+                x=record.sensor_id,
+                x_numeric=float(order),
                 y="D5_raw",
-                value=float(record.D5_raw),
+                value=float(record.median),
+                value_low=float(record.q25),
+                value_high=float(record.q75),
+                target=float(record.low_fraction),
                 group=record.analyte,
                 sensor_id=record.sensor_id,
                 analyte=record.analyte,
-            )
-        support_group = self.support.groupby(["analyte", "support_level"], as_index=False).agg(
-            templates=("template_id", "size"),
-            n_effective_median=("n_effective", "median"),
-        )
-        for order, record in enumerate(support_group.itertuples(index=False)):
-            self._add(
-                rows,
-                figure_id="FigD5_2_spatiotemporal",
-                panel="c",
-                record_type="support_tier",
-                x=record.analyte,
-                x_numeric=order,
-                y=record.support_level,
-                value=float(record.templates),
-                group=record.support_level,
-                analyte=record.analyte,
-                annotation=f"median n_eff={record.n_effective_median:.0f}",
+                annotation=f"n={record.n_hours:,}",
                 order=order,
             )
+
+        monthly = self.main.copy()
+        monthly["month"] = monthly["timestamp"].dt.to_period("M").astype(str)
+        monthly = monthly.groupby("month", as_index=False).agg(
+            report_coverage=("D5_report_score", lambda values: values.notna().mean()),
+            ood_rate=("evaluation_status", lambda values: values.eq("out_of_template").mean()),
+            l1_rate=("support_level", lambda values: values.eq("L1").mean()),
+        )
+        for record in monthly.itertuples(index=False):
+            for metric, value in [
+                ("Report coverage", record.report_coverage),
+                ("OOD", record.ood_rate),
+                ("L1 support", record.l1_rate),
+            ]:
+                self._add(
+                    rows,
+                    figure_id="FigD5_2_spatiotemporal",
+                    panel="c",
+                    record_type="monthly_evidence_coverage",
+                    x=record.month,
+                    y=metric,
+                    value=float(value),
+                    group=metric,
+                    annotation="same contract as FigD5_6c",
+                )
 
     def _figure_3(self, rows: list[dict[str, Any]]) -> None:
         if self.events.empty:
@@ -288,9 +347,106 @@ class D5PlotDataBuilder:
                     event_id=event["event_id"],
                     annotation="unlabeled structural evidence",
                 )
+            self._add(
+                rows,
+                figure_id="FigD5_3_evidence",
+                panel="a",
+                record_type="regime_strip",
+                x=record.timestamp.isoformat(),
+                x_numeric=float(record.timestamp.value / 1e9),
+                y=record.regime_state,
+                value=float(record.active_regime_id),
+                group=record.regime_state,
+                sensor_id=record.sensor_id,
+                event_id=event["event_id"],
+            )
+
+        topology_pairs = self.topology["twin_pairs"]
+        target_sensor = str(event["sensor_id"])
+        peer_sensor = next(
+            (
+                pair["sensor_b"] if pair["sensor_a"] == target_sensor else pair["sensor_a"]
+                for pair in topology_pairs
+                if target_sensor in {pair["sensor_a"], pair["sensor_b"]}
+            ),
+            None,
+        )
+        target_meta = self.sensors.set_index("sensor_id").loc[target_sensor]
+        neighbors = self.sensors[
+            self.sensors["analyte"].eq(target_meta["analyte"])
+            & self.sensors["line_id"].eq(target_meta["line_id"])
+            & self.sensors["sensor_id"].ne(target_sensor)
+        ].copy()
+        neighbors["distance"] = (neighbors["position_order"] - target_meta["position_order"]).abs()
+        neighbor_sensor = neighbors.sort_values(["distance", "position_order"])["sensor_id"].iloc[0]
+        raw_sensors = [target_sensor, peer_sensor, neighbor_sensor]
+        raw = pd.read_parquet(self.paths.canonical_observations, columns=raw_sensors)
+        raw = raw.loc[start:end].resample("1h").median()
+        role_by_sensor = {
+            target_sensor: "Target",
+            peer_sensor: "Parallel peer",
+            neighbor_sensor: "Same-line neighbor",
+        }
+        for timestamp_raw, values in raw.iterrows():
+            for sensor in raw_sensors:
+                value = values[sensor]
+                self._add(
+                    rows,
+                    figure_id="FigD5_3_evidence",
+                    panel="a",
+                    record_type="raw_timeseries",
+                    x=timestamp_raw.isoformat(),
+                    x_numeric=float(timestamp_raw.value / 1e9),
+                    y=sensor,
+                    value=float(value) if np.isfinite(value) else np.nan,
+                    group=role_by_sensor[sensor],
+                    sensor_id=sensor,
+                    analyte=target_meta["analyte"],
+                    event_id=event["event_id"],
+                )
+        self._add(
+            rows,
+            figure_id="FigD5_3_evidence",
+            panel="a",
+            record_type="event_window",
+            x=pd.Timestamp(event["start_ts"]).isoformat(),
+            x_numeric=float(pd.Timestamp(event["start_ts"]).value / 1e9),
+            y=target_sensor,
+            value=float(pd.Timestamp(event["end_ts"]).value / 1e9),
+            group="unlabeled candidate",
+            sensor_id=target_sensor,
+            event_id=event["event_id"],
+        )
+
         center = pd.Timestamp(event["start_ts"]) + (
             pd.Timestamp(event["end_ts"]) - pd.Timestamp(event["start_ts"])
         ) / 2
+        center_row = case.iloc[(case["timestamp"] - center).abs().argsort()[:1]]
+        template_id = str(center_row["template_id_used"].iloc[0])
+        template_book = self.paths.local_output_root / "D5_spatial_templates.xlsx"
+        profile_centers = pd.read_excel(template_book, sheet_name="profile_centers")
+        target_reference = profile_centers[
+            profile_centers["template_id"].eq(template_id)
+            & profile_centers["node_id"].eq(target_sensor)
+        ]
+        if not target_reference.empty:
+            reference = target_reference.iloc[0]
+            self._add(
+                rows,
+                figure_id="FigD5_3_evidence",
+                panel="a",
+                record_type="raw_reference",
+                x=start.isoformat(),
+                x_numeric=float(start.value / 1e9),
+                y=target_sensor,
+                value=float(reference["center"]),
+                value_low=float(reference["center"] - reference["scale"]),
+                value_high=float(reference["center"] + reference["scale"]),
+                group="Role-template reference",
+                sensor_id=target_sensor,
+                event_id=event["event_id"],
+                annotation=template_id,
+            )
         timestamp = self.influence.iloc[
             (self.influence["timestamp"] - center).abs().argsort()[:1]
         ]["timestamp"].iloc[0]
@@ -321,21 +477,91 @@ class D5PlotDataBuilder:
                     annotation=record.attribution_method,
                     order=order,
                 )
-        labels = self.consensus["zone_consensus_label"].value_counts(normalize=True)
-        for order, (label, value) in enumerate(labels.items()):
+        nearest_influence = self.influence.iloc[
+            (self.influence["timestamp"] - center).abs().argsort()[: len(self.sensors)]
+        ]
+        nearest_timestamp = nearest_influence["timestamp"].mode().iloc[0]
+        nearest_influence = self.influence[self.influence["timestamp"].eq(nearest_timestamp)]
+        coordinates = self.sensors.set_index("sensor_id")["coordinate"].to_dict()
+        for record in nearest_influence.itertuples(index=False):
+            coordinate = coordinates[record.sensor_id]
             self._add(
                 rows,
                 figure_id="FigD5_3_evidence",
                 panel="c",
-                record_type="consensus_rate",
-                x=label,
-                x_numeric=order,
-                y="window_fraction",
-                value=float(value),
-                group="zone_consensus",
-                annotation=f"{value:.1%}",
-                order=order,
+                record_type="topology_node",
+                x=record.sensor_id,
+                x_numeric=float(coordinate[0]),
+                y=str(coordinate[1]),
+                value=float(record.influence_score) if np.isfinite(record.influence_score) else 0.0,
+                group="target" if record.sensor_id == target_sensor else "other",
+                sensor_id=record.sensor_id,
+                event_id=event["event_id"],
+                annotation="normalized diagnostic contribution",
             )
+
+        gradient_templates = pd.read_excel(template_book, sheet_name="gradient_templates")
+        gradient_templates = gradient_templates[gradient_templates["template_id"].eq(template_id)]
+        center_lookup = profile_centers[profile_centers["template_id"].eq(template_id)].set_index("node_id")
+        edge_specs = list(self.topology["edges"]) + [
+            {
+                "edge_id": pair["pair_id"],
+                "source": pair["sensor_a"],
+                "target": pair["sensor_b"],
+                "edge_type": "parallel_peer",
+            }
+            for pair in self.topology["twin_pairs"]
+        ]
+        full_raw = pd.read_parquet(self.paths.canonical_observations)
+        full_center = full_raw.loc[start:end].resample("1h").median()
+        full_values = full_center.iloc[
+            (full_center.index - nearest_timestamp).to_series().abs().argsort()[:1]
+        ].iloc[0]
+        for edge in edge_specs:
+            source_sensor = edge["source"]
+            target_edge = edge["target"]
+            if source_sensor not in full_values or target_edge not in full_values:
+                continue
+            observed_delta = float(full_values[target_edge] - full_values[source_sensor])
+            if edge["edge_type"] == "longitudinal":
+                reference = gradient_templates[gradient_templates["edge_id"].eq(edge["edge_id"])]
+                if reference.empty:
+                    continue
+                expected_delta = float(reference["median"].iloc[0])
+                scale = max(float(reference["scale"].iloc[0]), 1e-6)
+            else:
+                if source_sensor not in center_lookup.index or target_edge not in center_lookup.index:
+                    continue
+                expected_delta = float(
+                    center_lookup.loc[target_edge, "center"] - center_lookup.loc[source_sensor, "center"]
+                )
+                scale = max(
+                    float(
+                        np.hypot(
+                            center_lookup.loc[target_edge, "scale"],
+                            center_lookup.loc[source_sensor, "scale"],
+                        )
+                    ),
+                    1e-6,
+                )
+            residual = abs(observed_delta - expected_delta) / scale
+            for order, sensor in enumerate([source_sensor, target_edge]):
+                coordinate = coordinates[sensor]
+                self._add(
+                    rows,
+                    figure_id="FigD5_3_evidence",
+                    panel="c",
+                    record_type="topology_edge",
+                    x=edge["edge_id"],
+                    x_numeric=float(coordinate[0]),
+                    y=str(coordinate[1]),
+                    value=float(residual),
+                    group=edge["edge_type"],
+                    sensor_id=sensor,
+                    event_id=event["event_id"],
+                    annotation="standardized edge residual",
+                    order=order,
+                )
 
     def _figure_4(self, rows: list[dict[str, Any]]) -> None:
         workbook = self.paths.local_output_root / "D5_validation_results.xlsx"

@@ -1,109 +1,177 @@
 {
-  "figure_dir": "D:\\004_git\\beian_tree\\Project 1 Data Quality Assessment\\D5 Topological Role Consistency and Structural Representativeness\\outputs\\figures",
-  "figures": 5,
-  "failed": 0,
-  "records": [
+  "passed": true,
+  "failures": [],
+  "profile": {
+    "name": "nature_double",
+    "width_mm": 183.0,
+    "maximum_height_mm": 170.0,
+    "body_text_pt": 7.0,
+    "panel_label_pt": 8.0,
+    "axis_line_pt": 0.8,
+    "raster_dpi": 600,
+    "supported_final_scale": "double-column_183_mm"
+  },
+  "figures": [
     {
       "stem": "FigD5_1_framework",
-      "png": true,
-      "svg": true,
-      "pdf": true,
-      "png_size_px": [
-        4389,
-        1900
-      ],
-      "png_nonblank": true,
-      "svg_text_elements": 72,
-      "svg_arial_declared": true,
-      "panel_labels": [
-        "(a)",
-        "(b)",
-        "(c)"
-      ],
-      "nonconforming_bare_panel_labels": [],
-      "fresh_vs_sources": true
+      "png_width": 4322,
+      "png_height": 2430,
+      "pdf_width_mm": 183.0,
+      "pdf_height_mm": 102.87,
+      "nonwhite_fraction": 0.1358502674611472,
+      "edge_ink_fraction": 0.0,
+      "editable_svg_text": true,
+      "arial_referenced": true,
+      "contains_raster_layer": false,
+      "png_sha256": "0b2446b6d9140788a1bcf9f67c0bc6935e14040a400b296a583c6db98855ff9e",
+      "pdf_sha256": "700bb88943fb9810b204d6823f01eb5cf3c1bde5c143a6422b752bbd8fb80967",
+      "svg_sha256": "81fa39166769bfbd5200878ccf5df9f293dfe03cf216bc6065b9d7375d93a5f2",
+      "tiff_sha256": "c0d57c017959f234eab3f20a81818ec333a340f21a04f90934ec079b5b9809ff"
     },
     {
       "stem": "FigD5_2_spatiotemporal",
-      "png": true,
-      "svg": true,
-      "pdf": true,
-      "png_size_px": [
-        4378,
-        3129
-      ],
-      "png_nonblank": true,
-      "svg_text_elements": 64,
-      "svg_arial_declared": true,
-      "panel_labels": [
-        "(a)",
-        "(b)",
-        "(c)"
-      ],
-      "nonconforming_bare_panel_labels": [],
-      "fresh_vs_sources": true
+      "png_width": 4322,
+      "png_height": 3090,
+      "pdf_width_mm": 183.0,
+      "pdf_height_mm": 130.81,
+      "nonwhite_fraction": 0.3345748926617636,
+      "edge_ink_fraction": 0.0,
+      "editable_svg_text": true,
+      "arial_referenced": true,
+      "contains_raster_layer": true,
+      "png_sha256": "b4c93b8bcfd46f52d38c85251f2ff4e9e3451f864aa1893fa31200d3b0f46bb5",
+      "pdf_sha256": "78e495172970e229f4e43a04eaf13b5c4f38ed8657764e51181461d26b5b7579",
+      "svg_sha256": "61db4a191706f4995593331e103da9a66214d73d1e48f81b8507f8c2419ea92a",
+      "tiff_sha256": "f52d34f934898c030d31ded59048cd5a1351565279c7a3eac1dedc0fee2dc829"
     },
     {
       "stem": "FigD5_3_evidence",
-      "png": true,
-      "svg": true,
-      "pdf": true,
-      "png_size_px": [
-        4385,
-        3069
-      ],
-      "png_nonblank": true,
-      "svg_text_elements": 76,
-      "svg_arial_declared": true,
-      "panel_labels": [
-        "(a)",
-        "(b)",
-        "(c)"
-      ],
-      "nonconforming_bare_panel_labels": [],
-      "fresh_vs_sources": true
+      "png_width": 4322,
+      "png_height": 3600,
+      "pdf_width_mm": 183.0,
+      "pdf_height_mm": 152.4,
+      "nonwhite_fraction": 0.253985680497712,
+      "edge_ink_fraction": 0.0,
+      "editable_svg_text": true,
+      "arial_referenced": true,
+      "contains_raster_layer": true,
+      "png_sha256": "47ceafcc44de75dfe3b6d904b6eac897c8a3a43e4e3d773aa9fda4bb8c592ceb",
+      "pdf_sha256": "076cda73773cad1ae77847209850e5dab91c8ce8dfc345e2365cbb3a41eb5675",
+      "svg_sha256": "c280a65995a28d1c23a954cc0a69136940c192de67dfa7a81a7bfaa98563c31f",
+      "tiff_sha256": "7c4728a4cbe297d88840a97c3843091026e6d3a90f305932b70a560928238084"
     },
     {
       "stem": "FigD5_4_validation",
-      "png": true,
-      "svg": true,
-      "pdf": true,
-      "png_size_px": [
-        4386,
-        3309
-      ],
-      "png_nonblank": true,
-      "svg_text_elements": 51,
-      "svg_arial_declared": true,
-      "panel_labels": [
-        "(a)",
-        "(b)",
-        "(c)",
-        "(d)"
-      ],
-      "nonconforming_bare_panel_labels": [],
-      "fresh_vs_sources": true
+      "png_width": 4322,
+      "png_height": 3210,
+      "pdf_width_mm": 183.0,
+      "pdf_height_mm": 135.89,
+      "nonwhite_fraction": 0.17222440862586694,
+      "edge_ink_fraction": 0.0,
+      "editable_svg_text": true,
+      "arial_referenced": true,
+      "contains_raster_layer": false,
+      "png_sha256": "4dabbd36451b1fe017eda7bd18c5639d13c38b776456513befb056d730c546c5",
+      "pdf_sha256": "51a8b842ce5478a5017e32b80840fa9cc9d619a6306429cd6da4c2f38eee8048",
+      "svg_sha256": "5cfbf6dc9d2a80409bbcf288da522083dec40e53fc51193e7412c4cc00fc5e5a",
+      "tiff_sha256": "29ae2daaa9e73c6936fc202a572a0b8dc48b0660ca2aaaf676c347667804ae53"
     },
     {
       "stem": "FigD5_5_governance",
-      "png": true,
-      "svg": true,
-      "pdf": true,
-      "png_size_px": [
-        4389,
-        3309
-      ],
-      "png_nonblank": true,
-      "svg_text_elements": 80,
-      "svg_arial_declared": true,
-      "panel_labels": [
-        "(a)",
-        "(b)",
-        "(c)",
-        "(d)"
-      ],
-      "nonconforming_bare_panel_labels": [],
-      "fresh_vs_sources": true
+      "png_width": 4322,
+      "png_height": 3210,
+      "pdf_width_mm": 183.0,
+      "pdf_height_mm": 135.89,
+      "nonwhite_fraction": 0.1136540427083919,
+      "edge_ink_fraction": 0.0,
+      "editable_svg_text": true,
+      "arial_referenced": true,
+      "contains_raster_layer": true,
+      "png_sha256": "a0f780e4b66a562d250a8c8649b40d74cc722a0c43fe1a382765afdcea2c6e70",
+      "pdf_sha256": "0f8d01e72727cc30111b1bc34cfd648075d07dbbe40553905d20ae8c2fa57cf1",
+      "svg_sha256": "cb33105e67e0b4832b4e728ee303bdc081e6e0dfdaa18c7ee45db094003c6e6f",
+      "tiff_sha256": "7c17e2721f228a98f24acc27dd5d2623e1b127900a39f9b7b2054ab70e08fc44"
+    },
+    {
+      "stem": "FigD5_6_validation_coverage",
+      "png_width": 4322,
+      "png_height": 3270,
+      "pdf_width_mm": 183.0,
+      "pdf_height_mm": 138.43,
+      "nonwhite_fraction": 0.11379415747891097,
+      "edge_ink_fraction": 0.0,
+      "editable_svg_text": true,
+      "arial_referenced": true,
+      "contains_raster_layer": false,
+      "png_sha256": "3142461a1958b6109fa039e5a77a089ee36f928bd138f9bb12a01f3cad740c63",
+      "pdf_sha256": "fae69822c06d7028036c0c4a88a870226921ca8b43c71d52f7724fd5518d7ee6",
+      "svg_sha256": "7d263bc9dbe719410f6fe02ff2ff2c86a8d61133ea85131a4f3031aac9c4b5f2",
+      "tiff_sha256": "f670f0c97d0cfec2fbcfcb834f5a843adb273c98dcce661631166ec9e6f0167b"
+    },
+    {
+      "stem": "FigD5_7_D4_D5_complementarity",
+      "png_width": 4322,
+      "png_height": 3630,
+      "pdf_width_mm": 183.0,
+      "pdf_height_mm": 153.67,
+      "nonwhite_fraction": 0.34686924352693566,
+      "edge_ink_fraction": 0.0,
+      "editable_svg_text": true,
+      "arial_referenced": true,
+      "contains_raster_layer": true,
+      "png_sha256": "390c439b2d1f72e3570a3b9fed2cf9e086a2b7c2dd574593978c7ac49fae1c50",
+      "pdf_sha256": "1a86275a0c8388633a626f5b3c058c39ceb6f7701f87318bbba64882b5fe2332",
+      "svg_sha256": "49011a417bc95f4bd4a66fdac07618609b4c32e5417c26ea45ff6d6cf13df21b",
+      "tiff_sha256": "5db501d151d430f33be6dcf747f3c339ec0fb67fdd29f5bc1ba969f237dec583"
+    },
+    {
+      "stem": "FigD5_8_dimension_availability_sensitivity",
+      "png_width": 4322,
+      "png_height": 3210,
+      "pdf_width_mm": 183.0,
+      "pdf_height_mm": 135.89,
+      "nonwhite_fraction": 0.16693826124688438,
+      "edge_ink_fraction": 0.0,
+      "editable_svg_text": true,
+      "arial_referenced": true,
+      "contains_raster_layer": false,
+      "png_sha256": "d123ff696b47fc1ec14a9b2face98833eb5e69460a4277b9703974902284d091",
+      "pdf_sha256": "ec13a44b05b79bf3ba09bc2ca014db34668406e4f23edcdcf0da2d7d4da81bc0",
+      "svg_sha256": "d30a40b1fc0862d48826e5be2352894c388234d470613d7609060b232a48b4d3",
+      "tiff_sha256": "45c025977c8dda152a05ab27d993512b7982c7f8a09fcd6cefea183a7178ed2a"
+    },
+    {
+      "stem": "FigD5_9_target_support_robustness",
+      "png_width": 4322,
+      "png_height": 1950,
+      "pdf_width_mm": 183.0,
+      "pdf_height_mm": 82.55,
+      "nonwhite_fraction": 0.24133354690966907,
+      "edge_ink_fraction": 0.0,
+      "editable_svg_text": true,
+      "arial_referenced": true,
+      "contains_raster_layer": true,
+      "png_sha256": "fddb68afe2f9776046e153e66f44530295cc60cb576349dd370c4f51e0492d5f",
+      "pdf_sha256": "2e582cbfa3a4107275a4633b77b34688efc1ddab583723b55fc44b0022732506",
+      "svg_sha256": "33bd39117fca81cb32722cefdd673e69ce1f32c56e66ed02093b6e649b3a4ca0",
+      "tiff_sha256": "106f932ac54a22077b2b2fdef769d91f4348d62cfa9189d003833abdee64bef1"
     }
+  ],
+  "checked_contracts": [
+    "exact nine-figure registry",
+    "PNG/PDF/SVG/TIFF counterparts",
+    "183 mm PDF MediaBox and <=170 mm height",
+    "600 dpi raster width and nonblank content",
+    "low canvas-edge ink as a clipping sentinel",
+    "editable SVG text with Arial reference",
+    "raster layers recorded but permitted for heatmaps and dense rasterized artists",
+    "lowercase panel label (a)",
+    "color-independent marker, line-style or text encodings declared in source",
+    "frozen plot-data manifest"
+  ],
+  "interpretation_limits": [
+    "Automated checks do not replace visual inspection at final scale.",
+    "Color-vision and grayscale legibility also rely on non-color encodings.",
+    "The figures are designed for 183 mm presentation, not 89 mm reduction."
   ]
 }

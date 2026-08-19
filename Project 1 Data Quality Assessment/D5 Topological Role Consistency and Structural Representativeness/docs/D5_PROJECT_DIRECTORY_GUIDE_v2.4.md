@@ -1,6 +1,6 @@
 # D5 Project Directory Guide v2.4
 
-**Generated:** 2026-08-18 11:58 CST
+**Generated:** 2026-08-18 18:58 CST
 **Update rule:** every computational or figure change must rerun reports and release QA.
 
 ## 1. Project layout
@@ -104,3 +104,18 @@ Use `python scripts/run_d5_release.py --include-local` after data, topology, tem
 ## 8. Current branch gate
 
 Current release classification: **D5 scientific score ready; cross-dimensional publication freeze ready and hash-bound; automated deployment blocked**. Node-specific hard Veto remains gated by controlled-perturbation Top-1 localization.
+
+## 9. Figure publication contract
+
+- All nine registered figure groups use the Python/Matplotlib backend, a fixed
+  183 mm double-column canvas, Arial text, 0.8 pt axes and editable SVG/PDF.
+- Figures D5-1, D5-2 and D5-3 communicate topology, score applicability and
+  case-level structural evidence. Figures D5-6 and D5-7 carry the principal
+  validation and cross-dimensional claims.
+- Figures D5-4, D5-5 and D5-9 retain detailed validation, governance and
+  robustness evidence for Extended Data or Supplementary Information.
+- Figure D5-8 is a main figure only in the future integrated WW-DQS paper. In
+  the standalone D5 module it is an Extended Data prototype and is not the
+  final five-dimension aggregate.
+- Every quantitative panel is traceable to frozen Parquet or Excel source data.
+  Automated QA does not replace visual inspection at final publication scale.

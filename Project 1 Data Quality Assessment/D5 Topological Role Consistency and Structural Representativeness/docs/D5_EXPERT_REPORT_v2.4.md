@@ -2,7 +2,7 @@
 
 **Project:** Topological Role Consistency and Structural Representativeness
 **Run:** `D5-LOCAL-20260727T034533Z`
-**Generated:** 2026-08-18 11:58 CST
+**Generated:** 2026-08-18 18:58 CST
 **Decision:** Scientific D5 score released for final subscore aggregation; automated deployment remains gated.
 
 ## 1. Executive verdict
@@ -84,7 +84,7 @@ The publication audit additionally reports six future-month controlled-challenge
 
 ## 7. Figure review
 
-Nine multi-panel figure groups are available as SVG, PDF, 600 dpi PNG and LZW-compressed 600 dpi TIFF. All use Arial, 0.8 pt boxed axes, inward ticks, unified panel labels, endpoint-aware scales and transparent label backgrounds where annotations cover data. Figure D5-6 reports controlled challenge results and coverage; Figure D5-7 reports overall and stratified D4-D5 overlap; Figure D5-8 separates availability-aware and fixed-dimension composite estimands; Figure D5-9 reports target influence and support robustness. Automated counterpart/font/pixel QA passed: True.
+Nine multi-panel figure groups are available as editable SVG/PDF, 600 dpi PNG and LZW-compressed 600 dpi TIFF on a fixed 183 mm canvas. All use Arial and 0.8 pt axes; open plots use outward ticks, whereas genuinely full-boxed maps use inward ticks. Panel labels, annotation backgrounds and endpoint-aware scales follow one shared style contract. Figures D5-1-D5-3 now connect declared topology, score applicability and case-level evidence; Figure D5-6 reports criterion margins, localization and evidence coverage; Figure D5-7 reports joint density, stratified D4-D5 overlap and exact low-tail concordance; Figure D5-8 separates availability-aware, matched complete-case and fixed-dimension estimands; Figure D5-9 reports post-reference target influence and the full reference-fraction support grid. Automated export/layout QA passed: True.
 
 ## 8. Critical limitations
 
