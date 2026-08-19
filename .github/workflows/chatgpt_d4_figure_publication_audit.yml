@@ -1,0 +1,113 @@
+name: Build D4 figure publication audit Word
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.chatgpt_d4_figure_audit/**'
+      - '.github/workflows/chatgpt_d4_figure_publication_audit.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout audit branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 1
+          sparse-checkout: |
+            .chatgpt_d4_figure_audit
+            Project 1 Data Quality Assessment/D4 Parallel-redundancy Temporal Consistency
+            deliverables
+          sparse-checkout-cone-mode: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install document dependencies
+        run: |
+          pip install python-docx pillow
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq libreoffice-writer fonts-noto-cjk poppler-utils
+
+      - name: Patch CJK font node compatibility and A4 page size
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('.chatgpt_d4_figure_audit/build_report.py')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace('._element.rPr.rFonts.set(', '._element.get_or_add_rPr().get_or_add_rFonts().set(')
+          old="sec.top_margin=Cm(1.7); sec.bottom_margin=Cm(1.6); sec.left_margin=Cm(1.9); sec.right_margin=Cm(1.8)"
+          new="sec.page_width=Cm(21.0); sec.page_height=Cm(29.7); sec.top_margin=Cm(1.7); sec.bottom_margin=Cm(1.6); sec.left_margin=Cm(1.9); sec.right_margin=Cm(1.8)"
+          s=s.replace(old,new)
+          p.write_text(s, encoding='utf-8')
+          PY
+
+      - name: Build Word audit
+        run: python .chatgpt_d4_figure_audit/build_report.py
+
+      - name: Verify Word package and embedded repository figures
+        run: |
+          python - <<'PY'
+          import zipfile
+          from pathlib import Path
+          p=Path('deliverables/260812_D4_绘图组件_顶刊SCI发表水平_逐图审查_修改与新增图件建议_专家版.docx')
+          assert p.exists() and p.stat().st_size > 500_000
+          with zipfile.ZipFile(p) as z:
+              media=[n for n in z.namelist() if n.startswith('word/media/')]
+              assert len(media) == 8, media
+              assert 'word/document.xml' in z.namelist()
+          print('DOCX verified:', p.stat().st_size, 'bytes; embedded media:', len(media))
+          PY
+
+      - name: Render PDF
+        run: |
+          rm -rf deliverables/rendered
+          mkdir -p deliverables/rendered
+          libreoffice --headless --convert-to pdf --outdir deliverables/rendered deliverables/260812_D4_绘图组件_顶刊SCI发表水平_逐图审查_修改与新增图件建议_专家版.docx
+          pdfinfo deliverables/rendered/260812_D4_绘图组件_顶刊SCI发表水平_逐图审查_修改与新增图件建议_专家版.pdf | tee deliverables/rendered/pdfinfo.txt
+          test -s deliverables/rendered/260812_D4_绘图组件_顶刊SCI发表水平_逐图审查_修改与新增图件建议_专家版.pdf
+          grep -Eq 'Page size:[[:space:]]+595(\.[0-9]+)? x 841(\.[0-9]+)? pts|Page size:[[:space:]]+595(\.[0-9]+)? x 842(\.[0-9]+)? pts' deliverables/rendered/pdfinfo.txt
+
+      - name: Rendered-page QA
+        run: |
+          mkdir -p deliverables/rendered/pages
+          pdftoppm -png -r 72 deliverables/rendered/260812_D4_绘图组件_顶刊SCI发表水平_逐图审查_修改与新增图件建议_专家版.pdf deliverables/rendered/pages/page >/dev/null 2>&1
+          python - <<'PY'
+          from pathlib import Path
+          from PIL import Image, ImageStat
+          pages=sorted(Path('deliverables/rendered/pages').glob('page-*.png'))
+          assert 10 <= len(pages) <= 30, len(pages)
+          for p in pages:
+              im=Image.open(p).convert('L')
+              stat=ImageStat.Stat(im)
+              extrema=im.getextrema()
+              assert extrema[0] < 245, (p, extrema)
+              assert stat.mean[0] < 253.5, (p, stat.mean[0])
+          print('Rendered page QA passed:', len(pages), 'pages')
+          PY
+
+      - name: Commit deliverables to branch
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add deliverables/*.docx deliverables/rendered/*.pdf deliverables/rendered/pdfinfo.txt
+          git diff --cached --quiet && exit 0
+          git commit -m 'Build D4 figure publication audit Word report'
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
+
+      - name: Upload audit artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: d4-figure-publication-audit-word
+          path: |
+            deliverables/260812_D4_绘图组件_顶刊SCI发表水平_逐图审查_修改与新增图件建议_专家版.docx
+            deliverables/rendered/260812_D4_绘图组件_顶刊SCI发表水平_逐图审查_修改与新增图件建议_专家版.pdf
+          if-no-files-found: error
