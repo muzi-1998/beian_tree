@@ -1,0 +1,187 @@
+{
+  "audit_id": "D5-SUPPORT-MIGRATION-V1",
+  "authoritative_scores_modified": false,
+  "source_run_id": "D5-LOCAL-20260727T034533Z",
+  "template_version": "d5-local-template-v2.3-family-node-validation",
+  "topology_hash": "7b1ba852f0405944538e558e8df7fe74468789604eb0d90372b1762be3ca036a",
+  "reference_fraction": 0.7,
+  "reference_end": "2026-01-27T04:30:00",
+  "embargo_hours": 168,
+  "post_start": "2026-02-03T04:30:00",
+  "study_end": "2026-04-13T23:00:00",
+  "sensor_hours": 86016,
+  "template_count": 56,
+  "source_sha256": {
+    "outputs\\local\\D5_regime_state.parquet": "622dd0f5ed1473ae5de464e4207e51ff9470de209cadcee9b30cbac92f9392e8",
+    "outputs\\local\\D5_main_scores_hourly.parquet": "64274562d7139d510dd3780dbd67bd2c2c5913908dbbec8ac7d4bcceb0418cd1",
+    "outputs\\local\\D5_support_assessment.parquet": "00d3ed69dc3899db48c841bb56c6664bc1832e365fd5fa5c13130b6d231e5750",
+    "outputs\\local\\D5_run_manifest.json": "cc813c7f7c8b873cf6ac7ab76015849c4a00591259d3abc2e7bfc494992523fd",
+    "configs\\local\\aggregation.yaml": "1047c087bee4fd78572b71c625eb32b71f248107f96b96c8eec5bd3c27f80a70",
+    "configs\\local\\templates.yaml": "2cf3bd58b5cbd92d39fe730cfbf575e725b41680260ba4425375ed71dd6b7a4f",
+    "configs\\common\\windows.yaml": "87ac5363066e1aa6f9660748da4c84c8d5ff14f59110b88ed7ae14de93002b62"
+  },
+  "table_rows": {
+    "01_monthly_regime_occupancy": 14,
+    "01b_pre_post_regime_shift": 4,
+    "02_template_occupancy_56": 56,
+    "03_L1_to_L2_blockers": 14,
+    "04_L2_to_L3_blockers": 42,
+    "05_coverage_loss_attribution": 1,
+    "06_counterfactual_coverage": 7,
+    "07_reference_horizon_sensitivity": 12,
+    "08_monthly_report_eligibility": 9
+  },
+  "scope_notes": [
+    "L1-to-L2 blockers use only the prespecified L2 support contract.",
+    "Stability, blocked holdout and FAR are restricted to L2-to-L3 maturity.",
+    "Counterfactual coverage is diagnostic and does not alter production thresholds.",
+    "Reference-horizon sensitivity holds the frozen K=4 regime assignment fixed.",
+    "K=3/K=5 refits are deferred pending full outer-fold discrimination and localization validation."
+  ],
+  "artifacts": {
+    "outputs/audit/support_migration/01_monthly_regime_occupancy.parquet": {
+      "sha256": "0340167605fa9c9d10475d50763f838a712497cca690444afb0bb71e226a2ffe",
+      "size": 5140
+    },
+    "outputs/audit/support_migration/01_monthly_regime_occupancy.csv": {
+      "sha256": "5347d963da5444a0be5bea88b976dda6fe876d709e0fc1a28c87b2ba0295173a",
+      "size": 924
+    },
+    "outputs/audit/support_migration/01b_pre_post_regime_shift.parquet": {
+      "sha256": "4caf10426c2e69948060978bca58a2e72b59fc3f7d6605af031f5058212cceca",
+      "size": 5720
+    },
+    "outputs/audit/support_migration/01b_pre_post_regime_shift.csv": {
+      "sha256": "2473e9ea06589bc98d62288ccf065ec7ca6029c6131a8c3abfc861bc5995ccb2",
+      "size": 466
+    },
+    "outputs/audit/support_migration/02_template_occupancy_56.parquet": {
+      "sha256": "22b97226a39beb43223711e65630f7991b417c3130659087c396c755f5ffcc5c",
+      "size": 57688
+    },
+    "outputs/audit/support_migration/02_template_occupancy_56.csv": {
+      "sha256": "1b9c3870d3f75a4385328bef42ce7d77217d75a5bcc08f4b5e2da1e006ac5ae7",
+      "size": 61081
+    },
+    "outputs/audit/support_migration/03_L1_to_L2_blockers.parquet": {
+      "sha256": "45dab22755bcb01b3a7766ab35bad4c4ba3d36245f5d23745a18d962608beeb7",
+      "size": 56587
+    },
+    "outputs/audit/support_migration/03_L1_to_L2_blockers.csv": {
+      "sha256": "d36b17f21c51dfd2f86da1d4b1a3b8d2e07def2c528050827096a52214a151ff",
+      "size": 19180
+    },
+    "outputs/audit/support_migration/04_L2_to_L3_blockers.parquet": {
+      "sha256": "187bf9cb32563b1a5c1785bf756183fc589666092f76cbf9cca09a7361045b4c",
+      "size": 62182
+    },
+    "outputs/audit/support_migration/04_L2_to_L3_blockers.csv": {
+      "sha256": "a6f2c570ee8ecf278a8271db6cc1027c0816ca46d42d116c3835ce23c57eb704",
+      "size": 48518
+    },
+    "outputs/audit/support_migration/05_coverage_loss_attribution.parquet": {
+      "sha256": "7dfc1a28149bc74188fc35ec1d39257bce324f4f967ad027e0fbadd3c6fa248a",
+      "size": 4490
+    },
+    "outputs/audit/support_migration/05_coverage_loss_attribution.csv": {
+      "sha256": "5d616b7e7f08a7556486d66ef08d6d1ac5fcbb3737eb82955a28d4dcd4c2373e",
+      "size": 172
+    },
+    "outputs/audit/support_migration/06_counterfactual_coverage.parquet": {
+      "sha256": "1b404b74d113f445ba704c0b0a7b9fca7bbde2a8376b4067fd91159f680b63b7",
+      "size": 4093
+    },
+    "outputs/audit/support_migration/06_counterfactual_coverage.csv": {
+      "sha256": "2931a2814daa7dbb3e3554bf71317442963bf75ac21e98643e9da7258283ddac",
+      "size": 430
+    },
+    "outputs/audit/support_migration/07_reference_horizon_sensitivity.parquet": {
+      "sha256": "ed02a11e7fa8801634403c6569b4052f96c357a056cbd1e6f32952e12dba0a71",
+      "size": 5841
+    },
+    "outputs/audit/support_migration/07_reference_horizon_sensitivity.csv": {
+      "sha256": "13273a98015dcf0a8466e4d8d9507029e5bff5e1cedf7d31313b6615f9b30f73",
+      "size": 1277
+    },
+    "outputs/audit/support_migration/08_monthly_report_eligibility.parquet": {
+      "sha256": "d34de153122c0c474939f269271a0265a386f7b3b592eb3a6cd6a5a3ba45207a",
+      "size": 4540
+    },
+    "outputs/audit/support_migration/08_monthly_report_eligibility.csv": {
+      "sha256": "8b1b64145508b6c569118e9f6167a99a575c276bac01044a54f70ff18af29585",
+      "size": 726
+    },
+    "outputs/audit/support_migration/D5_support_migration_audit.xlsx": {
+      "sha256": "8eafb4788c64e365f2de2869cc3d9ad404c391a07e593d20a27462ccffb10bf8",
+      "size": 66441
+    },
+    "outputs/figures/supplementary/support_migration/FigD5_S1_monthly_regime_occupancy_migration.png": {
+      "sha256": "bdac28a58b984e4444cbba249bc4b4d7cac8ea1f14cfcf98c3d0a808bae70357",
+      "size": 194960
+    },
+    "outputs/figures/supplementary/support_migration/FigD5_S1_monthly_regime_occupancy_migration.pdf": {
+      "sha256": "a8e6f81b00561605a85898439a1e73792a139271fb57150ac38fc8a801daa124",
+      "size": 29782
+    },
+    "outputs/figures/supplementary/support_migration/FigD5_S1_monthly_regime_occupancy_migration.svg": {
+      "sha256": "e44f5aef2bb5bbac6ce3b5185f8a8b0c165d9843982325dcfb72ca9ff29ba71b",
+      "size": 20774
+    },
+    "outputs/figures/supplementary/support_migration/FigD5_S1_monthly_regime_occupancy_migration.tiff": {
+      "sha256": "0e2989b5f8d12bec5713c985cb9e6be719abffcc836c50d3773879ad3c2bc6b6",
+      "size": 1042766
+    },
+    "outputs/figures/supplementary/support_migration/FigD5_S2_sensor_regime_maturity_map.png": {
+      "sha256": "40458ba4446cf8d8313396c0930a4b00ccf884a0f9cbefa0d34fccfc061bf48d",
+      "size": 275575
+    },
+    "outputs/figures/supplementary/support_migration/FigD5_S2_sensor_regime_maturity_map.pdf": {
+      "sha256": "81cb71d59eac61ce596b716926fa75f6678de469039e99b69d91610a00b1925c",
+      "size": 38804
+    },
+    "outputs/figures/supplementary/support_migration/FigD5_S2_sensor_regime_maturity_map.svg": {
+      "sha256": "d6428eff74d84a64bd764b5025f30ed8d8db639eb3cdf14c13026602b0416177",
+      "size": 39126
+    },
+    "outputs/figures/supplementary/support_migration/FigD5_S2_sensor_regime_maturity_map.tiff": {
+      "sha256": "5c6f3c5d7eb36085b5d5f21fe2169bf3e66fada3864a0701b5ae89d6671dd94f",
+      "size": 1392684
+    },
+    "outputs/figures/supplementary/support_migration/FigD5_S3_L1_blocker_matrix.png": {
+      "sha256": "d2e4d6b1020682abb27526c7fad18a5139357266b6e9b820521991b15b96ef5a",
+      "size": 341935
+    },
+    "outputs/figures/supplementary/support_migration/FigD5_S3_L1_blocker_matrix.pdf": {
+      "sha256": "b1241ba649a3a811e45b82233eeaab3952e073c7ad5f0ad6b2af04356e301196",
+      "size": 37706
+    },
+    "outputs/figures/supplementary/support_migration/FigD5_S3_L1_blocker_matrix.svg": {
+      "sha256": "316c52969e51f0fe78dd4f0c0c5c4fc823a92341b0ad88c419edec73dba42708",
+      "size": 32912
+    },
+    "outputs/figures/supplementary/support_migration/FigD5_S3_L1_blocker_matrix.tiff": {
+      "sha256": "c437e80ddcd3a9b706626cc1ff2ce4e9c2ee809e702d7513e1da65dcdbafb878",
+      "size": 1556530
+    },
+    "outputs/figures/supplementary/support_migration/FigD5_S4_counterfactual_coverage_recovery.png": {
+      "sha256": "c5f9e1f2e5bc01173f14c8a5b63a2cc48b13dbf3daf0f9f2bb02ea1b581dfb82",
+      "size": 226217
+    },
+    "outputs/figures/supplementary/support_migration/FigD5_S4_counterfactual_coverage_recovery.pdf": {
+      "sha256": "45cebd531c541613cba5f527b3c53c12efecc49649e558626fc069aa11d34745",
+      "size": 37933
+    },
+    "outputs/figures/supplementary/support_migration/FigD5_S4_counterfactual_coverage_recovery.svg": {
+      "sha256": "eac04f98f4986a6e2e2fb3243c56b364d6c72bde4907f054c14d99f9a3db344a",
+      "size": 12664
+    },
+    "outputs/figures/supplementary/support_migration/FigD5_S4_counterfactual_coverage_recovery.tiff": {
+      "sha256": "a0355132dc0114e57ce52efb1cce2c7a21a43dd52dd6d9f84adedb3051c3ba2b",
+      "size": 508582
+    },
+    "outputs/audit/support_migration/D5_SUPPORT_MIGRATION_AUDIT_REPORT.md": {
+      "sha256": "30d230b31451630f07c395d438c3562732bcb8d073e6b3f2a72df1d7b4ff7698",
+      "size": 3215
+    }
+  }
+}

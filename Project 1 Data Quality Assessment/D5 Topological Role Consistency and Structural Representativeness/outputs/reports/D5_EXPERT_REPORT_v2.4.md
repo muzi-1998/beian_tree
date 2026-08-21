@@ -110,3 +110,34 @@ The branch may enter final WW-DQS subscore aggregation as a **scientific impleme
 The deployment evidence and role-separated approval procedure remain specified
 in `docs/D5_FIELD_VERIFICATION_REQUIREMENTS.md`; they are not prerequisites for
 retrospective scientific aggregation.
+
+## 10. Post-reference L1 support-migration audit
+
+The frozen reference endpoint is 2026-01-27 04:30, and the prespecified 7 d
+embargo ends on 2026-02-03 04:30. Plant-global R2 occupancy increases from a
+minor late-reference state to 100% of the post-embargo period. Consequently,
+all 14 sensor-by-R2 templates are called throughout the late period while their
+family support remains L1.
+
+The L1 cause is unambiguous under the actual L2 admission contract:
+
+- family effective support is 29 calendar days versus the required 40 days;
+- family distinct-month support is 2 and passes;
+- node effective support is 29 days and passes the 20-day requirement;
+- node distinct-month support is 2 and passes;
+- node reference coverage is 0.9995 and passes the 0.60 requirement.
+
+Stability, blocked holdout count and FAR are not L1-to-L2 criteria and therefore
+do not explain this migration. They remain separate L2-to-L3 action-grade
+limitations. Post-embargo report coverage is 0%; a diagnostic counterfactual
+that repairs only family effective-day support increases coverage to 92.06%,
+identical to the all-L2-support ceiling. The residual 7.94% remains unavailable
+because OOD or incomplete evidence is retained.
+
+This result is classified as **reference-horizon dominated evidence-support
+migration**, not deterioration in sensor quality and not a node-reconstruction
+failure. The v2.4 scores and thresholds remain frozen. K=3/K=5 refits are not
+used to retrospectively recover coverage; they require a future outer-fold
+model-selection study with discrimination, localization, OOD and process-
+interpretability checks. Full source tables, counterfactuals, figures and hash
+provenance are in `outputs/audit/support_migration/`.
