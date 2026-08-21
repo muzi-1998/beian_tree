@@ -131,8 +131,11 @@ Stability, blocked holdout count and FAR are not L1-to-L2 criteria and therefore
 do not explain this migration. They remain separate L2-to-L3 action-grade
 limitations. Post-embargo report coverage is 0%; a diagnostic counterfactual
 that repairs only family effective-day support increases coverage to 92.06%,
-identical to the all-L2-support ceiling. The residual 7.94% remains unavailable
-because OOD or incomplete evidence is retained.
+identical to the all-L2-support ceiling. The mutually exclusive loss
+decomposition is 21,588 limited-support sensor-hours (92.06 percentage points),
+1,834 OOD/out-of-template sensor-hours (7.82 points), and 28 not-evaluable
+sensor-hours (0.12 points). The counterfactual therefore preserves the residual
+7.94% OOD/incomplete-evidence loss instead of attributing it to family support.
 
 This result is classified as **reference-horizon dominated evidence-support
 migration**, not deterioration in sensor quality and not a node-reconstruction
@@ -141,3 +144,12 @@ used to retrospectively recover coverage; they require a future outer-fold
 model-selection study with discrimination, localization, OOD and process-
 interpretability checks. Full source tables, counterfactuals, figures and hash
 provenance are in `outputs/audit/support_migration/`.
+
+With frozen K=4 assignments, extending the descriptive reference fraction to
+0.80 gives R2 an occupied-day upper bound of 54 calendar days across 3 months.
+This is not an effective-support recalculation and cannot establish that an
+0.80 production template would pass: a future-version shadow must rebuild
+high-quality family/node support, templates, blocked validation and OOD. Among
+the 42 existing L2/L3 templates, family FAR and node FAR block 34 and 30,
+respectively, from L3; these are action-grade limitations rather than causes of
+the R2 L1 migration.

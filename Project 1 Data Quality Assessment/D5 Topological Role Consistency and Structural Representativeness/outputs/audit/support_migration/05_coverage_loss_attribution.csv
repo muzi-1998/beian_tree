@@ -1,2 +1,4 @@
-﻿primary_blocker,blocker_set,template_count,loss_sensor_hours,occupied_sensor_hours,coverage_percentage_point_contribution
-family_days,family_days,14,23450,23450,100.0
+﻿loss_class,primary_blocker,blocker_set,template_count,loss_sensor_hours,occupied_sensor_hours,coverage_percentage_point_contribution,loss_share_within_unreported
+limited_support,family_days,family_days,14,21588,23450,92.05970149253731,0.9205970149253732
+out_of_template,not_applicable,OOD / out of frozen template,0,1834,1834,7.82089552238806,0.07820895522388059
+not_evaluable,not_applicable,Incomplete evidence,0,28,28,0.11940298507462686,0.0011940298507462687

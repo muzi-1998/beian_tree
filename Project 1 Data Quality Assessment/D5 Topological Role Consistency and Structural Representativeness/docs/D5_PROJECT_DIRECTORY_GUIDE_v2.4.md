@@ -54,6 +54,7 @@ python scripts/run_d5_sensitivity.py
 python scripts/run_d5_validation.py
 python scripts/run_d5_publication_audit.py
 python scripts/run_d5_support_migration_audit.py
+python scripts/verify_d5_support_migration_audit.py
 python scripts/run_d5_topology_review.py
 python scripts/run_d5_shadow_v2.py
 python scripts/make_d5_figures.py
@@ -132,6 +133,10 @@ Current release classification: **D5 scientific score ready; cross-dimensional p
   Stability, blocked holdouts and FAR are restricted to L2-to-L3 maturity.
 - Counterfactual coverage is diagnostic and preserves OOD, missing evidence and
   the 7 d embargo.
-- The reference-fraction table is a support-horizon sensitivity with frozen K=4
-  assignments. K=3/K=5 requires a separate full outer-fold refit and is not a
-  production-threshold tuning device.
+- Coverage-loss attribution is mutually exclusive: limited support, OOD and
+  incomplete evidence are reported separately and close to the unreported-row
+  total.
+- The reference-fraction table is an occupied-day upper bound with frozen K=4
+  assignments, not an effective-support recalculation. K=3/K=5 and a formal
+  0.80/0.90 shadow require separate full refits and are not production-threshold
+  tuning devices.

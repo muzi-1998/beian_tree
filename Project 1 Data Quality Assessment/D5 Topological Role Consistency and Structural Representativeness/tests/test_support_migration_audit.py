@@ -96,3 +96,30 @@ def test_current_release_is_reference_horizon_dominated() -> None:
     assert len(blockers) == 14
     assert blockers["blocker_set"].eq("family_days").all()
     assert counterfactual.loc["Family days repaired", "report_coverage"] > 0.90
+
+
+def test_loss_attribution_separates_support_ood_and_incomplete_evidence() -> None:
+    tables, _ = D5SupportMigrationAudit(D5_ROOT).run()
+    attribution = tables["05_coverage_loss_attribution"].set_index("loss_class")
+    assert int(attribution.loc["limited_support", "loss_sensor_hours"]) == 21_588
+    assert int(attribution.loc["out_of_template", "loss_sensor_hours"]) == 1_834
+    assert int(attribution.loc["not_evaluable", "loss_sensor_hours"]) == 28
+    assert int(attribution["loss_sensor_hours"].sum()) == 23_450
+    assert abs(
+        float(attribution["coverage_percentage_point_contribution"].sum()) - 100.0
+    ) < 1e-10
+
+
+def test_reference_horizon_table_is_not_presented_as_effective_support() -> None:
+    tables, _ = D5SupportMigrationAudit(D5_ROOT).run()
+    horizon = tables["07_reference_horizon_sensitivity"]
+    assert not horizon["effective_support_recalculated"].any()
+    assert horizon["scope"].str.contains("upper_bound", regex=False).all()
+
+
+def test_support_audit_manifest_binds_code_and_configuration() -> None:
+    _, metadata = D5SupportMigrationAudit(D5_ROOT).run()
+    sources = set(metadata["source_sha256"])
+    assert "src/d5_local/publication/support_migration.py" in sources
+    assert "scripts/run_d5_support_migration_audit.py" in sources
+    assert "configs/local/templates.yaml" in sources

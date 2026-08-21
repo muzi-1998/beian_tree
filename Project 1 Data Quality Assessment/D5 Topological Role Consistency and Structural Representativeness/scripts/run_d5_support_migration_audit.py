@@ -112,7 +112,11 @@ def _month_label(value: str) -> str:
     return timestamp.strftime("%b\n%Y")
 
 
-def _figure_occupancy(monthly: pd.DataFrame, figure_root: Path) -> list[Path]:
+def _figure_occupancy(
+    monthly: pd.DataFrame,
+    figure_root: Path,
+    reference_end: pd.Timestamp,
+) -> list[Path]:
     configure_style()
     pivot = monthly.pivot(index="month", columns="regime_label", values="occupancy_rate")
     pivot = pivot.reindex(columns=["R0", "R1", "R2", "R3"], fill_value=0.0).fillna(0.0)
@@ -127,13 +131,36 @@ def _figure_occupancy(monthly: pd.DataFrame, figure_root: Path) -> list[Path]:
         bottom += values
     ax.plot(x, ood.to_numpy() * 100.0, color=PALETTE["dark"], marker="o", ms=3.2,
             linestyle="--", linewidth=1.0, label="OOD")
-    ax.axvline(5.85, color=PALETTE["gray"], linewidth=0.8, linestyle=":")
-    ax.text(5.72, 104, "Reference freeze: 27 Jan 2026", ha="right", va="bottom", color=PALETTE["gray"])
+    reference_month = reference_end.to_period("M").strftime("%Y-%m")
+    month_index = list(pivot.index).index(reference_month)
+    elapsed_month = (
+        (reference_end.day - 1)
+        + reference_end.hour / 24.0
+        + reference_end.minute / (24.0 * 60.0)
+    ) / reference_end.days_in_month
+    reference_x = month_index - 0.5 + elapsed_month
+    ax.axvline(reference_x, color=PALETTE["gray"], linewidth=0.8, linestyle=":")
+    ax.text(
+        reference_x - 0.08,
+        104,
+        f"Reference freeze: {reference_end:%d %b %Y}",
+        ha="right",
+        va="bottom",
+        color=PALETTE["gray"],
+    )
     ax.set_ylabel("Plant-global occupancy (%)")
     ax.set_xlabel("Month")
     ax.set_xticks(x, [_month_label(value) for value in pivot.index])
     ax.set_ylim(0, 112)
-    ax.legend(ncol=5, loc="upper left", bbox_to_anchor=(0.0, 1.02))
+    handles, labels = ax.get_legend_handles_labels()
+    order = [labels.index(label) for label in ["R0", "R1", "R2", "R3", "OOD"]]
+    ax.legend(
+        [handles[index] for index in order],
+        [labels[index] for index in order],
+        ncol=5,
+        loc="upper left",
+        bbox_to_anchor=(0.0, 1.02),
+    )
     style_axes(ax)
     return _save_audit_figure(fig, figure_root, "FigD5_S1_monthly_regime_occupancy_migration")
 
@@ -200,20 +227,22 @@ def _figure_blockers(blockers: pd.DataFrame, figure_root: Path) -> list[Path]:
                     color="white" if matrix[row, column] else PALETTE["gray"])
     ax.set_xticks(range(len(columns)), labels)
     ax.set_yticks(range(len(blockers)), blockers["sensor_id"])
-    ax.set_ylabel("High-occupancy R2 template")
+    ax.set_ylabel("L1 sensor-regime template")
     ax.tick_params(axis="x", pad=4)
     for spine in ax.spines.values():
         spine.set_linewidth(PROFILE.axis_line_pt)
     panel_label(ax, "a")
 
-    analyte_loss = blockers.groupby("analyte", observed=True)["coverage_loss_hours"].sum()
+    analyte_loss = blockers.groupby("analyte", observed=True)[
+        "support_attributable_loss_hours"
+    ].sum()
     analyte_loss = analyte_loss.reindex(["DO", "ORP"])
     y = np.arange(len(analyte_loss))
     hours = analyte_loss.to_numpy()
     bar_ax.barh(y, hours, color=[PALETTE["blue"], PALETTE["gold"]], height=0.58)
     bar_ax.set_yticks(y, analyte_loss.index)
     bar_ax.invert_yaxis()
-    bar_ax.set_xlabel("Coverage-loss\nsensor-hours")
+    bar_ax.set_xlabel("Support-attributable loss\n(sensor-hours)")
     bar_ax.set_xlim(0, max(hours) * 1.18)
     for index, value in enumerate(hours):
         bar_ax.text(value + max(hours) * 0.02, index, f"{int(value):,}", va="center", fontsize=6.0)
@@ -266,8 +295,29 @@ def _write_report(path: Path, tables: dict[str, pd.DataFrame], metadata: dict[st
     top = shift.sort_values("post_occupancy", ascending=False).iloc[0]
     blockers = tables["03_L1_to_L2_blockers"]
     counterfactual = tables["06_counterfactual_coverage"].set_index("scenario")
+    attribution = tables["05_coverage_loss_attribution"].set_index("loss_class")
+    maturity = tables["04_L2_to_L3_blockers"]
+    horizon = tables["07_reference_horizon_sensitivity"]
     current = 100.0 * float(counterfactual.loc["Current", "report_coverage"])
     family = 100.0 * float(counterfactual.loc["Family days repaired", "report_coverage"])
+    support_loss = int(attribution.loc["limited_support", "loss_sensor_hours"])
+    support_pp = float(
+        attribution.loc["limited_support", "coverage_percentage_point_contribution"]
+    )
+    ood_loss = int(attribution.loc["out_of_template", "loss_sensor_hours"])
+    ood_pp = float(
+        attribution.loc["out_of_template", "coverage_percentage_point_contribution"]
+    )
+    incomplete_loss = int(attribution.loc["not_evaluable", "loss_sensor_hours"])
+    incomplete_pp = float(
+        attribution.loc["not_evaluable", "coverage_percentage_point_contribution"]
+    )
+    family_far_blocked = int(maturity["family_far"].sum())
+    node_far_blocked = int(maturity["node_far"].sum())
+    horizon_r2 = horizon[
+        horizon["regime_label"].eq(str(top["regime_label"]))
+        & horizon["reference_fraction"].eq(0.80)
+    ].iloc[0]
     report = f"""# D5 support-migration audit
 
 ## Scope and frozen boundary
@@ -289,7 +339,7 @@ The competing explanations were not supported:
 - node reconstruction coverage is 99.95%, far above the 0.60 threshold;
 - stability, blocked holdouts and FAR do not participate in L1-to-L2 admission and therefore cannot explain the L1 migration.
 
-Current post-embargo report coverage is {current:.2f}%. A diagnostic counterfactual that repairs only family effective-day support increases coverage to {family:.2f}% (+{family-current:.2f} percentage points), identical to the all-L2-support ceiling. The residual {100.0-family:.2f}% remains unavailable because OOD or incomplete evidence is preserved.
+Current post-embargo report coverage is {current:.2f}%. The mutually exclusive loss decomposition is {support_loss:,} limited-support sensor-hours ({support_pp:.2f} percentage points), {ood_loss:,} OOD/out-of-template sensor-hours ({ood_pp:.2f} points), and {incomplete_loss:,} not-evaluable sensor-hours ({incomplete_pp:.2f} points). A diagnostic counterfactual that repairs only family effective-day support increases coverage to {family:.2f}% (+{family-current:.2f} points), identical to the all-L2-support ceiling. It correctly preserves the residual {100.0-family:.2f}% OOD/incomplete-evidence loss.
 
 ## Scientific interpretation
 
@@ -297,13 +347,18 @@ The frozen K=4 context model partitions the study trajectory into temporally ord
 
 This is an evidence-availability shift, not a low D5 score. Manuscript language should therefore state that the late-period estimand is limited by frozen-template maturity. Availability-aware and complete-evidence composites must remain separated.
 
+The 0.80 reference-fraction shadow places {top['regime_label']} in {int(horizon_r2['occupied_calendar_days_upper_bound'])} occupied calendar days across {int(horizon_r2['distinct_months'])} months, which clears the *occupancy-horizon* L2 threshold. This is a descriptive upper bound, not a rebuilt effective-support result: high-quality family/node evidence, templates, validation and future performance were not recalculated. It supports a prospective full shadow refit but does not justify retroactively replacing the frozen 0.70 model.
+
+Among the 42 templates already at L2/L3, family FAR blocks {family_far_blocked} and node FAR blocks {node_far_blocked} from L3. These constraints explain action-grade maturity, not the post-reference L1 migration.
+
 ## Recommended D5 actions
 
 1. Keep the authoritative v2.4 scores and L2 thresholds unchanged.
 2. Publish the support-migration audit as Supplementary/Extended Data evidence and carry `support_level`, `family_n_effective`, `reference_end`, and D5 availability into DQR aggregation metadata.
 3. For a future prospective release, establish a rolling but versioned template lifecycle: a candidate R2 template may be promoted only after 40 effective days and at least 2 months, followed by a frozen prospective validation period.
-4. Do not merge regimes solely to recover coverage. A K=3/K=5 refit is a new model-selection exercise and requires outer-fold discrimination, localization, OOD, and interpretability checks.
-5. Keep L2-to-L3 stability/FAR limitations separate; they constrain action-grade deployment but do not cause the observed report-coverage loss.
+4. Run a predeclared 0.80 reference-fraction shadow refit only as a future-version study; rebuild effective support, templates, blocked validation and OOD rather than treating occupied days as effective days.
+5. Do not merge regimes solely to recover coverage. A K=3/K=5 refit is a new model-selection exercise and requires outer-fold discrimination, localization, OOD, and process interpretability checks.
+6. Keep L2-to-L3 stability/FAR limitations separate; they constrain action-grade deployment but do not cause the observed report-coverage loss.
 
 ## Publication boundary
 
@@ -328,7 +383,13 @@ def main() -> None:
     artifacts.append(workbook)
 
     figure_artifacts: list[Path] = []
-    figure_artifacts.extend(_figure_occupancy(tables["01_monthly_regime_occupancy"], figure_root))
+    figure_artifacts.extend(
+        _figure_occupancy(
+            tables["01_monthly_regime_occupancy"],
+            figure_root,
+            pd.Timestamp(metadata["reference_end"]),
+        )
+    )
     figure_artifacts.extend(_figure_maturity(tables["02_template_occupancy_56"], figure_root))
     figure_artifacts.extend(_figure_blockers(tables["03_L1_to_L2_blockers"], figure_root))
     figure_artifacts.extend(_figure_counterfactual(tables["06_counterfactual_coverage"], figure_root))

@@ -169,6 +169,10 @@ class D5SupportMigrationAudit:
             .agg(
                 post_ref_sensor_hours=("timestamp", "size"),
                 report_eligible_hours=("report_eligible", "sum"),
+                limited_support_hours=(
+                    "evaluation_status",
+                    lambda values: values.eq("limited_support").sum(),
+                ),
                 ood_hours=("evaluation_status", lambda values: values.eq("out_of_template").sum()),
                 not_evaluable_hours=("evaluation_status", lambda values: values.eq("not_evaluable").sum()),
             )
@@ -180,6 +184,7 @@ class D5SupportMigrationAudit:
         count_columns = [
             "post_ref_sensor_hours",
             "report_eligible_hours",
+            "limited_support_hours",
             "ood_hours",
             "not_evaluable_hours",
         ]
@@ -189,6 +194,7 @@ class D5SupportMigrationAudit:
         output["coverage_loss_hours"] = (
             output["post_ref_sensor_hours"] - output["report_eligible_hours"]
         )
+        output["support_attributable_loss_hours"] = output["limited_support_hours"]
         output["report_coverage_rate"] = np.divide(
             output["report_eligible_hours"],
             output["post_ref_sensor_hours"],
@@ -274,18 +280,43 @@ class D5SupportMigrationAudit:
     def _coverage_loss_attribution(
         blockers: pd.DataFrame, main: pd.DataFrame, boundary: AuditBoundary
     ) -> pd.DataFrame:
-        post_rows = int((pd.to_datetime(main["timestamp"]) >= boundary.post_start).sum())
-        output = (
+        post = main[pd.to_datetime(main["timestamp"]) >= boundary.post_start]
+        post_rows = int(len(post))
+        support = (
             blockers.groupby(["primary_blocker", "blocker_set"], observed=True)
             .agg(
                 template_count=("template_id", "size"),
-                loss_sensor_hours=("coverage_loss_hours", "sum"),
+                loss_sensor_hours=("support_attributable_loss_hours", "sum"),
                 occupied_sensor_hours=("post_ref_sensor_hours", "sum"),
             )
             .reset_index()
         )
+        support.insert(0, "loss_class", "limited_support")
+        rows = [support]
+        for status, label in (
+            ("out_of_template", "OOD / out of frozen template"),
+            ("not_evaluable", "Incomplete evidence"),
+        ):
+            count = int(post["evaluation_status"].eq(status).sum())
+            rows.append(
+                pd.DataFrame(
+                    {
+                        "loss_class": [status],
+                        "primary_blocker": ["not_applicable"],
+                        "blocker_set": [label],
+                        "template_count": [0],
+                        "loss_sensor_hours": [count],
+                        "occupied_sensor_hours": [count],
+                    }
+                )
+            )
+        output = pd.concat(rows, ignore_index=True)
         output["coverage_percentage_point_contribution"] = (
             100.0 * output["loss_sensor_hours"] / max(post_rows, 1)
+        )
+        output["loss_share_within_unreported"] = np.divide(
+            output["loss_sensor_hours"],
+            max(int((~post["report_eligible"].astype(bool)).sum()), 1),
         )
         return output.sort_values("loss_sensor_hours", ascending=False).reset_index(drop=True)
 
@@ -382,7 +413,11 @@ class D5SupportMigrationAudit:
         )
 
     def _reference_horizon_sensitivity(self, regime: pd.DataFrame) -> pd.DataFrame:
-        """Support-only sensitivity with the frozen K=4 regime assignment held fixed."""
+        """Occupied-day upper bound with the frozen K=4 assignments held fixed.
+
+        This deliberately does not relabel regimes or rebuild family/node templates.
+        It therefore cannot be interpreted as an effective-support recalculation.
+        """
         plant = self._plant_global(regime)
         index = pd.DatetimeIndex(plant["timestamp"])
         rows: list[dict[str, Any]] = []
@@ -402,13 +437,14 @@ class D5SupportMigrationAudit:
                         "reference_end": endpoint,
                         "regime_id": regime_id,
                         "regime_label": f"R{regime_id}",
-                        "occupied_calendar_days": days,
+                        "occupied_calendar_days_upper_bound": days,
                         "distinct_months": months,
-                        "family_L2_support_horizon_pass": bool(
+                        "family_L2_occupancy_horizon_pass": bool(
                             days >= int(l2["min_effective_blocks"])
                             and months >= int(l2["min_distinct_months"])
                         ),
-                        "scope": "descriptive_support_horizon_with_frozen_K4_assignments",
+                        "effective_support_recalculated": False,
+                        "scope": "descriptive_occupied_day_upper_bound_with_frozen_K4_assignments",
                     }
                 )
         return pd.DataFrame(rows)
@@ -421,6 +457,8 @@ class D5SupportMigrationAudit:
         tables: dict[str, pd.DataFrame],
     ) -> dict[str, Any]:
         sources = [
+            self.root / "src" / "d5_local" / "publication" / "support_migration.py",
+            self.root / "scripts" / "run_d5_support_migration_audit.py",
             self.local / "D5_regime_state.parquet",
             self.local / "D5_main_scores_hourly.parquet",
             self.local / "D5_support_assessment.parquet",
@@ -430,7 +468,7 @@ class D5SupportMigrationAudit:
             self.root / "configs" / "common" / "windows.yaml",
         ]
         return {
-            "audit_id": "D5-SUPPORT-MIGRATION-V1",
+            "audit_id": "D5-SUPPORT-MIGRATION-V1.1",
             "authoritative_scores_modified": False,
             "source_run_id": str(main["run_id"].dropna().unique()[0]),
             "template_version": str(main["template_version"].dropna().unique()[0]),
@@ -442,13 +480,15 @@ class D5SupportMigrationAudit:
             "study_end": pd.Timestamp(main["timestamp"].max()).isoformat(),
             "sensor_hours": int(len(main)),
             "template_count": int(len(support)),
-            "source_sha256": {str(path.relative_to(self.root)): sha256_file(path) for path in sources},
+            "source_sha256": {
+                path.relative_to(self.root).as_posix(): sha256_file(path) for path in sources
+            },
             "table_rows": {name: int(len(frame)) for name, frame in tables.items()},
             "scope_notes": [
                 "L1-to-L2 blockers use only the prespecified L2 support contract.",
                 "Stability, blocked holdout and FAR are restricted to L2-to-L3 maturity.",
                 "Counterfactual coverage is diagnostic and does not alter production thresholds.",
-                "Reference-horizon sensitivity holds the frozen K=4 regime assignment fixed.",
+                "Reference-horizon sensitivity is an occupied-day upper bound with frozen K=4 assignments, not an effective-support recalculation.",
                 "K=3/K=5 refits are deferred pending full outer-fold discrimination and localization validation.",
             ],
         }

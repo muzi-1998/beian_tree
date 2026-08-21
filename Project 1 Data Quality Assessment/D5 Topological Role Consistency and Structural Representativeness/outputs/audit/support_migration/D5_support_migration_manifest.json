@@ -1,5 +1,5 @@
 {
-  "audit_id": "D5-SUPPORT-MIGRATION-V1",
+  "audit_id": "D5-SUPPORT-MIGRATION-V1.1",
   "authoritative_scores_modified": false,
   "source_run_id": "D5-LOCAL-20260727T034533Z",
   "template_version": "d5-local-template-v2.3-family-node-validation",
@@ -12,13 +12,15 @@
   "sensor_hours": 86016,
   "template_count": 56,
   "source_sha256": {
-    "outputs\\local\\D5_regime_state.parquet": "622dd0f5ed1473ae5de464e4207e51ff9470de209cadcee9b30cbac92f9392e8",
-    "outputs\\local\\D5_main_scores_hourly.parquet": "64274562d7139d510dd3780dbd67bd2c2c5913908dbbec8ac7d4bcceb0418cd1",
-    "outputs\\local\\D5_support_assessment.parquet": "00d3ed69dc3899db48c841bb56c6664bc1832e365fd5fa5c13130b6d231e5750",
-    "outputs\\local\\D5_run_manifest.json": "cc813c7f7c8b873cf6ac7ab76015849c4a00591259d3abc2e7bfc494992523fd",
-    "configs\\local\\aggregation.yaml": "1047c087bee4fd78572b71c625eb32b71f248107f96b96c8eec5bd3c27f80a70",
-    "configs\\local\\templates.yaml": "2cf3bd58b5cbd92d39fe730cfbf575e725b41680260ba4425375ed71dd6b7a4f",
-    "configs\\common\\windows.yaml": "87ac5363066e1aa6f9660748da4c84c8d5ff14f59110b88ed7ae14de93002b62"
+    "src/d5_local/publication/support_migration.py": "54ff43fff1937447ad680232313e75aa430772d9c6220bb53876e545f44c8489",
+    "scripts/run_d5_support_migration_audit.py": "7686f6d48851d4482ac9cce1738ca0532cdf5d1e5975f7935b848c42fcc579d4",
+    "outputs/local/D5_regime_state.parquet": "622dd0f5ed1473ae5de464e4207e51ff9470de209cadcee9b30cbac92f9392e8",
+    "outputs/local/D5_main_scores_hourly.parquet": "64274562d7139d510dd3780dbd67bd2c2c5913908dbbec8ac7d4bcceb0418cd1",
+    "outputs/local/D5_support_assessment.parquet": "00d3ed69dc3899db48c841bb56c6664bc1832e365fd5fa5c13130b6d231e5750",
+    "outputs/local/D5_run_manifest.json": "cc813c7f7c8b873cf6ac7ab76015849c4a00591259d3abc2e7bfc494992523fd",
+    "configs/local/aggregation.yaml": "1047c087bee4fd78572b71c625eb32b71f248107f96b96c8eec5bd3c27f80a70",
+    "configs/local/templates.yaml": "2cf3bd58b5cbd92d39fe730cfbf575e725b41680260ba4425375ed71dd6b7a4f",
+    "configs/common/windows.yaml": "87ac5363066e1aa6f9660748da4c84c8d5ff14f59110b88ed7ae14de93002b62"
   },
   "table_rows": {
     "01_monthly_regime_occupancy": 14,
@@ -26,7 +28,7 @@
     "02_template_occupancy_56": 56,
     "03_L1_to_L2_blockers": 14,
     "04_L2_to_L3_blockers": 42,
-    "05_coverage_loss_attribution": 1,
+    "05_coverage_loss_attribution": 3,
     "06_counterfactual_coverage": 7,
     "07_reference_horizon_sensitivity": 12,
     "08_monthly_report_eligibility": 9
@@ -35,7 +37,7 @@
     "L1-to-L2 blockers use only the prespecified L2 support contract.",
     "Stability, blocked holdout and FAR are restricted to L2-to-L3 maturity.",
     "Counterfactual coverage is diagnostic and does not alter production thresholds.",
-    "Reference-horizon sensitivity holds the frozen K=4 regime assignment fixed.",
+    "Reference-horizon sensitivity is an occupied-day upper bound with frozen K=4 assignments, not an effective-support recalculation.",
     "K=3/K=5 refits are deferred pending full outer-fold discrimination and localization validation."
   ],
   "artifacts": {
@@ -56,36 +58,36 @@
       "size": 466
     },
     "outputs/audit/support_migration/02_template_occupancy_56.parquet": {
-      "sha256": "22b97226a39beb43223711e65630f7991b417c3130659087c396c755f5ffcc5c",
-      "size": 57688
+      "sha256": "9f198235c034d7b3eaa361a19c0520aabc2d03a65995a1eea7187608962c398b",
+      "size": 59044
     },
     "outputs/audit/support_migration/02_template_occupancy_56.csv": {
-      "sha256": "1b9c3870d3f75a4385328bef42ce7d77217d75a5bcc08f4b5e2da1e006ac5ae7",
-      "size": 61081
+      "sha256": "fb197bde632972433adc93676c070d4cace136159060bfdfc84888b777498231",
+      "size": 61443
     },
     "outputs/audit/support_migration/03_L1_to_L2_blockers.parquet": {
-      "sha256": "45dab22755bcb01b3a7766ab35bad4c4ba3d36245f5d23745a18d962608beeb7",
-      "size": 56587
+      "sha256": "213d03732a77af47ec8b1ae4fa96b0a26c4eb0f63439a32c34ed7b6e7836eaf6",
+      "size": 57939
     },
     "outputs/audit/support_migration/03_L1_to_L2_blockers.csv": {
-      "sha256": "d36b17f21c51dfd2f86da1d4b1a3b8d2e07def2c528050827096a52214a151ff",
-      "size": 19180
+      "sha256": "723ed00365f968c964394181c4855f3b1776c6e441050b32a67cfcd200946868",
+      "size": 19374
     },
     "outputs/audit/support_migration/04_L2_to_L3_blockers.parquet": {
-      "sha256": "187bf9cb32563b1a5c1785bf756183fc589666092f76cbf9cca09a7361045b4c",
-      "size": 62182
+      "sha256": "d84777bacf5580e70805956913b264ba4df5c8e6423670e2234d60f3043cd7e8",
+      "size": 63522
     },
     "outputs/audit/support_migration/04_L2_to_L3_blockers.csv": {
-      "sha256": "a6f2c570ee8ecf278a8271db6cc1027c0816ca46d42d116c3835ce23c57eb704",
-      "size": 48518
+      "sha256": "48d1d700d0905237c97f535df63247c1650c0f8f22c47b74f309b2804b2d93ae",
+      "size": 48740
     },
     "outputs/audit/support_migration/05_coverage_loss_attribution.parquet": {
-      "sha256": "7dfc1a28149bc74188fc35ec1d39257bce324f4f967ad027e0fbadd3c6fa248a",
-      "size": 4490
+      "sha256": "a3df615816060627339ba74926e06f98374c201a51f6e0600d2b68ee78439709",
+      "size": 6069
     },
     "outputs/audit/support_migration/05_coverage_loss_attribution.csv": {
-      "sha256": "5d616b7e7f08a7556486d66ef08d6d1ac5fcbb3737eb82955a28d4dcd4c2373e",
-      "size": 172
+      "sha256": "714c034d5f1beb94038c13ab34be16befe802dd3afc986680e7750f77ed1a9f1",
+      "size": 469
     },
     "outputs/audit/support_migration/06_counterfactual_coverage.parquet": {
       "sha256": "1b404b74d113f445ba704c0b0a7b9fca7bbde2a8376b4067fd91159f680b63b7",
@@ -96,12 +98,12 @@
       "size": 430
     },
     "outputs/audit/support_migration/07_reference_horizon_sensitivity.parquet": {
-      "sha256": "ed02a11e7fa8801634403c6569b4052f96c357a056cbd1e6f32952e12dba0a71",
-      "size": 5841
+      "sha256": "11a45e83adbb3d9fb6ee071280cb1552e8f0d38a5b15b1017d2c3f00403f60e8",
+      "size": 6627
     },
     "outputs/audit/support_migration/07_reference_horizon_sensitivity.csv": {
-      "sha256": "13273a98015dcf0a8466e4d8d9507029e5bff5e1cedf7d31313b6615f9b30f73",
-      "size": 1277
+      "sha256": "6ea9bff9843486b209e330ff6180565947484dcb47947aa72f505eb57b1ee8d8",
+      "size": 1502
     },
     "outputs/audit/support_migration/08_monthly_report_eligibility.parquet": {
       "sha256": "d34de153122c0c474939f269271a0265a386f7b3b592eb3a6cd6a5a3ba45207a",
@@ -112,35 +114,35 @@
       "size": 726
     },
     "outputs/audit/support_migration/D5_support_migration_audit.xlsx": {
-      "sha256": "8eafb4788c64e365f2de2869cc3d9ad404c391a07e593d20a27462ccffb10bf8",
-      "size": 66441
+      "sha256": "f47c074542a0d05e3049c2655702e94f4ac32806a15a452530594698db82af7f",
+      "size": 67591
     },
     "outputs/figures/supplementary/support_migration/FigD5_S1_monthly_regime_occupancy_migration.png": {
-      "sha256": "bdac28a58b984e4444cbba249bc4b4d7cac8ea1f14cfcf98c3d0a808bae70357",
-      "size": 194960
+      "sha256": "5e1f70b1e62d83b95e3d139cd5ad98211537b31b82ca8e40ec2e9981dc9bc71d",
+      "size": 195025
     },
     "outputs/figures/supplementary/support_migration/FigD5_S1_monthly_regime_occupancy_migration.pdf": {
-      "sha256": "a8e6f81b00561605a85898439a1e73792a139271fb57150ac38fc8a801daa124",
-      "size": 29782
+      "sha256": "3b48fa368ee8089ca9a664d9373ad8a8f295d3cffe40c10cc393b643630a968c",
+      "size": 29778
     },
     "outputs/figures/supplementary/support_migration/FigD5_S1_monthly_regime_occupancy_migration.svg": {
-      "sha256": "e44f5aef2bb5bbac6ce3b5185f8a8b0c165d9843982325dcfb72ca9ff29ba71b",
-      "size": 20774
+      "sha256": "1ccdbda0b661c80755bb837e8db1962f64bd3813d8fb959b128fe7778ecb1bf0",
+      "size": 20776
     },
     "outputs/figures/supplementary/support_migration/FigD5_S1_monthly_regime_occupancy_migration.tiff": {
-      "sha256": "0e2989b5f8d12bec5713c985cb9e6be719abffcc836c50d3773879ad3c2bc6b6",
-      "size": 1042766
+      "sha256": "e958b1233a6d3bd2be00cca100cd572bc83415f7afd76b4bff099eeaf42496e8",
+      "size": 1043412
     },
     "outputs/figures/supplementary/support_migration/FigD5_S2_sensor_regime_maturity_map.png": {
       "sha256": "40458ba4446cf8d8313396c0930a4b00ccf884a0f9cbefa0d34fccfc061bf48d",
       "size": 275575
     },
     "outputs/figures/supplementary/support_migration/FigD5_S2_sensor_regime_maturity_map.pdf": {
-      "sha256": "81cb71d59eac61ce596b716926fa75f6678de469039e99b69d91610a00b1925c",
+      "sha256": "2ddc6819a7fb31605ddc2e10b58788d1270f979388ae4fd8d99c39e29dda87e8",
       "size": 38804
     },
     "outputs/figures/supplementary/support_migration/FigD5_S2_sensor_regime_maturity_map.svg": {
-      "sha256": "d6428eff74d84a64bd764b5025f30ed8d8db639eb3cdf14c13026602b0416177",
+      "sha256": "a7bf01c9476fc145994131e4745f3a43b3497fd8d2841e3800cf2986af0c6e4d",
       "size": 39126
     },
     "outputs/figures/supplementary/support_migration/FigD5_S2_sensor_regime_maturity_map.tiff": {
@@ -148,31 +150,31 @@
       "size": 1392684
     },
     "outputs/figures/supplementary/support_migration/FigD5_S3_L1_blocker_matrix.png": {
-      "sha256": "d2e4d6b1020682abb27526c7fad18a5139357266b6e9b820521991b15b96ef5a",
-      "size": 341935
+      "sha256": "2345fbdefea8145e9381062a108efb0768849f9aa14039e98c154e9022bad8d9",
+      "size": 348233
     },
     "outputs/figures/supplementary/support_migration/FigD5_S3_L1_blocker_matrix.pdf": {
-      "sha256": "b1241ba649a3a811e45b82233eeaab3952e073c7ad5f0ad6b2af04356e301196",
-      "size": 37706
+      "sha256": "acf60514c88051c998ba51e7d798a1f66a61d681e08a7661f34ee6901ee4385b",
+      "size": 40167
     },
     "outputs/figures/supplementary/support_migration/FigD5_S3_L1_blocker_matrix.svg": {
-      "sha256": "316c52969e51f0fe78dd4f0c0c5c4fc823a92341b0ad88c419edec73dba42708",
-      "size": 32912
+      "sha256": "e2e06ba5c1c261b5fe42909001284448ecbd85ba865001d792118cdcbec6360f",
+      "size": 33759
     },
     "outputs/figures/supplementary/support_migration/FigD5_S3_L1_blocker_matrix.tiff": {
-      "sha256": "c437e80ddcd3a9b706626cc1ff2ce4e9c2ee809e702d7513e1da65dcdbafb878",
-      "size": 1556530
+      "sha256": "d9de222dae61272c2f284bc66286dee13048aeed54acd811b89d51a206535642",
+      "size": 1567634
     },
     "outputs/figures/supplementary/support_migration/FigD5_S4_counterfactual_coverage_recovery.png": {
       "sha256": "c5f9e1f2e5bc01173f14c8a5b63a2cc48b13dbf3daf0f9f2bb02ea1b581dfb82",
       "size": 226217
     },
     "outputs/figures/supplementary/support_migration/FigD5_S4_counterfactual_coverage_recovery.pdf": {
-      "sha256": "45cebd531c541613cba5f527b3c53c12efecc49649e558626fc069aa11d34745",
+      "sha256": "5585aaa9b1c03df4ef784a49a7b966e62edb852cdd5764c9380af9dc012aef74",
       "size": 37933
     },
     "outputs/figures/supplementary/support_migration/FigD5_S4_counterfactual_coverage_recovery.svg": {
-      "sha256": "eac04f98f4986a6e2e2fb3243c56b364d6c72bde4907f054c14d99f9a3db344a",
+      "sha256": "50164792453a9582ca727bc14f874a0287350f4f9c727263ffd187b87fe7957f",
       "size": 12664
     },
     "outputs/figures/supplementary/support_migration/FigD5_S4_counterfactual_coverage_recovery.tiff": {
@@ -180,8 +182,8 @@
       "size": 508582
     },
     "outputs/audit/support_migration/D5_SUPPORT_MIGRATION_AUDIT_REPORT.md": {
-      "sha256": "30d230b31451630f07c395d438c3562732bcb8d073e6b3f2a72df1d7b4ff7698",
-      "size": 3215
+      "sha256": "b91c1ad0a8b2c7cbfa9a8b1a5fbe498e8d240480bc212613288826e9862fa89d",
+      "size": 4237
     }
   }
 }

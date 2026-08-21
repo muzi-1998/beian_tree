@@ -69,6 +69,7 @@ Run the complete release from `Project 1 Data Quality Assessment`:
 python ".\D5 Topological Role Consistency and Structural Representativeness\scripts\run_d5_release.py"
 python ".\D5 Topological Role Consistency and Structural Representativeness\scripts\run_d5_publication_audit.py"
 python ".\D5 Topological Role Consistency and Structural Representativeness\scripts\run_d5_support_migration_audit.py"
+python ".\D5 Topological Role Consistency and Structural Representativeness\scripts\verify_d5_support_migration_audit.py"
 python ".\D5 Topological Role Consistency and Structural Representativeness\scripts\verify_d5_publication_bundle.py"
 python -m pytest ".\D5 Topological Role Consistency and Structural Representativeness\tests" -q
 ```
@@ -90,4 +91,7 @@ The supplementary support-migration audit explains the late-period D5
 availability shift without modifying frozen scores. It separates L1-to-L2
 reference-support blockers from L2-to-L3 stability/FAR constraints and writes
 source tables, diagnostic counterfactuals, four publication figures and a
-SHA-256 manifest under `outputs/audit/support_migration/`.
+SHA-256 manifest under `outputs/audit/support_migration/`. Support-attributable,
+OOD and incomplete-evidence losses are mutually exclusive; reference-fraction
+results are explicitly labelled as occupied-day upper bounds unless templates
+and validation are fully rebuilt.
