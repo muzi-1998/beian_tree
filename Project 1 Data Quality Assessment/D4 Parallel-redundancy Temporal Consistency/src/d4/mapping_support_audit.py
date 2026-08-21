@@ -420,7 +420,16 @@ def make_figure(
     fig.subplots_adjust(left=0.10, right=0.98, bottom=0.13, top=0.88, wspace=0.34, hspace=0.44)
     output_base.parent.mkdir(parents=True, exist_ok=True)
     finalize(fig)
-    fig.savefig(output_base.with_suffix(".svg"), bbox_inches="tight")
+    svg_path = output_base.with_suffix(".svg")
+    fig.savefig(svg_path, bbox_inches="tight")
+    svg_path.write_text(
+        "\n".join(
+            line.rstrip()
+            for line in svg_path.read_text(encoding="utf-8").splitlines()
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     fig.savefig(output_base.with_suffix(".pdf"), bbox_inches="tight")
     fig.savefig(output_base.with_suffix(".png"), dpi=600, bbox_inches="tight")
     fig.savefig(
