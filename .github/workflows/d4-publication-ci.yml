@@ -25,6 +25,10 @@ jobs:
         run: pip install -r requirements-ci.txt
       - name: Run D4 tests
         run: python -m pytest tests -q
+      - name: Rebuild mapping-support migration audit
+        run: python scripts/run_d4_mapping_support_migration_audit.py
+      - name: Verify mapping-support migration audit
+        run: python scripts/verify_d4_mapping_support_audit.py
       - name: Recompute numerical QA
         run: python scripts/check_d4_outputs.py
       - name: Recompute figure QA

@@ -1,0 +1,97 @@
+{
+  "audit_id": "D4-MAPPING-SUPPORT-AUDIT-v1.0",
+  "claim_boundary": "descriptive_mapping_evidence_audit_no_score_recalibration",
+  "low_tail_threshold": 3.0,
+  "inputs": {
+    "D4_main_scores_sha256": "c21738a331d19632cc915e4d29cf692920aeccd346a6c74912f0f52dd4a9ca04",
+    "D4_mapping_params_sha256": "9c60c08c501ffd8b6b1810607d84d8259b20eead2a763a179ade4bb90335cf12"
+  },
+  "summary": {
+    "n_pair_hours": 42847,
+    "exact_pair_hour_rate": 0.6409550260228254,
+    "fallback_pair_hour_rate": 0.3580647419889374,
+    "global_fallback_pair_hour_rate": 0.0
+  },
+  "artifacts": [
+    {
+      "relative_path": "data/D4_event_summary.parquet",
+      "sha256": "f82b2b9f2bf7bdd33a1fe5bf90f455d6d071a928c6ad49c8dcec62bffb0888b6",
+      "size_bytes": 5135
+    },
+    {
+      "relative_path": "data/D4_events.parquet",
+      "sha256": "2f36a901ad076b5f504bb104967f57548db971df4f30c8470c14b8035017f412",
+      "size_bytes": 36924
+    },
+    {
+      "relative_path": "data/D4_mapping_lookup.parquet",
+      "sha256": "d32a17747966afe6404fa166a4b81fb985a8dd6b25637a7e232204fd0fdbf179",
+      "size_bytes": 10426
+    },
+    {
+      "relative_path": "data/D4_mapping_support_migration_audit.xlsx",
+      "sha256": "676f898efe793642188a0bdd766408fb00faaba32e18c4abe88da534e44d1c64",
+      "size_bytes": 69116
+    },
+    {
+      "relative_path": "data/D4_monthly_composition.parquet",
+      "sha256": "b9774348f6b076ba44095416e3ea9a70bf6a98ad6accee3647e4f4cfcf45dd8c",
+      "size_bytes": 4026
+    },
+    {
+      "relative_path": "data/D4_outcome_summary.parquet",
+      "sha256": "570e73615902109092ef49997bd1774c935d490fdb11ca81e2275d9d38dfa812",
+      "size_bytes": 6287
+    },
+    {
+      "relative_path": "data/D4_pair_hours_with_mapping_support.parquet",
+      "sha256": "1a279aee7d8c09c56b4286220894f5e2c585ecbf28ff28b296e19ccf7f48a922",
+      "size_bytes": 1251064
+    },
+    {
+      "relative_path": "data/D4_pair_ranking.parquet",
+      "sha256": "3f7b7f78edd23469bcb59f75f44848ee4b751410c98b8b87654f27a7a5241f6b",
+      "size_bytes": 6052
+    },
+    {
+      "relative_path": "data/D4_phase_composition.parquet",
+      "sha256": "d3835f61a55644ff1a6fd872067aab6157d71cb019f28d4560d2a0a67d900d1c",
+      "size_bytes": 3969
+    },
+    {
+      "relative_path": "data/D4_phase_variable_composition.parquet",
+      "sha256": "c19f49a43e5184eeee3357b16c4ef7090976cb71b446ce05fb30037ffe06e5b0",
+      "size_bytes": 4508
+    },
+    {
+      "relative_path": "figures/D4_MappingSupportMigration.pdf",
+      "sha256": "b5d44681027b6ef7013da26a889abf1ad0cb6962c13cdecb3fc5c6a158fcdaca",
+      "size_bytes": 45322
+    },
+    {
+      "relative_path": "figures/D4_MappingSupportMigration.png",
+      "sha256": "652f589b030e3505d7d6268d3a40fb6c53deefb8d51572d58388ffa64139ca76",
+      "size_bytes": 344730
+    },
+    {
+      "relative_path": "figures/D4_MappingSupportMigration.svg",
+      "sha256": "5db111448e7e9fdd903462121d9389c1be82a282181f69a99b475a9e81040930",
+      "size_bytes": 42833
+    },
+    {
+      "relative_path": "figures/D4_MappingSupportMigration.tiff",
+      "sha256": "ac50289ebb16395f2e9aba9aace2ab9a7af544b13fc5b574309975b44c3a37f1",
+      "size_bytes": 998348
+    },
+    {
+      "relative_path": "reports/D4_mapping_support_migration_audit.md",
+      "sha256": "a0e04e96d2772da278348a41d392b233df681fe08574c0ad260879522385f7c1",
+      "size_bytes": 1288
+    },
+    {
+      "relative_path": "source_data/D4_mapping_support_migration_figure_source_data.xlsx",
+      "sha256": "2c15e86179e33008276cfd39e254be87149e92f1a102d715eaf17dbd5f7588f4",
+      "size_bytes": 8528
+    }
+  ]
+}
