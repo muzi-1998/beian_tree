@@ -325,7 +325,8 @@ def _write_report(path: Path, tables: dict[str, pd.DataFrame], metadata: dict[st
 - Audit ID: `{metadata['audit_id']}`
 - Source run: `{metadata['source_run_id']}`
 - Reference endpoint: `{metadata['reference_end']}`
-- Post-reference analysis starts after the 7 d embargo: `{metadata['post_start']}`
+- Support-migration audit starts after the 7 d embargo: `{metadata['support_audit_post_start']}`
+- Controlled future-challenge validation starts: `{metadata['controlled_validation_start']}`
 - Authoritative D5 scores modified: **No**
 
 ## Confirmatory result
@@ -403,7 +404,8 @@ def main() -> None:
     print(json.dumps({
         "audit_id": metadata["audit_id"],
         "reference_end": metadata["reference_end"],
-        "post_start": metadata["post_start"],
+        "support_audit_post_start": metadata["support_audit_post_start"],
+        "controlled_validation_start": metadata["controlled_validation_start"],
         "output_root": str(output_root),
         "figure_root": str(figure_root),
         "artifacts": len(artifacts) + 1,

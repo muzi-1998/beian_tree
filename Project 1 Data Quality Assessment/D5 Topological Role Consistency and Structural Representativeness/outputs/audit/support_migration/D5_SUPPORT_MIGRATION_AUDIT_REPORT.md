@@ -5,7 +5,8 @@
 - Audit ID: `D5-SUPPORT-MIGRATION-V1.1`
 - Source run: `D5-LOCAL-20260727T034533Z`
 - Reference endpoint: `2026-01-27T04:30:00`
-- Post-reference analysis starts after the 7 d embargo: `2026-02-03T04:30:00`
+- Support-migration audit starts after the 7 d embargo: `2026-02-03T04:30:00`
+- Controlled future-challenge validation starts: `2026-01-29T00:00:00`
 - Authoritative D5 scores modified: **No**
 
 ## Confirmatory result

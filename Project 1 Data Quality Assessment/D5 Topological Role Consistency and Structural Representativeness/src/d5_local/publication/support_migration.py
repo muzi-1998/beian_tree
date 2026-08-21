@@ -29,7 +29,8 @@ class AuditBoundary:
     reference_fraction: float
     reference_end: pd.Timestamp
     embargo_hours: int
-    post_start: pd.Timestamp
+    support_audit_post_start: pd.Timestamp
+    controlled_validation_start: pd.Timestamp
 
 
 class D5SupportMigrationAudit:
@@ -92,7 +93,8 @@ class D5SupportMigrationAudit:
             reference_fraction=fraction,
             reference_end=reference_end,
             embargo_hours=embargo_hours,
-            post_start=reference_end + pd.Timedelta(hours=embargo_hours),
+            support_audit_post_start=reference_end + pd.Timedelta(hours=embargo_hours),
+            controlled_validation_start=reference_end.ceil("D") + pd.Timedelta(days=1),
         )
 
     @staticmethod
@@ -138,7 +140,9 @@ class D5SupportMigrationAudit:
         )
 
         pre = plant[pd.to_datetime(plant["timestamp"]) <= boundary.reference_end]
-        post = plant[pd.to_datetime(plant["timestamp"]) >= boundary.post_start]
+        post = plant[
+            pd.to_datetime(plant["timestamp"]) >= boundary.support_audit_post_start
+        ]
         rows: list[dict[str, Any]] = []
         for regime_id in range(4):
             pre_rate = float(pre["active_regime_id"].eq(regime_id).mean())
@@ -163,7 +167,9 @@ class D5SupportMigrationAudit:
         support: pd.DataFrame,
         boundary: AuditBoundary,
     ) -> pd.DataFrame:
-        post = main[pd.to_datetime(main["timestamp"]) >= boundary.post_start].copy()
+        post = main[
+            pd.to_datetime(main["timestamp"]) >= boundary.support_audit_post_start
+        ].copy()
         occupancy = (
             post.groupby(["sensor_id", "active_regime_id"], observed=True)
             .agg(
@@ -280,7 +286,9 @@ class D5SupportMigrationAudit:
     def _coverage_loss_attribution(
         blockers: pd.DataFrame, main: pd.DataFrame, boundary: AuditBoundary
     ) -> pd.DataFrame:
-        post = main[pd.to_datetime(main["timestamp"]) >= boundary.post_start]
+        post = main[
+            pd.to_datetime(main["timestamp"]) >= boundary.support_audit_post_start
+        ]
         post_rows = int(len(post))
         support = (
             blockers.groupby(["primary_blocker", "blocker_set"], observed=True)
@@ -326,7 +334,9 @@ class D5SupportMigrationAudit:
         templates: pd.DataFrame,
         boundary: AuditBoundary,
     ) -> pd.DataFrame:
-        post = main[pd.to_datetime(main["timestamp"]) >= boundary.post_start].copy()
+        post = main[
+            pd.to_datetime(main["timestamp"]) >= boundary.support_audit_post_start
+        ].copy()
         family = self.aggregation["thresholds"]["L2"]
         node = self.aggregation["node_validation"]["L2"]
         family_days = templates["family_n_effective"].ge(
@@ -476,7 +486,8 @@ class D5SupportMigrationAudit:
             "reference_fraction": boundary.reference_fraction,
             "reference_end": boundary.reference_end.isoformat(),
             "embargo_hours": boundary.embargo_hours,
-            "post_start": boundary.post_start.isoformat(),
+            "support_audit_post_start": boundary.support_audit_post_start.isoformat(),
+            "controlled_validation_start": boundary.controlled_validation_start.isoformat(),
             "study_end": pd.Timestamp(main["timestamp"].max()).isoformat(),
             "sensor_hours": int(len(main)),
             "template_count": int(len(support)),

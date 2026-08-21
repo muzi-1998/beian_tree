@@ -51,7 +51,8 @@ def test_family_day_counterfactual_preserves_ood_and_missing_evidence() -> None:
         reference_fraction=0.70,
         reference_end=pd.Timestamp("2026-01-27 04:30"),
         embargo_hours=168,
-        post_start=pd.Timestamp("2026-02-03 04:30"),
+        support_audit_post_start=pd.Timestamp("2026-02-03 04:30"),
+        controlled_validation_start=pd.Timestamp("2026-01-29 00:00"),
     )
     timestamps = pd.date_range("2026-02-04", periods=3, freq="1h")
     main = pd.DataFrame(
@@ -92,6 +93,8 @@ def test_current_release_is_reference_horizon_dominated() -> None:
     post_shift = tables["01b_pre_post_regime_shift"].set_index("regime_label")
     counterfactual = tables["06_counterfactual_coverage"].set_index("scenario")
     assert metadata["reference_end"] == "2026-01-27T04:30:00"
+    assert metadata["support_audit_post_start"] == "2026-02-03T04:30:00"
+    assert metadata["controlled_validation_start"] == "2026-01-29T00:00:00"
     assert post_shift.loc["R2", "post_occupancy"] == 1.0
     assert len(blockers) == 14
     assert blockers["blocker_set"].eq("family_days").all()
