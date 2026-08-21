@@ -5,6 +5,7 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
+import yaml
 
 from .common import (
     OUTPUT_ROOT,
@@ -25,6 +26,7 @@ from .pipeline import (
     build_monthly_coverage,
     build_node_scores,
     build_pair_scores,
+    build_phase_evidence_summary,
     load_d1,
     load_d2,
     load_d3,
@@ -34,6 +36,7 @@ from .pipeline import (
 )
 from .reports import (
     write_directory_guide,
+    write_expert_review,
     write_figure_captions,
     write_scientific_report,
     write_workbook,
@@ -122,13 +125,23 @@ def _contract_checks(
         ),
         (
             "node_score_range",
-            bool(node["Q_node_available"].dropna().between(score_min, score_max).all()),
-            "availability-aware node scores remain on the frozen 1-5 scale",
+            bool(
+                node[["Q_node_full", "Q_node_core12", "Q_node_available"]]
+                .stack()
+                .between(score_min, score_max)
+                .all()
+            ),
+            "all node estimands remain on the frozen 1-5 scale",
         ),
         (
             "pair_score_range",
-            bool(pair["Q_pair_available"].dropna().between(score_min, score_max).all()),
-            "availability-aware pair scores remain on the frozen 1-5 scale",
+            bool(
+                pair[["Q_pair_full", "Q_pair_core", "Q_pair_available"]]
+                .stack()
+                .between(score_min, score_max)
+                .all()
+            ),
+            "all pair estimands remain on the frozen 1-5 scale",
         ),
         (
             "node_evidence_range",
@@ -148,14 +161,77 @@ def _contract_checks(
         (
             "quality_not_multiplied_by_evidence",
             bool(
-                node["aggregation_formula"]
-                .eq("equal_arithmetic_mean_over_D1_D2_optional_D5")
+                node["core_aggregation_formula"]
+                .eq("equal_mean_D1_D2_fixed")
                 .all()
-                and pair["aggregation_formula"]
-                .eq("equal_mean_left_node_right_node_D4_raw")
+                and pair["core_aggregation_formula"]
+                .eq("equal_mean_left_core12_right_core12_D4_raw")
                 .all()
             ),
             "Q and E remain separate published variables",
+        ),
+        (
+            "node_core_fixed_formula",
+            bool(
+                np.allclose(
+                    node.loc[node["Q_node_core12"].notna(), "Q_node_core12"],
+                    node.loc[
+                        node["Q_node_core12"].notna(), ["D1_total", "D2_total"]
+                    ].mean(axis=1),
+                    rtol=0,
+                    atol=1e-12,
+                )
+            ),
+            "Q_node_core12 is the fixed D1-D2 longitudinal estimand",
+        ),
+        (
+            "pair_core_fixed_formula",
+            bool(
+                np.allclose(
+                    pair.loc[pair["Q_pair_core"].notna(), "Q_pair_core"],
+                    pair.loc[
+                        pair["Q_pair_core"].notna(),
+                        ["left_Q_node_core12", "right_Q_node_core12", "D4_raw"],
+                    ].mean(axis=1),
+                    rtol=0,
+                    atol=1e-12,
+                )
+            ),
+            "Q_pair_core is the fixed left-core/right-core/D4 estimand",
+        ),
+        (
+            "phase_reference_metadata_complete",
+            bool(
+                dimension_long[["phase_role", "reference_status", "version_hash"]]
+                .notna()
+                .all()
+                .all()
+            ),
+            "every dimension row carries phase, reference and version provenance",
+        ),
+        (
+            "D4_mapping_support_metadata_complete",
+            bool(
+                dimension_long.loc[
+                    dimension_long["dimension"].eq("D4"),
+                    "mapping_support_class",
+                ]
+                .isin(["exact", "variable_fallback", "global_fallback", "insufficient"])
+                .all()
+            ),
+            "D4 mapping support is explicit on every pair-hour",
+        ),
+        (
+            "D5_L1_is_limited_evidence_not_low_quality",
+            bool(
+                dimension_long.loc[
+                    dimension_long["dimension"].eq("D5")
+                    & dimension_long["support_level"].eq("L1"),
+                    ["report_eligible", "score_1to5"],
+                ]
+                .pipe(lambda x: (~x["report_eligible"] & x["score_1to5"].isna()).all())
+            ),
+            "D5 L1 remains diagnostic-only limited evidence",
         ),
         (
             "D5_hard_veto_disabled",
@@ -237,19 +313,25 @@ def _summary(
         "node_coverage": counts(node),
         "pair_coverage": counts(pair),
         "node_Q_full_nonnull": int(node["Q_node_full"].notna().sum()),
+        "node_Q_core12_nonnull": int(node["Q_node_core12"].notna().sum()),
         "node_Q_available_nonnull": int(node["Q_node_available"].notna().sum()),
         "pair_Q_full_nonnull": int(pair["Q_pair_full"].notna().sum()),
+        "pair_Q_core_nonnull": int(pair["Q_pair_core"].notna().sum()),
         "pair_Q_available_nonnull": int(pair["Q_pair_available"].notna().sum()),
         "sensor_hour_pooled_means": {
             "node_Q_full": float(node["Q_node_full"].mean()),
+            "node_Q_core12": float(node["Q_node_core12"].mean()),
             "node_Q_availability_aware": float(node["Q_node_available"].mean()),
             "pair_Q_full": float(pair["Q_pair_full"].mean()),
+            "pair_Q_core": float(pair["Q_pair_core"].mean()),
             "pair_Q_availability_aware": float(pair["Q_pair_available"].mean()),
         },
         "plant_hour_aggregated_means": {
             "node_Q_full": plant_estimate("node", "full"),
+            "node_Q_core12": plant_estimate("node", "core_fixed"),
             "node_Q_availability_aware": plant_estimate("node", "availability_aware"),
             "pair_Q_full": plant_estimate("pair", "full"),
+            "pair_Q_core": plant_estimate("pair", "core_fixed"),
             "pair_Q_availability_aware": plant_estimate("pair", "availability_aware"),
             "aggregation_rule": "median_across_objects_per_hour_then_mean_across_plant_hours",
         },
@@ -315,6 +397,7 @@ def run_aggregation() -> dict[str, Any]:
     d5, _ = load_d5(config)
 
     dimension_long = build_dimension_long(config, d1, d2, d3, d4, d5)
+    phase_evidence = build_phase_evidence_summary(dimension_long)
     node = build_node_scores(config, d1, d2, d3, d5)
     pair = build_pair_scores(config, node, d4)
     monthly = build_monthly_coverage(node, pair)
@@ -348,11 +431,13 @@ def run_aggregation() -> dict[str, Any]:
         failed = contracts.loc[~contracts["passed"], "check_id"].tolist()
         raise RuntimeError(f"Aggregation contract checks failed: {failed}")
 
+    artifact_names = config["output_artifacts"]
     data_paths = {
-        "dimension_long": data_root / "DQR_dimension_long.parquet",
-        "node_hourly": data_root / "DQR_node_hourly.parquet",
-        "pair_hourly": data_root / "DQR_pair_hourly.parquet",
-        "coverage_monthly": data_root / "DQR_coverage_monthly.parquet",
+        "dimension_long": data_root / artifact_names["dimension_long"],
+        "node_hourly": data_root / artifact_names["node_scores"],
+        "pair_hourly": data_root / artifact_names["pair_scores"],
+        "coverage_monthly": data_root / artifact_names["coverage_monthly"],
+        "phase_evidence_summary": data_root / artifact_names["phase_evidence_summary"],
         "estimand_decomposition": data_root / "DQR_estimand_decomposition.parquet",
         "estimand_decomposition_bootstrap": data_root / "DQR_estimand_decomposition_bootstrap.parquet",
         "pair_weighting_sensitivity": data_root / "DQR_pair_weighting_sensitivity.parquet",
@@ -363,6 +448,7 @@ def run_aggregation() -> dict[str, Any]:
     node.to_parquet(data_paths["node_hourly"], index=False)
     pair.to_parquet(data_paths["pair_hourly"], index=False)
     monthly.to_parquet(data_paths["coverage_monthly"], index=False)
+    phase_evidence.to_parquet(data_paths["phase_evidence_summary"], index=False)
     decomposition.to_parquet(data_paths["estimand_decomposition"], index=False)
     decomposition_draws.to_parquet(
         data_paths["estimand_decomposition_bootstrap"], index=False
@@ -380,6 +466,7 @@ def run_aggregation() -> dict[str, Any]:
         validation_path,
         {
             "input_freshness": input_registry,
+            "phase_evidence_summary": phase_evidence,
             "contract_checks": contracts,
             "complete_case_identity": invariance,
             "aggregator_comparison": aggregators,
@@ -424,6 +511,7 @@ def run_aggregation() -> dict[str, Any]:
                 "node_hourly": stable_frame_hash(node),
                 "pair_hourly": stable_frame_hash(pair),
                 "coverage_monthly": stable_frame_hash(monthly),
+                "phase_evidence_summary": stable_frame_hash(phase_evidence),
                 "estimand_decomposition": stable_frame_hash(decomposition),
                 "pair_weighting_sensitivity": stable_frame_hash(pair_weighting_rows),
                 "pair_low_tail_threshold_sweep": stable_frame_hash(pair_threshold_sweep),
@@ -471,6 +559,25 @@ def run_aggregation() -> dict[str, Any]:
     )
     write_directory_guide(report_root / "DQR_aggregation_directory_guide.md")
     write_figure_captions(report_root / "DQR_figure_captions.md")
+    write_expert_review(report_root / "DQR_v2.3_expert_review.md", node, pair)
+    estimand_registry = {
+        "schema_version": config["schema_version"],
+        "quality_evidence_gate_contract": config["evidence_contract"],
+        "node_estimands": config["aggregation"]["node_estimands"],
+        "pair_estimands": config["aggregation"]["pair_estimands"],
+        "longitudinal_primary": config["aggregation"]["longitudinal_primary"],
+        "complete_evidence_primary": config["aggregation"]["complete_evidence_primary"],
+        "phase_contracts": config["phase_contracts"],
+        "claim_boundary": {
+            "full": "complete-evidence scientific estimand",
+            "core_fixed": "fixed-composition longitudinal estimand",
+            "available": "operational extension; cross-mask trend interpretation prohibited",
+        },
+    }
+    (data_root / artifact_names["estimand_registry"]).write_text(
+        yaml.safe_dump(estimand_registry, sort_keys=False, allow_unicode=False),
+        encoding="utf-8",
+    )
 
     run_manifest_path = manifest_root / "DQR_run_manifest.json"
     publication_manifest_path = manifest_root / "DQR_publication_manifest.json"

@@ -53,6 +53,7 @@ def write_scientific_report(
 ) -> None:
     node_counts = node["coverage_class"].value_counts()
     pair_counts = pair["coverage_class"].value_counts()
+    mapping_counts = pair["mapping_support_class"].value_counts(normalize=True)
     primary = block_summary.loc[block_summary["block_hours"].eq(168)].copy()
     selection = coverage_shift.loc[
         (coverage_shift["stratum_type"] == "overall")
@@ -101,8 +102,10 @@ def write_scientific_report(
         "Evidence completeness is reported separately and is never multiplied by quality.",
         "",
         "- `Q_node_full = mean(D1, D2, D5_report)` when all three formal scores exist.",
+        "- `Q_node_core12 = mean(D1, D2)` is the fixed-composition longitudinal estimand.",
         "- `Q_node_available = mean(D1, D2[, D5_report])`; D1 and D2 are mandatory.",
         "- `Q_pair_full = mean(left Q_node_full, right Q_node_full, D4_raw)`.",
+        "- `Q_pair_core = mean(left Q_node_core12, right Q_node_core12, D4_raw)`.",
         "- `Q_pair_available = mean(left Q_node_available, right Q_node_available, D4_raw)`.",
         "- `E_node` and `E_pair` quantify evidence coverage, not data quality.",
         "",
@@ -122,8 +125,10 @@ def write_scientific_report(
         "for pairs.",
         "",
         f"Sensor-hour pooled means were {node['Q_node_full'].mean():.3f} (node Full), "
+        f"{node['Q_node_core12'].mean():.3f} (node fixed Core), "
         f"{node['Q_node_available'].mean():.3f} (node availability-aware), "
         f"{pair['Q_pair_full'].mean():.3f} (pair Full) and "
+        f"{pair['Q_pair_core'].mean():.3f} (pair fixed Core) and "
         f"{pair['Q_pair_available'].mean():.3f} (pair availability-aware). These are "
         "not the plant-hour aggregated means reported below, which first summarize all "
         "objects within each plant-hour and then average over time.",
@@ -133,6 +138,13 @@ def write_scientific_report(
         f"and Wasserstein distance was {selection['wasserstein_distance']:.2f}. Full is "
         "therefore the complete-evidence estimand; availability-aware Basic extends coverage "
         "but must be displayed separately.",
+        "",
+        f"D4 pair-hours used exact variable-regime mapping for "
+        f"{_pct(mapping_counts.get('exact', 0.0))}, variable-level fallback for "
+        f"{_pct(mapping_counts.get('variable_fallback', 0.0))}, and global fallback for "
+        f"{_pct(mapping_counts.get('global_fallback', 0.0))}. Mapping support is evidence "
+        "metadata and does not numerically penalize D4_raw. Any future exclusion rule must "
+        "be prospectively frozen and independently validated.",
         "",
         f"The sensor-hour estimand decomposition separated a selection-only shift of "
         f"{effects.loc['selection_only', 'estimate']:.3f} "
@@ -210,7 +222,7 @@ def write_scientific_report(
             "",
             "## Claim boundary and release decision",
             "",
-            "This release is suitable for retrospective scientific aggregation and manuscript "
+        "This release is suitable for retrospective scientific aggregation and manuscript "
             "analysis. It is not an automated deployment release. D5 hard Veto remains disabled "
             "because controlled perturbation Top-1 localization is 0.767, below the prespecified "
             "0.80 criterion. A-E grades remain disabled. The D1 export lacks a distinct validated "
@@ -220,7 +232,13 @@ def write_scientific_report(
             "The prospective 2026-04-14 to 2026-07-31 holdout and downstream fitness-for-use "
             "validation remain pending because the required frozen D1-D5 and endpoint bundles do "
             "not exist. Missing maintenance/metrological evidence is recorded as not available and "
-            "is never assigned a neutral or low score.",
+        "is never assigned a neutral or low score.",
+        "",
+        "Longitudinal interpretation is restricted to fixed-composition Core estimands. "
+        "Full remains the complete-evidence scientific estimand, while availability-aware "
+        "scores are operational summaries and must not be compared across dimension masks. "
+        "D5 L1 denotes limited evidence support, not low data quality, and historical L1 "
+        "hours are never backfilled after a future template upgrade.",
             "",
             "## Pending registry",
             "",
@@ -244,21 +262,24 @@ overwritten.
 
 ## Configuration and code
 
-- `configs/aggregation_v2.yaml`: frozen input hashes, estimands and validation rules.
+- `configs/aggregation_v2_3.yaml`: frozen input hashes, phase/reference contracts,
+  estimands and validation rules. The v2.2 configuration and outputs are retained.
 - `src/dqr_aggregation/`: loading, aggregation, statistics, figures, reports and manifests.
 - `scripts/run_dqr_aggregation.py`: complete deterministic release build.
 - `scripts/verify_dqr_aggregation.py`: formula, freshness, manifest and figure verification.
-- `tests/test_aggregation_v2.py`: synthetic and released-output contract tests.
+- `tests/test_aggregation_v2_3.py`: synthetic and released-output contract tests.
 
 ## Generated outputs
 
-- `outputs/aggregation_v2/data/`: dimension-long, node-hour, pair-hour, coverage,
-  estimand-decomposition and pair-weighting sensitivity tables.
-- `outputs/aggregation_v2/validation/`: statistical workbooks and machine-readable QA.
-- `outputs/aggregation_v2/figures/`: 183 mm Nature-style PNG/PDF/SVG/TIFF files.
-- `outputs/aggregation_v2/source_data/`: one source-data workbook per figure.
-- `outputs/aggregation_v2/reports/`: scientific report, captions and this guide.
-- `outputs/aggregation_v2/manifests/`: frozen run and publication manifests.
+- `outputs/aggregation_v2_3/data/`: versioned dimension-long, node, pair, coverage,
+  phase/evidence summaries and the machine-readable estimand registry.
+- `outputs/aggregation_v2_3/data/`: also contains estimand-decomposition and
+  pair-weighting sensitivity tables.
+- `outputs/aggregation_v2_3/validation/`: statistical workbooks and machine-readable QA.
+- `outputs/aggregation_v2_3/figures/`: 183 mm Nature-style PNG/PDF/SVG/TIFF files.
+- `outputs/aggregation_v2_3/source_data/`: one source-data workbook per figure.
+- `outputs/aggregation_v2_3/reports/`: scientific report, captions and this guide.
+- `outputs/aggregation_v2_3/manifests/`: frozen run and publication manifests.
 
 The run manifest records the scientific-generation commit for orientation, but
 publication freshness is governed by exact canonical hashes of the current
@@ -274,6 +295,72 @@ absence is a prespecified pending status, not a missing build artifact.
     path.write_text(text, encoding="utf-8")
 
 
+def write_expert_review(path: Path, node: pd.DataFrame, pair: pd.DataFrame) -> None:
+    scope = pair["mapping_support_class"].value_counts(normalize=True)
+    outcome = (
+        pair.loc[pair["usable_for_D4"].fillna(False) & pair["D4_raw"].notna()]
+        .assign(D4_low=lambda x: x["D4_raw"].lt(3.0))
+        .groupby(["phase_id", "variable", "mapping_support_class"], observed=True)
+        .agg(low_tail_rate=("D4_low", "mean"), n_pair_hours=("timestamp", "size"))
+        .reset_index()
+    )
+    orp_fallback_validation = outcome.loc[
+        outcome["phase_id"].eq("internal_validation")
+        & outcome["variable"].eq("ORP")
+        & outcome["mapping_support_class"].eq("variable_fallback")
+    ]
+    orp_rate = (
+        float(orp_fallback_validation["low_tail_rate"].iloc[0])
+        if len(orp_fallback_validation)
+        else np.nan
+    )
+    rows = [
+        "# DQR v2.3 expert review and implementation decision",
+        "",
+        "## Overall decision",
+        "",
+        "The proposal is scientifically coherent and addresses the principal remaining risk: changes in evidence composition must not be interpreted as temporal changes in data quality. The accepted P0 changes were implemented without changing any frozen D1-D5 formal score.",
+        "",
+        "## Executed",
+        "",
+        "- Added fixed node and pair Core estimands alongside Full and availability-aware estimands.",
+        "- Locked Quality, Evidence and Gate as separate non-multiplicative axes; D3 remains fail-closed and non-compensatory.",
+        "- Bound D5 support-migration v1.1 into the frozen input registry; L1 remains diagnostic-only limited evidence and is never converted into low quality.",
+        "- Added D4 exact/variable-fallback/global-fallback/insufficient metadata to every pair-hour and completed a descriptive mapping-support migration audit.",
+        "- Added phase_role, reference_status and version_hash to every dimension-long row, plus a phase/evidence summary and machine-readable estimand registry.",
+        "- Retained v2.2 outputs and created a separate v2.3 release directory, source-data bundle, figures, reports, tests and SHA-256 manifests.",
+        "- Kept A-E grades, D5 hard Veto and optimized weights disabled.",
+        "",
+        "## Main numerical implications",
+        "",
+        f"- Sensor-hour pooled node means: Core {node['Q_node_core12'].mean():.3f}, Full {node['Q_node_full'].mean():.3f}, availability-aware {node['Q_node_available'].mean():.3f}.",
+        f"- Sensor-hour pooled pair means: Core {pair['Q_pair_core'].mean():.3f}, Full {pair['Q_pair_full'].mean():.3f}, availability-aware {pair['Q_pair_available'].mean():.3f}.",
+        "- These values are intentionally different estimands; their differences are not model disagreement and must not be collapsed into one trend.",
+        f"- D4 mapping support comprised {scope.get('exact', 0.0):.1%} exact, {scope.get('variable_fallback', 0.0):.1%} variable fallback, {scope.get('global_fallback', 0.0):.1%} global fallback and {scope.get('insufficient', 0.0):.1%} insufficient pair-hours.",
+        f"- ORP variable-fallback validation rows had a D4<3 rate of {orp_rate:.1%}. Because support class is structurally coupled to regime, this is descriptive and cannot be interpreted as a causal fallback penalty.",
+        "",
+        "## Accepted with modification",
+        "",
+        "- Native D1-D3 files were not rewritten merely to add phase labels. The harmonized fields are added at the integration interface, preserving upstream frozen hashes; native exports should change only in a new versioned upstream release.",
+        "- D4 fallback remains formally scoreable metadata in this release. No global fallback was observed, and exact/fallback strata are regime-confounded. Any future exclusion from Full requires a prospectively frozen rule and new test data.",
+        "- D5 post-embargo rows are labelled for aggregation-time interpretation only; this does not create a new independent-validation claim for the D5 model.",
+        "- The Nature static preflight warning on D4 `.dropna()` is non-substantive: these calls collapse non-null metadata values; missing-regime rows are explicitly retained as `insufficient`, and all input/evaluable counts are exported.",
+        "",
+        "## Pending and not executed",
+        "",
+        "- D1 development-only frozen K=4 context shadow and the dependent D4 regime-shadow comparison: require a separately preregistered model artifact and paired sensitivity run.",
+        "- Independent D1 hard-fault interface: cannot be reconstructed from a D1_total threshold and requires controlled challenge or reviewed event truth.",
+        "- D5 template promotion and bridge: requires future independent support, frozen validation and prospective activation; historical L1 will not be backfilled.",
+        "- Prospective post-2026-04-13 scoring, downstream fitness-for-use, maintenance/metrological truth, cross-plant validation, learned weights and A-E cutpoints: required data are unavailable.",
+        "",
+        "## Publication conclusion",
+        "",
+        "DQR v2.3 is suitable for retrospective manuscript analysis as a hierarchical, evidence-aware and non-compensatory aggregation framework. Core is the longitudinal estimand, Full is the complete-evidence scientific estimand, and availability-aware is an operational extension. The release is not a deployment-grade automated grading or hard-Veto system.",
+    ]
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("\n".join(rows) + "\n", encoding="utf-8")
+
+
 def write_figure_captions(path: Path) -> None:
     text = """# Figure captions
 
@@ -282,9 +369,12 @@ Node quality combines D1, D2 and formally eligible D5 evidence, while pair quali
 combines the two homologous nodes with native D4 evidence. D3 is a separate
 non-compensatory gate. Quality and evidence completeness occupy separate axes.
 
-**Figure 2 | Evidence availability and estimand stability across the study period.**
+**Figure 2 | Fixed-composition quality and evidence support across the study period.**
 Monthly coverage and D5 L1-L3/OOD support migration are shown with Full and
-availability-aware quality, evidence completeness, and the selection-only,
+availability-aware quality. Fixed D1-D2 Core is the longitudinal primary series;
+Full is restricted to complete-evidence hours and availability-aware is an
+operational extension. Evidence completeness and D4 exact-mapping support are
+reported on a separate axis, together with the selection-only,
 within-Full D5 compositional contribution and total observed estimand shifts. Full and availability-aware
 series are distinct estimands and must not be pooled.
 

@@ -13,14 +13,14 @@ import yaml
 
 DQR_ROOT = Path(__file__).resolve().parents[2]
 PROJECT_ROOT = DQR_ROOT.parent
-CONFIG_PATH = DQR_ROOT / "configs" / "aggregation_v2.yaml"
-OUTPUT_ROOT = DQR_ROOT / "outputs" / "aggregation_v2"
+CONFIG_PATH = DQR_ROOT / "configs" / "aggregation_v2_3.yaml"
+OUTPUT_ROOT = DQR_ROOT / "outputs" / "aggregation_v2_3"
 
 
 def load_config() -> dict[str, Any]:
     payload = yaml.safe_load(CONFIG_PATH.read_text(encoding="utf-8"))
     if not isinstance(payload, dict):
-        raise ValueError("aggregation_v2.yaml must contain a mapping")
+        raise ValueError("aggregation_v2_3.yaml must contain a mapping")
     return payload
 
 
@@ -209,4 +209,4 @@ def make_run_id(config: dict[str, Any]) -> str:
         for key, value in sorted(spec.items()):
             if key.startswith("expected_") and key.endswith("sha256"):
                 payload += str(value).encode("ascii")
-    return f"DQRAGG-V22-{hashlib.sha256(payload).hexdigest()[:12]}"
+    return f"DQRAGG-V23-{hashlib.sha256(payload).hexdigest()[:12]}"

@@ -27,9 +27,10 @@ from dqr_aggregation.pipeline import verify_frozen_inputs  # noqa: E402
 def verify() -> dict[str, object]:
     config = load_config()
     current_inputs = verify_frozen_inputs(config)
-    node = pd.read_parquet(OUTPUT_ROOT / "data" / "DQR_node_hourly.parquet")
-    pair = pd.read_parquet(OUTPUT_ROOT / "data" / "DQR_pair_hourly.parquet")
-    dimension = pd.read_parquet(OUTPUT_ROOT / "data" / "DQR_dimension_long.parquet")
+    artifacts = config["output_artifacts"]
+    node = pd.read_parquet(OUTPUT_ROOT / "data" / artifacts["node_scores"])
+    pair = pd.read_parquet(OUTPUT_ROOT / "data" / artifacts["pair_scores"])
+    dimension = pd.read_parquet(OUTPUT_ROOT / "data" / artifacts["dimension_long"])
     checks: dict[str, bool] = {}
     full_node = node["Q_node_full"].notna()
     checks["node_formula"] = bool(
@@ -49,6 +50,27 @@ def verify() -> dict[str, object]:
             atol=1e-12,
         )
     )
+    core_node = node["Q_node_core12"].notna()
+    checks["node_core_fixed_formula"] = bool(
+        np.allclose(
+            node.loc[core_node, "Q_node_core12"],
+            node.loc[core_node, ["D1_total", "D2_total"]].mean(axis=1),
+            rtol=0,
+            atol=1e-12,
+        )
+    )
+    core_pair = pair["Q_pair_core"].notna()
+    checks["pair_core_fixed_formula"] = bool(
+        np.allclose(
+            pair.loc[core_pair, "Q_pair_core"],
+            pair.loc[
+                core_pair,
+                ["left_Q_node_core12", "right_Q_node_core12", "D4_raw"],
+            ].mean(axis=1),
+            rtol=0,
+            atol=1e-12,
+        )
+    )
     checks["D3_gate_only"] = bool(
         dimension.loc[dimension["dimension"].eq("D3"), "score_1to5"].isna().all()
     )
@@ -61,6 +83,27 @@ def verify() -> dict[str, object]:
             "score_1to5",
         ].isna().all()
     )
+    checks["phase_reference_version_complete"] = bool(
+        dimension[["phase_role", "reference_status", "version_hash"]]
+        .notna()
+        .all()
+        .all()
+    )
+    checks["D4_mapping_support_complete"] = bool(
+        dimension.loc[
+            dimension["dimension"].eq("D4"), "mapping_support_class"
+        ]
+        .isin(["exact", "variable_fallback", "global_fallback", "insufficient"])
+        .all()
+    )
+    d5_l1 = dimension["dimension"].eq("D5") & dimension["support_level"].eq("L1")
+    checks["D5_L1_is_limited_evidence"] = bool(
+        (~dimension.loc[d5_l1, "report_eligible"]).all()
+        and dimension.loc[d5_l1, "score_1to5"].isna().all()
+    )
+    checks["estimand_registry_exists"] = (
+        OUTPUT_ROOT / "data" / artifacts["estimand_registry"]
+    ).exists()
     manifest_path = OUTPUT_ROOT / "manifests" / "DQR_publication_manifest.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     run_manifest_path = OUTPUT_ROOT / "manifests" / "DQR_run_manifest.json"

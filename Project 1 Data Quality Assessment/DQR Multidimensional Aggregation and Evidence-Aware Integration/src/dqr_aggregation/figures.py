@@ -108,10 +108,28 @@ def _figure_1(
     for x, label, color in zip((0.02, 0.20, 0.38), ("D1\nhealth", "D2\ncontinuity", "D5\nstructure"), colors):
         _box(ax, (x, 0.71), 0.14, 0.13, label, color, bold=True)
         _arrow(ax, (x + 0.07, 0.70), (0.28, 0.57), color)
-    _box(ax, (0.18, 0.43), 0.25, 0.14, "Node quality\nQnode + Enode", PALETTE["navy"], bold=True)
+    _box(
+        ax,
+        (0.18, 0.43),
+        0.25,
+        0.14,
+        "Node Q + E\nFull | Core\nAvailable",
+        PALETTE["navy"],
+        fontsize=5.7,
+        bold=True,
+    )
     _box(ax, (0.57, 0.71), 0.14, 0.13, "D4\npair relation", PALETTE["red"], bold=True)
     _arrow(ax, (0.64, 0.70), (0.64, 0.57), PALETTE["red"])
-    _box(ax, (0.52, 0.43), 0.25, 0.14, "Pair quality\nQpair + Epair", PALETTE["navy"], bold=True)
+    _box(
+        ax,
+        (0.52, 0.43),
+        0.25,
+        0.14,
+        "Pair Q + E\nFull | Core\nAvailable",
+        PALETTE["navy"],
+        fontsize=5.7,
+        bold=True,
+    )
     _arrow(ax, (0.43, 0.50), (0.52, 0.50))
     _box(ax, (0.80, 0.43), 0.17, 0.14, "D3 safety\ngate", PALETTE["orange"], bold=True)
     _box(ax, (0.33, 0.15), 0.38, 0.14, "Release status\nquality + evidence + gate", PALETTE["dark"], bold=True)
@@ -154,7 +172,7 @@ def _figure_1(
     cbar.outline.set_linewidth(0.6)
     source = node.loc[
         valid,
-        ["timestamp", "sensor_id", "analyte", "Q_node_available", "Q_node_full", "E_node", "coverage_class", "D3_gate_status"],
+        ["timestamp", "sensor_id", "analyte", "Q_node_available", "Q_node_core12", "Q_node_full", "E_node", "coverage_class", "D3_gate_status"],
     ]
     write_workbook(
         source_root / "DQR_Fig01_source_data.xlsx",
@@ -187,6 +205,10 @@ def _figure_2(
     all_nodes = monthly.loc[
         (monthly["object_type"] == "node")
         & (monthly["aggregation_level"] == "all_nodes")
+    ].sort_values("month")
+    all_pairs = monthly.loc[
+        (monthly["object_type"] == "pair")
+        & (monthly["aggregation_level"] == "all_pairs")
     ].sort_values("month")
     labels = pd.to_datetime(all_nodes["month"]).dt.strftime("%b\n%Y")
     x = np.arange(len(all_nodes))
@@ -249,33 +271,92 @@ def _figure_2(
     source["month"] = source["timestamp"].dt.to_period("M").astype(str)
     quality = source.groupby("month", observed=True).agg(
         Q_full_median=("Q_node_full", "median"),
+        Q_core_median=("Q_node_core12", "median"),
         Q_available_median=("Q_node_available", "median"),
         E_node_median=("E_node", "median"),
         E_node_p25=("E_node", lambda s: s.quantile(0.25)),
         E_node_p75=("E_node", lambda s: s.quantile(0.75)),
         n_sensor_hours=("timestamp", "size"),
     ).reset_index()
+    quality = quality.merge(
+        all_pairs[
+            [
+                "month",
+                "D4_exact_mapping_rate",
+                "D4_variable_fallback_rate",
+                "D4_global_fallback_rate",
+            ]
+        ],
+        on="month",
+        how="left",
+    )
     xq = np.arange(len(quality))
     qlabels = pd.to_datetime(quality["month"]).dt.strftime("%b\n%Y")
     ax = axes[1, 0]
     panel_label(ax, "c")
     ax.set_title("Distinct temporal estimands", loc="left")
-    ax.plot(xq, quality["Q_full_median"], marker="o", ms=3, color=PALETTE["blue"], label="Full")
-    ax.plot(xq, quality["Q_available_median"], marker="s", ms=3, color=PALETTE["orange"], label="Availability-aware")
+    ax.plot(
+        xq,
+        quality["Q_core_median"],
+        marker="o",
+        ms=3.2,
+        lw=1.15,
+        color=PALETTE["navy"],
+        label="Core fixed (D1+D2)",
+    )
+    ax.plot(
+        xq,
+        quality["Q_full_median"],
+        marker="^",
+        ms=3.0,
+        color=PALETTE["blue"],
+        label="Full evidence",
+    )
+    ax.plot(
+        xq,
+        quality["Q_available_median"],
+        marker="s",
+        ms=2.8,
+        ls="--",
+        color=PALETTE["orange"],
+        label="Availability-aware",
+    )
     ax.set_xticks(xq, qlabels)
-    ax.set_ylim(3.5, 5.02)
+    quality_values = quality[
+        ["Q_core_median", "Q_full_median", "Q_available_median"]
+    ].to_numpy(float)
+    lower = max(1.0, float(np.nanmin(quality_values)) - 0.12)
+    upper = min(5.05, float(np.nanmax(quality_values)) + 0.12)
+    ax.set_ylim(lower, upper)
     ax.set_ylabel("Monthly median node quality")
-    ax.legend(loc="lower left")
+    ax.legend(loc="best")
     style_axes(ax)
 
     ax = axes[1, 1]
     panel_label(ax, "d")
-    ax.set_title("Evidence completeness", loc="left")
+    ax.set_title("Evidence completeness and D4 mapping support", loc="left")
     ax.fill_between(xq, quality["E_node_p25"], quality["E_node_p75"], color=PALETTE["blue"], alpha=0.18, linewidth=0)
-    ax.plot(xq, quality["E_node_median"], marker="o", ms=3, color=PALETTE["navy"])
+    ax.plot(
+        xq,
+        quality["E_node_median"],
+        marker="o",
+        ms=3,
+        color=PALETTE["navy"],
+        label="$E_{node}$ median",
+    )
+    ax.plot(
+        xq,
+        quality["D4_exact_mapping_rate"],
+        marker="s",
+        ms=2.8,
+        ls="--",
+        color=PALETTE["teal"],
+        label="D4 exact mapping",
+    )
     ax.set_xticks(xq, qlabels)
     ax.set_ylim(0.3, 1.03)
-    ax.set_ylabel("$E_{node}$ (median and IQR)")
+    ax.set_ylabel("Evidence fraction")
+    ax.legend(loc="lower left")
     style_axes(ax)
 
     effect_order = [

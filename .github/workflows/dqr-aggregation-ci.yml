@@ -11,6 +11,7 @@ on:
       - "Project 1 Data Quality Assessment/D3 Physical rationality and rate constraints/outputs/data/D3_window_scores.xlsx"
       - "Project 1 Data Quality Assessment/D3 Physical rationality and rate constraints/outputs/manifest/run_manifest.json"
       - "Project 1 Data Quality Assessment/D4 Parallel-redundancy Temporal Consistency/outputs/data/D4_main_scores.xlsx"
+      - "Project 1 Data Quality Assessment/D4 Parallel-redundancy Temporal Consistency/outputs/data/D4_mapping_params.xlsx"
       - "Project 1 Data Quality Assessment/D4 Parallel-redundancy Temporal Consistency/outputs/data/D4_run_manifest.json"
       - "Project 1 Data Quality Assessment/D5 Topological Role Consistency and Structural Representativeness/outputs/**"
       - ".github/workflows/dqr-aggregation-ci.yml"

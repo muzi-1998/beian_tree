@@ -1,0 +1,54 @@
+schema_version: northbank-dqr-aggregation-v2.3
+quality_evidence_gate_contract:
+  quality_evidence_gate_axes: separate_non_multiplicative
+  evidence_deficit_lowers_quality: prohibited
+  D3_gate_compensation: prohibited
+  D5_L1_semantics: limited_evidence_diagnostic_only_not_low_quality
+  D4_fallback_semantics: mapping_evidence_metadata_no_automatic_score_penalty
+  historical_support_backfill: prohibited
+  version_activation: prospective_only
+node_estimands:
+  full: equal_mean_D1_D2_D5_report_complete_evidence_only
+  core12: equal_mean_D1_D2_fixed_longitudinal_estimand
+  available: equal_mean_D1_D2_optional_D5_operational_summary
+pair_estimands:
+  full: equal_mean_left_node_full_right_node_full_D4_raw
+  core: equal_mean_left_node_core12_right_node_core12_D4_raw
+  available: equal_mean_left_node_available_right_node_available_D4_raw
+longitudinal_primary: core12
+complete_evidence_primary: full
+phase_contracts:
+  D1:
+    fit_start: '2025-08-01 00:00:00'
+    fit_end: '2025-08-30 23:00:00'
+    activation_start: '2025-08-31 00:00:00'
+    development_end: '2025-12-31 23:00:00'
+    internal_validation_end: '2026-02-21 23:00:00'
+    terminal_test_end: '2026-04-13 23:00:00'
+    assignment_mode: frozen_detector_routes_with_retrospective_downstream_regime_context
+  D2:
+    development_end: '2025-12-31 23:00:00'
+    internal_validation_end: '2026-02-21 23:00:00'
+    terminal_test_end: '2026-04-13 23:00:00'
+    assignment_mode: prespecified_engineering_mapping_no_validation_refit
+  D3:
+    calibration_end: '2026-01-31 23:00:00'
+    internal_validation_end: '2026-03-31 23:00:00'
+    terminal_test_end: '2026-04-13 23:00:00'
+    assignment_mode: frozen_gate_contract
+  D4:
+    assignment_mode: source_phase_id
+    development_end: '2026-01-24 23:00:00'
+    embargo_end: '2026-01-31 23:00:00'
+    internal_validation_end: '2026-04-13 23:00:00'
+  D5:
+    fit_start: '2025-08-01 00:00:00'
+    fit_end: '2026-01-27 04:30:00'
+    embargo_end: '2026-02-03 04:30:00'
+    controlled_validation_start: '2026-01-29 00:00:00'
+    support_audit_post_start: '2026-02-03 04:30:00'
+    assignment_mode: frozen_reference_forward_assignment_no_historical_backfill
+claim_boundary:
+  full: complete-evidence scientific estimand
+  core_fixed: fixed-composition longitudinal estimand
+  available: operational extension; cross-mask trend interpretation prohibited

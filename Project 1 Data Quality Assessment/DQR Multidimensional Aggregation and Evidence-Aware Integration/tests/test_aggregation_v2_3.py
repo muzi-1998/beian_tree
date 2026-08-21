@@ -37,8 +37,10 @@ def test_frozen_input_registry_is_current() -> None:
 
 
 def test_released_node_and_pair_formulas() -> None:
-    node = pd.read_parquet(OUTPUT_ROOT / "data" / "DQR_node_hourly.parquet")
-    pair = pd.read_parquet(OUTPUT_ROOT / "data" / "DQR_pair_hourly.parquet")
+    config = load_config()
+    artifacts = config["output_artifacts"]
+    node = pd.read_parquet(OUTPUT_ROOT / "data" / artifacts["node_scores"])
+    pair = pd.read_parquet(OUTPUT_ROOT / "data" / artifacts["pair_scores"])
     valid = node["Q_node_full"].notna()
     expected = node.loc[valid, ["D1_total", "D2_total", "D5_report_score"]].mean(axis=1)
     assert np.allclose(node.loc[valid, "Q_node_full"], expected, rtol=0, atol=1e-12)
@@ -47,14 +49,33 @@ def test_released_node_and_pair_formulas() -> None:
         valid, ["left_Q_node_full", "right_Q_node_full", "D4_raw"]
     ].mean(axis=1)
     assert np.allclose(pair.loc[valid, "Q_pair_full"], expected, rtol=0, atol=1e-12)
+    valid = node["Q_node_core12"].notna()
+    expected = node.loc[valid, ["D1_total", "D2_total"]].mean(axis=1)
+    assert np.allclose(node.loc[valid, "Q_node_core12"], expected, rtol=0, atol=1e-12)
+    valid = pair["Q_pair_core"].notna()
+    expected = pair.loc[
+        valid, ["left_Q_node_core12", "right_Q_node_core12", "D4_raw"]
+    ].mean(axis=1)
+    assert np.allclose(pair.loc[valid, "Q_pair_core"], expected, rtol=0, atol=1e-12)
 
 
 def test_dimension_roles_and_missing_semantics() -> None:
-    frame = pd.read_parquet(OUTPUT_ROOT / "data" / "DQR_dimension_long.parquet")
+    config = load_config()
+    frame = pd.read_parquet(
+        OUTPUT_ROOT / "data" / config["output_artifacts"]["dimension_long"]
+    )
     assert frame.loc[frame["dimension"].eq("D3"), "score_1to5"].isna().all()
     assert frame.loc[frame["dimension"].eq("D4"), "object_type"].eq("pair").all()
     missing_d5 = frame["dimension"].eq("D5") & ~frame["report_eligible"]
     assert frame.loc[missing_d5, "score_1to5"].isna().all()
+    assert frame[["phase_role", "reference_status", "version_hash"]].notna().all().all()
+    d4 = frame.loc[frame["dimension"].eq("D4")]
+    assert d4["mapping_support_class"].isin(
+        ["exact", "variable_fallback", "global_fallback", "insufficient"]
+    ).all()
+    d5_l1 = frame["dimension"].eq("D5") & frame["support_level"].eq("L1")
+    assert (~frame.loc[d5_l1, "report_eligible"]).all()
+    assert frame.loc[d5_l1, "score_1to5"].isna().all()
 
 
 def test_d3_gate_status_has_fail_closed_precedence() -> None:

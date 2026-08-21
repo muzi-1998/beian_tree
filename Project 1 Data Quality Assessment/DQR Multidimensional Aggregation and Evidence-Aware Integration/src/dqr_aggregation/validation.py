@@ -642,8 +642,10 @@ def block_bootstrap_summary(
     grid = pd.date_range(start, end, freq="1h")
     designs = (
         ("node", "full", node, "Q_node_full"),
+        ("node", "core_fixed", node, "Q_node_core12"),
         ("node", "availability_aware", node, "Q_node_available"),
         ("pair", "full", pair, "Q_pair_full"),
+        ("pair", "core_fixed", pair, "Q_pair_core"),
         ("pair", "availability_aware", pair, "Q_pair_available"),
     )
     rows = []
@@ -848,6 +850,24 @@ def pending_validation_registry(config: dict[str, Any]) -> pd.DataFrame:
                 "status": "not_available_not_scored",
                 "reason": "maintenance and metrological records are not available",
                 "blocking_effect": "excluded rather than assigned a neutral or low value",
+            },
+            {
+                "validation_id": "D1-development-only-regime-context-shadow",
+                "status": "pending_preregistered_shadow",
+                "reason": "the downstream K=4 context is retrospective and requires a development-only frozen comparison",
+                "blocking_effect": "no independent-validation claim is made for the retrospective context",
+            },
+            {
+                "validation_id": "D4-development-only-regime-shadow",
+                "status": "pending_after_D1_shadow",
+                "reason": "D4 sensitivity requires the frozen D1 context artifact before a paired shadow rerun",
+                "blocking_effect": "current D4 remains retrospective with explicit context-hindsight limitation",
+            },
+            {
+                "validation_id": "D5-prospective-template-lifecycle",
+                "status": "pending_future_support_and_bridge",
+                "reason": "candidate maturity requires new independent support, frozen validation and a dual-score bridge",
+                "blocking_effect": "historical L1 is not backfilled and no new template version is activated",
             },
         ]
     )
