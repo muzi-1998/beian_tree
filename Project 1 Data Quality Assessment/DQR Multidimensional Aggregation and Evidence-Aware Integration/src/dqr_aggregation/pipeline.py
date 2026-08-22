@@ -207,6 +207,92 @@ def load_d4(config: dict[str, Any]) -> pd.DataFrame:
         spec["expected_calibration_id"]
     }:
         raise RuntimeError("D4 calibration_id is not the frozen aggregation dependency")
+    mapping = pd.read_excel(
+        _path(spec["mapping_path"]), sheet_name="public_quantiles"
+    )
+    mapping = mapping.loc[
+        mapping["mapping_role"].eq("production")
+        & mapping["regime_id"].notna()
+    ].copy()
+    mapping["regime_id"] = mapping["regime_id"].astype(int)
+
+    def scope_class(value: object) -> str:
+        scope = str(value).strip().lower()
+        if scope == "variable_regime_public":
+            return "exact"
+        if scope == "variable_public_fallback":
+            return "variable_fallback"
+        if "global" in scope and "fallback" in scope:
+            return "global_fallback"
+        return "insufficient"
+
+    mapping["mapping_support_class"] = mapping["mapping_scope"].map(scope_class)
+    rows = []
+    precision_rank = {"supported": 0, "wide_interval": 1, "not_estimable": 2}
+    for (variable, regime_id), group in mapping.groupby(
+        ["variable", "regime_id"], sort=True
+    ):
+        scopes = group["mapping_scope"].dropna().astype(str).unique()
+        classes = group["mapping_support_class"].dropna().astype(str).unique()
+        if len(scopes) != 1 or len(classes) != 1 or group["subscore"].nunique() != 3:
+            raise RuntimeError(
+                f"D4 mapping metadata is inconsistent for {variable}/R{regime_id}"
+            )
+        grades = group["percentile_precision_grade"].dropna().astype(str)
+        tail_grade = (
+            max(grades, key=lambda item: precision_rank.get(item, 3))
+            if len(grades)
+            else "not_available"
+        )
+        rows.append(
+            {
+                "variable": variable,
+                "regime_id": int(regime_id),
+                "calibration_scope": scopes[0],
+                "mapping_support_class": classes[0],
+                "calibration_quality": "|".join(
+                    sorted(group["calibration_quality"].dropna().astype(str).unique())
+                ),
+                "calibration_evidence_quality": "|".join(
+                    sorted(
+                        group["mapping_evidence_quality"]
+                        .dropna()
+                        .astype(str)
+                        .unique()
+                    )
+                ),
+                "calibration_independent_blocks": int(
+                    group["independent_blocks"].min()
+                ),
+                "calibration_exact_independent_blocks": int(
+                    group["exact_independent_blocks"].min()
+                ),
+                "calibration_sample_size": int(group["sample_size"].min()),
+                "calibration_tail_precision_grade": tail_grade,
+                "calibration_mapping_ids": "|".join(
+                    sorted(group["mapping_id"].dropna().astype(str).unique())
+                ),
+            }
+        )
+    lookup = pd.DataFrame(rows)
+    frame["regime_id"] = pd.to_numeric(frame["regime_id"], errors="coerce").astype(
+        "Int64"
+    )
+    frame = frame.merge(lookup, on=["variable", "regime_id"], how="left")
+    unmapped_supported_regime = frame["regime_id"].notna() & frame[
+        "mapping_support_class"
+    ].isna()
+    if unmapped_supported_regime.any():
+        missing = frame.loc[
+            unmapped_supported_regime, ["variable", "regime_id"]
+        ].drop_duplicates()
+        raise RuntimeError(
+            f"D4 pair-hours lack mapping metadata: {missing.to_dict('records')}"
+        )
+    frame["mapping_support_class"] = frame["mapping_support_class"].fillna(
+        "insufficient"
+    )
+    frame["calibration_scope"] = frame["calibration_scope"].fillna("not_mapped")
     return frame
 
 
@@ -252,6 +338,10 @@ def _dimension_record(
     status_reason: pd.Series | str,
     run_id: pd.Series | str,
     calibration_id: pd.Series | str,
+    version_hash: pd.Series | str,
+    phase_role: pd.Series | str,
+    reference_status: pd.Series | str,
+    mapping_support_class: pd.Series | str,
     source_hash: str,
     metadata_columns: list[str],
 ) -> pd.DataFrame:
@@ -274,6 +364,10 @@ def _dimension_record(
             "status_reason": status_reason,
             "run_id": run_id,
             "calibration_id": calibration_id,
+            "version_hash": version_hash,
+            "phase_role": phase_role,
+            "reference_status": reference_status,
+            "mapping_support_class": mapping_support_class,
             "source_artifact_sha256": source_hash,
             "artifact_hash": pd.NA,
             "artifact_hash_status": "manifest_bound_avoids_recursive_self_hash",
@@ -297,6 +391,142 @@ def _dimension_record(
     return output
 
 
+def _phase_reference_metadata(
+    config: dict[str, Any], dimension: str, frame: pd.DataFrame
+) -> tuple[pd.Series, pd.Series, pd.Series]:
+    timestamp = pd.to_datetime(frame["timestamp"])
+    contract = config["phase_contracts"][dimension]
+    source_hash = config["inputs"][dimension]["expected_sha256"]
+
+    if dimension == "D1":
+        fit_end = pd.Timestamp(contract["fit_end"])
+        development_end = pd.Timestamp(contract["development_end"])
+        validation_end = pd.Timestamp(contract["internal_validation_end"])
+        phase = pd.Series(
+            np.select(
+                [
+                    timestamp.le(fit_end),
+                    timestamp.le(development_end),
+                    timestamp.le(validation_end),
+                ],
+                ["calibration", "development", "internal_validation"],
+                default="terminal_test",
+            ),
+            index=frame.index,
+        )
+        reference = pd.Series(
+            np.where(timestamp.le(fit_end), "in_reference", "post_reference_supported"),
+            index=frame.index,
+        )
+        version = pd.Series(source_hash, index=frame.index)
+    elif dimension == "D2":
+        development_end = pd.Timestamp(contract["development_end"])
+        validation_end = pd.Timestamp(contract["internal_validation_end"])
+        phase = pd.Series(
+            np.select(
+                [timestamp.le(development_end), timestamp.le(validation_end)],
+                ["development", "internal_validation"],
+                default="terminal_test",
+            ),
+            index=frame.index,
+        )
+        reference = pd.Series(
+            np.where(
+                timestamp.le(development_end),
+                "in_reference",
+                "post_reference_supported",
+            ),
+            index=frame.index,
+        )
+        version = pd.Series(source_hash, index=frame.index)
+    elif dimension == "D3":
+        calibration_end = pd.Timestamp(contract["calibration_end"])
+        validation_end = pd.Timestamp(contract["internal_validation_end"])
+        phase = pd.Series(
+            np.select(
+                [timestamp.le(calibration_end), timestamp.le(validation_end)],
+                ["calibration", "internal_validation"],
+                default="terminal_test",
+            ),
+            index=frame.index,
+        )
+        reference = pd.Series(
+            np.where(
+                timestamp.le(calibration_end),
+                "in_reference",
+                "post_reference_supported",
+            ),
+            index=frame.index,
+        )
+        version = frame["D3_threshold_version"].astype(str) + "|" + frame[
+            "D3_mapping_version"
+        ].astype(str)
+    elif dimension == "D4":
+        phase = frame["phase_id"].astype(str)
+        exact = frame["mapping_support_class"].eq("exact")
+        reference = pd.Series(
+            np.select(
+                [
+                    phase.eq("development"),
+                    exact,
+                    frame["mapping_support_class"].isin(
+                        ["variable_fallback", "global_fallback"]
+                    ),
+                ],
+                [
+                    "in_reference",
+                    "post_reference_supported",
+                    "post_reference_limited_support",
+                ],
+                default="not_evaluable",
+            ),
+            index=frame.index,
+        )
+        version = pd.Series(
+            config["inputs"]["D4"]["expected_mapping_sha256"], index=frame.index
+        )
+    elif dimension == "D5":
+        fit_end = pd.Timestamp(contract["fit_end"])
+        embargo_end = pd.Timestamp(contract["embargo_end"])
+        phase = pd.Series(
+            np.select(
+                [timestamp.le(fit_end), timestamp.le(embargo_end)],
+                ["development", "embargo"],
+                default="internal_validation",
+            ),
+            index=frame.index,
+        )
+        evaluable = frame["evaluation_status"].eq("evaluable")
+        ood = frame["evaluation_status"].eq("out_of_template") | frame[
+            "regime_state"
+        ].astype(str).str.contains("ood", case=False, na=False)
+        limited = frame["support_level"].eq("L1")
+        reference = pd.Series(
+            np.select(
+                [
+                    timestamp.le(fit_end),
+                    timestamp.le(embargo_end),
+                    ood,
+                    limited,
+                    evaluable,
+                ],
+                [
+                    "in_reference",
+                    "not_evaluable",
+                    "OOD",
+                    "post_reference_limited_support",
+                    "post_reference_supported",
+                ],
+                default="not_evaluable",
+            ),
+            index=frame.index,
+        )
+        version = frame["template_hash"].fillna(source_hash).astype(str)
+    else:
+        raise ValueError(f"Unknown dimension: {dimension}")
+    return phase, reference, version
+
+
 def build_dimension_long(
     config: dict[str, Any],
     d1: pd.DataFrame,
@@ -307,6 +537,9 @@ def build_dimension_long(
 ) -> pd.DataFrame:
     specs = config["inputs"]
     records: list[pd.DataFrame] = []
+    d1_phase, d1_reference, d1_version = _phase_reference_metadata(
+        config, "D1", d1
+    )
     records.append(
         _dimension_record(
             d1,
@@ -325,9 +558,16 @@ def build_dimension_long(
             ),
             run_id=d1["D1_run_id"],
             calibration_id="embedded_release_mapping",
+            version_hash=d1_version,
+            phase_role=d1_phase,
+            reference_status=d1_reference,
+            mapping_support_class="not_applicable",
             source_hash=specs["D1"]["expected_sha256"],
             metadata_columns=["D1_legacy_usable_tag"],
         )
+    )
+    d2_phase, d2_reference, d2_version = _phase_reference_metadata(
+        config, "D2", d2
     )
     records.append(
         _dimension_record(
@@ -344,6 +584,10 @@ def build_dimension_long(
             status_reason=d2["D2_veto_reason"].fillna("scored"),
             run_id=d2["D2_run_id"],
             calibration_id=d2["D2_calibration_id"],
+            version_hash=d2_version,
+            phase_role=d2_phase,
+            reference_status=d2_reference,
+            mapping_support_class="not_applicable",
             source_hash=specs["D2"]["expected_sha256"],
             metadata_columns=[
                 "D2_usable_tag",
@@ -352,6 +596,9 @@ def build_dimension_long(
                 "D2_dominant_limitation",
             ],
         )
+    )
+    d3_phase, d3_reference, d3_version = _phase_reference_metadata(
+        config, "D3", d3
     )
     records.append(
         _dimension_record(
@@ -370,6 +617,10 @@ def build_dimension_long(
             calibration_id=d3["D3_threshold_version"].astype(str)
             + "|"
             + d3["D3_mapping_version"].astype(str),
+            version_hash=d3_version,
+            phase_role=d3_phase,
+            reference_status=d3_reference,
+            mapping_support_class="not_applicable",
             source_hash=specs["D3"]["expected_sha256"],
             metadata_columns=[
                 "D3_gate_status",
@@ -384,6 +635,9 @@ def build_dimension_long(
     d4_evaluable = d4["usable_for_D4"].fillna(False) & d4["D4_raw"].notna()
     d4_long = d4.copy()
     d4_long["D4_score_formal"] = d4_long["D4_raw"].where(d4_evaluable)
+    d4_phase, d4_reference, d4_version = _phase_reference_metadata(
+        config, "D4", d4_long
+    )
     records.append(
         _dimension_record(
             d4_long,
@@ -395,15 +649,21 @@ def build_dimension_long(
             applicable=pd.Series(True, index=d4.index),
             evaluable=d4_evaluable,
             report_eligible=d4_evaluable,
-            support_level=d4["calibration_evidence_quality"]
-            if "calibration_evidence_quality" in d4
-            else "calibrated_pair",
+            support_level=d4_long["mapping_support_class"],
             status_reason=pd.Series(
-                np.where(d4_evaluable, "scored", "not_usable_for_D4"),
+                np.where(
+                    d4_evaluable,
+                    "scored_with_" + d4_long["mapping_support_class"].astype(str),
+                    "not_usable_for_D4",
+                ),
                 index=d4.index,
             ),
             run_id=d4["run_id"],
             calibration_id=d4["calibration_id"],
+            version_hash=d4_version,
+            phase_role=d4_phase,
+            reference_status=d4_reference,
+            mapping_support_class=d4_long["mapping_support_class"],
             source_hash=specs["D4"]["expected_sha256"],
             metadata_columns=[
                 "sensor_id",
@@ -415,6 +675,8 @@ def build_dimension_long(
                 "calibration_quality",
                 "calibration_evidence_quality",
                 "calibration_independent_blocks",
+                "calibration_exact_independent_blocks",
+                "calibration_sample_size",
                 "calibration_tail_precision_grade",
             ],
         )
@@ -422,6 +684,9 @@ def build_dimension_long(
     d5_evaluable = d5["report_eligible"].fillna(False) & d5["D5_report_score"].notna()
     d5_long = d5.copy()
     d5_long["D5_score_formal"] = d5_long["D5_report_score"].where(d5_evaluable)
+    d5_phase, d5_reference, d5_version = _phase_reference_metadata(
+        config, "D5", d5_long
+    )
     records.append(
         _dimension_record(
             d5_long,
@@ -437,6 +702,10 @@ def build_dimension_long(
             status_reason=d5["status_reason"].fillna(d5["evaluation_status"]),
             run_id=d5["run_id"],
             calibration_id=d5["template_id_used"],
+            version_hash=d5_version,
+            phase_role=d5_phase,
+            reference_status=d5_reference,
+            mapping_support_class="not_applicable",
             source_hash=specs["D5"]["expected_sha256"],
             metadata_columns=[
                 "evaluation_status",
@@ -462,6 +731,31 @@ def build_dimension_long(
     if not numeric.between(low, high).all():
         raise RuntimeError("Formal dimension score outside the frozen 1-5 scale")
     return output.sort_values(["timestamp", "object_type", "object_id", "dimension"]).reset_index(drop=True)
+
+
+def build_phase_evidence_summary(dimension_long: pd.DataFrame) -> pd.DataFrame:
+    return (
+        dimension_long.groupby(
+            [
+                "dimension",
+                "phase_role",
+                "reference_status",
+                "mapping_support_class",
+            ],
+            dropna=False,
+            observed=True,
+        )
+        .agg(
+            n_rows=("timestamp", "size"),
+            applicable_rate=("applicable", "mean"),
+            evaluable_rate=("evaluable", "mean"),
+            report_eligible_rate=("report_eligible", "mean"),
+            median_formal_score=("score_1to5", "median"),
+            p05_formal_score=("score_1to5", lambda x: x.quantile(0.05)),
+            median_diagnostic_score=("diagnostic_score_1to5", "median"),
+        )
+        .reset_index()
+    )
 
 
 def build_node_scores(
@@ -526,6 +820,9 @@ def build_node_scores(
     )
     denominator = 2.0 + node["I_D5"].astype(float)
     node["Q_node_available"] = (numerator / denominator).where(node["core_evaluable"])
+    node["Q_node_core12"] = node[["D1_total", "D2_total"]].mean(axis=1).where(
+        node["core_evaluable"]
+    )
     node["Q_node_full"] = node[["D1_total", "D2_total", "D5_report_score"]].mean(
         axis=1
     ).where(node["I_D1"] & node["I_D2"] & node["I_D5"])
@@ -553,6 +850,12 @@ def build_node_scores(
         node["D3_gate_status"],
         node["coverage_class"],
     )
+    node["core_release_status"] = resolve_release_status(
+        node["Q_node_core12"], node["D3_gate_status"], node["coverage_class"]
+    )
+    node["full_release_status"] = resolve_release_status(
+        node["Q_node_full"], node["D3_gate_status"], node["coverage_class"]
+    )
     node["strict_contract_candidate"] = node["coverage_class"].eq("full") & node[
         "D3_gate_status"
     ].eq("Pass")
@@ -571,7 +874,9 @@ def build_node_scores(
     node["measurement_assurance_status"] = config["aggregation"][
         "measurement_assurance_status"
     ]
-    node["aggregation_formula"] = "equal_arithmetic_mean_over_D1_D2_optional_D5"
+    node["full_aggregation_formula"] = "equal_mean_D1_D2_D5_report"
+    node["core_aggregation_formula"] = "equal_mean_D1_D2_fixed"
+    node["available_aggregation_formula"] = "equal_mean_D1_D2_optional_D5"
     return node.sort_values(["sensor_id", "timestamp"]).reset_index(drop=True)
 
 
@@ -583,6 +888,7 @@ def build_pair_scores(
         "sensor_id",
         "analyte",
         "Q_node_full",
+        "Q_node_core12",
         "Q_node_available",
         "E_node",
         "coverage_class",
@@ -615,6 +921,13 @@ def build_pair_scores(
     ].mean(axis=1).where(
         pair["left_Q_node_available"].notna()
         & pair["right_Q_node_available"].notna()
+        & pair["I_D4"]
+    )
+    pair["Q_pair_core"] = pair[
+        ["left_Q_node_core12", "right_Q_node_core12", "D4_raw"]
+    ].mean(axis=1).where(
+        pair["left_Q_node_core12"].notna()
+        & pair["right_Q_node_core12"].notna()
         & pair["I_D4"]
     )
     pair["Q_pair_full"] = pair[
@@ -669,6 +982,12 @@ def build_pair_scores(
         pair["D3_gate_status"],
         pair["coverage_class"],
     )
+    pair["core_release_status"] = resolve_release_status(
+        pair["Q_pair_core"], pair["D3_gate_status"], pair["coverage_class"]
+    )
+    pair["full_release_status"] = resolve_release_status(
+        pair["Q_pair_full"], pair["D3_gate_status"], pair["coverage_class"]
+    )
     pair["strict_contract_candidate"] = pair["coverage_class"].eq("full") & pair[
         "D3_gate_status"
     ].eq("Pass")
@@ -681,7 +1000,9 @@ def build_pair_scores(
         "D3_gate_status"
     ].isin(["Pass", "Warn"])
     pair["D4_role"] = "native_pair_evidence_not_copied_to_sensor_rows"
-    pair["aggregation_formula"] = "equal_mean_left_node_right_node_D4_raw"
+    pair["full_aggregation_formula"] = "equal_mean_left_full_right_full_D4_raw"
+    pair["core_aggregation_formula"] = "equal_mean_left_core12_right_core12_D4_raw"
+    pair["available_aggregation_formula"] = "equal_mean_left_available_right_available_D4_raw"
     return pair.sort_values(["pair_id", "timestamp"]).reset_index(drop=True)
 
 
@@ -698,7 +1019,11 @@ def build_monthly_coverage(node: pd.DataFrame, pair: pd.DataFrame) -> pd.DataFra
             .agg(
                 n_hours=("timestamp", "size"),
                 q_available_rate=("Q_node_available", lambda s: s.notna().mean()),
+                q_core_rate=("Q_node_core12", lambda s: s.notna().mean()),
                 q_full_rate=("Q_node_full", lambda s: s.notna().mean()),
+                q_available_median=("Q_node_available", "median"),
+                q_core_median=("Q_node_core12", "median"),
+                q_full_median=("Q_node_full", "median"),
                 full_rate=("coverage_class", lambda s: s.eq("full").mean()),
                 basic_rate=("coverage_class", lambda s: s.eq("basic").mean()),
                 limited_rate=("coverage_class", lambda s: s.eq("limited").mean()),
@@ -732,7 +1057,14 @@ def build_monthly_coverage(node: pd.DataFrame, pair: pd.DataFrame) -> pd.DataFra
             .agg(
                 n_hours=("timestamp", "size"),
                 q_available_rate=("Q_pair_available", lambda s: s.notna().mean()),
+                q_core_rate=("Q_pair_core", lambda s: s.notna().mean()),
                 q_full_rate=("Q_pair_full", lambda s: s.notna().mean()),
+                q_available_median=("Q_pair_available", "median"),
+                q_core_median=("Q_pair_core", "median"),
+                q_full_median=("Q_pair_full", "median"),
+                D4_exact_mapping_rate=("mapping_support_class", lambda s: s.eq("exact").mean()),
+                D4_variable_fallback_rate=("mapping_support_class", lambda s: s.eq("variable_fallback").mean()),
+                D4_global_fallback_rate=("mapping_support_class", lambda s: s.eq("global_fallback").mean()),
                 full_rate=("coverage_class", lambda s: s.eq("full").mean()),
                 basic_rate=("coverage_class", lambda s: s.eq("basic").mean()),
                 limited_rate=("coverage_class", lambda s: s.eq("limited").mean()),

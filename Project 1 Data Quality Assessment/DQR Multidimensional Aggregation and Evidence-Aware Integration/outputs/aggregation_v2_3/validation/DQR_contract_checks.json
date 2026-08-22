@@ -1,0 +1,117 @@
+{
+  "run_id": "DQRAGG-V23-e4486a5f8f5d",
+  "passed": true,
+  "checks": [
+    {
+      "check_id": "frozen_input_hashes",
+      "passed": true,
+      "interpretation": "all declared D1-D5 artifacts match the frozen SHA-256 registry"
+    },
+    {
+      "check_id": "D3_not_numerically_averaged",
+      "passed": true,
+      "interpretation": "D3 has diagnostic_score_1to5 and gate status only"
+    },
+    {
+      "check_id": "D4_pair_level_only",
+      "passed": true,
+      "interpretation": "native D4 is not copied into sensor rows"
+    },
+    {
+      "check_id": "D5_missing_not_low",
+      "passed": true,
+      "interpretation": "ineligible or missing D5 evidence remains NA"
+    },
+    {
+      "check_id": "node_score_range",
+      "passed": true,
+      "interpretation": "all node estimands remain on the frozen 1-5 scale"
+    },
+    {
+      "check_id": "pair_score_range",
+      "passed": true,
+      "interpretation": "all pair estimands remain on the frozen 1-5 scale"
+    },
+    {
+      "check_id": "node_evidence_range",
+      "passed": true,
+      "interpretation": "node evidence completeness remains in [0,1]"
+    },
+    {
+      "check_id": "pair_evidence_range",
+      "passed": true,
+      "interpretation": "pair evidence completeness remains in [0,1]"
+    },
+    {
+      "check_id": "complete_case_invariance",
+      "passed": true,
+      "interpretation": "Q_full equals Q_available on identical complete-evidence rows"
+    },
+    {
+      "check_id": "quality_not_multiplied_by_evidence",
+      "passed": true,
+      "interpretation": "Q and E remain separate published variables"
+    },
+    {
+      "check_id": "node_core_fixed_formula",
+      "passed": true,
+      "interpretation": "Q_node_core12 is the fixed D1-D2 longitudinal estimand"
+    },
+    {
+      "check_id": "pair_core_fixed_formula",
+      "passed": true,
+      "interpretation": "Q_pair_core is the fixed left-core/right-core/D4 estimand"
+    },
+    {
+      "check_id": "phase_reference_metadata_complete",
+      "passed": true,
+      "interpretation": "every dimension row carries phase, reference and version provenance"
+    },
+    {
+      "check_id": "D4_mapping_support_metadata_complete",
+      "passed": true,
+      "interpretation": "D4 mapping support is explicit on every pair-hour"
+    },
+    {
+      "check_id": "D5_L1_is_limited_evidence_not_low_quality",
+      "passed": true,
+      "interpretation": "D5 L1 remains diagnostic-only limited evidence"
+    },
+    {
+      "check_id": "D5_hard_veto_disabled",
+      "passed": true,
+      "interpretation": "D5 report evidence cannot trigger a sensor hard Veto"
+    },
+    {
+      "check_id": "A_E_grades_disabled",
+      "passed": true,
+      "interpretation": "grades await prospective and downstream criterion validation"
+    },
+    {
+      "check_id": "strict_release_fail_closed",
+      "passed": true,
+      "interpretation": "D1 lacks a distinct validated hard-fault interface"
+    },
+    {
+      "check_id": "selection_composition_exact_closure",
+      "passed": true,
+      "interpretation": "total observed shift equals selection-only plus within-Full D5 contribution"
+    },
+    {
+      "check_id": "pair_low_tail_partition_exact_closure",
+      "passed": true,
+      "interpretation": "formal-threshold overlap cells partition all complete pair-hours exactly"
+    }
+  ],
+  "table_hashes": {
+    "dimension_long": "cfab16d75a9e7fe43efb7fd8de799587ff8df1c25141db487d66d7b430dd80b9",
+    "node_hourly": "d1f0788352f3a780478554471b5e7d09490667235ad22ac985e369b824cfcb0e",
+    "pair_hourly": "6af33a54cd342d11930a372703a8462e324f85f1f57db554c8c604b69c99b7b7",
+    "coverage_monthly": "ce17dbf076eb6ab7a29e0a0428a703f792b097c8eb5041ea3c5b0dcfe8bb2a9b",
+    "phase_evidence_summary": "0dcd461a43633ac04a1f84d2687e7ab1ff6f1cc827f26eb0f86a6b3f12aa216e",
+    "estimand_decomposition": "73990219fa534aba0b79acd1500cce64abbd2bbe010f20fed51cf7401c46f4b8",
+    "pair_weighting_sensitivity": "e604b1c69d880b4fc9cf70a0a976104a3f70e1ab5ecb0b8e8d0211f2099e2d25",
+    "pair_low_tail_threshold_sweep": "97425dbfe4d7a67db62d2acad15609472954e43bca35b8ec154fc7d5c0d8061b",
+    "pair_low_tail_episodes": "af92ec262ec4f20951a67db29507689cea06fd7a566a6d87ab799d035e0803ba"
+  }
+}
