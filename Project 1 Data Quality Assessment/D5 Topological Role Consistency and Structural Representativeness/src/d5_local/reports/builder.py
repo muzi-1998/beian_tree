@@ -498,6 +498,22 @@ Current release classification: **D5 scientific score ready; cross-dimensional p
 ## Figure D5-9. Target-influence and support-threshold robustness
 
 (a) Whole-period and post-reference leave-one-target-out regime disagreement together with OOD-rate response to controlled target offsets. (b) Final-L3 template count across the full prespecified 0.70, 0.80 and 0.90 reference-fraction sensitivity grid and support thresholds. Production thresholds and the 0.70 reference fraction remain frozen. These analyses diagnose model robustness and do not change production templates or thresholds.
+
+## Supplementary Figure D5-S1. Monthly regime occupancy and report-eligibility migration
+
+(a) Monthly occupancy of the frozen K=4 operating regimes and OOD state. The vertical line marks the frozen 0.70 reference endpoint on 27 January 2026. (b) Monthly D5 report eligibility, L1 limited-support occupancy and OOD occupancy. R2 becomes dominant near the reference boundary and occupies all post-embargo evaluable time. Rates are sensor-hour proportions; the figure diagnoses evidence availability rather than sensor quality.
+
+## Supplementary Figure D5-S2. Sensor-by-regime template maturity
+
+Support level for each of the 56 frozen sensor-by-regime templates. Every R2 node remains L1, whereas the other regimes contain L2 or L3 templates. L1 denotes limited template support and is an abstention state, not a low D5 score.
+
+## Supplementary Figure D5-S3. Prespecified L1 admission blockers
+
+(a) Pass/fail matrix for the five prespecified L1-to-L2 support requirements across all 14 R2 sensor templates. Family effective days are the only failed requirement. (b) Support-attributable post-reference sensor-hours by analyte; OOD and not-evaluable hours are excluded from these bars and reported separately in source data.
+
+## Supplementary Figure D5-S4. Diagnostic counterfactual coverage recovery
+
+Post-embargo report coverage under one-at-a-time support repairs. Repairing family effective-day support yields the same 92.06% ceiling as repairing all L2 support requirements; node days, month counts and node reconstruction coverage have no effect. Counterfactuals retain OOD and incomplete-evidence exclusions and do not alter the frozen production model.
 """
 
     def _new_document(self, title: str, subtitle: str, status: str) -> Document:

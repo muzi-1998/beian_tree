@@ -43,6 +43,8 @@ D5 Topological Role Consistency and Structural Representativeness/
 | `outputs/figures` | SVG/PDF/600 dpi PNG/TIFF figures and figure QA |
 | `outputs/reports` | Expert report, directory guide and figure captions |
 | `outputs/publication` | Publication decisions, inference audits, source data and manifest |
+| `outputs/audit/support_migration` | Frozen-score L1 support-migration tables, counterfactuals, report and SHA-256 manifest |
+| `outputs/figures/supplementary/support_migration` | Nature-style SVG/PDF/PNG/TIFF support-migration figures |
 
 ## 4. Core entry points
 
@@ -51,6 +53,8 @@ python scripts/run_d5_local.py
 python scripts/run_d5_sensitivity.py
 python scripts/run_d5_validation.py
 python scripts/run_d5_publication_audit.py
+python scripts/run_d5_support_migration_audit.py
+python scripts/verify_d5_support_migration_audit.py
 python scripts/run_d5_topology_review.py
 python scripts/run_d5_shadow_v2.py
 python scripts/make_d5_figures.py
@@ -119,3 +123,20 @@ Current release classification: **D5 scientific score ready; cross-dimensional p
   final five-dimension aggregate.
 - Every quantitative panel is traceable to frozen Parquet or Excel source data.
   Automated QA does not replace visual inspection at final publication scale.
+
+## 10. Support-migration audit contract
+
+- The audit reads frozen Local artifacts and never writes authoritative scores,
+  templates, report interfaces or gate interfaces.
+- Plant-global occupancy is deduplicated by timestamp before monthly analysis.
+- L1-to-L2 blockers use only family/node days, months and node coverage.
+  Stability, blocked holdouts and FAR are restricted to L2-to-L3 maturity.
+- Counterfactual coverage is diagnostic and preserves OOD, missing evidence and
+  the 7 d embargo.
+- Coverage-loss attribution is mutually exclusive: limited support, OOD and
+  incomplete evidence are reported separately and close to the unreported-row
+  total.
+- The reference-fraction table is an occupied-day upper bound with frozen K=4
+  assignments, not an effective-support recalculation. K=3/K=5 and a formal
+  0.80/0.90 shadow require separate full refits and are not production-threshold
+  tuning devices.
