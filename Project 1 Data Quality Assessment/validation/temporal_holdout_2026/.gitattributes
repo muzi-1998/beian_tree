@@ -1,0 +1,7 @@
+*.py text eol=lf
+.gitattributes text eol=lf
+.gitignore text eol=lf
+*.md text eol=lf
+*.yaml text eol=lf
+intake_audit/*.csv -text
+intake_audit/*.json -text

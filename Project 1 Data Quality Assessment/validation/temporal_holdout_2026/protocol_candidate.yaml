@@ -1,0 +1,73 @@
+schema_version: northbank-temporal-holdout-plan-1.0
+status: proposed_after_intake_before_scoring
+created_on: '2026-09-05'
+scientific_scope: retrospective_same_plant_later_period_locked_evaluation
+baseline:
+  release_commit: 6799c3a916bbc6840aa2623f915b44d05e5192d6
+  aggregation_run_id: DQRAGG-V23-e4486a5f8f5d
+  authoritative_contract: ../../DQR Multidimensional Aggregation and Evidence-Aware Integration/configs/aggregation_v2_3.yaml
+  D5_reference_end: '2026-01-27 04:30:00'
+  historical_support_backfill: prohibited
+input:
+  primary_frequency: 1min
+  source_pattern: '*_02_shengwuchi.csv'
+  primary_kind: minute_not_hourly_or_daily
+  mapping_table: intake_audit/channel_mapping.csv
+  raw_start: '2026-04-14 00:00:00'
+  raw_end_exclusive: '2026-07-31 00:00:00'
+  timezone: Asia/Shanghai
+  minute_rows_nominal: 155520
+  scored_sensor_count: 14
+  nominal_sensor_hours: 36288
+  observation_origin: aligned_export_original_timestamp_audit_unverified
+  imputation_before_Q_HA_or_gap_evidence: prohibited
+  timestamp_label_to_information_interval: must_pass_adapter_tests
+readiness:
+  historical_intersection_values: passed_exact
+  historical_inserted_rows: passed_missing_preserved
+  column_mapping_tests: passed
+  frozen_inference_adapters: pending
+  causal_prefix_and_chunk_equivalence: pending
+  full_fitted_asset_inventory: pending
+  historical_release_replay: pending
+  new_period_maintenance_and_channel_change_attestation: pending
+  source_export_and_aggregation_semantics: pending
+  performance_opening_allowed: false
+analysis:
+  no_new_period_parameter_selection: true
+  inherited_causal_transform_update_policy: must_be_declared_and_tested_before_lock
+  fully_parameter_frozen_transform: separate_sensitivity_not_silent_replacement
+  longitudinal_primary: node_core12_and_pair_core
+  complete_evidence_primary: node_full_and_pair_full_with_coverage
+  operational_secondary: availability_aware_not_cross_mask_comparable
+  evidence_quality_multiplies_quality: false
+  D3_role: gate_only
+  D4_role: pair_only_numeric_source_D4_raw
+  D5_L1_role: diagnostic_only_not_low_score
+  A_E_grades: disabled
+  real_unreviewed_alerts_are_false_positives: false
+  controlled_challenges_are_field_fault_ground_truth: false
+  all_nominal_hours_independent: false
+resampling:
+  scope: synchronized_plant_calendar_blocks_preserve_all_sensors_and_pairs
+  primary_block_days_proposed: 7
+  sensitivity_block_days_proposed: [2, 14]
+  repetitions_proposed: 2000
+  minimum_distinct_blocks_for_CI_proposed: 6
+  below_minimum: descriptive_estimate_without_inferential_CI
+  synthetic_cluster: shared_background_time_block_plus_base_window
+  episode_cross_block_merging: prohibited
+  empty_union_jaccard: not_estimable_not_one
+optional_comparator:
+  name: D5_historical_only_maturation_shadow
+  status: candidate_not_fitted_or_selected_on_new_period
+  reference_fraction: 0.80
+  fraction_grid: original_pre_holdout_snapshot_grid_only
+  comparison_with_T0: paired_on_same_later_period_and_same_support_masks
+  K: 4
+  lower_support_thresholds: prohibited
+  new_period_learning: prohibited_in_this_candidate
+publication:
+  plan_publication_is_not_prospective_data_collection: true
+  actual_new_scoring_executed: false
+  required_bundle: [input_manifest, fitted_asset_manifest, execution_manifest, numerical_QA, source_data, figure_QA, claim_boundary, exclusions]
