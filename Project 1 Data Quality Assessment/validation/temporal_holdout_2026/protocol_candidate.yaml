@@ -1,5 +1,5 @@
 schema_version: northbank-temporal-holdout-plan-1.0
-status: proposed_after_intake_before_scoring
+status: stage_B_partial_time_contract_investigation_holdout_unopened
 created_on: '2026-09-05'
 scientific_scope: retrospective_same_plant_later_period_locked_evaluation
 baseline:
@@ -30,8 +30,14 @@ readiness:
   causal_prefix_and_chunk_equivalence: pending
   full_fitted_asset_inventory: pending
   historical_release_replay: pending
-  new_period_maintenance_and_channel_change_attestation: pending
-  source_export_and_aggregation_semantics: pending
+  new_period_maintenance_and_channel_change_attestation: researcher_confirmed_probe_position_tag_range_unchanged
+  source_export_and_aggregation_semantics: researcher_confirmed_alignment_only_no_missing_imputation
+  independent_maintenance_and_original_timestamp_logs: unavailable_not_inferred_from_attestation
+  source_attestation: source_attestation.yaml
+  stage_B_opening_gate: outputs/opening_gate.json
+  D2_asof_candidate: synthetic_prefix_passed_historical_3_total_score_changes_no_veto_change
+  D4_asof_candidate: native_global_dedup_prefix_failure_confirmed_historical_sensitivity_completed
+  D5_context_recovery: numeric_equivalence_not_byte_identical_asset
   performance_opening_allowed: false
 analysis:
   no_new_period_parameter_selection: true

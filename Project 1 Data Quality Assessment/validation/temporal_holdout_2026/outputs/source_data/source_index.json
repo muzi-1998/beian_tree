@@ -1,0 +1,54 @@
+{
+  "stage": "historical_replay_and_synthetic_contract_audit",
+  "data_kind": "derived_results_no_raw_plant_time_series",
+  "n_future_scores": 0,
+  "tables": {
+    "Temporal scope": {
+      "rows": 3,
+      "columns": 4
+    },
+    "Information intervals": {
+      "rows": 5,
+      "columns": 7
+    },
+    "D2 synthetic": {
+      "rows": 53,
+      "columns": 7
+    },
+    "D4 synthetic": {
+      "rows": 96,
+      "columns": 9
+    },
+    "D4 historical impact": {
+      "rows": 7,
+      "columns": 14
+    },
+    "D2 historical impact": {
+      "rows": 98,
+      "columns": 6
+    },
+    "D4 mapping replay": {
+      "rows": 42,
+      "columns": 6
+    },
+    "D1 PLS replay": {
+      "rows": 14,
+      "columns": 7
+    },
+    "Transform replay": {
+      "rows": 18,
+      "columns": 11
+    },
+    "D5 context replay": {
+      "rows": 9,
+      "columns": 6
+    },
+    "D3 replay": {
+      "rows": 20,
+      "columns": 6
+    }
+  },
+  "statistical_unit": "paired old-period hours; deterministic contract examples",
+  "CI": "not_applicable_to_deterministic_replay_or_exact_finite_dataset_difference",
+  "historical_D4_sensitivity_scope": "CP_dedup_and_clock_only_other_risks_mappings_gates_fixed"
+}

@@ -1,6 +1,31 @@
-# 2026 年后续时段验证：接入审计与研究方案
+# 2026 年后续时段验证：接入、资产恢复与时间审计
 
-状态：**接入审计已执行；完整评分、故障注入、模板更新均未执行。**
+状态：**阶段B执行中，新期评分未开启。** 已完成多项组件重放和时间问题调查，不代表108天科学验证已完成。
+
+- [本轮专家执行报告与下一步](STAGE_B_REPORT_20260905.md)
+- [图件说明](FIGURE_LEGENDS.md)
+- [11张配套源表](outputs/source_data/Temporal_holdout_stage_B_source.xlsx)
+- [开盲门控](outputs/opening_gate.json)：部分合同未通过，拒绝开启。
+- [本阶段内容指纹](outputs/stage_B_manifest.json)
+
+## 阶段B目录
+
+| 位置 | 内容 |
+|---|---|
+| `outputs/assets/` | 恢复的模型候选和冻结映射，不含原始逐分钟观测 |
+| `outputs/audit/` | 组件重放、合成试验、旧期修正敏感性及逐行派生结果 |
+| `outputs/figures/` | 两幅方法/扩展图，SVG/PDF/PNG/TIFF |
+| `outputs/source_data/` | CSV/Parquet/XLSX源表 |
+| `recover_*`, `replay_*` | 限制在4月14日前的恢复/重放 |
+| `causal_*`, `d2_causal_adapter.py`, `information_time.py` | 独立候选，不覆盖正式D1–D5入口 |
+| `verify_stage_b.py`, `test_*` | 组件合同与代码/配置/成果hash核验 |
+
+项目根运行 `python -m pytest validation/temporal_holdout_2026 -q` 和
+`python validation/temporal_holdout_2026/verify_stage_b.py`，不需要私有原始资料。
+这只验证阶段B派生包，**不表示新期性能通过**。重建要求及执行顺序见报告。
+原始来源通过 `BEIAN_OFFICIAL_PROJECT`、旧缓存通过 `BEIAN_LEGACY_PROJECT` 指定。
+
+## 原接入审计
 
 - [专家审查与详细研究方案](RESEARCH_PLAN_20260905.md)
 - [待锁定的分析合同](protocol_candidate.yaml)，不是已启动的生产配置或事后伪装的预注册。

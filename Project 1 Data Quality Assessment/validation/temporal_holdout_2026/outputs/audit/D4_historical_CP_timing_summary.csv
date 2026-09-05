@@ -1,0 +1,8 @@
+pair_id,n_pair_hours,native_CP_replay_exact,changed_Q_cp_hours,changed_Q_cp_dedup_only_hours,changed_Q_cp_clock_after_dedup_hours,common_evaluable_hours,changed_D4_raw_common_hours,low_tail_flip_hours,mean_D4_raw_delta_common,max_abs_D4_raw_delta_common,scope
+PAIR_DO11,6121,True,1153,1091,121,6044,1140,199,0.07461118464592986,1.3500000000000005,CP_dedup_and_available_clock_only_other_risks_and_gates_fixed
+PAIR_DO12,6121,True,1042,968,128,6045,1029,189,0.0659884201819686,1.6,CP_dedup_and_available_clock_only_other_risks_and_gates_fixed
+PAIR_DO13,6121,True,1166,1108,117,6045,1166,294,0.087328370554177,1.6,CP_dedup_and_available_clock_only_other_risks_and_gates_fixed
+PAIR_DO14,6121,True,2069,2013,133,6045,2068,648,0.18114971050454917,1.6,CP_dedup_and_available_clock_only_other_risks_and_gates_fixed
+PAIR_ORP11,6121,True,1220,1178,100,6064,1210,196,0.09896108179419523,1.6,CP_dedup_and_available_clock_only_other_risks_and_gates_fixed
+PAIR_ORP12,6121,True,942,905,90,6064,942,219,0.07424967018469654,1.6,CP_dedup_and_available_clock_only_other_risks_and_gates_fixed
+PAIR_ORP13,6121,True,1653,1606,135,6064,1653,195,0.05584597625329813,1.350000000000001,CP_dedup_and_available_clock_only_other_risks_and_gates_fixed

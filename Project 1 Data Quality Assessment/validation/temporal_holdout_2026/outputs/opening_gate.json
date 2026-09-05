@@ -1,0 +1,13 @@
+{
+  "stage": "B_in_progress_holdout_closed",
+  "historical_replay": "partial_component_replay_not_all_dimension_end_to_end",
+  "prefix_invariance": "native_D2_and_D4_failed_corrected_candidates_pass_synthetic_tests",
+  "chunk_equivalence": "partial_whitener_and_context_predictor_only",
+  "time_contract": "audited_candidate_intervals_not_integrated_DQR_asof_join",
+  "unknown_evidence": "partial_D2_timestamp_unknown_preserved",
+  "asset_closure": "partial_D5_numeric_equivalent_reconstruction_not_byte_identity",
+  "performance_opening_allowed": false,
+  "new_period_scores_computed": false,
+  "source_attestation": "researcher_confirmed_not_independent_SCADA_verification",
+  "reason": "Research-plan Stage B stop-and-investigate rule applies to time leakage; no performance-based threshold changes."
+}
