@@ -2,9 +2,10 @@
 
 状态：**阶段B执行中，新期评分未开启。** 已完成多项组件重放和时间问题调查，不代表108天科学验证已完成。
 
-- [本轮专家执行报告与下一步](STAGE_B_REPORT_20260905.md)
+- [最新续作报告：D1恢复与分钟输入时钟](STAGE_B2_REPORT_20260906.md)
+- [阶段B首轮报告：D2/D4时间问题与资产恢复](STAGE_B_REPORT_20260905.md)
 - [图件说明](FIGURE_LEGENDS.md)
-- [11张配套源表](outputs/source_data/Temporal_holdout_stage_B_source.xlsx)
+- [14张配套源表](outputs/source_data/Temporal_holdout_stage_B_source.xlsx)
 - [开盲门控](outputs/opening_gate.json)：部分合同未通过，拒绝开启。
 - [本阶段内容指纹](outputs/stage_B_manifest.json)
 
@@ -18,6 +19,8 @@
 | `outputs/source_data/` | CSV/Parquet/XLSX源表 |
 | `recover_*`, `replay_*` | 限制在4月14日前的恢复/重放 |
 | `causal_*`, `d2_causal_adapter.py`, `information_time.py` | 独立候选，不覆盖正式D1–D5入口 |
+| `d1_recovery_adapter.py`, `d1_scheduled_changepoints.py` | D1恢复日志和固定调度候选 |
+| `minute_alignment_contract.py` | 3分钟有界延迟及跨块缺口合同 |
 | `verify_stage_b.py`, `test_*` | 组件合同与代码/配置/成果hash核验 |
 
 项目根运行 `python -m pytest validation/temporal_holdout_2026 -q` 和

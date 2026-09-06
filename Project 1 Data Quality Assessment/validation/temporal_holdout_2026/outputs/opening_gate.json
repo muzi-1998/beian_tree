@@ -2,7 +2,7 @@
   "stage": "B_in_progress_holdout_closed",
   "historical_replay": "partial_component_replay_not_all_dimension_end_to_end",
   "prefix_invariance": "native_D2_and_D4_failed_corrected_candidates_pass_synthetic_tests",
-  "chunk_equivalence": "partial_whitener_and_context_predictor_only",
+  "chunk_equivalence": "partial_minute_alignment_whitener_context_and_D1_recovery_journal_not_full_pipeline",
   "time_contract": "audited_candidate_intervals_not_integrated_DQR_asof_join",
   "unknown_evidence": "partial_D2_timestamp_unknown_preserved",
   "asset_closure": "partial_D5_numeric_equivalent_reconstruction_not_byte_identity",

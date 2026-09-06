@@ -61,6 +61,25 @@ def main() -> None:
     assert cp.Q_cp_changed.sum() == summary.changed_Q_cp_hours.sum()
     assert cp.low_tail_flip_on_common_support.sum() == summary.low_tail_flip_hours.sum()
     assert cp.timestamp.max() < pd.Timestamp("2026-04-14")
+    d1 = json.loads((OUTPUT / "audit/D1_recovery_replay_qa.json").read_text())
+    assert d1["native_replay_passed"] and d1["candidate_prefix_passed"] and d1["checkpoint_passed"]
+    assert not d1["heldout_scores_computed"]
+    d1_rows = pd.read_parquet(OUTPUT / "audit/D1_recovery_historical_rows.parquet")
+    d1_summary = pd.read_csv(OUTPUT / "audit/D1_recovery_historical_replay.csv")
+    assert len(d1_rows) == d1_summary.n_hours.sum() == d1["n_sensor_hours"] == 85932
+    assert d1_rows.timestamp.max() < pd.Timestamp("2026-04-14")
+    changed = (d1_rows.D1_native-d1_rows.D1_scheduled_candidate).abs().gt(1e-10).sum()
+    assert changed == d1_summary.scheduled_score_changed_hours.sum()
+    assert d1_rows.loc[~d1_rows.detector_evidence_complete, "D1_candidate_releasable"].isna().all()
+    d1_prefix = pd.read_csv(OUTPUT / "audit/D1_recovery_prefix_audit.csv")
+    assert len(d1_prefix) == 42
+    assert d1["native_pelt_prefix_passed"] == bool(d1_prefix.native_candidate_symmetric_difference.eq(0).all())
+    assert d1_prefix.candidate_event_prefix_equal.all() and d1_prefix.candidate_output_changed_hours.eq(0).all()
+    alignment = json.loads((OUTPUT / "audit/minute_alignment_replay_qa.json").read_text())
+    assert alignment["native_replay_passed"] and alignment["daily_checkpoint_passed"]
+    assert alignment["fixed_preprocessing_publication_delay_minutes"] == 3
+    assert not alignment["offline_diagnostic_overlays_used_in_causal_value_transform"]
+    assert not alignment["holdout_opened"]
     d5 = json.loads((OUTPUT / "audit/D5_context_recovery_qa.json").read_text())
     assert d5["checks"]["archived_posterior_equal_1e_10"]
     assert not d5["checks"]["archived_model_hash_equal"]

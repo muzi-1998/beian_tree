@@ -37,7 +37,7 @@ def main() -> None:
                 continue
             artifacts[str(path.relative_to(repo)).replace("\\", "/")] = sha256(path)
     write_json(OUTPUT / "stage_B_manifest.json", {
-        "schema": "temporal-stage-B-checkpoint-1.0", "created_on": "2026-09-05",
+        "schema": "temporal-stage-B-checkpoint-1.0", "created_on": "2026-09-06",
         "scope": "component_replay_and_timing_audit_not_full_holdout_results",
         "scientific_reference_commit": "6799c3a916bbc6840aa2623f915b44d05e5192d6",
         "packaging_commit": "the_git_commit_containing_this_manifest_not_self_referenced",

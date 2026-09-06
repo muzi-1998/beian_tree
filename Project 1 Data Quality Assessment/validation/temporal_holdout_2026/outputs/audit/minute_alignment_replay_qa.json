@@ -1,0 +1,16 @@
+{
+  "scope": "minute_preprocessing_only_not_full_raw_to_D1",
+  "raw_sha256": "df2acf4d548b8e6faee0bda3c73ea195fe131ca56a4fa8e8f3a72614c71dd7e5",
+  "n_channels": 18,
+  "minutes_per_channel": 368640,
+  "native_replay_passed": true,
+  "alignment_only_vs_archived_diagnostic_flags": "expected_difference_from_offline_transition_5_and_outlier_8_overlays",
+  "offline_diagnostic_overlays_used_in_causal_value_transform": false,
+  "candidate_changed_channel_minutes": 0,
+  "daily_checkpoint_passed": true,
+  "fixed_preprocessing_publication_delay_minutes": 3,
+  "tail_minutes_not_yet_released_per_channel": 3,
+  "range_thresholds_role": "inherited_decomposition_eligibility_not_D3_safety_bounds",
+  "raw_missingness_for_D2": "original_raw_only_never_filled_transform",
+  "holdout_opened": false
+}

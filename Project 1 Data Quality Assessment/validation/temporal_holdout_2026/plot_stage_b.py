@@ -101,7 +101,7 @@ def temporal_scope():
     ax.set_ylim(-.55, 4.55)
     ax.set_yticks(y, table.dimension)
     ax.set_xlabel("Minimum closure delay from label (min)")
-    ax.text(.97, .48, "Upstream and processing\nlatencies are additional", transform=ax.transAxes,
+    ax.text(.97, .48, "D1 short-gap transform: +3 min\nFurther processing latency is additional", transform=ax.transAxes,
             ha="right", va="center", fontsize=6)
     export(fig, "Holdout_H1_scope_information_clock")
 

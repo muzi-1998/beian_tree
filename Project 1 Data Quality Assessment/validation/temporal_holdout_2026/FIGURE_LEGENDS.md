@@ -55,3 +55,11 @@ The source workbook has11 sheets. Floating-point analytical contents are not
 rounded; replay tolerances are in the audit tables. These figures belong in
 Methods/Extended Data. Future-period applicability, coverage, event burden and
 composite figures remain pending the opening gate, not represented by these.
+# Update 2026-09-06
+
+H1 now identifies the fixed three-minute D1 short-gap preprocessing delay as
+additional to source-window closure. The remaining processing and integration
+latencies are not yet certified. Three more workbook sheets document D1 recovery,
+candidate scheduling and minute alignment; these are QA evidence, not holdout
+performance or new standalone main figures. The original H2 numerical results
+are unchanged.
