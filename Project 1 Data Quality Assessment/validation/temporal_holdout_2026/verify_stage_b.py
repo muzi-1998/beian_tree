@@ -1,4 +1,4 @@
-"""Public, reproducible checkpoint QA; scientific holdout gate must remain closed."""
+"""Verify public historical/T0 proofs without equating scoring with efficacy."""
 from __future__ import annotations
 
 import json
@@ -49,12 +49,18 @@ def main() -> None:
             assert path.is_file(), name
             actual = sha256(path) if kind == "artifacts" else content_hash(path)
             assert actual == expected, f"Stale {kind}: {name}"
-    try:
+    gate = json.loads((OUTPUT / "opening_gate.json").read_text())
+    if gate.get("performance_opening_allowed"):
         require_opening_gate(OUTPUT / "opening_gate.json")
-    except RuntimeError:
-        pass
+        from verify_t0_results import verify
+        verify()
     else:
-        raise AssertionError("This partial checkpoint cannot open the future scoring gate")
+        try:
+            require_opening_gate(OUTPUT / "opening_gate.json")
+        except RuntimeError:
+            pass
+        else:
+            raise AssertionError("Partial checkpoint must not authorize scoring")
     cp = pd.read_parquet(OUTPUT / "audit/D4_historical_CP_timing_rows.parquet")
     summary = pd.read_csv(OUTPUT / "audit/D4_historical_CP_timing_summary.csv")
     assert len(cp) == summary.n_pair_hours.sum() == 42847
@@ -100,7 +106,8 @@ def main() -> None:
     cells = verify_workbook()
     print(json.dumps({"checkpoint_bundle_passed": True, "workbook_cells_verified": cells,
                       "current_code_config_and_artifact_hashes": "matched",
-                      "scientific_holdout_ready": False, "holdout_opened": False}))
+                      "complete_scientific_validation_passed": False,
+                      "natural_holdout_scoring_opened": gate.get("performance_opening_allowed", False)}))
 
 
 if __name__ == "__main__":

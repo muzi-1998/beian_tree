@@ -1,4 +1,4 @@
-name: Temporal holdout checkpoint (not performance approval)
+name: Temporal holdout T0 provenance (not efficacy approval)
 
 on:
   pull_request:
@@ -17,6 +17,9 @@ jobs:
       run:
         working-directory: "Project 1 Data Quality Assessment"
     steps:
+      - name: Match frozen Windows schema/template byte endings
+        run: git config --global core.autocrlf true
+        working-directory: ${{ github.workspace }}
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
@@ -25,5 +28,5 @@ jobs:
         run: python -m pip install numpy==1.26.4 pandas==2.3.3 scipy==1.15.3 scikit-learn==1.7.2 pyarrow==24.0.0 openpyxl==3.1.5 pillow==12.0.0 pytest==9.0.3 PyYAML==6.0.3
       - name: Pure frozen and information-time contracts
         run: python -m pytest validation/temporal_holdout_2026 -q
-      - name: Check exact provenance and confirm holdout remains closed
+      - name: Verify opening lock, historical proofs and T0 numerical/figure bundle
         run: python validation/temporal_holdout_2026/verify_stage_b.py
