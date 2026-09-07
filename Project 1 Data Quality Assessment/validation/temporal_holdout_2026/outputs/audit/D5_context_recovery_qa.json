@@ -1,0 +1,17 @@
+{
+  "checks": {
+    "archived_model_hash_equal": false,
+    "archived_posterior_equal_1e_10": true,
+    "archived_active_regime_exact": true,
+    "archived_state_exact": true,
+    "predictor_prefix_invariance": true,
+    "predictor_chunk_equivalence": true,
+    "no_holdout_in_fit": true
+  },
+  "all_passed": false,
+  "maximum_posterior_error": 2.0539125955565396e-15,
+  "source_sha256": "df2acf4d548b8e6faee0bda3c73ea195fe131ca56a4fa8e8f3a72614c71dd7e5",
+  "archived_state_sha256": "622dd0f5ed1473ae5de464e4207e51ff9470de209cadcee9b30cbac92f9392e8",
+  "scope": "context_model_and_historical_hysteresis_only_not_full_D5_score",
+  "streaming_hysteresis_checkpoint": "pending_chunk_state_adapter"
+}

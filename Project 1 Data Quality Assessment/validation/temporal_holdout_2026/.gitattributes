@@ -1,0 +1,9 @@
+*.py text eol=lf
+.gitattributes text eol=lf
+.gitignore text eol=lf
+*.md text eol=lf
+*.yaml text eol=lf
+*.mjs text eol=lf
+outputs/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+intake_audit/*.csv -text
+intake_audit/*.json -text

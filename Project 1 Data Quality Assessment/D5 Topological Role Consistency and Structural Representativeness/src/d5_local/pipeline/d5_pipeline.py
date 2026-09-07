@@ -255,6 +255,7 @@ class D5Pipeline:
         evidence: Any,
         reference_end: pd.Timestamp,
         run_id: str,
+        frozen_mapper: Any | None = None,
     ) -> tuple[pd.DataFrame, dict[str, pd.DataFrame]]:
         risk_names = ["risk_profile", "risk_gradient", "risk_rank", "risk_rep"]
         median_names = [
@@ -330,10 +331,11 @@ class D5Pipeline:
         output.loc[
             disabled, ["risk_profile", "risk_gradient", "risk_rank", "risk_rep"]
         ] = np.nan
-        mapper = ScoreMapper(
+        mapper = frozen_mapper if frozen_mapper is not None else ScoreMapper(
             self.config["mapping_version"], gamma=float(self.mapping_config["gamma"])
         )
-        output = mapper.fit_transform(output, reference_end)
+        output = (mapper.transform(output) if frozen_mapper is not None
+                  else mapper.fit_transform(output, reference_end))
         d5_base, d5_raw = aggregate_scores(
             output["Q_profile"].to_numpy(),
             output["Q_gradient"].to_numpy(),

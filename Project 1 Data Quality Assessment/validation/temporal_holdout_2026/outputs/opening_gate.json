@@ -1,0 +1,15 @@
+{
+  "stage": "T0_natural_scoring_authorized",
+  "locked_at_UTC": "2026-09-07T02:43:24.590741+00:00",
+  "historical_replay": "passed",
+  "prefix_invariance": "passed",
+  "chunk_equivalence": "passed",
+  "time_contract": "passed",
+  "unknown_evidence": "passed",
+  "asset_closure": "passed",
+  "performance_opening_allowed": true,
+  "new_period_scores_computed": false,
+  "opening_lock_sha256": "dce9a28f3533364c94f10020627e4794bbe29bdf2196080d071dfc903cf6b6cc",
+  "approval_scope": "natural T0 scoring; no future refit, no L1 backfill, no challenge efficacy claim",
+  "asset_closure_semantics": "frozen reconstructed numeric assets, original-byte mismatch disclosed"
+}

@@ -1,0 +1,13 @@
+{
+  "scope": "paired_historical_same_unobservable_source_timestamp_contract",
+  "published_D2_full_replay": false,
+  "reason_not_published_replay": "Both arms conditionally normalize unobservable duplicate/order/interval metrics; old release used source audits.",
+  "n_sensor_hours": 85694,
+  "changed_D2_total_hours": 3,
+  "changed_veto_hours": 0,
+  "changed_P95_hours": 26,
+  "sensitive_response_loss_tested": false,
+  "holdout_opened": false,
+  "source_sha256": "df2acf4d548b8e6faee0bda3c73ea195fe131ca56a4fa8e8f3a72614c71dd7e5",
+  "thresholds_changed": false
+}

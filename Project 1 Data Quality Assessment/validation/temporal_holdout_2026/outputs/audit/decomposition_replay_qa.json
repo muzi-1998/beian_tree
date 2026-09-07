@@ -1,0 +1,9 @@
+{
+  "n_channels": 18,
+  "historical_decomposition_equal_1e_8": true,
+  "decomposition_prefix_equal_1e_8": true,
+  "frozen_filter_equal_1e_7": true,
+  "frozen_filter_checkpoint_equal_1e_10": true,
+  "scope": "historical_processed_input_not_full_raw_to_D1_end_to_end",
+  "holdout_opened": false
+}
