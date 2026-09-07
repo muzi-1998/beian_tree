@@ -53,6 +53,10 @@ def save(fig, name):
     if outside:
         raise RuntimeError(f"Text outside figure: {outside}")
     fig.savefig(FIGURES / f"{name}.svg")
+    svg_path = FIGURES / f"{name}.svg"
+    lines = svg_path.read_text(encoding="utf-8").splitlines()
+    with svg_path.open("w", encoding="utf-8", newline="\n") as stream:
+        stream.write("\n".join(line.rstrip() for line in lines) + "\n")
     fig.savefig(FIGURES / f"{name}.pdf")
     fig.savefig(FIGURES / f"{name}.png", dpi=300)
     fig.savefig(FIGURES / f"{name}.tiff", dpi=600, pil_kwargs={"compression": "tiff_lzw"})
