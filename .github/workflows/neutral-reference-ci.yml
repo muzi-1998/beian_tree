@@ -1,0 +1,33 @@
+name: Neutral reference independence
+on:
+  pull_request:
+    paths:
+      - "Project 1 Data Quality Assessment/shared_data_foundation/**"
+      - "Project 1 Data Quality Assessment/D3 Physical rationality and rate constraints/**"
+      - "Project 1 Data Quality Assessment/D4 Parallel-redundancy Temporal Consistency/**"
+      - "Project 1 Data Quality Assessment/cross_project_qa/independent_reference_review_20260917/**"
+      - "Project 1 Data Quality Assessment/validation/revised_reference_20260917/**"
+      - "Project 1 Data Quality Assessment/DQR Multidimensional Aggregation and Evidence-Aware Integration/**"
+      - ".github/workflows/neutral-reference-ci.yml"
+  workflow_dispatch:
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python -m pip install -r "Project 1 Data Quality Assessment/DQR Multidimensional Aggregation and Evidence-Aware Integration/requirements-lock.txt" pytest
+      - name: Frozen shared context and raw presence
+        working-directory: "Project 1 Data Quality Assessment"
+        run: python -m pytest shared_data_foundation/test_inference.py -q
+      - name: D3 score-free reference eligibility
+        working-directory: "Project 1 Data Quality Assessment/D3 Physical rationality and rate constraints"
+        run: python -m pytest tests/test_neutral_reference.py -q
+      - name: D4 score deletion and perturbation invariance
+        working-directory: "Project 1 Data Quality Assessment/D4 Parallel-redundancy Temporal Consistency"
+        run: python -m pytest tests/test_neutral_reference.py -q
+      - name: Revised code, configuration and artifact freshness
+        working-directory: "Project 1 Data Quality Assessment"
+        run: python cross_project_qa/independent_reference_review_20260917/verify_revision.py

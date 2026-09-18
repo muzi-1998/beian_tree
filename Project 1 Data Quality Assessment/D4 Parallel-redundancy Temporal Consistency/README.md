@@ -3,14 +3,14 @@
 D4 evaluates whether paired sensors at homologous locations in the two parallel
 biological-treatment trains retain comparable residual distributions, trends,
 variability, and structural-change behaviour. The production score is an
-independent raw DQR dimension. D2 controls observability, while D1 and D5 are
+independent raw DQR dimension. Shared raw support controls observability, while D1, D2 and D5 are
 kept in interpretation and action-governance interfaces that cannot alter the
 numeric `D4_raw` score.
 
 ## Scientific boundary
 
 - Input signal: the formal de-periodised residuals produced by Section 1.1.
-- D2: pair-level evaluation gate and 24 h benchmark-continuity requirement.
+- Shared support: raw bilateral synchronous presence over a complete 24 h window; observed hard stasis remains present. D2 scores and Veto do not control D4 admission or scoring.
 - D1: interpretation-only; it never changes `D4_raw`.
 - D5: the report interface provides structural context, while the separate
   gate interface may provide an attribution Guard or sensor-identity Veto only
@@ -38,7 +38,7 @@ outputs/figure_source_data/
                       one traceable Excel source workbook per figure
 outputs/qa/           automated figure-bundle QA
 outputs/comparison/   legacy and v1.4-v1.5.1 method-sensitivity workbooks
-outputs/integration/D4V151_composite_refresh/
+outputs/integration/D4V16_composite_refresh/
                       SHA-bound retrospective composite refresh
 legacy/2026-05-30-proxy/
                       preserved proxy-era package; not valid as current results
@@ -76,20 +76,29 @@ run in `.github/workflows/d4-publication-ci.yml` on each relevant pull request.
 
 ## Current acceptance status
 
-The v1.5.1 raw core uses public variable-by-regime calibration from development-
-period high-quality windows (bilateral D1 >= 4.5, bilateral D2 continuity >=
-24 h, and at least 80% synchronous common support). W1 and KS are calculated on
+The v1.6 raw core uses public variable-by-regime calibration from development-
+period neutral windows (complete 24 h raw clock, at least 80% bilateral synchronous
+support and frozen-context endpoint-regime purity at least 0.90). W1 and KS are calculated on
 the same timestamp support. Regime-template admission also requires at least six
 independent 7 d development blocks; tail-quantile precision is reported as an
 evidence grade and is not used to tune the threshold retrospectively. The
 numeric aggregation source remains `D4_raw`;
-D1/D2 benchmark admission is an evidence-quality screen, not a score blend.
-Sparse ORP high-quality support requires a documented variable-level fallback
+D1/D2 screening survives only as a matched-evidence sensitivity; neither score
+nor D2 Veto is consumed by primary calibration. Raw context is fitted only through
+the registered development end and later inferred without refitting. D5 retains
+its separate robust posterior/OOD/hysteresis model. Sparse ORP neutral support requires a documented variable-level fallback
 and remains a calibration limitation. The February-April period is an internal
 chronological validation period, not a genuinely untouched terminal test,
 because upstream transforms had already been developed on the study period.
 External labelled-event validation and action-grade D5 causal attribution must
 not be claimed from the current package.
+
+Per-pair-hour calibration metadata reports mapping scope, evidence quality,
+minimum independent blocks and worst tail-precision grade. It never multiplies
+or reduces `D4_raw`. The common foundation is owned by `shared_data_foundation/`.
+Old main-branch results remain frozen in Git; revision contrasts are exported to
+`cross_project_qa/independent_reference_review_20260917/`. Statistical correlation
+between dimensions remains possible despite computational separation.
 
 ## Publication figure set
 

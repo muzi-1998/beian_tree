@@ -118,7 +118,13 @@ def enrich_pair_hours(main: pd.DataFrame, lookup: pd.DataFrame) -> pd.DataFrame:
     frame["regime_id"] = pd.to_numeric(frame["regime_id"], errors="coerce").astype(
         "Int64"
     )
-    frame = frame.merge(lookup, on=["variable", "regime_id"], how="left")
+    shared = sorted((set(frame) & set(lookup)) - {"variable", "regime_id"})
+    frame = frame.merge(lookup, on=["variable", "regime_id"], how="left", suffixes=("", "_lookup"), validate="many_to_one")
+    for column in shared:
+        a, b = frame[column], frame[column + "_lookup"]
+        if not (a.eq(b) | (a.isna() & b.isna())).all():
+            raise ValueError(f"Pair-hour calibration metadata disagrees with mapping: {column}")
+        frame = frame.drop(columns=column + "_lookup")
     frame["mapping_support_class"] = frame["mapping_support_class"].fillna(
         "insufficient"
     )

@@ -1,0 +1,47 @@
+{
+  "status": "revised_temporal_out_of_sample_re_evaluation_not_first_blind_test",
+  "period": [
+    "2026-04-14 00:00:00",
+    "2026-07-31 00:00:00"
+  ],
+  "run_id": "REVISED-REFERENCE-20260917",
+  "stage": "D4",
+  "no_later_refit": true,
+  "inputs": [
+    {
+      "path": "D:\\004_git\\beian_tree-main\\Project 1 Data Quality Assessment\\1.1 Decomposition\\outputs\\parquet\\time_base_1min_raw.parquet",
+      "sha256": "df2acf4d548b8e6faee0bda3c73ea195fe131ca56a4fa8e8f3a72614c71dd7e5"
+    },
+    {
+      "path": "D:\\004_git\\beian_tree-main\\Project 1 Data Quality Assessment\\1.1 Decomposition\\Raw data\\09_25.08.01-26.07.30_all data\\\u6574\u5e74\u5bf9\u9f50_\u5206\u949f\u6570\u636e_2025-08-01_2026-07-30_02_shengwuchi.csv",
+      "sha256": "18cb7f4617095655d1cb15a932621a5fbf58ac6b8b16a092e6586caba5aa4856"
+    },
+    {
+      "path": "D:\\004_git\\beian-val-260905\\Project 1 Data Quality Assessment\\validation\\temporal_holdout_2026\\intake_audit\\channel_mapping.csv",
+      "sha256": "42fd3e8de00e0293584cbe109012f2e4e66cbd5ec5acb613b0ed138b9b849a46"
+    },
+    {
+      "path": "D:\\004_git\\beian-val-260905\\Project 1 Data Quality Assessment\\validation\\temporal_holdout_2026\\.local_qa\\holdout_T0\\residual.parquet",
+      "sha256": "403321754b991197d94d132e19dc923e2d7fcb5b934148282d7133b990bbf5db"
+    },
+    {
+      "path": "D:\\004_git\\beian_tree-main\\Project 1 Data Quality Assessment\\shared_data_foundation\\outputs\\D4_context_manifest.json",
+      "sha256": "9d6116d8f1eda4b4c68e5255e36d147633f268f4cad4c54599d219dcf578349a"
+    },
+    {
+      "path": "D:\\004_git\\beian_tree-main\\Project 1 Data Quality Assessment\\D4 Parallel-redundancy Temporal Consistency\\outputs\\data\\D4_mapping_params.xlsx",
+      "sha256": "fc4384a6686f2f4698fe0693d04e50277cb39b434db64f7ee7779a9d4062352c"
+    },
+    {
+      "path": "D:\\004_git\\beian_tree-main\\Project 1 Data Quality Assessment\\D4 Parallel-redundancy Temporal Consistency\\configs\\d4.yaml",
+      "sha256": "627c2df190e99dabe7f637b01286a3f978c118f8fefe1944468756d23db910ef"
+    },
+    {
+      "path": "D:\\004_git\\beian-val-260905\\Project 1 Data Quality Assessment\\validation\\temporal_holdout_2026\\causal_change_points.py",
+      "sha256": "c9581885c040df77586446cfa33cc30c5cf14248b093b1d70f84aa83c5f4d1f1"
+    }
+  ],
+  "outputs": {
+    "D4_scores.parquet": "81e19977ff68fd5a3d1296b31f962cf0a74a6642fd5c97f07ca813b50893100b"
+  }
+}

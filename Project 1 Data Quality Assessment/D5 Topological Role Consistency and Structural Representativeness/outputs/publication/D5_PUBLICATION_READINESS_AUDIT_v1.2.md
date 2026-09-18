@@ -24,7 +24,7 @@ The current node-level prototype gives 99.6% availability-aware composite covera
 
 ## D4-D5 complementarity
 
-Against D4 run `D4V151_20260813_083347` and calibration `D4CAL-V151-66fe1bb6b7d3` (main-score SHA-256 `c21738a331d19632cc915e4d29cf692920aeccd346a6c74912f0f52dd4a9ca04`), report-score overlap Spearman rho is 0.119, raw-calculable overlap rho is 0.171, adjusted report-score partial rank correlation is 0.108, and report-score low-tail Jaccard is 0.229. For report-score strata, 94.7% of 19 descriptive strata have |rho| below 0.30; 13 meet the six-independent-block CI criterion. For raw-calculable strata, the corresponding values are 86.4%, 22 and 15. The pooled descriptive rate is 90.2%. Point estimates require at least two independent 7 d blocks; bootstrap CIs require at least six. These are non-redundancy diagnostics, not proof of causal independence. Status is `current`.
+Against D4 run `D4V16_20260917_235626` and calibration `D4CAL-V16-e615cd349a49` (main-score SHA-256 `a41e89ab86b3d91d7d7aeacb1947f4cc2ae85d523a60924993a994597889ba4e`), report-score overlap Spearman rho is 0.179, raw-calculable overlap rho is 0.153, adjusted report-score partial rank correlation is 0.125, and report-score low-tail Jaccard is 0.214. For report-score strata, 94.4% of 18 descriptive strata have |rho| below 0.30; 14 meet the six-independent-block CI criterion. For raw-calculable strata, the corresponding values are 86.4%, 22 and 15. The pooled descriptive rate is 90.0%. Point estimates require at least two independent 7 d blocks; bootstrap CIs require at least six. These are non-redundancy diagnostics, not proof of causal independence. Status is `current`.
 
 ## Target influence
 

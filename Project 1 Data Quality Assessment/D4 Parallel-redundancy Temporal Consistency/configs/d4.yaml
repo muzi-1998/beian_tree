@@ -1,4 +1,4 @@
-version: d4-v1.5.1-statistical-dependence-audit-20260813
+version: d4-v1.6-neutral-reference-20260917
 window_hours: 24
 step_hours: 1
 analysis_interval_minutes: 10
@@ -50,7 +50,10 @@ aggregation:
   lambda_blend: 0.75
 
 benchmark:
-  d1_min_score: 4.5
+  reference_route: neutral_primary
+  context_min_purity: 0.90
+  context_purity_sensitivity: [0.80, 0.90, 1.00]
+  screened_reference_min_score: 4.5
   d2_continuity_hours: 24
   min_stratum_windows: 100
   min_variable_windows: 50
@@ -78,6 +81,6 @@ classification:
 paths:
   residuals: 1.1 Decomposition/outputs/parquet/residual_min.parquet
   time_base_contract: 1.1 Decomposition/outputs/parquet/time_base_contract.json
-  d1_scores: D1 Sensor health/outputs/data/D1_main_scores_min.xlsx
-  regime_templates: D1 Sensor health/outputs/data/D1_regime_templates.xlsx
-  d2_scores: D2 Temporal Continuity & Information Availability/artifacts/data/D2_main_scores_hourly.xlsx
+  interpretation_d1: D1 Sensor health/outputs/data/D1_main_scores_min.xlsx
+  interpretation_d2: D2 Temporal Continuity & Information Availability/artifacts/data/D2_main_scores_hourly.xlsx
+  raw_observations: 1.1 Decomposition/outputs/parquet/time_base_1min_raw.parquet

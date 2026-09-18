@@ -170,10 +170,12 @@ def figure_1_framework(cfg: D4Config, params: pd.DataFrame, output_dir: Path, so
                              gridspec_kw={"width_ratios": [1.15, 1.55, 1.0], "wspace": 0.10})
     for ax in axes:
         ax.set_axis_off()
+        ax.set_xlim(0, 1)
+        ax.set_ylim(0, 1)
 
-    pair_y = np.linspace(0.74, 0.12, len(cfg.pairs))
-    axes[0].text(0.46, 1.03, "Homologous pair input", transform=axes[0].transAxes,
-                 fontsize=8, fontweight="bold", ha="center", va="bottom", clip_on=False)
+    pair_y = np.linspace(0.84, 0.12, len(cfg.pairs))
+    axes[0].text(0.46, 0.96, "Homologous pair input", transform=axes[0].transAxes,
+                 fontsize=8, fontweight="bold", ha="center", va="top", clip_on=False)
     for y, pair in zip(pair_y, cfg.pairs):
         color = PALETTE["blue"] if pair.variable == "DO" else PALETTE["orange"]
         axes[0].plot([0.08, 0.28], [y, y], color=color, lw=1.8, solid_capstyle="round")
@@ -189,16 +191,16 @@ def figure_1_framework(cfg: D4Config, params: pd.DataFrame, output_dir: Path, so
     axes[1].text(0.04, 0.96, "Independent D4 evidence chain", transform=axes[1].transAxes,
                  fontsize=8, fontweight="bold", va="top")
     boxes = [
-        (0.09, 0.17, "De-periodised\nresiduals"),
-        (0.28, 0.16, "24 h paired\nwindow"),
-        (0.49, 0.20, "W1 / KS\nSlope / IQR / CP"),
-        (0.72, 0.17, "Public quantile\nmapping"),
-        (0.91, 0.12, "D4 raw"),
+        (0.10, 0.17, "De-periodised\nresiduals"),
+        (0.30, 0.15, "24 h\npair window"),
+        (0.51, 0.19, "W1 / KS\nSlope / IQR\nChange point"),
+        (0.73, 0.15, "Public\nquantiles"),
+        (0.92, 0.12, "D4 raw"),
     ]
     for index, (x, width, label) in enumerate(boxes):
         axes[1].add_patch(mpl.patches.FancyBboxPatch(
             (x - width / 2, 0.48), width, 0.25,
-            boxstyle="round,pad=0.015,rounding_size=0.018",
+            boxstyle="round,pad=0.006,rounding_size=0.012",
             transform=axes[1].transAxes, facecolor=PALETTE["pale_gray"],
             edgecolor=PALETTE["gray"], linewidth=0.7,
         ))
@@ -209,9 +211,9 @@ def figure_1_framework(cfg: D4Config, params: pd.DataFrame, output_dir: Path, so
             axes[1].annotate("", xy=(next_x - next_width / 2 - 0.008, 0.605),
                              xytext=(x + width / 2 + 0.01, 0.605), xycoords=axes[1].transAxes,
                              arrowprops={"arrowstyle": "->", "lw": 0.7, "color": PALETTE["black"]})
-    axes[1].text(0.50, 0.34, "Distribution   Trend   Variability   Coarse structural change",
+    axes[1].text(0.50, 0.34, "Distribution / trend / variability\nCoarse structural change",
                  transform=axes[1].transAxes, ha="center", fontsize=6.3, color=PALETTE["gray"])
-    axes[1].text(0.49, 0.16, "0.75 weighted mean + 0.25 minimum-subscore penalty",
+    axes[1].text(0.49, 0.14, "0.75 weighted mean\n+ 0.25 minimum-subscore penalty",
                  transform=axes[1].transAxes, ha="center", fontsize=6.5,
                  bbox={"facecolor": "white", "edgecolor": PALETTE["light_gray"], "pad": 2.2})
     panel_label(axes[1], "b")
@@ -219,8 +221,8 @@ def figure_1_framework(cfg: D4Config, params: pd.DataFrame, output_dir: Path, so
     axes[2].text(0.04, 0.96, "Dimension boundary", transform=axes[2].transAxes,
                  fontsize=8, fontweight="bold", va="top")
     roles = [
-        ("D1", "Benchmark admission\nand interpretation", PALETTE["blue"]),
-        ("D2", "Observability gate", PALETTE["orange"]),
+        ("D1", "Post-score\ninterpretation only", PALETTE["blue"]),
+        ("Raw", "Shared observation\nsupport", PALETTE["orange"]),
         ("D4", "Independent numeric\npair asymmetry", PALETTE["green"]),
         ("D5", "Attribution guard;\nno score rewrite", PALETTE["purple"]),
     ]
@@ -496,9 +498,9 @@ def figure_4_field_cases(
         ax = axes[3, column]
         ax.plot(score["timestamp"], score["D1_target"], color=PALETTE["blue"], lw=0.8, label="D1 target")
         ax.plot(score["timestamp"], score["D1_ref"], color=PALETTE["orange"], lw=0.8, label="D1 peer")
-        d2_ok = (~score["D2_target_veto"].astype(bool) & ~score["D2_ref_veto"].astype(bool)).astype(float)
+        d2_ok = score["neutral_support_ok"].astype(float)
         ax.fill_between(score["timestamp"], 1, 5, where=d2_ok.lt(0.5), color=PALETTE["mid_gray"], alpha=0.35,
-                        label="D2 not observable")
+                        label="Insufficient raw support")
         ax.set_ylim(1, 5); ax.set_ylabel("Context score")
         ax.xaxis.set_major_locator(mdates.AutoDateLocator(minticks=3, maxticks=5))
         ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
@@ -512,7 +514,7 @@ def figure_4_field_cases(
                 color=PALETTE["red"], bbox={"facecolor": "white", "edgecolor": "none", "alpha": 0.80, "pad": 0.15})
         panel_label(ax, chr(103 + column)); _open(ax)
         source = score[["timestamp", "pair_id", "D4_raw", *Q_COLUMNS, "D1_target", "D1_ref",
-                        "D2_target_veto", "D2_ref_veto", "usable_for_D4"]].copy()
+                        "D2_target_veto", "D2_ref_veto", "neutral_support_ok", "usable_for_D4"]].copy()
         source = source.merge(trace.reset_index().rename(columns={trace.index.name or "index": "timestamp"}),
                               on="timestamp", how="left")
         source_sheets[_pair_label(pair.pair_id)] = source

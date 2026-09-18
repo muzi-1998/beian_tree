@@ -196,7 +196,8 @@ def test_frozen_position_registry_has_prespecified_support():
         int(value) >= int(calibration["minimum_calibration_sensor_minutes"])
         for value in calibration["calibration_support_sensor_minutes"].values()
     )
-    assert "Q_drift" in calibration["quality_filter"]
+    assert calibration["reference_route"] == "neutral_raw_primary"
+    assert "D1" not in calibration["quality_filter"]
     assert calibration["resolution"] == "minute_calibration_minute_validation_minute_production"
 
 

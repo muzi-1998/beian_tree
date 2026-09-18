@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 
 from src.d3_physical.do_temperature_envelope import freshwater_do_saturation_mg_l
+from src.d3_physical.reference_eligibility import production_calibration_mask_from_raw
 
 
 D1_SHEETS = (
@@ -32,8 +33,8 @@ def _wide_sheet(path: Path, sheet: str) -> pd.DataFrame:
     return frame.set_index("timestamp").sort_index()
 
 
-def _quality_masks(root: Path, sensors: list[str]) -> tuple[dict[str, pd.Series], dict]:
-    """Build validation-only hourly masks from frozen D1 and D2 releases."""
+def d1d2_clean_reference_mask_for_sensitivity(root: Path, sensors: list[str]) -> tuple[dict[str, pd.Series], dict]:
+    """Screened-reference sensitivity, never a production calibration mask."""
     d1_path = root.parent / "D1 Sensor health" / "outputs" / "data" / "D1_main_scores_min.xlsx"
     d2_path = (
         root.parent
@@ -431,7 +432,9 @@ def build_temperature_envelope_audit(
         if item["type"] == "DO" and item["process_zone"] == "aerobic"
     ]
     sensors = [item["id"] for item in aerobic]
-    quality_masks, sources = _quality_masks(root, sensors)
+    sources = {"d1_filter_sheets": "not_used_by_primary_reference",
+               "d1_optional_saturation_floor_filter": "not_applicable",
+               "d1_sha256": "not_consumed", "d2_sha256": "not_consumed"}
     temperature_path = Path(temperature_minute.attrs["source_path"])
     sources["temperature_sha256"] = _sha256(temperature_path)
 
@@ -448,7 +451,11 @@ def build_temperature_envelope_audit(
         position = str(meta["position"])
         alpha = float(calibration["alpha_by_position"][position])
         observed = frame[sensor]
-        high_quality = _minute_mask(quality_masks[sensor], frame.index)
+        high_quality = production_calibration_mask_from_raw(
+            observed, temperature, imputed=pd.Series(False, index=frame.index),
+            time_valid=pd.Series(True, index=frame.index),
+            minimum_raw_minutes_per_hour=int(calibration["minimum_raw_minutes_per_hour"]),
+        ).to_numpy()
         evaluable = observed.notna().to_numpy() & temperature.notna().to_numpy()
         ratio = observed / csat
         upper = alpha * csat
@@ -521,6 +528,18 @@ def build_temperature_envelope_audit(
         )
     registry = pd.DataFrame(registry_rows).sort_values("position")
     phase_validation = _phase_summary(detail, calibration)
+    screened = detail.copy()
+    screened["frozen_alpha"] = screened["position"].astype(str).map(
+        calibration["screened_reference_alpha_by_position"])
+    screened["dynamic_upper_mg_L"] = screened["frozen_alpha"] * screened["Csat_reference_mg_L"]
+    screened["dynamic_warning"] = (
+        screened["DO_minute_mg_L"] > screened["dynamic_upper_mg_L"]
+    ).fillna(False)
+    reference_comparison = pd.concat([
+        phase_validation.assign(reference_route="neutral_primary"),
+        _phase_summary(screened, calibration).assign(reference_route="D1D2_screened_sensitivity"),
+    ], ignore_index=True)
+    reference_comparison["evaluation_support"] = "identical_neutral_minutes_and_windows"
     alpha_uncertainty = _alpha_uncertainty_scenarios(detail, registry, calibration)
     envelope_comparison = _envelope_model_comparison(detail, calibration)
 
@@ -596,7 +615,7 @@ def build_temperature_envelope_audit(
                     detail["DO_minute_mg_L"].isna(),
                     ~detail["high_quality_filter_pass"],
                 ],
-                ["temperature_unavailable", "DO_unavailable", "D1_D2_quality_filter_failed"],
+                ["temperature_unavailable", "DO_unavailable", "neutral_reference_criteria_failed"],
                 default="eligible",
             )
         )
@@ -609,6 +628,7 @@ def build_temperature_envelope_audit(
         "saturation_reference_check": saturation_reference_check,
         "frozen_registry_check": registry,
         "phase_validation": phase_validation,
+        "reference_comparison": reference_comparison,
         "cross_line_transfer": cross_line,
         "alpha_sensitivity": alpha_sensitivity,
         "alpha_CI_scenarios": alpha_uncertainty,

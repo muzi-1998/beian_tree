@@ -1,0 +1,10 @@
+{
+  "role": "sensitivity_only_no_threshold_selection",
+  "contrast": "same_raw_metrics_and_frozen_context",
+  "historical_comparison": "joint_raw_support_context_and_admission_revision_not_admission_only",
+  "future_period_claim": "revised_temporal_out_of_sample_re_evaluation_not_first_blind_validation",
+  "files": {
+    "D3_reference_comparison.xlsx": "797b5a1c219a56ca833d3cdd3a9c4740dc1ae271bd85aa770a78ba2c8745551a",
+    "D4_reference_comparison.xlsx": "9769aad2c3881ead9fc601927b47459dea5f690a78bde2a5e9767402ac8fe367"
+  }
+}

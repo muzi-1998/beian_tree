@@ -1,0 +1,1667 @@
+{
+  "schema": "neutral-reference-revision-v1",
+  "frozen_baseline_commit": "6799c3a916bbc6840aa2623f915b44d05e5192d6",
+  "authority": "code_config_and_artifact_content_hashes_not_packaging_commit",
+  "claim": "computational_and_scoring_dependency_separation_not_statistical_independence",
+  "temporal_evaluation": "previously_inspected_revised_temporal_out_of_sample_re_evaluation",
+  "checks": {
+    "frozen_input_registry": true,
+    "temporal_checks": {
+      "complete_108_days_14_nodes_7_pairs": true,
+      "node_unique": true,
+      "node_period": true,
+      "pair_unique": true,
+      "pair_period": true,
+      "D1_no_future_or_expired_evidence": true,
+      "D2_no_future_or_expired_evidence": true,
+      "D3_no_future_or_expired_evidence": true,
+      "D5_no_future_or_expired_evidence": true,
+      "D4_no_future_or_expired_evidence": true,
+      "D1_total_unchanged_from_T0": true,
+      "D2_total_unchanged_from_T0": true,
+      "D5_raw_unchanged_from_T0": true,
+      "D5_report_score_unchanged_from_T0": true,
+      "Q_node_available_unchanged_from_T0": true,
+      "Q_node_core12_unchanged_from_T0": true,
+      "Q_node_full_unchanged_from_T0": true,
+      "D5_no_support_backfill": true,
+      "Q_node_core12_formula": true,
+      "Q_node_full_formula": true,
+      "pair_core_formula": true,
+      "D4_usable_has_calibration_metadata": true,
+      "D3_fail_blocks_release": true
+    }
+  },
+  "files": [
+    {
+      "path": "cross_project_qa/independent_reference_review_20260917/audit_d3_candidate.py",
+      "sha256": "bc7b9d583d4deea087c9073e3937ccb5ae31ca3fa11363bea2508dd5d5079b8c",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "cross_project_qa/independent_reference_review_20260917/D3_candidate_reference_audit.json",
+      "sha256": "881b711c736a05083a69cf3e9a6aefd3630dd083f22942f546b3f1bfc075d2ae",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "cross_project_qa/independent_reference_review_20260917/D3_reference_comparison.xlsx",
+      "sha256": "797b5a1c219a56ca833d3cdd3a9c4740dc1ae271bd85aa770a78ba2c8745551a",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "cross_project_qa/independent_reference_review_20260917/D4_D1D2_screened_scores.parquet",
+      "sha256": "3ee9e2da592396d67126590b1c2b754d66409516589f43219b15c4370366ce42",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "cross_project_qa/independent_reference_review_20260917/D4_purity_080_scores.parquet",
+      "sha256": "53b8a5470fe9d9157b077db77325eb4e787f9d7ae3b1dd4104fce649b37bf3ff",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "cross_project_qa/independent_reference_review_20260917/D4_purity_100_scores.parquet",
+      "sha256": "910a6bf05b45784296d7d6eea5bec88529b4575bcd40b09ffd537549419c95e3",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "cross_project_qa/independent_reference_review_20260917/D4_reference_comparison.xlsx",
+      "sha256": "9769aad2c3881ead9fc601927b47459dea5f690a78bde2a5e9767402ac8fe367",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "cross_project_qa/independent_reference_review_20260917/EXECUTION_REPORT_ZH.md",
+      "sha256": "2596d081d7b83c1684b4af691c6a6aa0cf411aab8cd0a6612665d700aacbb660",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "cross_project_qa/independent_reference_review_20260917/EXPERT_REVIEW_ZH.md",
+      "sha256": "7665522baace810dc73dc780d14e962a8aac546190784fbc766a07a4b3e663c7",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "cross_project_qa/independent_reference_review_20260917/Fig_reference_admission_sensitivity.pdf",
+      "sha256": "ad9278e8f71594702b5cbc627402eeed1d075101568ce994b0a5385b18568fa5",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "cross_project_qa/independent_reference_review_20260917/Fig_reference_admission_sensitivity.png",
+      "sha256": "a08ac3f78aea6da667b512842f28fdab40fb46f4c838bea68041566d0672c663",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "cross_project_qa/independent_reference_review_20260917/Fig_reference_admission_sensitivity.svg",
+      "sha256": "906a8a2745368c20ce695a7a771ee40fa55b2d5ec6e5a999bf37ed9265c90a8f",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "cross_project_qa/independent_reference_review_20260917/Fig_reference_admission_sensitivity.tiff",
+      "sha256": "f006eb942f22e5206d917796c041108d24ea2686d5eebe0ddc2ec1053d2cf2a5",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "cross_project_qa/independent_reference_review_20260917/FIGURE_QA.md",
+      "sha256": "e590ac35afec6f3dd60e5be605fd2c25c216bc569d352ee85fd23cceae9279b7",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "cross_project_qa/independent_reference_review_20260917/frozen_baseline/D3_scores.parquet",
+      "sha256": "e70f02eac7205a5b5bf2e1ba1729da6367c8a4173d4a0625ec92f7e9de64e49f",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "cross_project_qa/independent_reference_review_20260917/frozen_baseline/D3_screened_reference.parquet",
+      "sha256": "57f246127653a5a26404ba7ef6955e34f5c055108f2b6d6a3027e99bd895768b",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "cross_project_qa/independent_reference_review_20260917/frozen_baseline/D4_mapping.parquet",
+      "sha256": "3744380915925a43758ca595c542a843c9585ac246fed788b7a073b4096a1dd6",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "cross_project_qa/independent_reference_review_20260917/frozen_baseline/D4_scores.parquet",
+      "sha256": "adf2d473f4f6d3db757e41f0c95b79f18aead6cae77451d1e4b57d96293bd1b4",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "cross_project_qa/independent_reference_review_20260917/frozen_baseline/manifest.json",
+      "sha256": "9fa0001127698ee61cd19fe029283f4217d0258c3cde2b1c8e85576f2856f726",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "cross_project_qa/independent_reference_review_20260917/neutral_alpha_lock.json",
+      "sha256": "a9c954f1e0fc43d8ed77d18ff8c1be48d073c8c6f07654311ca2a9145ecedfeb",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "cross_project_qa/independent_reference_review_20260917/prepare_revision.py",
+      "sha256": "17e8c0f75b87eff83b764ac5f2983b99c20b279282f71e7b540fa0b78f0e066e",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "cross_project_qa/independent_reference_review_20260917/PULL_REQUEST.md",
+      "sha256": "9899fc8fcb9d3f6d5e4632df7f557ab69ba86778758972a52d265118c516d33c",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "cross_project_qa/independent_reference_review_20260917/reexport_dqr_figure3.py",
+      "sha256": "1abfe82b81c97483fb88af1db138ae967c502b1d19d7d681b79eef2700fe4035",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "cross_project_qa/independent_reference_review_20260917/refresh_downstream.py",
+      "sha256": "585b2eb2190794d65aef03453d9e59e2cc522e7810fd2871c53bbe1322da4478",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "cross_project_qa/independent_reference_review_20260917/run_reference_sensitivity.py",
+      "sha256": "e54595b47e3394b62af73e19d382e9c077d8eccf954512c388a919f0da0b10b8",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "cross_project_qa/independent_reference_review_20260917/sensitivity_manifest.json",
+      "sha256": "cfdaee8eee2a4c389bdd67ee17f868d4983cdd84aed48279ef45e978ed0202a7",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "cross_project_qa/independent_reference_review_20260917/verify_revision.py",
+      "sha256": "e6ca32c22d5ebf4df452d9ed87125e74693081c7855fefc72183d3d17b92be4c",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/ci/audit_figure_bundle.py",
+      "sha256": "0938b6209e1db76d215acf836c4097b827255de0fc934038fd2120da7b2a79c8",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/ci/check_d3_imports.py",
+      "sha256": "1f1b61af4fedfac4907f47d595411ab74fe8e18cda47eedb9ff30d5d097d37a1",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/configs/d3_dag.yaml",
+      "sha256": "81c38d1ee9dd5e32e6e137277f874581d27b3a21db0e182bb09011583e857125",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/configs/d3_figure_cases.yaml",
+      "sha256": "584d04ec572b7fdd301e0491abf80a604c3ea21313d68d48ee4ebe3601d9f33b",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/configs/d3_mapping.yaml",
+      "sha256": "ce2536899a4d6de76544ae3ca9bfbcbb1eb5351cb5b918e94f7ab17d0c337197",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/configs/d3_paths.yaml",
+      "sha256": "4964458875862bb336ef13a3abfb4211d7295b1694520b6b7b20b9cc46edcfdf",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/configs/d3_physical_bounds.yaml",
+      "sha256": "073a6c6f4ffe7b22088b862320f460e66a83167c71bdc9c54e9b8909577f51e3",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/configs/d3_rate_limits.yaml",
+      "sha256": "a592cdf6519bac2b3d59463a3f325c8897bbe438be57263797dabecbed8b2497",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/configs/d3_rules.yaml",
+      "sha256": "aec0086681e67f99fc0a59cfbb10a4448a5f4ade3c0bd98c7af79ea44fe149b7",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/configs/d3_sensors.yaml",
+      "sha256": "7ae00a1e5b1d276371f5e317ceaeefb147ccb1a63b7fe331de973f71a355afb4",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/figures/_figure_data.py",
+      "sha256": "513e1cf37252408464f603d9552488065a965e0e1f99b5a5769b61770d0236ed",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/figures/_nature_style.py",
+      "sha256": "29732006688913645cfd8050ea2f72696ef85ea9e71550b538e5a55aef5bb58a",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/figures/fig10_temperature_conditioned_do_upper.py",
+      "sha256": "dc6305e93b7f9b6a6d42722731d2a84ce1d1608dee069e5b7b57e70e479d9bf6",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/figures/fig11_orp_spatial_heterogeneity.py",
+      "sha256": "fa713f96d59f3e0c33470c8b92badec335b06213952c7cc54ef74caacd884337",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/figures/fig1_framework_overview.py",
+      "sha256": "cf678ca0e02d9f4c6df1c13094c3891946dd7030a4ccbae0a1ddc8d3c6a8113f",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/figures/fig2_score_landscape.py",
+      "sha256": "31538e0b011cfa2b8aa3722ebd395632d8e3778d433468e14932be5a28839f38",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/figures/fig3_evidence_coverage.py",
+      "sha256": "9dee652ef26d42826499c319254b1285ebc3aabefcfc9d8d1e3d12deaa8650ec",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/figures/fig4_persistent_rate_construct.py",
+      "sha256": "8657ecd44b133381d7151da6fd325d581dd7dfe96a9408f1c365cb76676a2803",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/figures/fig5_boundary_fixed_threshold.py",
+      "sha256": "383c73c1e37a327ebd917bfdb3b1176594709a408ec197ea44517826a9ed025e",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/figures/fig6_gate_and_directional_profile.py",
+      "sha256": "b07578a190aeb92670763db5769e7bab10195bd979f599de14d1c37a5ef35c24",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/figures/fig7_case_studies.py",
+      "sha256": "91c6c5cc806d7b78f8358a6b122f1fdecea41c4d7bbc119653b49fd8216206a6",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/figures/fig8_boundary_rate_validation.py",
+      "sha256": "aea5fd9fe5ebba214f53ca3ee1c46d0310908ead9d9fadcff93c9d257dc0e2d4",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/figures/fig9_do4_zero_equivalence_contract.py",
+      "sha256": "c02c3168ef7d8364e8586d59c507741d5f8cec6f2d0bfa72c0e179e99f71dfc1",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/data/D3_boundary_diagnostics.xlsx",
+      "sha256": "dce12924a52b07fa3fb31ef3d0398c2a53367fb01b877eafada459e361fb20e6",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/data/D3_mapping_params.xlsx",
+      "sha256": "b3cbaa159e63b05c978d67c17f7c9b0268655baca408281001105f2abc840725",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/data/D3_physical_events.xlsx",
+      "sha256": "9981367d65d43440199390a1378a6224c49ae751431f47fec63932ee51234978",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/data/D3_rate_evidence.xlsx",
+      "sha256": "f4cc2c4ecdcd67c44a9021f06d4ce3047c52549dc9b3450e409e169d30a64fce",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/data/D3_sensor_summary.xlsx",
+      "sha256": "324c3fba9ee1cf4814e23d2b29d9302ca9e16888d7d5285f6a21a87905e3f89e",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/data/D3_threshold_library.xlsx",
+      "sha256": "0da46b9fbc48554299d5bb077c3895a30363670e61625b75ee5fec8938ead026",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/data/D3_value_evidence.xlsx",
+      "sha256": "0dadb2d0da4cdc01d61508b50cb363391e751ad473d95b65c7a8ea07ae17222a",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/data/D3_window_scores.xlsx",
+      "sha256": "c733c4a8ac4c15868a20cc69595dba96ee81e50bd653fd7bb05256e865d6a570",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/figures/fig10_temperature_conditioned_do_upper.pdf",
+      "sha256": "ccd2433d196835d71723ebfa20d8451d3bbe7d46c708593227e903814b6d09bc",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/figures/fig10_temperature_conditioned_do_upper.png",
+      "sha256": "d498d99f29a284ba1c9babf716c649a983f068cd0e369e9d3e59a61c6f12af80",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/figures/fig10_temperature_conditioned_do_upper.svg",
+      "sha256": "a67326aa1a7a302fb832b63f9b5ce9e4ac0cf350db37813cecb21c02138171ad",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/figures/fig10_temperature_conditioned_do_upper.tiff",
+      "sha256": "5e5c4ed4b3fed5409b856b656643c4e6924157327b1b910c7c7ff56bf9f4fcf3",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/figures/fig11_orp_spatial_heterogeneity.pdf",
+      "sha256": "f1641239b001fa35f830cbaa0cd0b1deeb4c9001dc14d2d105a69d26ea6f2a06",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/figures/fig11_orp_spatial_heterogeneity.png",
+      "sha256": "c16bdfc19bec8d93aba4eecd8ea8e92aa2bdcafdf82b1142899a1e1c6a8c18e8",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/figures/fig11_orp_spatial_heterogeneity.svg",
+      "sha256": "4660dc2ede3403665d18fa54aad881f903e306f7477188fecf0915d5fbe494c5",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/figures/fig11_orp_spatial_heterogeneity.tiff",
+      "sha256": "34f777351450327bcdf281b3b6f788db21fc77c3e0c397cfd8a82139601a2723",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/figures/fig1_framework_overview.pdf",
+      "sha256": "94c01795a8253497e3cd709d4ce52816b42f94d8294af3ffa4688b61723e272c",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/figures/fig1_framework_overview.png",
+      "sha256": "e5621a7799f9e53c1962f49f62e08acbc250eb0119c20d2061ef3ed7b085be11",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/figures/fig1_framework_overview.svg",
+      "sha256": "81d466ba674939e7b92a98215625da873c2dcb647e3cc7ed2b55b85f5e31b81f",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/figures/fig1_framework_overview.tiff",
+      "sha256": "186b8a5f9a75f74569e73ea4c4a79825d2ab619e441ae8cc5caa689374d0b106",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/figures/fig2_score_landscape.pdf",
+      "sha256": "6378bce5ad2553b13a3fa7aeec90ac9976deecbaa549f63697a0e8e720b764e6",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/figures/fig2_score_landscape.png",
+      "sha256": "9478025655148737fa3efea54cf288df68cde085d83f7108ca0fef8d5dfdc230",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/figures/fig2_score_landscape.svg",
+      "sha256": "350828c2849687e726abf473bca3d94e0c6060d85d895170930e1ab8f6fa3d80",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/figures/fig2_score_landscape.tiff",
+      "sha256": "f214ac07adc1e4b8b1de453dbda606611cdd7e011d18fec290b75c0cb2573f0e",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/figures/fig3_evidence_coverage.pdf",
+      "sha256": "2501800957c6e8083de07a69231b7d02aab22150a3203affc52c8fc4a970cb0a",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/figures/fig3_evidence_coverage.png",
+      "sha256": "c73810c88a492a25ca1b24b8ffcb713fc5103078c404ef7b4d6ee1252759820a",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/figures/fig3_evidence_coverage.svg",
+      "sha256": "0d4d9c417fe9cdc28902d156c4ce67f4607880a88816b5e604636f4e7ffd19ad",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/figures/fig3_evidence_coverage.tiff",
+      "sha256": "9d3bb405106d4c1898c2ebd6e88168003699f12d5cad60d61d362f3003d8e56c",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/figures/fig4_persistent_rate_construct.pdf",
+      "sha256": "d6cfffd638f6995d52dcf9ef2a5d71b95681b1552e3e6dcb9d9da471d0ea6bd2",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/figures/fig4_persistent_rate_construct.png",
+      "sha256": "5c6a8caf23e387c43e9c4cf96e5d454fd447b75a94ce03a25025e19bd098d823",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/figures/fig4_persistent_rate_construct.svg",
+      "sha256": "9f6c89c12214d46ce1889288e721cfdb832aa63d5e6b916e439fad99a76d44e9",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/figures/fig4_persistent_rate_construct.tiff",
+      "sha256": "7c480441b1e61dc03e3ba7d126c8693cde8211c6e26808d919059ae37a5e6145",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/figures/fig5_boundary_fixed_threshold.pdf",
+      "sha256": "b5c44eac468996712bdf68ba73e3411e7c35c049401b630dc96a5d34485169c5",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/figures/fig5_boundary_fixed_threshold.png",
+      "sha256": "b9ffddefc97a2ab832e48a6de5e39be6faa9588862cf6ebb64f1c6c9b4c1fb74",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/figures/fig5_boundary_fixed_threshold.svg",
+      "sha256": "46bf7fee2d92697e1ce5fbfca7bc59c69a9b6c0af0b040e1222fbb3d61eb108f",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/figures/fig5_boundary_fixed_threshold.tiff",
+      "sha256": "f7ac4893fce3c9fc4482618a610b818c823c46ec7768801e11ccca26a1acb0bb",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/figures/fig6_gate_and_directional_profile.pdf",
+      "sha256": "bb8b2a0d59fb23095445d0e4080df03613dad9fa8961d26396e6f39fea3a8dbc",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/figures/fig6_gate_and_directional_profile.png",
+      "sha256": "6908fa77660ec86d5987603c66af73628500ccf2d4cdca3446d8e55f6d37137c",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/figures/fig6_gate_and_directional_profile.svg",
+      "sha256": "2eb5b2a62868a00e4d16a9f1fe35137820d3e13d27e6f519ce9deab213cb3037",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/figures/fig6_gate_and_directional_profile.tiff",
+      "sha256": "c782739041f5c9601899245575c42ca5684c0b6d6e8f08a87fd97cf6d064f6c9",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/figures/fig7_case_studies.pdf",
+      "sha256": "81e41da3155b66b00a15711196b1bbc1a4e14e636e28dbaa21b29f448924a25c",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/figures/fig7_case_studies.png",
+      "sha256": "1cee74bd4ebf2aee3de0c0cfe4e33ba8a918359f8eaf8593bb08b0233f65d6bb",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/figures/fig7_case_studies.svg",
+      "sha256": "c78e15855e8f1fd608e46bf1f77022e69bfba81cefe8e2de4d2632c7d94dddc6",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/figures/fig7_case_studies.tiff",
+      "sha256": "751d5b3bf3749d7dc5e8d042da8091e1483f85c35309f897162cdcaee3bc53b8",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/figures/fig8_boundary_rate_validation.pdf",
+      "sha256": "3946421dd47732833ae6f8ab04ab85a9aef5444b39d450b54de07c1010138044",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/figures/fig8_boundary_rate_validation.png",
+      "sha256": "064f493aaaa0516cc96d39c6d10d29dca17c28fb3a65407da7b977abd46421d5",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/figures/fig8_boundary_rate_validation.svg",
+      "sha256": "86de7a8601ee2ac123dfd4f14d34b440e13ca56251c9093fd4848d24d140d637",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/figures/fig8_boundary_rate_validation.tiff",
+      "sha256": "330cf681f077f83f58bca91b26582f24b3a52b6cd557808792adfb067a9c2176",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/figures/fig9_do4_zero_equivalence_contract.pdf",
+      "sha256": "fcb31312510842c19b67c253102dc922dd0c944ab0b149e5387eb58fc3376b24",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/figures/fig9_do4_zero_equivalence_contract.png",
+      "sha256": "bbbc4bd33aae8207d24b9d06461e4f47809e926e05e698b1515c76f4675f99b4",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/figures/fig9_do4_zero_equivalence_contract.svg",
+      "sha256": "0d4468b28abd208bb1c72050cf97b43eb6f80e0d522a6de322c58d02e80f065a",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/figures/fig9_do4_zero_equivalence_contract.tiff",
+      "sha256": "b3c97eb30473625b7bdbcfa91772d2648fd098051afcae34a4ec8dee5345a001",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/manifest/run_manifest.json",
+      "sha256": "860d0b326fac7dc796f2b133f9fca62e6483985833fc77148a6b01d718c168aa",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/reports/nature_figure_bundle_audit.json",
+      "sha256": "5db2bc50ce102c5255543d5007f72af51d3bdd3a3460ffedfa318b806e862576",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/validation/D3_boundary_rate_validation_source.parquet",
+      "sha256": "99b8bc224565e1ecddaf5593627c06c709a78a8983ebb18a3f9931f804bf70f8",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/validation/D3_DO4_zero_equivalence_views.parquet",
+      "sha256": "76517387a91b82ea23cc36fd018540110c2a9e9bd33f1aeb556395d745f61739",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/validation/D3_operational_envelope_diagnostics.xlsx",
+      "sha256": "e08900a731f439663979ab136b1c62e3c19cd2f42259ed619048c2aff800dcfc",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/validation/D3_rate_construct_validation.xlsx",
+      "sha256": "40cb56cc785ce00d39c9b660410c1284fa55d221998fb1b0d1b50ac1971a3e92",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/validation/D3_temperature_conditioned_DO_upper.parquet",
+      "sha256": "1fefa64dd0747a8c919efd2402fd74513abba7f1806184db6a59ec0e7514de95",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/validation/D3_temperature_conditioned_DO_upper.xlsx",
+      "sha256": "1048471329c329eae9fc176ae5dc9e9d6b347f3977930df001ad020036a70356",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/validation/D3_threshold_sensitivity.xlsx",
+      "sha256": "5a8cf4c4d3bd77919ab5fc45a94f4418d52d8659114bd9ded19f6219c7c90c0c",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/validation/D3_validation_summary.json",
+      "sha256": "55f663f644f476857d80886c4530211754150498d78d9a5983143f70e97e5c83",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/outputs/validation/D3_weight_contract_sensitivity.xlsx",
+      "sha256": "2fbf3a1bf2f0ce306305497e8c66c56f0e23e5694c5311f86f3bb447c4e20b13",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/run_all.py",
+      "sha256": "7cffe8a76fb3da92d8ed04dcd810cb74961b50cf791bbf92d312739bb490dc20",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/run_d3.py",
+      "sha256": "105732ce666d3ff9d35550c40af2be68b884fa44ab1434fe4407e5b3677f1ee9",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/run_validation.py",
+      "sha256": "24db56472f7d62db387779941d4a9006f2209dece29d8d72c940bc26e1965380",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/src/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/src/common/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/src/common/benchmark_windows.py",
+      "sha256": "e7dc5fe9969c1998071bf5eb7d94b6751b6c440a26a7d4b4fb1577bfacbbc80c",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/src/common/exceptions.py",
+      "sha256": "e5fbe11601a2be6d4cf834346db9624389909b7248dee2eccf5790a41f73f479",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/src/common/rate_utils.py",
+      "sha256": "5bb00c3dfa3400f58d95eadb4302a68980c1b274e4c73bfb74a153ebc8959479",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/src/d3_physical/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/src/d3_physical/aggregator.py",
+      "sha256": "be17034465fce6465e44f442a2a4c49ac83f053f6746291b7a35bffe6c7c1925",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/src/d3_physical/boundary_features.py",
+      "sha256": "9645414282552f1bd4b73d3c6ea4fd2c6710b9e6da6298cab114e5715eb43839",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/src/d3_physical/do_temperature_envelope.py",
+      "sha256": "ea59f378025b04080ffbf62c80f6b21fbc6f02739498eebd9f05a44faab51e83",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/src/d3_physical/rate_constraint_checker.py",
+      "sha256": "9380d9c792eb319bb2d45a4e1476521a5356a69a24469dd18ec45ddc5184ecf4",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/src/d3_physical/reference_eligibility.py",
+      "sha256": "566f08c5f2926f2f01ccce3962ba3e272ca6aeb7349eb1d5accc29683739f3f8",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/src/d3_physical/scorer.py",
+      "sha256": "e407aab8cd4fc0a98687c810076328c005939451784e03ef1bb59ef3d0d1f735",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/src/d3_physical/threshold_store.py",
+      "sha256": "dba6048004e6a14d9b1783703ccd01a7bf92693a45dd21ee1ad96206c101e778",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/src/d3_physical/value_range_checker.py",
+      "sha256": "c52423e2a077b7ac18087bd1efdb0f60a98ca067bbc9d67aa6ba009c57b494d5",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/src/data/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/src/data/input_loader.py",
+      "sha256": "a9775cf4d51637c5e4de140aa5b33b829ee0a5de62ca4c0390ee87d250fe0e18",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/src/outputs/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/src/outputs/excel_exporter.py",
+      "sha256": "e84d1333cf1eeaabdc896e66010a0f3c7f4e661a7a60382a1c6284bd1ceed4e8",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/src/pipeline/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/src/pipeline/d3_pipeline.py",
+      "sha256": "49504c068fa6bab796a140d76721f8e1fa4a881de21f1e1ca677540e4b232538",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/src/pipeline/rate_context.py",
+      "sha256": "a85fabf5df7a8346b86a6a289268fbbeed84477ed588df14f16119cd2d69c9b1",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/src/validation/__init__.py",
+      "sha256": "3767268051429238df701022866bd8df4bb380196741100d12799709ba5a3626",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/src/validation/d3_validation.py",
+      "sha256": "3fe8189adcc0af8ca40e6ed4b7c58ad23864672d37936249d1c873e490cc804f",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/src/validation/do_temperature_validation.py",
+      "sha256": "fca45be7c44628a5a950aaf00583b35acb10487c56cf6e7b90e1c977f850e91a",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/src/validation/interval_scaling.py",
+      "sha256": "971567ef12216d4871809b3fc443af735941b8a831bb946420c81e01b862daca",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/src/version.py",
+      "sha256": "3bf35499552f57c647eefb32df589032236fa984c743b78c56328db695e00e87",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/tests/test_neutral_reference.py",
+      "sha256": "11f7da596db5892af62d856a403b565f6c7776927eb10589838aec68c069f120",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/tests/test_v24_contracts.py",
+      "sha256": "263bf1eefc0954d2cd4dbc48f7b411d8cf4d3d904770d20cb32f31342bf77508",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D3 Physical rationality and rate constraints/tests/test_v25_temperature_contract.py",
+      "sha256": "aa5e3a5c46f9496884ace7b8b5a662a8be2cda86f7ab916564d7c2b845c418e3",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D4 Parallel-redundancy Temporal Consistency/configs/d4.yaml",
+      "sha256": "a8f4aab4a607220aa03253617aa64d94bce357414080ca27d053c5e90cf376bf",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D4 Parallel-redundancy Temporal Consistency/outputs/qa/D4_publication_manifest.json",
+      "sha256": "44c4588f4dfa39338e8440faa3cb52cc38e808a2b2b6da25d5010d06d9c0d38b",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D4 Parallel-redundancy Temporal Consistency/outputs/qa/numerical_qa.json",
+      "sha256": "62bfc221b24dea110a344cb355cd6a6a43cde1cd15e135b16dd512be5d822ca7",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D4 Parallel-redundancy Temporal Consistency/scripts/audit_d4_figures.py",
+      "sha256": "25a299ea4f2c3e5c0bfa972f89a4f4772b2414b43bf00c59ff56a01ac3ec7d6d",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D4 Parallel-redundancy Temporal Consistency/scripts/build_d4_publication_manifest.py",
+      "sha256": "6949337796557e250889f3961110d28da0edf4ca7f9e6faa6f0e43e1f1d1e755",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D4 Parallel-redundancy Temporal Consistency/scripts/check_d4_outputs.py",
+      "sha256": "d8ed63342acdb782d31dea3dca6a49f978cd93396b5490c6680f1814e4405cc1",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D4 Parallel-redundancy Temporal Consistency/scripts/make_d4_figures.py",
+      "sha256": "be493076d55d30cd66eaefe0583bddb7527bf9a20a95e90ad9e0acf9d1cb52fd",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D4 Parallel-redundancy Temporal Consistency/scripts/run_d1_d4_redundancy_audit.py",
+      "sha256": "18dd97a7170bca77cdc50d502d6ec5f08a69fbc1d4b3441514e351cc9af8ae65",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D4 Parallel-redundancy Temporal Consistency/scripts/run_d4_composite_refresh.py",
+      "sha256": "b3e934c7de94f312d1b66d5977c0b871291cb657f3367147ab1f976e1db7446e",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D4 Parallel-redundancy Temporal Consistency/scripts/run_d4_d5_readiness.py",
+      "sha256": "3ce30962a6da42e60fa367685e96e06619638f538752ff8e445157186438c97c",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D4 Parallel-redundancy Temporal Consistency/scripts/run_d4_episode_validation.py",
+      "sha256": "23dfc544f8fe16b081d0233e0a2edfba066d59424fbb8b3580d5754f0c353b44",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D4 Parallel-redundancy Temporal Consistency/scripts/run_d4_mapping_support_migration_audit.py",
+      "sha256": "bcced4fe571388d558a82a8341510ebc979cdb200b61605f907e8fad1bcbe0b2",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D4 Parallel-redundancy Temporal Consistency/scripts/run_d4_method_sensitivity.py",
+      "sha256": "cd38dbadb7dbf30e1e7a7d3615576749591eef7a558c194fce322a68b8235097",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D4 Parallel-redundancy Temporal Consistency/scripts/run_d4_pipeline.py",
+      "sha256": "91a933194e946802de7ea8f0bea412b87de1f0f1adee5b200109228a5efdd8d7",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D4 Parallel-redundancy Temporal Consistency/scripts/run_d4_sensitivity.py",
+      "sha256": "a70fca8f7c8be4aced5ecd04ae7e1c72a8bedafdeb40073d2ed2db7a61b40eac",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D4 Parallel-redundancy Temporal Consistency/scripts/run_d4_validation.py",
+      "sha256": "1cf9b1e1a14dd3b4d961213463bc523d0e534fd1adb7db2b688d5134d5fbe99c",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D4 Parallel-redundancy Temporal Consistency/scripts/verify_d4_mapping_support_audit.py",
+      "sha256": "7b44f302091ac913e69022cb6e03239786c53c43cb07def32633038f553121a7",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D4 Parallel-redundancy Temporal Consistency/scripts/verify_d4_publication_bundle.py",
+      "sha256": "b5e1013e2d87106fd0fa3f21992003e88c1c68c973d664253c7f06b0ac2e2254",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D4 Parallel-redundancy Temporal Consistency/src/d4/__init__.py",
+      "sha256": "8197c45e3773e7a943f1a152b3222b1c5a736351dde65fb5ecc47269f1e301bf",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D4 Parallel-redundancy Temporal Consistency/src/d4/config.py",
+      "sha256": "28b77fb3d438829b6e700c0a4d486189a1f72e617f3f1fc7112e69b6fc2b0f33",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D4 Parallel-redundancy Temporal Consistency/src/d4/episode_validation.py",
+      "sha256": "395fc3c939ed8f2f91b2b1c1add4971b3cd38a232652cf1ed9a484d3c96dc633",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D4 Parallel-redundancy Temporal Consistency/src/d4/figure_style.py",
+      "sha256": "a6680cb23762771226b64951c414ed9e2c194081cf6f415a361ccc77b20154ad",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D4 Parallel-redundancy Temporal Consistency/src/d4/figures.py",
+      "sha256": "8887b92197250d5dd4da1c84da7bc76ee8f5f65e324142fbf25959b9b03d01ad",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D4 Parallel-redundancy Temporal Consistency/src/d4/integration.py",
+      "sha256": "c5e7a5b1c8377c9babe7c0461177dadf13272c65d7683f91477f2db8a3487042",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D4 Parallel-redundancy Temporal Consistency/src/d4/mapping_support_audit.py",
+      "sha256": "53bb4280b58934e8505361ba519bbc358b18379569e8c0c20f9ba051e0a5c07e",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D4 Parallel-redundancy Temporal Consistency/src/d4/method_sensitivity.py",
+      "sha256": "89d131672b430ed8a2aa08d3fd7e1e15571e10cfca81431a0575ca62ac4ef82b",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D4 Parallel-redundancy Temporal Consistency/src/d4/pipeline.py",
+      "sha256": "6a718b8871544633da4569595d7b76896b6753bd8ac5255ecf5aa30b74c4390a",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D4 Parallel-redundancy Temporal Consistency/src/d4/publication.py",
+      "sha256": "18f810a73f824329079ded3ff49d01a7ba7db9005e5468e54f2e5ad217682031",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D4 Parallel-redundancy Temporal Consistency/src/d4/redundancy_audit.py",
+      "sha256": "27e0cca03344dc7bcc0bc6b3da75e96e05e5ef3b24d4e215492a9e5ce99f8528",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D4 Parallel-redundancy Temporal Consistency/src/d4/scoring.py",
+      "sha256": "8a6031dee9f7a2867a491d4cb5a931835a0086346cb27a3de9014fc7d0bf1987",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D4 Parallel-redundancy Temporal Consistency/src/d4/sensitivity.py",
+      "sha256": "7295406aa5d5b394caabef4b9fa22737310d5ba64ddfba99d0fc97ccae648f5f",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D4 Parallel-redundancy Temporal Consistency/src/d4/validation.py",
+      "sha256": "05f4b134b77156f1ff8784e54eccb4ca01d5d6a80745705f136839da2e904e36",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D4 Parallel-redundancy Temporal Consistency/tests/test_d4_core.py",
+      "sha256": "993cdc34672e5e8a64bc524b43c37b07baf605ae9278d16978854d53c903d5ab",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D4 Parallel-redundancy Temporal Consistency/tests/test_d4_figures.py",
+      "sha256": "e2ff0befc8d0fc4b626f861ae409ac6c2a44daa01e635c99afef2b0fb29d66cb",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D4 Parallel-redundancy Temporal Consistency/tests/test_mapping_support_audit.py",
+      "sha256": "369b94b88f67ce477a6ed774f701767f36a1150f8fdf9a1a3ba670227a6a3ad4",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D4 Parallel-redundancy Temporal Consistency/tests/test_neutral_reference.py",
+      "sha256": "7c425e22de466f1ac3ae3ea8d9985a5f677f448c22dac154157601f88dcb552d",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/configs/common/paths.yaml",
+      "sha256": "4fc0968e5706d6bc6463bf52543f2d2304e289101605ef908df352519bd0efda",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/configs/common/sensors.yaml",
+      "sha256": "c78dedcbc492bcef564032e4f460d046702d7d3e566b41af24f711c43593f097",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/configs/common/topology.yaml",
+      "sha256": "46e191549a0c768ee947bff4d98f26f38a93ecbce380ab4ff8114d2885dd29f9",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/configs/common/topology_evidence.yaml",
+      "sha256": "50abd276a9e6bbf26acb9a22d3a796ca63423d363a036422dc57c6bdfeb71920",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/configs/common/windows.yaml",
+      "sha256": "a05babe67255a475850976a84ac19158057e5f250cc9c5997ff1942e2bfa9996",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/configs/local/aggregation.yaml",
+      "sha256": "cd8b88b34bf8e54a62d76f1d04443e8b11f852c3a97b75bd38ee9a0072e12208",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/configs/local/d5_local.yaml",
+      "sha256": "5e28baac1ca713953639f8774aa4068666a896fe23dddad18eb49b94fdb43bc8",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/configs/local/events.yaml",
+      "sha256": "9a7a6f56bea17c32e2011b9629ce130ba6674bffdf6e8655074831b83d2904fe",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/configs/local/hysteresis.yaml",
+      "sha256": "00e9689e54521d043f4bd7f00f2f8ab9ad2dce50328a479cd5cd254bf835cd37",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/configs/local/mapping.yaml",
+      "sha256": "b61343ded5e1735177ad68ce7230ca68d8ecf6524f56b8bcd6835cc684f701d5",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/configs/local/orp_degradation.yaml",
+      "sha256": "4bd351290e32ba7e3208f0a1d3d028f1bd0da3989bc3e1c41f34b3a923a5c9b5",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/configs/local/templates.yaml",
+      "sha256": "35d141763f9288418e7f30c5174bdb61842cea41ee8c6623aa861de45ea19940",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/configs/publication/d5_final_contract.yaml",
+      "sha256": "2878edc2a2f2703ef587c0df2c8884a7d3f1412b1b15794a18e78a16fdfe4dc0",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/configs/sensitivity/d5_sensitivity.yaml",
+      "sha256": "e2418c86fd66af77fba8fc79a85386aaa48ca1fb9ba3c484ccc6ee89fda7a429",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/configs/shadow_v2/graph_structure_learning.yaml",
+      "sha256": "6546c7bf5dcb34cd3dae967a52d69145785876a65628176953deebc644557489",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/configs/shadow_v2/topology_drift.yaml",
+      "sha256": "1db57ec91412365fcf7f770c3dd4a7547eacc8f92b8482aacc56379977006e3a",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/outputs/publication/D5_publication_audit_manifest.json",
+      "sha256": "f7914434ebaba2d5facd2419d5ade03db546c2b70dc92ad484ec17e4eacfe53a",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/scripts/build_d5_reports.py",
+      "sha256": "f64c7bd19c987b0e4dcf05fe3aacab5cf97030fa77bc6ff3bf866edf18fe35c2",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/scripts/check_d5_release.py",
+      "sha256": "050e96fda92648bde2a515d2af55062aceb0a27842ccb93c769e1f299bc02854",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/scripts/finalize_d5_admission.py",
+      "sha256": "a7878539130bb51776e108a9b9080ef90a66eacd33998f8ec120a943f2d0d374",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/scripts/make_d5_figures.py",
+      "sha256": "22858a33ff5d974ff1fd002ca0385fa38bd1515ea15460d1332d22239ca7560c",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/scripts/run_d5_local.py",
+      "sha256": "855cc051816770943c0d8543981917e186ee1e34d5422afffa0fe3cf5b5606a9",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/scripts/run_d5_publication_audit.py",
+      "sha256": "03c98bf03dcf08e795ec72c409dd3dca94b7584694bd7590f498d36591f1fb9c",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/scripts/run_d5_release.py",
+      "sha256": "c6024399ca6cb3fdeb8c1075e274e992f6d07101c65326e81daf147464406e5e",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/scripts/run_d5_sensitivity.py",
+      "sha256": "c28100d8422bd80debf05466dd67bfcf7a55f10ae9b287b5f9697552c0c002f5",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/scripts/run_d5_shadow_v2.py",
+      "sha256": "6b5deb2fb6bf96d5a481c6e87702859bb2cf973f59b9bb9c725e85f3a1a82d93",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/scripts/run_d5_support_migration_audit.py",
+      "sha256": "32987697a862ef0221377c6244ffa2dc70cd182004e918e339af68859181e2dd",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/scripts/run_d5_topology_review.py",
+      "sha256": "e422a039573325836eef9dcc729f747e9d8fd5971b2339d714c51e5b4a85c33d",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/scripts/run_d5_validation.py",
+      "sha256": "cffda7affa709398e8425d67b65b36dfd629445dbf588266ddf4173aaeba8951",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/scripts/verify_d5_publication_bundle.py",
+      "sha256": "fccd576c5c58249687f98bd6b2ca9367e8515af763b300ae46bfc7fab2304a7f",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/scripts/verify_d5_support_migration_audit.py",
+      "sha256": "350f47861066c0ffcdaf2b614ec5f5c47c1cf85e8c801bd203be38028b65d4cc",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_common/__init__.py",
+      "sha256": "cac598e24a269607eda4718d20a3d8c7cce24bee331c9700ec96ef636f7c837e",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_common/config.py",
+      "sha256": "cfe376c0ac5660eb52e2b55fcaa9400c55fd071bd83c1223598fd000d00cd68a",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_common/enums.py",
+      "sha256": "d4e912e537006ab5028955e75ec519c1abc472c06e5eadc2c21fc9495569535d",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_common/hashing.py",
+      "sha256": "6e8466d3af4f01095a9d611110418f66f59c04150a38dad78b87b0df77783b4d",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_common/math/__init__.py",
+      "sha256": "c8007f00d023ae66f6bcd8c71f1e4ad043e96a33d73d6514712d470dabb31c33",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_common/math/calibration.py",
+      "sha256": "01d66ca9958b9dd0707c83bdbb136ddfeacebfef048bc11f74326079ae15454d",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_common/math/covariance.py",
+      "sha256": "42206ef349fdf7a9d7b56258767faf72276aac471e5ad67bd30daa89c1e267df",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_common/math/graph.py",
+      "sha256": "1367e60abb4005f1ec89f959c735d782b80dc3286d2b078514be6e4552d6203e",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_common/math/robust.py",
+      "sha256": "8e63d813d5c9bb4e18dcb454e000e5936d777a001b9016be3d3317232c0e4adc",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/__init__.py",
+      "sha256": "5ce413fb3bd4b73a55a437f9005dd72d054c54833fe87abec6a5d263e9b617f1",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/adapters/__init__.py",
+      "sha256": "e780d1ee73bbb26d21b0f4a81f25de7118929bf3bae99bc120b7ea18850e4588",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/adapters/canonical_observations.py",
+      "sha256": "97f8c45da4cf776d702676c0ccd0c14917b4c050c8ba0dd0daebea119ac7304a",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/context/__init__.py",
+      "sha256": "0657bb8f9c2e260019ef7516f4180de677d04fb1bd6c901289864e71daed07a0",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/context/hysteresis_controller.py",
+      "sha256": "6328d9b14cb5c7dd2985f799ecc3a69164d5ec078ebb3523422094b62362edb2",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/context/posterior_model.py",
+      "sha256": "3fb882624b86ae7d69082a9ac2694a353e69072b0d869f7922957964737620f9",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/context/target_excluded_features.py",
+      "sha256": "6bcfc511ea99c096a21b953cac52dc41b3141c508a5a14c2a0573a174322b23a",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/contracts/__init__.py",
+      "sha256": "410f47120364c2a3d7af492ba068e4d38df2beeb0afcc55825d09f626db4073b",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/contracts/input_contract.py",
+      "sha256": "780407b72c77689482da0a89288f8463bce9bf990f6a6f96df76e154f2556ff6",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/contracts/topology_contract.py",
+      "sha256": "4f3761b319ee414c963fa856da2ca7ec6ddf99951b022a8b370c0c5b9c3f5d7c",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/contracts/track_isolation.py",
+      "sha256": "13d10524e9514202adfd69a16fc8881568de3d160ae9720d5108d681d7b44ed7",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/data/__init__.py",
+      "sha256": "75f2f3b34a829c5d19d1165be925aec03d3b1804d5ef0afeda02c654d99440cc",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/data/snapshot_builder.py",
+      "sha256": "484b65198054b5c65863aa380a1be7c56a7ff9afd0e6535739ae7aa7a7426953",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/events/__init__.py",
+      "sha256": "a5c9bd26545ec00058a8cda5df3a4508ef5a13a59a8707f9e4547411aab4e7c2",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/events/event_manager.py",
+      "sha256": "1096318a5e53f86230538ce56b0f85a7a523de31e184f6389ab9ed433d6a5267",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/events/zone_consensus.py",
+      "sha256": "f723acb386d26f707f82938a5ec0ae73d3ace68a61fad248251bc8dd312afc05",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/evidence/__init__.py",
+      "sha256": "f21708ef3eebed8dc272cda5aba98d01fef2ad7bcac2f7f948357c2cb3cfe592",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/evidence/base.py",
+      "sha256": "90d71f4ed729c706e29eed759d96da9b5ae51a4fdaff996cd30f2325bf5418b3",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/evidence/engine.py",
+      "sha256": "ed6d329d84164c1bb1c68cc4fcbd3b8a07352375571c5d48bcbca0e03d3657a4",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/figures/__init__.py",
+      "sha256": "2697debb6aac58e65fedcae55cde15d4b75407ffebc0ef9d18789da698a3d35c",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/figures/figure_style.py",
+      "sha256": "110274fb3bf07f5df939d535bee4ee34cffdef65df8e1549ad6892ed7480f2f5",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/figures/make_figures.py",
+      "sha256": "e7d78a0b84056e91e069933f4f4e4bd3b3b8404b75ad899250ac24aeab965492",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/figures/plot_data.py",
+      "sha256": "bdcd49b0cb30a661ac3eef0aa27b75fb9c09836954259a76cacd42ed72d5b7cc",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/figures/qa.py",
+      "sha256": "bfff7cf500957616eccfff3ca54c51c17f713029c1334dedbb13249eb3b65495",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/outputs/__init__.py",
+      "sha256": "84b290ef58d9288271966f5c9af33c6e58f1522cb54f07b249c32a27eddedba2",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/outputs/exporter.py",
+      "sha256": "a0b9cb996e1d8df2d3639635b51b3b829eb0f92e7ef6515ae68adce48e4572e0",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/outputs/interfaces.py",
+      "sha256": "89a4bf1f0691b1e27a0adc11eb0259b2cb0572e239e8dd8498331a63a65059b0",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/outputs/manifest.py",
+      "sha256": "12e98db41545a48c38c00d6562d6f72b06031988cafff75740c3808d71ffba82",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/pipeline/__init__.py",
+      "sha256": "015c39c7be911fb06edccac1c126f6cc35e15627a40327a513d2ea9bd2964d84",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/pipeline/d5_pipeline.py",
+      "sha256": "d9d73b7dd1330eab1e33a22b50f5b8b8fb4360a8ef0eafcb4b1133e3da9fe9e6",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/publication/__init__.py",
+      "sha256": "2a79a3b101b87fc060555cb9043c71d7a3fdac914ee04a7df4d2af734c570ded",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/publication/audit.py",
+      "sha256": "e2671ac521a17d527cd1421805ba09f795aed851078055336ce238535b8adc27",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/publication/figures.py",
+      "sha256": "734650784d8dd656ec46275ec33984a0beffa0e5f5a4c07cf7855cd1df5bfd0c",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/publication/support_migration.py",
+      "sha256": "417632f60836b82c8a44bd24fb04bdaed3093cb32b8acd7a18720bb3076c66c1",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/reference/__init__.py",
+      "sha256": "7092ae9e7d534e895c623c5c4ac4ab0f52a071faa6bd4526b48e4bb7acde3717",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/reference/effective_blocks.py",
+      "sha256": "375c026cbc98a7bf3e3dc8db393eded9ec653b2f5cfa763b7b74fd453546b3a3",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/reports/__init__.py",
+      "sha256": "5805d5b0927d12d4982e0e17344f587496b7691d5e415fd5a5b126a5d035c171",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/reports/builder.py",
+      "sha256": "451498e3a922566b3841370db99a719e2a3bcf6a3b85887abd352551a478592d",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/scoring/__init__.py",
+      "sha256": "47ab9a4563d45d851e3e60c4f2e46755749307c25b265cc305cd19a1f9daf978",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/scoring/aggregator.py",
+      "sha256": "2f89e90aaa7a383da5066ba55edaf875aabd8570f368bcc6c71f6a2dc6d21a5d",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/scoring/applicability.py",
+      "sha256": "b71a941f23a5b2444db878d3cab826d6c15f6dd407f0017d22480cd1df649a61",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/scoring/mapper.py",
+      "sha256": "587acaf6ab05306cbe2f390e94ecb86ef9ad9e32a5fb9eee546ce7ced0e789ab",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/scoring/uncertainty.py",
+      "sha256": "7cfa84971621d9e942cf41c59bbe38ce281f15727f9e2b2981898d11174e7a6f",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/templates/__init__.py",
+      "sha256": "61498c186fcd3f2c5b75feb2592e2aa734b2419d3bc8e6091a4524c98f462bbd",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/templates/builder.py",
+      "sha256": "21667e5e6d04b80c5492cc27c341213dbfaf7f2d5b5466c8da85278dbdb280d6",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/templates/orp_degradation.py",
+      "sha256": "538849371025c2c2e75809ea600612fcfd23178776cec0b38ddafb8c0b19c24d",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/templates/support_policy.py",
+      "sha256": "88c63466af1dd22c9f150bf26301f2cd6fee34377aa178219beb811880019015",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/topology/__init__.py",
+      "sha256": "7095e39a542b9470b1ea9bc357f1d39d5a3698446171eef772fa26f97028ce67",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/topology/drift_monitor.py",
+      "sha256": "d98110acee9edc450198cc03c40cb31b91719e862d8454a7ee0bbca0eaddf002",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/topology/graph.py",
+      "sha256": "95bfe69a68b84095952702a7cfbd143b99478c1895129f0dbed90d7b651181f8",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/topology/registry.py",
+      "sha256": "2d319188064c23a004faa5e099753ff0c1fc1864a39c524694a0b4bd7038ff18",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/topology/validator.py",
+      "sha256": "87df05540a080ed548d258a2f9906f6cd58dc4248cde3fa76fe40e3438a090e7",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/validation/__init__.py",
+      "sha256": "4357a5f9a3320d605439ac714c685c536d92a6e2982b2de0aecbaca7771d844c",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/validation/admission.py",
+      "sha256": "3b19b05f673c18f5f1a54ebad15222169e98595c4c78b27fce1328420b84f962",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_local/validation/runner.py",
+      "sha256": "bc26f46b47ff8568e1f584b2c7d50e96b02e090d020f049f067d8027e5d6dc75",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_sensitivity/__init__.py",
+      "sha256": "e920fb5e6a672afe46d6c473eefaf94657665288129ed9bf501a8bdfa8ed9d2c",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_sensitivity/pipeline.py",
+      "sha256": "d9923de4b3949b08cc796c782d1ba64cd747bccd4efd512867321e17345db0a3",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_shadow_v2/__init__.py",
+      "sha256": "5e1206ff44d1fd7ac6a7df51e516b341f792fd265af75183d542647f356d45b9",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/src/d5_shadow_v2/pipeline.py",
+      "sha256": "c7e634ce37c07036a69ae64402ccd90e8d2a591237f37ee192cd025f4856bc38",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/tests/test_artifacts.py",
+      "sha256": "7c6a86c1e6046ae74416045b461c5b07fbb65d9e5d0d0aca6a3939d0cc488d22",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/tests/test_contracts.py",
+      "sha256": "c646cc5de3c016bf61116aa1e00f52fdbbd6553909df1d396384b8d3d96b8f72",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/tests/test_publication_audit.py",
+      "sha256": "dc1b8e765fcad1c6aa463830865e59f19fc440db0b3c0489d9372e33b2a9ba97",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "D5 Topological Role Consistency and Structural Representativeness/tests/test_support_migration_audit.py",
+      "sha256": "52e9cf86d0646999051f90c002e0821bfa92cba627f003eea0333154d9e2eaa7",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "DQR Multidimensional Aggregation and Evidence-Aware Integration/configs/aggregation_v2.yaml",
+      "sha256": "dea08e60f0b7a676313bdd87bb9dfe5b74c190a97957da3163eb4bf306c13f64",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "DQR Multidimensional Aggregation and Evidence-Aware Integration/configs/aggregation_v2_3.yaml",
+      "sha256": "29c6cebdc9a8080346e3ca936a35378008c4152425bc13855df4dbe4d69ae496",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "DQR Multidimensional Aggregation and Evidence-Aware Integration/configs/aggregation_v2_4.yaml",
+      "sha256": "5b5354f349f626dfb1a649936a6096677bec31f39f893a888eb7f77c5ef5d89b",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "DQR Multidimensional Aggregation and Evidence-Aware Integration/outputs/aggregation_v2_4/manifests/DQR_publication_manifest.json",
+      "sha256": "239e94ed7e4853501748c47c094236072b20634d3aca960c446396d6ed39957a",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "DQR Multidimensional Aggregation and Evidence-Aware Integration/outputs/aggregation_v2_4/manifests/DQR_run_manifest.json",
+      "sha256": "fb1add8f249d2787c47b1222cd8f11d0b1d0ac5b1013d9e972716540e9e017d9",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "DQR Multidimensional Aggregation and Evidence-Aware Integration/scripts/run_dqr_aggregation.py",
+      "sha256": "cf37f373e8d9479c9564705115f599dc95901ad15496a8c2da6b1c0f932a416f",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "DQR Multidimensional Aggregation and Evidence-Aware Integration/scripts/verify_dqr_aggregation.py",
+      "sha256": "88b1711e6432c5330c8e827932efd00f32c8b92032300c3b9c91ef140e71dac0",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "DQR Multidimensional Aggregation and Evidence-Aware Integration/src/dqr_aggregation/__init__.py",
+      "sha256": "795b7676e8df27f7cac0717b4b422e0c687646a4530cdb33772c3d53655a03ea",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "DQR Multidimensional Aggregation and Evidence-Aware Integration/src/dqr_aggregation/common.py",
+      "sha256": "4aac9286ba71c3f3a70e2028edaec127a58b176584d05954ddb28037111055ba",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "DQR Multidimensional Aggregation and Evidence-Aware Integration/src/dqr_aggregation/figure_style.py",
+      "sha256": "b6ebbad401221b361fcb2a56b9230678321f4655cef62205ce2d1447a8eac4c0",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "DQR Multidimensional Aggregation and Evidence-Aware Integration/src/dqr_aggregation/figures.py",
+      "sha256": "3e9fb961b1becf5e14907dac1192ae0d19c565cd05100beb8ef48eefecbd7ee8",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "DQR Multidimensional Aggregation and Evidence-Aware Integration/src/dqr_aggregation/pipeline.py",
+      "sha256": "1df7c9046e50ddda68a3062be622ba9b14831560fe459ddbd455b3eff7b3b1b3",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "DQR Multidimensional Aggregation and Evidence-Aware Integration/src/dqr_aggregation/reports.py",
+      "sha256": "e08fc3117b623a51c42c930641f067d70fe5fa8d71f368b1436989b633363f36",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "DQR Multidimensional Aggregation and Evidence-Aware Integration/src/dqr_aggregation/runner.py",
+      "sha256": "596d739a44636d1c35e213eab5e4d0b3b51a5acfec41e423eb739a2af7322f76",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "DQR Multidimensional Aggregation and Evidence-Aware Integration/src/dqr_aggregation/validation.py",
+      "sha256": "6cc3bfedcfb6123b0618e19228abf066d054db2166cf25b3f8c7835e5d0d00b6",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "DQR Multidimensional Aggregation and Evidence-Aware Integration/tests/test_aggregation_v2_3.py",
+      "sha256": "a14f3fff31353e7bc20df7589d6a3afbc2db11f2f956f94dc49bf667c1734c59",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "shared_data_foundation/__init__.py",
+      "sha256": "0664ffe734475208452a94c1083ea4565d229783e72cd0f0bbf74999ef4de451",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "shared_data_foundation/context.py",
+      "sha256": "9292cf3e0aafad7b7fc811bc2d8d2d4a08226e1e1efec8fabed480708fecb813",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "shared_data_foundation/inference.py",
+      "sha256": "f08d8752e105214d83fb4af28725f79e6a591ba510a0bd6d176ed40c51538212",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "shared_data_foundation/outputs/D4_context_hourly.parquet",
+      "sha256": "71ea3b150ea528abab70b76f2bb4b6764ac1c73322bcacdf60d1816275a42d50",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "shared_data_foundation/outputs/D4_context_manifest.json",
+      "sha256": "c2f84b72934f241bff7ec63a4e9b15be69133b46a30c909dbf5b80516e4b53c4",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "shared_data_foundation/README.md",
+      "sha256": "6210b8818d5cf9020abf2aa2ce7c0befd0f85731329fec5e96eff7d72bba8157",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "shared_data_foundation/test_inference.py",
+      "sha256": "906f7045709eaf53abf56ac0cd3e9fd1bb123ab3dba42eb576619a02d94a5429",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "validation/revised_reference_20260917/audit_and_report.py",
+      "sha256": "6c7654c2113b63179af716a4808ef91091cb14b3e72f6cdf759537a435cf1a57",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "validation/revised_reference_20260917/outputs/D3_manifest.json",
+      "sha256": "c724df8f7fb2f0e74d45ccdc08e116502324ed5fd7094846850313ec51bd7e56",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "validation/revised_reference_20260917/outputs/D3_scores.parquet",
+      "sha256": "5db5870971c48c3b230f1fcfa93c652ce24bab4f4183a915f839dcd513bd2a28",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "validation/revised_reference_20260917/outputs/D4_manifest.json",
+      "sha256": "57beade83628bee15cb49f26ae94c98f30eaedd8382f108e60d76e28cefceae1",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "validation/revised_reference_20260917/outputs/D4_scores.parquet",
+      "sha256": "81e19977ff68fd5a3d1296b31f962cf0a74a6642fd5c97f07ca813b50893100b",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "validation/revised_reference_20260917/outputs/DQR_manifest.json",
+      "sha256": "b436812022ce0dc058d3a034c403b09033d4ce7a5454294e3192e07b65d28b20",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "validation/revised_reference_20260917/outputs/DQR_node.parquet",
+      "sha256": "74d4646d1ab33460d7e35f6850b5db2503e2444aba175ca4be2c4cd5fa4c625e",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "validation/revised_reference_20260917/outputs/DQR_pair.parquet",
+      "sha256": "602db759b7283642ff0329a1f66e109ee763ececbf9ddc607ba114f9993594ae",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "validation/revised_reference_20260917/outputs/DQR_time_join.parquet",
+      "sha256": "db0317f5da7c3b75a789ce67c23a8aa5c93a035f288ccf19fd376480622fe676",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "validation/revised_reference_20260917/outputs/Fig_revised_temporal_evaluation.pdf",
+      "sha256": "630c6efaa4498c286a809f3474824ed444375fbca9fd17265c9a0e9aca81fcfb",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "validation/revised_reference_20260917/outputs/Fig_revised_temporal_evaluation.png",
+      "sha256": "4a15e465bcd195b7303886bbc28229a11a8a4535117ab4a075e85a6520950586",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "validation/revised_reference_20260917/outputs/Fig_revised_temporal_evaluation.svg",
+      "sha256": "eedd12c79a101b3a582f02cadeac67a14014d9620b4b730edcff220d459494bc",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "validation/revised_reference_20260917/outputs/Fig_revised_temporal_evaluation.tiff",
+      "sha256": "ea3fa019e934e8e3eb3d8cf50fab0721d226824db75a049439fb6d0298d2f70f",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "validation/revised_reference_20260917/outputs/Reevaluation_publication_manifest.json",
+      "sha256": "0c4b02ca99d3cf449648ad7f5499fbfb7a414af232614c869c94734f8b6a5cd0",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "validation/revised_reference_20260917/outputs/Reevaluation_QA.json",
+      "sha256": "7e6f7481769a35ca907cf931033ef01b1ea953e26c433f42c78485ee25914d21",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "validation/revised_reference_20260917/outputs/Reevaluation_source_data.xlsx",
+      "sha256": "3b04a0c09a884c32c3349cb7c9e932d2a35e5f3e7ef20c77a2fb7184ffa1dcdc",
+      "hash_method": "raw_bytes"
+    },
+    {
+      "path": "validation/revised_reference_20260917/README.md",
+      "sha256": "0b9c018d98eecb1370ca4896047150908ed30d1997270f682be18b34cbb8db42",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "validation/revised_reference_20260917/REEVALUATION_REPORT_ZH.md",
+      "sha256": "594fed6c01877ec82b7a7faeb12bb78854eb7927288ff9fbd821660ee52b980b",
+      "hash_method": "utf8_lf"
+    },
+    {
+      "path": "validation/revised_reference_20260917/run_reevaluation.py",
+      "sha256": "27b4a574815e3770c3ecd413f31ad32eb6047b79df4db269e633d7ef11848017",
+      "hash_method": "utf8_lf"
+    }
+  ]
+}

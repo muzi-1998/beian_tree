@@ -1,0 +1,50 @@
+{
+  "claim": "revised_temporal_out_of_sample_re_evaluation_not_first_blind_test",
+  "summary": {
+    "sensor_hours": 36288,
+    "pair_hours": 18144,
+    "D5_report_nonnull": 924,
+    "D5_report_rate": 0.02546296296296296,
+    "D5_out_of_template_rate": 0.5659722222222222,
+    "coverage_counts": {
+      "basic": 35253,
+      "full": 910,
+      "limited": 125
+    },
+    "D3_gate_counts": {
+      "Pass": 30804,
+      "Warn": 5330,
+      "NotEvaluated": 154
+    },
+    "D4_usable_pair_hours": 17661,
+    "pooled_node_core": 4.63082836790742,
+    "pooled_node_full": 4.122754546918798,
+    "pooled_node_available": 4.616611292830407,
+    "pooled_pair_core": 4.222855429895611,
+    "pooled_pair_available": 4.213151711985904
+  },
+  "artifacts": {
+    "D3_manifest.json": "bb5b2840ea54a5c55810b758e9bd3e8edc48113c8a663906d5ae0be0510e4e89",
+    "D3_scores.parquet": "5db5870971c48c3b230f1fcfa93c652ce24bab4f4183a915f839dcd513bd2a28",
+    "D4_manifest.json": "7e5d18720d040d90f9207aa7fbb62b10c6512135648d2b9996c371df52ce9cf5",
+    "D4_scores.parquet": "81e19977ff68fd5a3d1296b31f962cf0a74a6642fd5c97f07ca813b50893100b",
+    "DQR_manifest.json": "2bc28b849346c6c8eea2acd0e65f0f176332c7d5afc06a1638aeb4a271fb631c",
+    "DQR_node.parquet": "74d4646d1ab33460d7e35f6850b5db2503e2444aba175ca4be2c4cd5fa4c625e",
+    "DQR_pair.parquet": "602db759b7283642ff0329a1f66e109ee763ececbf9ddc607ba114f9993594ae",
+    "DQR_time_join.parquet": "db0317f5da7c3b75a789ce67c23a8aa5c93a035f288ccf19fd376480622fe676",
+    "Fig_revised_temporal_evaluation.pdf": "630c6efaa4498c286a809f3474824ed444375fbca9fd17265c9a0e9aca81fcfb",
+    "Fig_revised_temporal_evaluation.png": "4a15e465bcd195b7303886bbc28229a11a8a4535117ab4a075e85a6520950586",
+    "Fig_revised_temporal_evaluation.svg": "84c85bd7bf55446929fb5e2f79c24594c87a7fa159d433c7dce901bdc999c2b0",
+    "Fig_revised_temporal_evaluation.tiff": "ea3fa019e934e8e3eb3d8cf50fab0721d226824db75a049439fb6d0298d2f70f",
+    "Reevaluation_QA.json": "0800fbcf5f865d1634a6c11fa75526d7ddbc7551525ddbfc7079efdd499876b3",
+    "Reevaluation_source_data.xlsx": "3b04a0c09a884c32c3349cb7c9e932d2a35e5f3e7ef20c77a2fb7184ffa1dcdc"
+  },
+  "source_code": {
+    "audit_and_report.py": "6c7654c2113b63179af716a4808ef91091cb14b3e72f6cdf759537a435cf1a57",
+    "run_reevaluation.py": "27b4a574815e3770c3ecd413f31ad32eb6047b79df4db269e633d7ef11848017"
+  },
+  "archived_comparison_inputs": {
+    "D:\\004_git\\beian-val-260905\\Project 1 Data Quality Assessment\\validation\\temporal_holdout_2026\\.local_qa\\holdout_T0\\DQR_node.parquet": "1af9e2374f4f0907d3117f5f5f61077dce9bf3eca0401934fa5c74b68b96ec8e",
+    "D:\\004_git\\beian-val-260905\\Project 1 Data Quality Assessment\\validation\\temporal_holdout_2026\\.local_qa\\holdout_T0\\DQR_pair.parquet": "4963dddafd89dbb86cdbb076520ade361a4645944b13180f7b668cef080797d6"
+  }
+}

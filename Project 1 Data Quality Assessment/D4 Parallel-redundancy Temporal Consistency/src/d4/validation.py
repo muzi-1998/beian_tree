@@ -323,7 +323,11 @@ def run_validation(
     windows_per_pair: int = 18,
 ) -> dict[str, pd.DataFrame]:
     residuals = pd.read_parquet(residual_path)
-    residuals = residuals.resample(f"{cfg.analysis_interval_minutes}min").median()
+    observations = pd.read_parquet(cfg.paths["raw_observations"])
+    frequency = f"{cfg.analysis_interval_minutes}min"
+    presence = observations.notna().resample(frequency).mean()
+    residuals = residuals.where(observations.notna()).resample(frequency).median()
+    residuals = residuals.where(presence.ge(float(cfg.common_support["min_fraction"])))
     interval = cfg.analysis_interval_minutes
     window_points = cfg.window_hours * 60 // interval
     rng = np.random.default_rng(20260713)

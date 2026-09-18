@@ -1,0 +1,51 @@
+{
+  "passed": true,
+  "checks": {
+    "complete_108_days_14_nodes_7_pairs": true,
+    "node_unique": true,
+    "node_period": true,
+    "pair_unique": true,
+    "pair_period": true,
+    "D1_no_future_or_expired_evidence": true,
+    "D2_no_future_or_expired_evidence": true,
+    "D3_no_future_or_expired_evidence": true,
+    "D5_no_future_or_expired_evidence": true,
+    "D4_no_future_or_expired_evidence": true,
+    "D1_total_unchanged_from_T0": true,
+    "D2_total_unchanged_from_T0": true,
+    "D5_raw_unchanged_from_T0": true,
+    "D5_report_score_unchanged_from_T0": true,
+    "Q_node_available_unchanged_from_T0": true,
+    "Q_node_core12_unchanged_from_T0": true,
+    "Q_node_full_unchanged_from_T0": true,
+    "D5_no_support_backfill": true,
+    "Q_node_core12_formula": true,
+    "Q_node_full_formula": true,
+    "pair_core_formula": true,
+    "D4_usable_has_calibration_metadata": true,
+    "D3_fail_blocks_release": true
+  },
+  "summary": {
+    "sensor_hours": 36288,
+    "pair_hours": 18144,
+    "D5_report_nonnull": 924,
+    "D5_report_rate": 0.02546296296296296,
+    "D5_out_of_template_rate": 0.5659722222222222,
+    "coverage_counts": {
+      "basic": 35253,
+      "full": 910,
+      "limited": 125
+    },
+    "D3_gate_counts": {
+      "Pass": 30804,
+      "Warn": 5330,
+      "NotEvaluated": 154
+    },
+    "D4_usable_pair_hours": 17661,
+    "pooled_node_core": 4.63082836790742,
+    "pooled_node_full": 4.122754546918798,
+    "pooled_node_available": 4.616611292830407,
+    "pooled_pair_core": 4.222855429895611,
+    "pooled_pair_available": 4.213151711985904
+  }
+}

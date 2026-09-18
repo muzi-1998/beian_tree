@@ -559,7 +559,7 @@ def run_aggregation() -> dict[str, Any]:
     )
     write_directory_guide(report_root / "DQR_aggregation_directory_guide.md")
     write_figure_captions(report_root / "DQR_figure_captions.md")
-    write_expert_review(report_root / "DQR_v2.3_expert_review.md", node, pair)
+    write_expert_review(report_root / "DQR_v2.4_expert_review.md", node, pair)
     estimand_registry = {
         "schema_version": config["schema_version"],
         "quality_evidence_gate_contract": config["evidence_contract"],

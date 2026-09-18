@@ -334,7 +334,8 @@ class D5PublicationFigureBuilder:
         image = ax.imshow(category_matrix, cmap="Blues", vmin=0, vmax=max(0.5, float(category_matrix.max())))
         for row in range(2):
             for column in range(2):
-                ax.text(column, row, f"{category_matrix[row, column]:.1%}\n(n={count_matrix[row, column]:,})", ha="center", va="center", fontsize=6)
+                text_color = "white" if image.norm(category_matrix[row, column]) > 0.65 else "black"
+                ax.text(column, row, f"{category_matrix[row, column]:.1%}\n(n={count_matrix[row, column]:,})", ha="center", va="center", fontsize=6, color=text_color)
         ax.set_xticks([0, 1], ["D5 >= 3", "D5 < 3"])
         ax.set_yticks([0, 1], ["D4 >= 3", "D4 < 3"])
         ax.set_title("Low-tail overlap")

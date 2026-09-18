@@ -951,6 +951,7 @@ def run_validation(
             "saturation_reference_check",
             "frozen_registry_check",
             "phase_validation",
+            "reference_comparison",
             "cross_line_transfer",
             "alpha_sensitivity",
             "alpha_CI_scenarios",
@@ -1026,7 +1027,7 @@ def run_validation(
 
     d1_sha = hashlib.sha256(d1_path.read_bytes()).hexdigest() if d1_path.exists() else None
     summary = {
-        "validation_version": "v2.7.0",
+        "validation_version": "v2.8.0",
         "interval_sensitivity_version": INTERVAL_SCALING_VERSION,
         "rate_challenge_scenarios": int(len(challenge)),
         "rate_challenge_expected_matches": int(
@@ -1055,7 +1056,7 @@ def run_validation(
             "ORP sensitivity changes interval width around a fixed center through one canonical implementation.",
             "Aerobic DO upper warnings use a frozen longitudinal-position template conditioned on a minute influent-temperature proxy.",
             "Calibration, validation, and production scoring use the same minute-level DO/Csat estimand with calendar-day cluster bootstrap uncertainty.",
-            "The validation-only benchmark filter includes the frozen D1 Q_drift component; no independent D1 saturation/floor sheet exists to add.",
+            "Production reference eligibility is score-free; the former D1/D2-screened alpha is sensitivity-only, not ground-truth clean reference.",
             "Positions 1-2 are scored operational warnings; position 3 remains diagnostic-only after failed temporal transfer.",
             "Cross-line leave-one-line-out transfer is diagnostic and reveals directional asymmetry rather than being used to widen the pooled template.",
             "Terminal-test exceedances remain locked forward-test evidence and never trigger retrospective alpha refitting.",

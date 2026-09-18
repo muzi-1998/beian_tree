@@ -229,9 +229,10 @@ def write_scientific_report(
             "hard-fault interface, so Strict eligibility remains a contract candidate rather than "
             "a finalized automatic release flag.",
             "",
-            "The prospective 2026-04-14 to 2026-07-31 holdout and downstream fitness-for-use "
-            "validation remain pending because the required frozen D1-D5 and endpoint bundles do "
-            "not exist. Missing maintenance/metrological evidence is recorded as not available and "
+            "The already inspected 2026-04-14 to 2026-07-30 period is evaluated separately under "
+            "validation/revised_reference_20260917 as revised temporal out-of-sample re-evaluation, "
+            "not first blind validation. Downstream fitness-for-use still lacks endpoint evidence. "
+            "Missing maintenance/metrological evidence is recorded as not available and "
         "is never assigned a neutral or low score.",
         "",
         "Longitudinal interpretation is restricted to fixed-composition Core estimands. "
@@ -262,8 +263,8 @@ overwritten.
 
 ## Configuration and code
 
-- `configs/aggregation_v2_3.yaml`: frozen input hashes, phase/reference contracts,
-  estimands and validation rules. The v2.2 configuration and outputs are retained.
+- `configs/aggregation_v2_4.yaml`: frozen input hashes, phase/reference contracts,
+  estimands and validation rules. The v2.2 and v2.3 configurations and outputs are retained.
 - `src/dqr_aggregation/`: loading, aggregation, statistics, figures, reports and manifests.
 - `scripts/run_dqr_aggregation.py`: complete deterministic release build.
 - `scripts/verify_dqr_aggregation.py`: formula, freshness, manifest and figure verification.
@@ -271,15 +272,15 @@ overwritten.
 
 ## Generated outputs
 
-- `outputs/aggregation_v2_3/data/`: versioned dimension-long, node, pair, coverage,
+- `outputs/aggregation_v2_4/data/`: versioned dimension-long, node, pair, coverage,
   phase/evidence summaries and the machine-readable estimand registry.
-- `outputs/aggregation_v2_3/data/`: also contains estimand-decomposition and
+- `outputs/aggregation_v2_4/data/`: also contains estimand-decomposition and
   pair-weighting sensitivity tables.
-- `outputs/aggregation_v2_3/validation/`: statistical workbooks and machine-readable QA.
-- `outputs/aggregation_v2_3/figures/`: 183 mm Nature-style PNG/PDF/SVG/TIFF files.
-- `outputs/aggregation_v2_3/source_data/`: one source-data workbook per figure.
-- `outputs/aggregation_v2_3/reports/`: scientific report, captions and this guide.
-- `outputs/aggregation_v2_3/manifests/`: frozen run and publication manifests.
+- `outputs/aggregation_v2_4/validation/`: statistical workbooks and machine-readable QA.
+- `outputs/aggregation_v2_4/figures/`: 183 mm Nature-style PNG/PDF/SVG/TIFF files.
+- `outputs/aggregation_v2_4/source_data/`: one source-data workbook per figure.
+- `outputs/aggregation_v2_4/reports/`: scientific report, captions and this guide.
+- `outputs/aggregation_v2_4/manifests/`: frozen run and publication manifests.
 
 The run manifest records the scientific-generation commit for orientation, but
 publication freshness is governed by exact canonical hashes of the current
@@ -287,9 +288,9 @@ configuration, every aggregation source module and all frozen D1-D5 inputs. The
 publication-bundle commit or release tag is external metadata so that a manifest
 never attempts to hash a commit that contains itself.
 
-Figures 6 and 7 specified in the study plan are intentionally absent until the
-prospective holdout and downstream endpoint bundles become available. Their
-absence is a prespecified pending status, not a missing build artifact.
+The revised 108-day temporal evaluation is stored separately in
+`validation/revised_reference_20260917`. It is not a first blind holdout.
+Downstream endpoint validation remains pending; no endpoint figure is fabricated.
 """
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text, encoding="utf-8")
@@ -315,11 +316,11 @@ def write_expert_review(path: Path, node: pd.DataFrame, pair: pd.DataFrame) -> N
         else np.nan
     )
     rows = [
-        "# DQR v2.3 expert review and implementation decision",
+        "# DQR v2.4 expert review and implementation decision",
         "",
         "## Overall decision",
         "",
-        "The proposal is scientifically coherent and addresses the principal remaining risk: changes in evidence composition must not be interpreted as temporal changes in data quality. The accepted P0 changes were implemented without changing any frozen D1-D5 formal score.",
+        "This revision separates D3/D4 reference qualification from other dimensions' numeric scores. D1, D2 and D5 formal scores remain unchanged; D3/D4 have new versioned results. Evidence composition must not be interpreted as temporal changes in data quality.",
         "",
         "## Executed",
         "",
@@ -328,7 +329,7 @@ def write_expert_review(path: Path, node: pd.DataFrame, pair: pd.DataFrame) -> N
         "- Bound D5 support-migration v1.1 into the frozen input registry; L1 remains diagnostic-only limited evidence and is never converted into low quality.",
         "- Added D4 exact/variable-fallback/global-fallback/insufficient metadata to every pair-hour and completed a descriptive mapping-support migration audit.",
         "- Added phase_role, reference_status and version_hash to every dimension-long row, plus a phase/evidence summary and machine-readable estimand registry.",
-        "- Retained v2.2 outputs and created a separate v2.3 release directory, source-data bundle, figures, reports, tests and SHA-256 manifests.",
+        "- Retained v2.2/v2.3 outputs and created a separate v2.4 release directory, source-data bundle, figures, reports, tests and SHA-256 manifests.",
         "- Kept A-E grades, D5 hard Veto and optimized weights disabled.",
         "",
         "## Main numerical implications",
@@ -341,21 +342,21 @@ def write_expert_review(path: Path, node: pd.DataFrame, pair: pd.DataFrame) -> N
         "",
         "## Accepted with modification",
         "",
-        "- Native D1-D3 files were not rewritten merely to add phase labels. The harmonized fields are added at the integration interface, preserving upstream frozen hashes; native exports should change only in a new versioned upstream release.",
+        "- D3/D4 input hashes explicitly bind the neutral-reference releases. D1/D2/D5 numeric hashes and the D5 support-audit manifest remain frozen. Phase labels are integration metadata.",
         "- D4 fallback remains formally scoreable metadata in this release. No global fallback was observed, and exact/fallback strata are regime-confounded. Any future exclusion from Full requires a prospectively frozen rule and new test data.",
         "- D5 post-embargo rows are labelled for aggregation-time interpretation only; this does not create a new independent-validation claim for the D5 model.",
         "- The Nature static preflight warning on D4 `.dropna()` is non-substantive: these calls collapse non-null metadata values; missing-regime rows are explicitly retained as `insufficient`, and all input/evaluable counts are exported.",
         "",
         "## Pending and not executed",
         "",
-        "- D1 development-only frozen K=4 context shadow and the dependent D4 regime-shadow comparison: require a separately preregistered model artifact and paired sensitivity run.",
+        "- Shared D4 K=4 process context is now fitted only before its development cutoff. D5 retains its own frozen posterior/OOD/hysteresis model; equally named regimes are not presumed equivalent.",
         "- Independent D1 hard-fault interface: cannot be reconstructed from a D1_total threshold and requires controlled challenge or reviewed event truth.",
         "- D5 template promotion and bridge: requires future independent support, frozen validation and prospective activation; historical L1 will not be backfilled.",
-        "- Prospective post-2026-04-13 scoring, downstream fitness-for-use, maintenance/metrological truth, cross-plant validation, learned weights and A-E cutpoints: required data are unavailable.",
+        "- The 108-day data have already been inspected; revised temporal re-evaluation is separate and cannot supply a new blind-test claim. Downstream fitness-for-use, maintenance/metrological truth, cross-plant validation, learned weights and A-E cutpoints remain unresolved.",
         "",
         "## Publication conclusion",
         "",
-        "DQR v2.3 is suitable for retrospective manuscript analysis as a hierarchical, evidence-aware and non-compensatory aggregation framework. Core is the longitudinal estimand, Full is the complete-evidence scientific estimand, and availability-aware is an operational extension. The release is not a deployment-grade automated grading or hard-Veto system.",
+        "DQR v2.4 supports retrospective manuscript analysis with computational/scoring dependency separation, not statistical independence. Core is the longitudinal estimand, Full is the complete-evidence scientific estimand, and availability-aware is an operational extension. The release is not a deployment-grade automated grading or hard-Veto system.",
     ]
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("\n".join(rows) + "\n", encoding="utf-8")
@@ -402,8 +403,8 @@ equal weighting of seven native atoms. Score concordance, low-tail hours,
 exact overlap partitions, episode burden and a prespecified Q-threshold sweep are
 sensitivity evidence, not model selection.
 
-Figures 6 and 7 remain pending because prospective holdout scores and frozen
-downstream endpoint bundles are unavailable.
+Revised temporal evaluation figures are provided separately under
+`validation/revised_reference_20260917`; downstream endpoint validation is pending.
 """
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text, encoding="utf-8")
