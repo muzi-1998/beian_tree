@@ -278,7 +278,13 @@ def load_d4(config: dict[str, Any]) -> pd.DataFrame:
     frame["regime_id"] = pd.to_numeric(frame["regime_id"], errors="coerce").astype(
         "Int64"
     )
-    frame = frame.merge(lookup, on=["variable", "regime_id"], how="left")
+    common_metadata = sorted((set(frame) & set(lookup)) - {"variable", "regime_id"})
+    frame = frame.merge(lookup, on=["variable", "regime_id"], how="left", suffixes=("", "_mapping"), validate="many_to_one")
+    for column in common_metadata:
+        a, b = frame[column], frame[column + "_mapping"]
+        if not (a.eq(b) | (a.isna() & b.isna())).all():
+            raise RuntimeError(f"D4 pair-hour metadata differs from frozen mapping: {column}")
+        frame = frame.drop(columns=column + "_mapping")
     unmapped_supported_regime = frame["regime_id"].notna() & frame[
         "mapping_support_class"
     ].isna()

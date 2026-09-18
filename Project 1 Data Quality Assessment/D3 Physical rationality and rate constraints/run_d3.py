@@ -192,7 +192,8 @@ def main(
             "imputed_values_scored": False,
             "regime_labels_consumed": False,
             "D1_D2_consumed_by_production_score": False,
-            "D1_D2_consumed_by_validation_candidate_filter": True,
+            "D1_D2_consumed_by_primary_reference": False,
+            "screened_alpha_role": "frozen_sensitivity_only",
         },
         "scientific_contract": {
             "instrument_range_role": "data_quality_fail",
@@ -222,7 +223,7 @@ def main(
             "temperature_uncertainty": "1000_replicate_calendar_day_cluster_bootstrap",
             "temperature_alpha_interval_propagation": "bootstrap_lower_point_upper_supplementary_sensitivity",
             "temperature_validation_rule": "minute_exceedance_and_2h_warning_window_rates_le_0.02_in_independent_validation",
-            "temperature_validation_filter": "frozen_D1_total_spike_step_drift_freeze_regime_and_D2_Strict",
+            "temperature_validation_filter": "neutral_raw_reference_on_common_evaluation_support",
             "temperature_optional_D1_saturation_floor_filter": "unavailable_in_frozen_release_not_imputed",
             "temperature_source_start": str(temperature_minute.index.min()),
             "temperature_source_end": str(temperature_minute.index.max()),

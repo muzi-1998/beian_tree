@@ -26,5 +26,8 @@ python scripts/verify_dqr_aggregation.py
 ```
 
 All frozen input hashes, generated artifact hashes, contract checks and figure
-QA results are recorded under `outputs/aggregation_v2_3/`. The v2.2 outputs are
-retained for audit history and are not overwritten by the v2.3 release.
+QA results are recorded under `outputs/aggregation_v2_4/`. The v2.2/v2.3 outputs
+are retained for audit history. D3/D4 use neutral-reference releases; D1/D2/D5
+numeric results and the D5 support audit remain frozen. The already inspected
+108-day extension is a separate revised temporal out-of-sample re-evaluation,
+not a first blind test: `../validation/revised_reference_20260917/`.

@@ -74,7 +74,10 @@ operational_envelope_contract:
       terminal_start: "2026-04-01 00:00:00"
       terminal_end_exclusive: "2026-04-14 00:00:00"
       resolution: "minute_calibration_minute_validation_minute_production"
-      quality_filter: "D1_total,Q_spike,Q_step,Q_drift,Q_freeze,Q_regime,D2_Strict>=4.5_and_D2_usable"
+      quality_filter: "raw_present_not_imputed_valid_temperature_registered_range_sufficient_raw_support"
+      reference_route: "neutral_raw_primary"
+      minimum_raw_minutes_per_hour: 30
+      screened_reference_role: "sensitivity_only_not_ground_truth"
       unavailable_optional_D1_filter: "no_independent_DO_saturation_or_floor_sheet_in_frozen_D1_release"
       estimator: "max(P99,median+3x1.4826MAD)_of_minute_DO_over_Benson_Krause_Csat"
       minimum_calibration_sensor_minutes: 43200
@@ -87,16 +90,20 @@ operational_envelope_contract:
         minimum_high_quality_minutes: 60
         warning_if_exceedance_rate_gt: 0.02
       alpha_by_position:
+        "1": 0.3463141470
+        "2": 0.3715629157
+        "3": 0.6814501118
+      screened_reference_alpha_by_position:
         "1": 0.2789373305
         "2": 0.3100300303
         "3": 0.5065765789
       calibration_support_sensor_minutes:
-        "1": 62452
-        "2": 113862
-        "3": 120644
+        "1": 521444
+        "2": 521461
+        "3": 521470
       scored_positions: ["1", "2"]
       diagnostic_only_positions: ["3"]
-      promotion_rule: "independent_validation_high_quality_minute_exceedance_rate_le_0.02_and_2h_warning_window_rate_le_0.02_per_sensor"
+      promotion_rule: "neutral_reference_minute_exceedance_rate_le_0.02_and_2h_warning_window_rate_le_0.02_per_sensor_no_automatic_promotion"
       position_3_status: "diagnostic_only_failed_temporal_stability_DO_2_3"
       cross_line_leave_one_out_role: "diagnostic_transfer_test_not_used_to_tune_or_promote"
       terminal_test_role: "locked_forward_test_never_used_to_refit_or_widen_alpha"
@@ -123,5 +130,5 @@ sources:
     source_sha256: "2085f4de640aa0231f95e3abe370dec6d1da9c3daf064e6f05042e344ca58ea9"
     inspected_sheet_range: "Sheet1!A1:P34"
     reverified_at: "2026-07-27T00:00:00+08:00"
-version: "v2.7.0"
-effective_date: "2026-08-11"
+version: "v2.8.0"
+effective_date: "2026-09-17"

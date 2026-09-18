@@ -16,7 +16,7 @@ if __name__ == "__main__":
         D4_ROOT / "outputs" / "data" / "D4_main_scores.xlsx",
         PROJECT_ROOT / "D1 Sensor health" / "outputs" / "data" / "D1_event_windows.xlsx",
         D4_ROOT / "outputs" / "data" / "D4_event_windows.xlsx",
-        D4_ROOT / "outputs" / "integration" / "D4V151_composite_refresh",
+        D4_ROOT / "outputs" / "integration" / "D4V16_composite_refresh",
         D4_ROOT / "outputs" / "data" / "D1_D4_redundancy_audit.xlsx",
     )
     print(outputs["score_dependence"].to_string(index=False))

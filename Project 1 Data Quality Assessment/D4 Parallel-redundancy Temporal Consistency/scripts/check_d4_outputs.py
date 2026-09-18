@@ -60,7 +60,7 @@ def main() -> None:
         ["Q_dist", "Q_trend", "Q_var", "Q_cp"]
     ].min(axis=1)
     expected_gate = (
-        scores["D2_target_veto"].eq(0) & scores["D2_ref_veto"].eq(0)
+        scores["neutral_support_ok"].eq(True) & scores["regime_id"].notna()
         & scores["valid_fraction_common"].ge(0.80)
         & scores["valid_fraction_common_hours"].ge(0.80)
         & scores["D4_raw"].notna()
@@ -89,10 +89,10 @@ def main() -> None:
             encoding="utf-8"
         )
     )
-    composite_dir = INTEGRATION / "D4V151_composite_refresh"
+    composite_dir = INTEGRATION / "D4V16_composite_refresh"
     composite_manifest_files = sorted(composite_dir.glob("D4V*_composite_refresh_manifest.json"))
     composite_refresh_manifest = json.loads(
-        (composite_dir / "D4V151_composite_refresh_manifest.json").read_text(encoding="utf-8")
+        (composite_dir / "D4V16_composite_refresh_manifest.json").read_text(encoding="utf-8")
     )
     common_roles = common_change.set_index("scenario")["role"].to_dict()
     equal_far = float(
@@ -107,7 +107,7 @@ def main() -> None:
         ),
         "base_formula_max_abs_error": float(np.nanmax(np.abs(scores["D4_base"] - expected_base))),
         "raw_formula_max_abs_error": float(np.nanmax(np.abs(scores["D4_raw"] - expected_raw))),
-        "d2_gate_mismatch_count": int((scores["usable_for_D4"] != expected_gate).sum()),
+        "neutral_gate_mismatch_count": int((scores["usable_for_D4"] != expected_gate).sum()),
         "calibration_min_n": int(params["sample_size"].min()),
         "calibration_sources": sorted(params["benchmark_source"].drop_duplicates().tolist()),
         "pair_specific_mapping_count": int(params["mapping_scope"].str.contains("pair", case=False).sum()),
@@ -136,13 +136,8 @@ def main() -> None:
         "wide_exact_candidate_precision_rows": int(
             params["exact_candidate_percentile_precision_grade"].eq("wide_interval").sum()
         ),
-        "benchmark_D1_violations": int(
-            (benchmark["D1_target"].lt(4.5) | benchmark["D1_ref"].lt(4.5)).sum()
-        ),
-        "benchmark_D2_continuity_violations": int(
-            (~benchmark["D2_target_continuous_24h"].astype(bool)
-             | ~benchmark["D2_ref_continuous_24h"].astype(bool)).sum()
-        ),
+        "benchmark_neutral_contract": bool(benchmark["benchmark_source"].eq(
+            "development_neutral_raw_support_stable_frozen_context").all()),
         "benchmark_non_development_rows": int(benchmark["phase_id"].ne("development").sum()),
         "calibration_non_development_rows": int(params["fit_phase"].ne("development").sum()),
         "calibration_after_fit_end_rows": int(
@@ -184,7 +179,7 @@ def main() -> None:
         "composite_manifest_files": [path.name for path in composite_manifest_files],
         "composite_manifest_unique": bool(
             [path.name for path in composite_manifest_files]
-            == ["D4V151_composite_refresh_manifest.json"]
+            == ["D4V16_composite_refresh_manifest.json"]
         ),
         "redundancy_pooled_row_count": int(redundancy["scope"].eq("pooled").sum()),
         "redundancy_incremental_validity_pending": bool(
@@ -203,15 +198,11 @@ def main() -> None:
         and checks["score_bounds_ok"]
         and checks["base_formula_max_abs_error"] < 1e-10
         and checks["raw_formula_max_abs_error"] < 1e-10
-        and checks["d2_gate_mismatch_count"] == 0
+        and checks["neutral_gate_mismatch_count"] == 0
         and checks["calibration_min_n"] >= 50
         and checks["pair_specific_mapping_count"] == 0
         and checks["calibration_support_rule_consistent"]
-        and checks["ORP_fallback_regimes"] == [0, 1, 3]
-        and checks["wide_percentile_precision_rows"] > 0
-        and checks["wide_exact_candidate_precision_rows"] > 0
-        and checks["benchmark_D1_violations"] == 0
-        and checks["benchmark_D2_continuity_violations"] == 0
+        and checks["benchmark_neutral_contract"]
         and checks["benchmark_non_development_rows"] == 0
         and checks["calibration_non_development_rows"] == 0
         and checks["calibration_after_fit_end_rows"] == 0

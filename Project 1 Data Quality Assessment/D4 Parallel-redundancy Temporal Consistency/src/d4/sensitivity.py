@@ -10,7 +10,7 @@ import pandas as pd
 from .figure_style import PALETTE, configure_style, panel_label, save_figure
 
 
-VERSION_ORDER = ("Legacy v1.2 proxy", "Current v1.3", "Restored v1.4")
+VERSION_ORDER = ("Legacy v1.2 proxy", "Current v1.3", "Neutral v1.6")
 VERSION_COLORS = (PALETTE["gray"], PALETTE["blue"], PALETTE["orange"])
 
 
@@ -128,20 +128,20 @@ def _comparison_figure(
         ax.spines["top"].set_visible(False)
         ax.spines["right"].set_visible(False)
 
-    valid = aligned[["Current v1.3", "Restored v1.4"]].dropna()
+    valid = aligned[["Current v1.3", "Neutral v1.6"]].dropna()
     sample = valid.iloc[::max(1, len(valid) // 12000)]
     axes[1, 0].hexbin(
-        sample["Current v1.3"], sample["Restored v1.4"], gridsize=45,
+        sample["Current v1.3"], sample["Neutral v1.6"], gridsize=45,
         mincnt=1, cmap="Blues", extent=(1, 5, 1, 5),
     )
     axes[1, 0].plot([1, 5], [1, 5], color=PALETTE["gray"], lw=0.75, ls="--")
-    correlation = valid["Current v1.3"].corr(valid["Restored v1.4"])
+    correlation = valid["Current v1.3"].corr(valid["Neutral v1.6"])
     axes[1, 0].text(
         0.04, 0.95, f"Pearson r = {correlation:.2f}", transform=axes[1, 0].transAxes,
         va="top", bbox={"facecolor": "white", "edgecolor": "none", "alpha": 0.72, "pad": 0.2},
     )
     axes[1, 0].set(
-        xlim=(1, 5), ylim=(1, 5), xlabel="Current v1.3 D4 raw", ylabel="Restored v1.4 D4 raw"
+        xlim=(1, 5), ylim=(1, 5), xlabel="Archived v1.3 D4 raw", ylabel="Neutral v1.6 D4 raw"
     )
     for letter, ax in zip("abcd", axes.ravel()):
         panel_label(ax, letter)
@@ -153,7 +153,7 @@ def run_sensitivity(d4_root: Path) -> dict[str, pd.DataFrame]:
         # Frozen lineage files retain the former D6 public identifier.
         ("Legacy v1.2 proxy", d4_root / "legacy" / "2026-05-30-proxy" / "D6_main_scores.xlsx", "usable_for_DQR"),
         ("Current v1.3", d4_root / "legacy" / "2026-07-13-v1.3-independent" / "D6_main_scores.xlsx", "usable_for_DQR"),
-        ("Restored v1.4", d4_root / "outputs" / "data" / "D4_main_scores.xlsx", "usable_for_D4"),
+        ("Neutral v1.6", d4_root / "outputs" / "data" / "D4_main_scores.xlsx", "usable_for_D4"),
     )
     combined = pd.concat(
         [_load_score(path, version, evaluable) for version, path, evaluable in sources],
@@ -162,13 +162,13 @@ def run_sensitivity(d4_root: Path) -> dict[str, pd.DataFrame]:
     summary = _summary(combined)
     aligned, correlations = _aligned_comparisons(combined)
     pair_wide = summary.pivot(index="pair_id", columns="version", values="mean_D4_raw").reset_index()
-    pair_wide["restored_minus_legacy"] = pair_wide["Restored v1.4"] - pair_wide["Legacy v1.2 proxy"]
-    pair_wide["restored_minus_current"] = pair_wide["Restored v1.4"] - pair_wide["Current v1.3"]
+    pair_wide["neutral_minus_legacy"] = pair_wide["Neutral v1.6"] - pair_wide["Legacy v1.2 proxy"]
+    pair_wide["neutral_minus_archived_v13"] = pair_wide["Neutral v1.6"] - pair_wide["Current v1.3"]
     method_changes = pd.DataFrame([
         {"version": "Legacy v1.2 proxy", "input": "raw minute data; internal residual", "mapping": "pooled by regime", "change_point": "legacy adjacent-KS implementation", "arbitration": "D1/D2/D5 proxies", "event_rule": "3 h"},
         {"version": "Current v1.3", "input": "formal 1.1 residual; 10-min median", "mapping": "pair-specific first 70%", "change_point": "24-h half-window shift", "arbitration": "none", "event_rule": "2 h"},
         {
-            "version": "Restored v1.4",
+            "version": "Neutral v1.6",
             "input": "formal 1.1 residual; 10-min median",
             "mapping": "public variable x regime; documented fallback",
             "change_point": "7-d adjacent KS; fixed timing table",

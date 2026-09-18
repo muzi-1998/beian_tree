@@ -1,6 +1,6 @@
 # D4-D5 Final Arbitration Report
 
-Generated: 2026-08-18T03:36:07.983869+00:00
+Generated: 2026-09-18T00:21:47.386059+00:00
 
 ## Decision
 
@@ -14,7 +14,7 @@ sensor-identity Veto only when the corresponding validation claim has passed.
 
 - Input rows: 42,847
 - Core pre-integration `D4_forDQR` non-null rows: 0 (intentional placeholder; not the published integration output)
-- Integration-finalized `D4_forDQR` rows: 42,371
+- Integration-finalized `D4_forDQR` rows: 42,189
 - D5 report-context-ready pair-hours: 19,803
 - D5 gate/action-ready pair-hours: 0
 - D4 sensor-gate-applicable rows: 0

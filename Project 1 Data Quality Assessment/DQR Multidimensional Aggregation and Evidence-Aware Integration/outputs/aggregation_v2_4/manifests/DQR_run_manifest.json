@@ -1,0 +1,805 @@
+{
+  "schema_version": "northbank-dqr-aggregation-v2.4",
+  "contract_version": "2.4.0",
+  "run_id": "DQRAGG-V24-bcde3be17d81",
+  "provenance": {
+    "scientific_generation_commit": "6799c3a916bbc6840aa2623f915b44d05e5192d6",
+    "scientific_generation_content_sha256": "36226dace369953d1597717ed1dd7c225929cb81a572318855ad009448b58d95",
+    "authority": "code_config_and_frozen_input_content_hashes",
+    "publication_bundle_commit": "external_release_commit_or_tag_not_embedded_to_avoid_self_reference",
+    "packaging_changes_after_generation": "permitted_only_when_scientific_content_hash_remains_exact"
+  },
+  "configuration": {
+    "path": "DQR Multidimensional Aggregation and Evidence-Aware Integration/configs/aggregation_v2_4.yaml",
+    "sha256": "5b5354f349f626dfb1a649936a6096677bec31f39f893a888eb7f77c5ef5d89b",
+    "hash_method": "sha256_utf8_lf_canonical"
+  },
+  "code_sources": [
+    {
+      "path": "DQR Multidimensional Aggregation and Evidence-Aware Integration/scripts/run_dqr_aggregation.py",
+      "sha256": "cf37f373e8d9479c9564705115f599dc95901ad15496a8c2da6b1c0f932a416f",
+      "hash_method": "sha256_utf8_lf_canonical"
+    },
+    {
+      "path": "DQR Multidimensional Aggregation and Evidence-Aware Integration/scripts/verify_dqr_aggregation.py",
+      "sha256": "88b1711e6432c5330c8e827932efd00f32c8b92032300c3b9c91ef140e71dac0",
+      "hash_method": "sha256_utf8_lf_canonical"
+    },
+    {
+      "path": "DQR Multidimensional Aggregation and Evidence-Aware Integration/src/dqr_aggregation/__init__.py",
+      "sha256": "795b7676e8df27f7cac0717b4b422e0c687646a4530cdb33772c3d53655a03ea",
+      "hash_method": "sha256_utf8_lf_canonical"
+    },
+    {
+      "path": "DQR Multidimensional Aggregation and Evidence-Aware Integration/src/dqr_aggregation/common.py",
+      "sha256": "4aac9286ba71c3f3a70e2028edaec127a58b176584d05954ddb28037111055ba",
+      "hash_method": "sha256_utf8_lf_canonical"
+    },
+    {
+      "path": "DQR Multidimensional Aggregation and Evidence-Aware Integration/src/dqr_aggregation/figure_style.py",
+      "sha256": "b6ebbad401221b361fcb2a56b9230678321f4655cef62205ce2d1447a8eac4c0",
+      "hash_method": "sha256_utf8_lf_canonical"
+    },
+    {
+      "path": "DQR Multidimensional Aggregation and Evidence-Aware Integration/src/dqr_aggregation/figures.py",
+      "sha256": "3e9fb961b1becf5e14907dac1192ae0d19c565cd05100beb8ef48eefecbd7ee8",
+      "hash_method": "sha256_utf8_lf_canonical"
+    },
+    {
+      "path": "DQR Multidimensional Aggregation and Evidence-Aware Integration/src/dqr_aggregation/pipeline.py",
+      "sha256": "1df7c9046e50ddda68a3062be622ba9b14831560fe459ddbd455b3eff7b3b1b3",
+      "hash_method": "sha256_utf8_lf_canonical"
+    },
+    {
+      "path": "DQR Multidimensional Aggregation and Evidence-Aware Integration/src/dqr_aggregation/reports.py",
+      "sha256": "e08fc3117b623a51c42c930641f067d70fe5fa8d71f368b1436989b633363f36",
+      "hash_method": "sha256_utf8_lf_canonical"
+    },
+    {
+      "path": "DQR Multidimensional Aggregation and Evidence-Aware Integration/src/dqr_aggregation/runner.py",
+      "sha256": "596d739a44636d1c35e213eab5e4d0b3b51a5acfec41e423eb739a2af7322f76",
+      "hash_method": "sha256_utf8_lf_canonical"
+    },
+    {
+      "path": "DQR Multidimensional Aggregation and Evidence-Aware Integration/src/dqr_aggregation/validation.py",
+      "sha256": "6cc3bfedcfb6123b0618e19228abf066d054db2166cf25b3f8c7835e5d0d00b6",
+      "hash_method": "sha256_utf8_lf_canonical"
+    }
+  ],
+  "input_registry": [
+    {
+      "dimension": "D1",
+      "artifact_role": "path",
+      "relative_path": "D1 Sensor health/outputs/data/D1_main_scores_min.xlsx",
+      "exists": true,
+      "size_bytes": 4816428,
+      "expected_sha256": "83207ca6f818dd309fe36cdb3adfdc9e569ea540fbca5c4acc0e45e8a321923c",
+      "actual_sha256": "83207ca6f818dd309fe36cdb3adfdc9e569ea540fbca5c4acc0e45e8a321923c",
+      "sha256_match": true,
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "dimension": "D1",
+      "artifact_role": "manifest_path",
+      "relative_path": "D1 Sensor health/outputs/data/D1_release_manifest.json",
+      "exists": true,
+      "size_bytes": 3367,
+      "expected_sha256": "a32bf94f989fc19cbcfc57a1b00e1dff50c742b4b586c51f6750383d9ef24788",
+      "actual_sha256": "a32bf94f989fc19cbcfc57a1b00e1dff50c742b4b586c51f6750383d9ef24788",
+      "sha256_match": true,
+      "hash_method": "sha256_utf8_lf_canonical"
+    },
+    {
+      "dimension": "D2",
+      "artifact_role": "path",
+      "relative_path": "D2 Temporal Continuity & Information Availability/artifacts/data/D2_main_scores_hourly.xlsx",
+      "exists": true,
+      "size_bytes": 6379592,
+      "expected_sha256": "ac051d9a24a17523433c63187cf63f0128efb185325a1ea789633f7fc13d04a6",
+      "actual_sha256": "ac051d9a24a17523433c63187cf63f0128efb185325a1ea789633f7fc13d04a6",
+      "sha256_match": true,
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "dimension": "D2",
+      "artifact_role": "manifest_path",
+      "relative_path": "D2 Temporal Continuity & Information Availability/artifacts/D2_release_manifest.json",
+      "exists": true,
+      "size_bytes": 32217,
+      "expected_sha256": "2cbc9dd6ce88ade8e73a7b09acd46a06d39e34b3e1acfdef77529763633cfea9",
+      "actual_sha256": "2cbc9dd6ce88ade8e73a7b09acd46a06d39e34b3e1acfdef77529763633cfea9",
+      "sha256_match": true,
+      "hash_method": "sha256_utf8_lf_canonical"
+    },
+    {
+      "dimension": "D3",
+      "artifact_role": "path",
+      "relative_path": "D3 Physical rationality and rate constraints/outputs/data/D3_window_scores.xlsx",
+      "exists": true,
+      "size_bytes": 4884509,
+      "expected_sha256": "c733c4a8ac4c15868a20cc69595dba96ee81e50bd653fd7bb05256e865d6a570",
+      "actual_sha256": "c733c4a8ac4c15868a20cc69595dba96ee81e50bd653fd7bb05256e865d6a570",
+      "sha256_match": true,
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "dimension": "D3",
+      "artifact_role": "manifest_path",
+      "relative_path": "D3 Physical rationality and rate constraints/outputs/manifest/run_manifest.json",
+      "exists": true,
+      "size_bytes": 5319,
+      "expected_sha256": "860d0b326fac7dc796f2b133f9fca62e6483985833fc77148a6b01d718c168aa",
+      "actual_sha256": "860d0b326fac7dc796f2b133f9fca62e6483985833fc77148a6b01d718c168aa",
+      "sha256_match": true,
+      "hash_method": "sha256_utf8_lf_canonical"
+    },
+    {
+      "dimension": "D4",
+      "artifact_role": "path",
+      "relative_path": "D4 Parallel-redundancy Temporal Consistency/outputs/data/D4_main_scores.xlsx",
+      "exists": true,
+      "size_bytes": 11721431,
+      "expected_sha256": "a41e89ab86b3d91d7d7aeacb1947f4cc2ae85d523a60924993a994597889ba4e",
+      "actual_sha256": "a41e89ab86b3d91d7d7aeacb1947f4cc2ae85d523a60924993a994597889ba4e",
+      "sha256_match": true,
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "dimension": "D4",
+      "artifact_role": "mapping_path",
+      "relative_path": "D4 Parallel-redundancy Temporal Consistency/outputs/data/D4_mapping_params.xlsx",
+      "exists": true,
+      "size_bytes": 22449,
+      "expected_sha256": "fc4384a6686f2f4698fe0693d04e50277cb39b434db64f7ee7779a9d4062352c",
+      "actual_sha256": "fc4384a6686f2f4698fe0693d04e50277cb39b434db64f7ee7779a9d4062352c",
+      "sha256_match": true,
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "dimension": "D4",
+      "artifact_role": "manifest_path",
+      "relative_path": "D4 Parallel-redundancy Temporal Consistency/outputs/data/D4_run_manifest.json",
+      "exists": true,
+      "size_bytes": 12211,
+      "expected_sha256": "15d5f295eb0fd405de964bdff6f2a0df1dc126651582daebffda58c1d0139509",
+      "actual_sha256": "15d5f295eb0fd405de964bdff6f2a0df1dc126651582daebffda58c1d0139509",
+      "sha256_match": true,
+      "hash_method": "sha256_utf8_lf_canonical"
+    },
+    {
+      "dimension": "D4",
+      "artifact_role": "formal_case_path",
+      "relative_path": "D4 Parallel-redundancy Temporal Consistency/outputs/figure_source_data/FigD4_4_formal_episode_cases_source_data.xlsx",
+      "exists": true,
+      "size_bytes": 102325,
+      "expected_sha256": "afa8ff704bc59c1d18a9ba4d4911ddf64292d985531415d8cfc4a02b0a49421a",
+      "actual_sha256": "afa8ff704bc59c1d18a9ba4d4911ddf64292d985531415d8cfc4a02b0a49421a",
+      "sha256_match": true,
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "dimension": "D5",
+      "artifact_role": "path",
+      "relative_path": "D5 Topological Role Consistency and Structural Representativeness/outputs/local/D5_report_interface.parquet",
+      "exists": true,
+      "size_bytes": 1171194,
+      "expected_sha256": "f057e0a8037282fb43a71a94d7043c7bd3de2b4c8fa9865365bcf0427195dbda",
+      "actual_sha256": "f057e0a8037282fb43a71a94d7043c7bd3de2b4c8fa9865365bcf0427195dbda",
+      "sha256_match": true,
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "dimension": "D5",
+      "artifact_role": "raw_path",
+      "relative_path": "D5 Topological Role Consistency and Structural Representativeness/outputs/local/D5_main_scores_hourly.parquet",
+      "exists": true,
+      "size_bytes": 7340495,
+      "expected_sha256": "64274562d7139d510dd3780dbd67bd2c2c5913908dbbec8ac7d4bcceb0418cd1",
+      "actual_sha256": "64274562d7139d510dd3780dbd67bd2c2c5913908dbbec8ac7d4bcceb0418cd1",
+      "sha256_match": true,
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "dimension": "D5",
+      "artifact_role": "manifest_path",
+      "relative_path": "D5 Topological Role Consistency and Structural Representativeness/outputs/local/D5_run_manifest.json",
+      "exists": true,
+      "size_bytes": 55560,
+      "expected_sha256": "ea106dc1165d5a09beadb42f733c50af03d3240de4df01f9b87c623eb7db35d5",
+      "actual_sha256": "ea106dc1165d5a09beadb42f733c50af03d3240de4df01f9b87c623eb7db35d5",
+      "sha256_match": true,
+      "hash_method": "sha256_utf8_lf_canonical"
+    },
+    {
+      "dimension": "D5",
+      "artifact_role": "publication_manifest_path",
+      "relative_path": "D5 Topological Role Consistency and Structural Representativeness/outputs/publication/D5_publication_audit_manifest.json",
+      "exists": true,
+      "size_bytes": 15588,
+      "expected_sha256": "f7914434ebaba2d5facd2419d5ade03db546c2b70dc92ad484ec17e4eacfe53a",
+      "actual_sha256": "f7914434ebaba2d5facd2419d5ade03db546c2b70dc92ad484ec17e4eacfe53a",
+      "sha256_match": true,
+      "hash_method": "sha256_utf8_lf_canonical"
+    },
+    {
+      "dimension": "D5",
+      "artifact_role": "support_audit_manifest_path",
+      "relative_path": "D5 Topological Role Consistency and Structural Representativeness/outputs/audit/support_migration/D5_support_migration_manifest.json",
+      "exists": true,
+      "size_bytes": 9733,
+      "expected_sha256": "888ef824802750ab96da3e220ec730c39dc726767ac6ccf3e4c54f7aca5b2fbb",
+      "actual_sha256": "888ef824802750ab96da3e220ec730c39dc726767ac6ccf3e4c54f7aca5b2fbb",
+      "sha256_match": true,
+      "hash_method": "sha256_utf8_lf_canonical"
+    },
+    {
+      "dimension": "D5",
+      "artifact_role": "dependence_path",
+      "relative_path": "D5 Topological Role Consistency and Structural Representativeness/outputs/publication/D5_d4_d5_dependence.parquet",
+      "exists": true,
+      "size_bytes": 8002,
+      "expected_sha256": "118974dd46971d17383fbdb3a2f98a25db8cd9e1ba41150aefa0b8433e5f32b0",
+      "actual_sha256": "118974dd46971d17383fbdb3a2f98a25db8cd9e1ba41150aefa0b8433e5f32b0",
+      "sha256_match": true,
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "dimension": "D5",
+      "artifact_role": "stratified_dependence_path",
+      "relative_path": "D5 Topological Role Consistency and Structural Representativeness/outputs/publication/D5_d4_d5_stratified_rho.parquet",
+      "exists": true,
+      "size_bytes": 11999,
+      "expected_sha256": "43c065168aa4ad6ae7a177b9492ffa05f61849e707e8ed7aa1803ebe8d006415",
+      "actual_sha256": "43c065168aa4ad6ae7a177b9492ffa05f61849e707e8ed7aa1803ebe8d006415",
+      "sha256_match": true,
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "dimension": "D5",
+      "artifact_role": "influence_path",
+      "relative_path": "D5 Topological Role Consistency and Structural Representativeness/outputs/local/D5_sensor_influence.parquet",
+      "exists": true,
+      "size_bytes": 6011187,
+      "expected_sha256": "a9270494760fcb4ae501abcf54c50e813ca74d6306d7fbca94d7ef1a1d1730a2",
+      "actual_sha256": "a9270494760fcb4ae501abcf54c50e813ca74d6306d7fbca94d7ef1a1d1730a2",
+      "sha256_match": true,
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "dimension": "D5",
+      "artifact_role": "case_path",
+      "relative_path": "D5 Topological Role Consistency and Structural Representativeness/outputs/local/D5_case_study_exports.xlsx",
+      "exists": true,
+      "size_bytes": 44198,
+      "expected_sha256": "060027cb3475620e45c16a5aed24ec4f94b00c01a7a3ba027a188963d7682dbc",
+      "actual_sha256": "060027cb3475620e45c16a5aed24ec4f94b00c01a7a3ba027a188963d7682dbc",
+      "sha256_match": true,
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "dimension": "D5",
+      "artifact_role": "topology_path",
+      "relative_path": "D5 Topological Role Consistency and Structural Representativeness/outputs/local/D5_topology_registry.yaml",
+      "exists": true,
+      "size_bytes": 2838,
+      "expected_sha256": "46e191549a0c768ee947bff4d98f26f38a93ecbce380ab4ff8114d2885dd29f9",
+      "actual_sha256": "46e191549a0c768ee947bff4d98f26f38a93ecbce380ab4ff8114d2885dd29f9",
+      "sha256_match": true,
+      "hash_method": "sha256_raw_bytes"
+    }
+  ],
+  "contracts": [
+    {
+      "check_id": "frozen_input_hashes",
+      "passed": true,
+      "interpretation": "all declared D1-D5 artifacts match the frozen SHA-256 registry"
+    },
+    {
+      "check_id": "D3_not_numerically_averaged",
+      "passed": true,
+      "interpretation": "D3 has diagnostic_score_1to5 and gate status only"
+    },
+    {
+      "check_id": "D4_pair_level_only",
+      "passed": true,
+      "interpretation": "native D4 is not copied into sensor rows"
+    },
+    {
+      "check_id": "D5_missing_not_low",
+      "passed": true,
+      "interpretation": "ineligible or missing D5 evidence remains NA"
+    },
+    {
+      "check_id": "node_score_range",
+      "passed": true,
+      "interpretation": "all node estimands remain on the frozen 1-5 scale"
+    },
+    {
+      "check_id": "pair_score_range",
+      "passed": true,
+      "interpretation": "all pair estimands remain on the frozen 1-5 scale"
+    },
+    {
+      "check_id": "node_evidence_range",
+      "passed": true,
+      "interpretation": "node evidence completeness remains in [0,1]"
+    },
+    {
+      "check_id": "pair_evidence_range",
+      "passed": true,
+      "interpretation": "pair evidence completeness remains in [0,1]"
+    },
+    {
+      "check_id": "complete_case_invariance",
+      "passed": true,
+      "interpretation": "Q_full equals Q_available on identical complete-evidence rows"
+    },
+    {
+      "check_id": "quality_not_multiplied_by_evidence",
+      "passed": true,
+      "interpretation": "Q and E remain separate published variables"
+    },
+    {
+      "check_id": "node_core_fixed_formula",
+      "passed": true,
+      "interpretation": "Q_node_core12 is the fixed D1-D2 longitudinal estimand"
+    },
+    {
+      "check_id": "pair_core_fixed_formula",
+      "passed": true,
+      "interpretation": "Q_pair_core is the fixed left-core/right-core/D4 estimand"
+    },
+    {
+      "check_id": "phase_reference_metadata_complete",
+      "passed": true,
+      "interpretation": "every dimension row carries phase, reference and version provenance"
+    },
+    {
+      "check_id": "D4_mapping_support_metadata_complete",
+      "passed": true,
+      "interpretation": "D4 mapping support is explicit on every pair-hour"
+    },
+    {
+      "check_id": "D5_L1_is_limited_evidence_not_low_quality",
+      "passed": true,
+      "interpretation": "D5 L1 remains diagnostic-only limited evidence"
+    },
+    {
+      "check_id": "D5_hard_veto_disabled",
+      "passed": true,
+      "interpretation": "D5 report evidence cannot trigger a sensor hard Veto"
+    },
+    {
+      "check_id": "A_E_grades_disabled",
+      "passed": true,
+      "interpretation": "grades await prospective and downstream criterion validation"
+    },
+    {
+      "check_id": "strict_release_fail_closed",
+      "passed": true,
+      "interpretation": "D1 lacks a distinct validated hard-fault interface"
+    },
+    {
+      "check_id": "selection_composition_exact_closure",
+      "passed": true,
+      "interpretation": "total observed shift equals selection-only plus within-Full D5 contribution"
+    },
+    {
+      "check_id": "pair_low_tail_partition_exact_closure",
+      "passed": true,
+      "interpretation": "formal-threshold overlap cells partition all complete pair-hours exactly"
+    }
+  ],
+  "summary": {
+    "node_rows": 86016,
+    "pair_rows": 42847,
+    "node_coverage": {
+      "basic": 46004,
+      "full": 39606,
+      "limited": 406
+    },
+    "pair_coverage": {
+      "basic": 22596,
+      "full": 19593,
+      "limited": 658
+    },
+    "node_Q_full_nonnull": 39606,
+    "node_Q_core12_nonnull": 85610,
+    "node_Q_available_nonnull": 85610,
+    "pair_Q_full_nonnull": 19593,
+    "pair_Q_core_nonnull": 42189,
+    "pair_Q_available_nonnull": 42189,
+    "sensor_hour_pooled_means": {
+      "node_Q_full": 4.251559612584058,
+      "node_Q_core12": 4.601268867948273,
+      "node_Q_availability_aware": 4.422449122545637,
+      "pair_Q_full": 3.986947588315102,
+      "pair_Q_core": 4.226081201988991,
+      "pair_Q_availability_aware": 4.105827651804479
+    },
+    "plant_hour_aggregated_means": {
+      "node_Q_full": 4.289983808105261,
+      "node_Q_core12": 4.658202141690166,
+      "node_Q_availability_aware": 4.47499248374928,
+      "pair_Q_full": 3.996256244573637,
+      "pair_Q_core": 4.245721683248366,
+      "pair_Q_availability_aware": 4.123089403068426,
+      "aggregation_rule": "median_across_objects_per_hour_then_mean_across_plant_hours"
+    },
+    "selection_composition_decomposition": {
+      "selection_only": 0.0685136588697759,
+      "within_Full_D5_compositional_contribution": -0.3865262435974257,
+      "total_observed_estimand_shift": -0.3180125847276498,
+      "absolute_closure_error": 0.0,
+      "analysis_unit": "sensor_hour_pooled"
+    },
+    "pair_weighting_sensitivity": {
+      "spearman": 0.9071492570869095,
+      "low_tail_jaccard": 0.019417475728155338,
+      "decision_flip_rate_at_3": 0.005154902261011586,
+      "hierarchical_low_tail_count": 103,
+      "native_atom_low_tail_count": 2,
+      "intersection_both_count": 2,
+      "union_count": 103,
+      "hierarchical_event_count": 49,
+      "native_atom_event_count": 1,
+      "hierarchical_median_episode_duration_h": 1.0,
+      "native_atom_median_episode_duration_h": 2.0,
+      "formal_model_changed": false
+    },
+    "D3_gate_status_node": {
+      "Pass": 69360,
+      "Warn": 16146,
+      "NotEvaluated": 510
+    },
+    "release_status": "retrospective_scientific_aggregation_ready_with_prespecified_pending_items",
+    "deployment_status": "not_released"
+  },
+  "validation_status": [
+    {
+      "validation_id": "V3-controlled-composite-discrimination",
+      "status": "pending_not_executed",
+      "reason": "no unified frozen event-truth matrix across native node and pair evidence",
+      "blocking_effect": "candidate aggregators remain sensitivity-only"
+    },
+    {
+      "validation_id": "V7-prospective-temporal-holdout",
+      "status": "previously_inspected_108_days_separate_revised_temporal_evaluation_not_first_blind_test",
+      "reason": "2026-04-14 to 2026-07-30 was already inspected; revised temporal re-evaluation is a separate bundle, not a new blind test",
+      "blocking_effect": "no prospective effectiveness or A-E cutpoint claim"
+    },
+    {
+      "validation_id": "V8-downstream-fitness-for-use",
+      "status": "pending_not_executed",
+      "reason": "no frozen SUMO, EnKF or prediction endpoint bundle is available in this release",
+      "blocking_effect": "no optimized weights or criterion-referenced grades"
+    },
+    {
+      "validation_id": "D1-release-hard-fault-interface",
+      "status": "pending_interface",
+      "reason": "D1 release exports score and legacy score>=3 tag, not a distinct validated hard-fault field",
+      "blocking_effect": "Strict eligibility is a contract candidate, not an automated final release"
+    },
+    {
+      "validation_id": "measurement-assurance",
+      "status": "not_available_not_scored",
+      "reason": "maintenance and metrological records are not available",
+      "blocking_effect": "excluded rather than assigned a neutral or low value"
+    },
+    {
+      "validation_id": "D1-development-only-regime-context-shadow",
+      "status": "pending_preregistered_shadow",
+      "reason": "D1 native scores remain frozen; their historical context was not silently replaced by the new shared D4 context",
+      "blocking_effect": "no new independent-validation claim for D1's historical context"
+    },
+    {
+      "validation_id": "D4-development-only-regime-shadow",
+      "status": "implemented_shared_development_frozen_context",
+      "reason": "D4 v1.6 uses shared raw process context fitted only before the development cutoff; D1/D2 scores are excluded from core qualification",
+      "blocking_effect": "historical decomposition remains retrospective; the 108-day extension uses the archived causal residual/CP route"
+    },
+    {
+      "validation_id": "D5-prospective-template-lifecycle",
+      "status": "pending_future_support_and_bridge",
+      "reason": "candidate maturity requires new independent support, frozen validation and a dual-score bridge",
+      "blocking_effect": "historical L1 is not backfilled and no new template version is activated"
+    }
+  ],
+  "figure_qa_passed": true,
+  "artifacts": [
+    {
+      "relative_path": "data/DQR_coverage_monthly_v2.4.parquet",
+      "size_bytes": 29257,
+      "sha256": "b4ab921fe7cf0369c145477fd04d010a7262dae5034dba5474cbf57299390364",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "data/DQR_dimension_long_v2.4.parquet",
+      "size_bytes": 11481169,
+      "sha256": "3dea25fad90217a6d87b5508a82484a6641fd82096994d98de0fe5db5e5e9891",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "data/DQR_estimand_decomposition.parquet",
+      "size_bytes": 10082,
+      "sha256": "cbb9391665c1580172b3d8b92df09fe3027956271553aeb456bf1cc3b056d61d",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "data/DQR_estimand_decomposition_bootstrap.parquet",
+      "size_bytes": 194322,
+      "sha256": "21429808ce7924e70f1eee6a445e674883d0fdd9048865adb6106beeaf7eb72b",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "data/DQR_estimand_registry.yaml",
+      "size_bytes": 2405,
+      "sha256": "989901a275feccf2690dd01f934b0c02003244b6a1c0d66099a6a1f1e0a726e1",
+      "hash_method": "sha256_utf8_lf_canonical"
+    },
+    {
+      "relative_path": "data/DQR_node_scores_v2.4.parquet",
+      "size_bytes": 5330459,
+      "sha256": "b239c63fd92eeabe33a9fd468e58fc750743bc1c7b4241a4d527a60a92332b1c",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "data/DQR_pair_low_tail_episodes.parquet",
+      "size_bytes": 39700,
+      "sha256": "ec3f1b94e2aed6852fbf25045d181726a61cb92d1445bc3e29ee3ac332702da5",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "data/DQR_pair_low_tail_threshold_sweep.parquet",
+      "size_bytes": 15834,
+      "sha256": "b0b5ff6e7f63ff27730c57d792c8ca78d541c12add9a97fd623f51584e4eefa8",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "data/DQR_pair_scores_v2.4.parquet",
+      "size_bytes": 6541951,
+      "sha256": "21e0ab8a86f1c0008af1a13dfa6d280cb7e1a57460c0862f1daca98b099b9b5e",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "data/DQR_pair_weighting_sensitivity.parquet",
+      "size_bytes": 636181,
+      "sha256": "c0324f73d9bec8cc5788a76cf29ef2f4f3a88817ed89854f50cd388df61ad7c0",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "data/DQR_phase_evidence_summary_v2.4.parquet",
+      "size_bytes": 8098,
+      "sha256": "dd0d738c20401bd574d0d8766915c48f13b285124f3446415606dd415291cf30",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "figures/DQR_ExtFig01_pair_weighting_sensitivity.pdf",
+      "size_bytes": 54203,
+      "sha256": "7809d3af59fcbaaf0c16dd7758e14089d52c6b3e58ce0bfcc73665dc19bf40c7",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "figures/DQR_ExtFig01_pair_weighting_sensitivity.png",
+      "size_bytes": 447516,
+      "sha256": "8bc6fbe74339de7859a9082e746b66378c1353cf6eb4d966fa3df5f195bd9fd5",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "figures/DQR_ExtFig01_pair_weighting_sensitivity.svg",
+      "size_bytes": 100764,
+      "sha256": "327dafd976ab22a359261e580bc212057f28c448554e793a119200c1542789dd",
+      "hash_method": "sha256_utf8_lf_canonical"
+    },
+    {
+      "relative_path": "figures/DQR_ExtFig01_pair_weighting_sensitivity.tiff",
+      "size_bytes": 1060222,
+      "sha256": "f3a5ce3874e0ae9ea0e6d57b16b10dd3e3c8db79a013c9098fabb06289404f42",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "figures/DQR_Fig01_hierarchical_contract.pdf",
+      "size_bytes": 60178,
+      "sha256": "d767710fc93bc3c9f33a19bb6377ff404616bd3a016b6c020228627663c679a4",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "figures/DQR_Fig01_hierarchical_contract.png",
+      "size_bytes": 424302,
+      "sha256": "b6add5c31cb795f1991c28d3f0fe51e787780104acbd558e883fc8c4fcbf883f",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "figures/DQR_Fig01_hierarchical_contract.svg",
+      "size_bytes": 54667,
+      "sha256": "5afdc5e55a3eaf8b1968f3cbf5fee5864f0b67f977692144210b8caf0b4a707f",
+      "hash_method": "sha256_utf8_lf_canonical"
+    },
+    {
+      "relative_path": "figures/DQR_Fig01_hierarchical_contract.tiff",
+      "size_bytes": 1073576,
+      "sha256": "d3ac96c36300f44f9906d911feaa7de7d97d833812bffbed927a8ce1e8a43f91",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "figures/DQR_Fig02_evidence_availability.pdf",
+      "size_bytes": 59796,
+      "sha256": "895bc7d958fcdf24e1af914812a592a37f63ec1b574f869a61621dc7ee2ea0c6",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "figures/DQR_Fig02_evidence_availability.png",
+      "size_bytes": 652346,
+      "sha256": "5aeba15b54ec752de30295f4c1ffe2c6f6675bc5b36944678b41ce8d9a5546af",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "figures/DQR_Fig02_evidence_availability.svg",
+      "size_bytes": 88226,
+      "sha256": "bddd83d861489f8fde7748a6742bf5b43d7664276fb5ef0da05618e00a21cb92",
+      "hash_method": "sha256_utf8_lf_canonical"
+    },
+    {
+      "relative_path": "figures/DQR_Fig02_evidence_availability.tiff",
+      "size_bytes": 1706570,
+      "sha256": "af7aabc8b24e1ab3f670835bc9fe46cc2c695440c1b6109fd00da9d318cf2e36",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "figures/DQR_Fig03_construct_complementarity.pdf",
+      "size_bytes": 53386,
+      "sha256": "322978f55c1826ad54f24604116c5701da8e74d643838bf17d0cb7af84ea8209",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "figures/DQR_Fig03_construct_complementarity.png",
+      "size_bytes": 499736,
+      "sha256": "89b9b28dbdf938626564a409fedcb7bd236726d399f3edc9aa16470abc3d2ce7",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "figures/DQR_Fig03_construct_complementarity.svg",
+      "size_bytes": 53057,
+      "sha256": "52096544b2066a3d32a607e63e22e988d75da12dd81d63a3db7cb49ebacda8a0",
+      "hash_method": "sha256_utf8_lf_canonical"
+    },
+    {
+      "relative_path": "figures/DQR_Fig03_construct_complementarity.tiff",
+      "size_bytes": 2195788,
+      "sha256": "f2ed6a6da8854e8afcc958dbc2930376560ab656ee3dc87625ff3bddff3afa80",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "figures/DQR_Fig04_aggregation_robustness.pdf",
+      "size_bytes": 64568,
+      "sha256": "2dfffe7f2396413aa4a7977290d1a7c499ad260fced24b97dcc1dd7973c5e30a",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "figures/DQR_Fig04_aggregation_robustness.png",
+      "size_bytes": 756779,
+      "sha256": "dbd3cc6610d29d94c2754342790f6409a8bafbfbbbd0b16e06a335615401124d",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "figures/DQR_Fig04_aggregation_robustness.svg",
+      "size_bytes": 62292,
+      "sha256": "e42fa7576e4badb66b2498aa35c8853cd91cad45d1efe43312ca54079f9dd1a7",
+      "hash_method": "sha256_utf8_lf_canonical"
+    },
+    {
+      "relative_path": "figures/DQR_Fig04_aggregation_robustness.tiff",
+      "size_bytes": 1614560,
+      "sha256": "98dd7e2f1f0b9c1adfaf4cfb3124e869d06ddd97e72a80786ae57d9fb5338d7f",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "figures/DQR_Fig05_representative_cases.pdf",
+      "size_bytes": 54285,
+      "sha256": "8c809f3c222438a6e6cdb7052e4c390eeb60c389c7fb88c722c115617a62a29f",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "figures/DQR_Fig05_representative_cases.png",
+      "size_bytes": 1031393,
+      "sha256": "88c4acfa14c9134707ed62c4e7a0f435f7562a55c3668999755f20b41f63cea0",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "figures/DQR_Fig05_representative_cases.svg",
+      "size_bytes": 87962,
+      "sha256": "fdfe444c5808930390019066e13d59c305af2e94856b6b793507d60409f9bb7b",
+      "hash_method": "sha256_utf8_lf_canonical"
+    },
+    {
+      "relative_path": "figures/DQR_Fig05_representative_cases.tiff",
+      "size_bytes": 2171236,
+      "sha256": "761817cded51914271e44af24eb015e4265ca6fa90db2e60d87a02011e5325c5",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "reports/DQR_aggregation_directory_guide.md",
+      "size_bytes": 2081,
+      "sha256": "3bbd121a2b808174284980a1fd0ac97807bb5fc9bc9d514da5a056300de0ac27",
+      "hash_method": "sha256_utf8_lf_canonical"
+    },
+    {
+      "relative_path": "reports/DQR_aggregation_scientific_report.md",
+      "size_bytes": 8482,
+      "sha256": "6e3cfc969754418cc6a80183191bb6cdbabda9d5d640829ea2b92783b33593cd",
+      "hash_method": "sha256_utf8_lf_canonical"
+    },
+    {
+      "relative_path": "reports/DQR_figure_captions.md",
+      "size_bytes": 2603,
+      "sha256": "4a8fae08898177e6f1907f8219a1e309cf7ceab92e389f87fd6d45ecce9a0962",
+      "hash_method": "sha256_utf8_lf_canonical"
+    },
+    {
+      "relative_path": "reports/DQR_v2.4_expert_review.md",
+      "size_bytes": 3924,
+      "sha256": "1fe0d64679041e8c683cb6a9b46dbc2e79b3117a874a7a7448af37f252c6fc4f",
+      "hash_method": "sha256_utf8_lf_canonical"
+    },
+    {
+      "relative_path": "source_data/DQR_ExtFig01_source_data.xlsx",
+      "size_bytes": 1303158,
+      "sha256": "4f7a930cd9255f84008d2dfe54ff8939e447a574346b6b0e39170a0fb2469856",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "source_data/DQR_Fig01_source_data.xlsx",
+      "size_bytes": 4251875,
+      "sha256": "e5a0e12459b907311b03a6216065efc59d67084dab65505658d2f2a8af3d49a2",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "source_data/DQR_Fig02_source_data.xlsx",
+      "size_bytes": 10881,
+      "sha256": "78e73e848880c1fb92a4734e25ca2cb93db48f1d789d17fd376b62800cfbe153",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "source_data/DQR_Fig03_source_data.xlsx",
+      "size_bytes": 10536,
+      "sha256": "96f17af9d41686c3f2c03b50cab76705f598de42de1a91b789ce2304154a4def",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "source_data/DQR_Fig04_source_data.xlsx",
+      "size_bytes": 148707,
+      "sha256": "89b46426176288b1752c7b745514ad09883878bcb462976710030a17ef056980",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "source_data/DQR_Fig05_source_data.xlsx",
+      "size_bytes": 37480,
+      "sha256": "bb1efe6e215b24bcd83423b65a172f05d3875b3570e543cfabc2876a1626359f",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "validation/DQR_aggregation_validation.xlsx",
+      "size_bytes": 818714,
+      "sha256": "6fb54db5d753ca3467a2c4272391be323eef756216db563e1ae86124443caff3",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "validation/DQR_contract_checks.json",
+      "size_bytes": 4323,
+      "sha256": "fa4c043c015258b5960717e1863a045910d5588c46b0ce19f92a8beedfc8066f",
+      "hash_method": "sha256_utf8_lf_canonical"
+    },
+    {
+      "relative_path": "validation/DQR_downstream_validation.xlsx",
+      "size_bytes": 6336,
+      "sha256": "85cbd7a50c9536232196fc16be3e25f2a0bde78ac90c035d093e073d887028cd",
+      "hash_method": "sha256_raw_bytes"
+    },
+    {
+      "relative_path": "validation/DQR_figure_qa.json",
+      "size_bytes": 6010,
+      "sha256": "42da43e207a56c0606776492b6fcd6e9af67a6053130d34d8b256d36e49cbe92",
+      "hash_method": "sha256_utf8_lf_canonical"
+    }
+  ]
+}

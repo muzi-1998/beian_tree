@@ -105,12 +105,12 @@ def run_method_sensitivity(
     event_comparison = _event_overlap(old_events, new_events)
     contract = pd.DataFrame([{
         "legacy_version": "d4-v1.4-canonical-d4-20260726",
-        "current_version": "d4-v1.5.1-statistical-dependence-audit-20260813",
-        "primary_changes": "common synchronous support; development-only mapping",
-        "concurrent_dependency_change": "D2 process-floor release updated between runs",
+        "current_version": str(new["config_version"].iloc[0]),
+        "primary_changes": "raw common support; neutral reference; development-only shared context and public mapping",
+        "concurrent_dependency_change": "raw support and context also revised; not an admission-only contrast",
         "interpretation": (
-            "fixed-D2 deltas isolate score-semantics comparison where observable; "
-            "evaluable-rate changes are not attributed to common support alone"
+            "D2-conditioned rows are diagnostic subgroups only; "
+            "joint historical changes must not be attributed to reference admission alone"
         ),
     }])
     outputs = {

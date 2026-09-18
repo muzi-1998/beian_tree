@@ -1,6 +1,6 @@
 {
   "audit_version": "d3-nature-figure-audit-v2.7.0",
-  "created_at_utc": "2026-08-11T03:33:00.204785+00:00",
+  "created_at_utc": "2026-09-18T05:24:48.421794+00:00",
   "backend": "python",
   "optional_validator": {
     "status": "executed",
@@ -61,30 +61,30 @@
       "exports": {
         "svg": {
           "exists": true,
-          "bytes": 119301,
+          "bytes": 119293,
           "newer_than_source": true
         },
         "pdf": {
           "exists": true,
-          "bytes": 60986,
+          "bytes": 61112,
           "newer_than_source": true
         },
         "png": {
           "exists": true,
-          "bytes": 809483,
+          "bytes": 809973,
           "newer_than_source": true
         },
         "tiff": {
           "exists": true,
-          "bytes": 2039190,
+          "bytes": 2035488,
           "newer_than_source": true
         }
       },
       "png": {
         "width_px": 4286,
         "height_px": 3238,
-        "pixel_std": 53.95011901855469,
-        "nonwhite_fraction": 0.31211123911483935,
+        "pixel_std": 53.592979431152344,
+        "nonwhite_fraction": 0.31022171097590817,
         "nonblank": true
       },
       "svg": {
@@ -225,30 +225,30 @@
       "exports": {
         "svg": {
           "exists": true,
-          "bytes": 82885,
+          "bytes": 82886,
           "newer_than_source": true
         },
         "pdf": {
           "exists": true,
-          "bytes": 61093,
+          "bytes": 61100,
           "newer_than_source": true
         },
         "png": {
           "exists": true,
-          "bytes": 675189,
+          "bytes": 675602,
           "newer_than_source": true
         },
         "tiff": {
           "exists": true,
-          "bytes": 1873714,
+          "bytes": 1874516,
           "newer_than_source": true
         }
       },
       "png": {
         "width_px": 4287,
         "height_px": 3431,
-        "pixel_std": 56.37423324584961,
-        "nonwhite_fraction": 0.25015560521778374,
+        "pixel_std": 56.2707405090332,
+        "nonwhite_fraction": 0.250197213254172,
         "nonblank": true
       },
       "svg": {
@@ -389,30 +389,30 @@
       "exports": {
         "svg": {
           "exists": true,
-          "bytes": 80945,
+          "bytes": 82634,
           "newer_than_source": true
         },
         "pdf": {
           "exists": true,
-          "bytes": 66208,
+          "bytes": 66483,
           "newer_than_source": true
         },
         "png": {
           "exists": true,
-          "bytes": 506273,
+          "bytes": 522113,
           "newer_than_source": true
         },
         "tiff": {
           "exists": true,
-          "bytes": 1253174,
+          "bytes": 1270028,
           "newer_than_source": true
         }
       },
       "png": {
         "width_px": 4088,
         "height_px": 3099,
-        "pixel_std": 42.737667083740234,
-        "nonwhite_fraction": 0.18531994412691677,
+        "pixel_std": 43.176719665527344,
+        "nonwhite_fraction": 0.18725778911068466,
         "nonblank": true
       },
       "svg": {

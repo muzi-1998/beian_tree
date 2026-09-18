@@ -1,8 +1,8 @@
 {
-  "run_id": "RUN_D3_v2.7.0_20260811T031925Z_b3392abf",
-  "d3_version": "v2.7.0",
-  "created_at_utc": "2026-08-11T03:19:25.925381+00:00",
-  "wall_time_s": 226.09589767456055,
+  "run_id": "RUN_D3_v2.8.0_20260917T235818Z_c92d049f",
+  "d3_version": "v2.8.0",
+  "created_at_utc": "2026-09-17T23:58:18.843639+00:00",
+  "wall_time_s": 797.3844993114471,
   "study_start": "2025-08-01 00:00:00",
   "study_end": "2026-04-13 23:59:00",
   "subset_days": null,
@@ -12,10 +12,10 @@
   "n_evaluated": 42748,
   "n_not_evaluated": 260,
   "n_events": 5615,
-  "mean_D3_evaluated": 4.854084976897601,
+  "mean_D3_evaluated": 4.859798801460603,
   "versions": {
     "mapping": "v2.4.0",
-    "threshold": "v2.7.0",
+    "threshold": "v2.8.0",
     "rate_utils": "rate_utils@v2.4.0",
     "benchmark": "benchmark@v2.2.0",
     "sensitivity": "interval-sensitivity@v1.1.0"
@@ -28,7 +28,8 @@
     "imputed_values_scored": false,
     "regime_labels_consumed": false,
     "D1_D2_consumed_by_production_score": false,
-    "D1_D2_consumed_by_validation_candidate_filter": true
+    "D1_D2_consumed_by_primary_reference": false,
+    "screened_alpha_role": "frozen_sensitivity_only"
   },
   "scientific_contract": {
     "instrument_range_role": "data_quality_fail",
@@ -61,16 +62,16 @@
     "temperature_uncertainty": "1000_replicate_calendar_day_cluster_bootstrap",
     "temperature_alpha_interval_propagation": "bootstrap_lower_point_upper_supplementary_sensitivity",
     "temperature_validation_rule": "minute_exceedance_and_2h_warning_window_rates_le_0.02_in_independent_validation",
-    "temperature_validation_filter": "frozen_D1_total_spike_step_drift_freeze_regime_and_D2_Strict",
+    "temperature_validation_filter": "neutral_raw_reference_on_common_evaluation_support",
     "temperature_optional_D1_saturation_floor_filter": "unavailable_in_frozen_release_not_imputed",
     "temperature_source_start": "2025-08-01 00:00:00",
     "temperature_source_end": "2026-07-30 23:59:00",
     "temperature_raw_missing_minutes": 4205,
     "temperature_invalid_minutes": 8,
     "aerobic_DO_alpha_by_position": {
-      "1": 0.2789373305,
-      "2": 0.3100300303,
-      "3": 0.5065765789
+      "1": 0.346314147,
+      "2": 0.3715629157,
+      "3": 0.6814501118
     },
     "aerobic_DO_temperature_scored_positions": [
       "1",
@@ -99,8 +100,8 @@
       "size_bytes": 63041057
     }
   },
-  "config_sha256": "b3392abf041b8af853862536bf0fa5c6a2cdc821f2a72b9a5b17805a5670a475",
-  "code_sha256": "73f4a9fb5313a97e0df9c5e3fcce5bcef5145ab515d5f8d8b28c762333333562",
+  "config_sha256": "c92d049f8278433a7da2daccadde062461b34d946cec25d1434f967c0b9940e7",
+  "code_sha256": "4f302486d800cd82128b178be8f045e9b564446820f0dfda05700cb4d88d7e73",
   "exported_files": [
     "D3_window_scores.xlsx",
     "D3_value_evidence.xlsx",

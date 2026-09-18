@@ -1,0 +1,63 @@
+{
+  "status": "revised_temporal_out_of_sample_re_evaluation_not_first_blind_test",
+  "period": [
+    "2026-04-14 00:00:00",
+    "2026-07-31 00:00:00"
+  ],
+  "run_id": "REVISED-REFERENCE-20260917",
+  "stage": "D3",
+  "no_later_refit": true,
+  "inputs": [
+    {
+      "path": "D:\\004_git\\beian_tree-main\\Project 1 Data Quality Assessment\\1.1 Decomposition\\outputs\\parquet\\time_base_1min_raw.parquet",
+      "sha256": "df2acf4d548b8e6faee0bda3c73ea195fe131ca56a4fa8e8f3a72614c71dd7e5"
+    },
+    {
+      "path": "D:\\004_git\\beian_tree-main\\Project 1 Data Quality Assessment\\1.1 Decomposition\\Raw data\\09_25.08.01-26.07.30_all data\\\u6574\u5e74\u5bf9\u9f50_\u5206\u949f\u6570\u636e_2025-08-01_2026-07-30_02_shengwuchi.csv",
+      "sha256": "18cb7f4617095655d1cb15a932621a5fbf58ac6b8b16a092e6586caba5aa4856"
+    },
+    {
+      "path": "D:\\004_git\\beian-val-260905\\Project 1 Data Quality Assessment\\validation\\temporal_holdout_2026\\intake_audit\\channel_mapping.csv",
+      "sha256": "42fd3e8de00e0293584cbe109012f2e4e66cbd5ec5acb613b0ed138b9b849a46"
+    },
+    {
+      "path": "D:\\004_git\\beian_tree-main\\Project 1 Data Quality Assessment\\D3 Physical rationality and rate constraints\\outputs\\data\\D3_threshold_library.xlsx",
+      "sha256": "0da46b9fbc48554299d5bb077c3895a30363670e61625b75ee5fec8938ead026"
+    },
+    {
+      "path": "D:\\004_git\\beian_tree-main\\Project 1 Data Quality Assessment\\D3 Physical rationality and rate constraints\\configs\\d3_dag.yaml",
+      "sha256": "d927a69ed699da0a4f763d12a9bf25cc65ce8c3cdf3a17fefbd4b260248df951"
+    },
+    {
+      "path": "D:\\004_git\\beian_tree-main\\Project 1 Data Quality Assessment\\D3 Physical rationality and rate constraints\\configs\\d3_figure_cases.yaml",
+      "sha256": "34d5dc5d0047175553747a86d803685907c1d1d70b788a86a4737202d30fe13c"
+    },
+    {
+      "path": "D:\\004_git\\beian_tree-main\\Project 1 Data Quality Assessment\\D3 Physical rationality and rate constraints\\configs\\d3_mapping.yaml",
+      "sha256": "8a96ae154fa25741121c3389f45d809ebaa299ae121227b581f397ba7b73fee6"
+    },
+    {
+      "path": "D:\\004_git\\beian_tree-main\\Project 1 Data Quality Assessment\\D3 Physical rationality and rate constraints\\configs\\d3_paths.yaml",
+      "sha256": "b682efe5f2b6205ea0fe4cc02c2ca8b47e679598ab49c6e92ab6b1731d8c64f2"
+    },
+    {
+      "path": "D:\\004_git\\beian_tree-main\\Project 1 Data Quality Assessment\\D3 Physical rationality and rate constraints\\configs\\d3_physical_bounds.yaml",
+      "sha256": "2a98680b95da9be0536cc654cd915eaa9928229d26f076ab83d06322145403ae"
+    },
+    {
+      "path": "D:\\004_git\\beian_tree-main\\Project 1 Data Quality Assessment\\D3 Physical rationality and rate constraints\\configs\\d3_rate_limits.yaml",
+      "sha256": "d4ee43dbce800bc736dbbde5fbc1032af641263389050150ca915da71eb1b423"
+    },
+    {
+      "path": "D:\\004_git\\beian_tree-main\\Project 1 Data Quality Assessment\\D3 Physical rationality and rate constraints\\configs\\d3_rules.yaml",
+      "sha256": "6022d99d4c1da6abd1067d816c911323bc879f56b82101680a3872f78fc3504f"
+    },
+    {
+      "path": "D:\\004_git\\beian_tree-main\\Project 1 Data Quality Assessment\\D3 Physical rationality and rate constraints\\configs\\d3_sensors.yaml",
+      "sha256": "0b8de83e73e1d30f185c2f615f944cc3da984b361fbc8842e240fe65c03dc426"
+    }
+  ],
+  "outputs": {
+    "D3_scores.parquet": "5db5870971c48c3b230f1fcfa93c652ce24bab4f4183a915f839dcd513bd2a28"
+  }
+}

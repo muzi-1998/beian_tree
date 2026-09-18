@@ -830,7 +830,7 @@ def pending_validation_registry(config: dict[str, Any]) -> pd.DataFrame:
             {
                 "validation_id": "V7-prospective-temporal-holdout",
                 "status": config["study"]["future_holdout"]["status"],
-                "reason": "2026-04-14 to 2026-07-31 has not been scored by the frozen D1-D5 stack",
+                "reason": "2026-04-14 to 2026-07-30 was already inspected; revised temporal re-evaluation is a separate bundle, not a new blind test",
                 "blocking_effect": "no prospective effectiveness or A-E cutpoint claim",
             },
             {
@@ -854,14 +854,14 @@ def pending_validation_registry(config: dict[str, Any]) -> pd.DataFrame:
             {
                 "validation_id": "D1-development-only-regime-context-shadow",
                 "status": "pending_preregistered_shadow",
-                "reason": "the downstream K=4 context is retrospective and requires a development-only frozen comparison",
-                "blocking_effect": "no independent-validation claim is made for the retrospective context",
+                "reason": "D1 native scores remain frozen; their historical context was not silently replaced by the new shared D4 context",
+                "blocking_effect": "no new independent-validation claim for D1's historical context",
             },
             {
                 "validation_id": "D4-development-only-regime-shadow",
-                "status": "pending_after_D1_shadow",
-                "reason": "D4 sensitivity requires the frozen D1 context artifact before a paired shadow rerun",
-                "blocking_effect": "current D4 remains retrospective with explicit context-hindsight limitation",
+                "status": "implemented_shared_development_frozen_context",
+                "reason": "D4 v1.6 uses shared raw process context fitted only before the development cutoff; D1/D2 scores are excluded from core qualification",
+                "blocking_effect": "historical decomposition remains retrospective; the 108-day extension uses the archived causal residual/CP route",
             },
             {
                 "validation_id": "D5-prospective-template-lifecycle",

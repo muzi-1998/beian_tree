@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import sys
 from dataclasses import asdict
 from datetime import datetime, timezone
 from pathlib import Path
@@ -10,10 +11,12 @@ import numpy as np
 import pandas as pd
 
 from .config import D4Config, PairConfig, load_config
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+from shared_data_foundation.context import build_foundation, pair_support
 from .scoring import (
     adjacent_ks_change_timeline,
     aggregate_scores,
-    apply_d1_fuse,
     compare_change_points,
     compute_window_metrics,
     score_from_quantiles,
@@ -112,32 +115,20 @@ def _block_quantile_precision(
     return output
 
 
-def _load_context(
+def _load_interpretation(
     cfg: D4Config,
-) -> tuple[pd.DataFrame, pd.DataFrame, pd.Series, str, str]:
-    d1 = pd.read_excel(cfg.paths["d1_scores"], sheet_name="D1_total_hourly")
+) -> tuple[pd.DataFrame, pd.DataFrame, str, str]:
+    d1 = pd.read_excel(cfg.paths["interpretation_d1"], sheet_name="D1_total_hourly")
     d1["timestamp"] = pd.to_datetime(d1["timestamp"])
     d1 = d1.set_index("timestamp").sort_index()
 
-    regime_frame = pd.read_excel(cfg.paths["regime_templates"], sheet_name="regime_labels_hourly")
-    if len(regime_frame) != len(d1):
-        raise ValueError("D1 regime labels must align one-to-one with D1 hourly scores")
-    if "timestamp" not in regime_frame.columns:
-        raise ValueError("D1 regime labels require an explicit timestamp column")
-    regime_timestamps = pd.DatetimeIndex(pd.to_datetime(regime_frame["timestamp"]))
-    if not regime_timestamps.equals(pd.DatetimeIndex(d1.index)):
-        raise ValueError("D1 regime-label timestamps do not match D1 hourly scores")
-    regime = pd.Series(
-        regime_frame["regime_id"].to_numpy(), index=d1.index, name="regime_id"
-    )
-
-    d2 = pd.read_excel(cfg.paths["d2_scores"], sheet_name="D2_scores")
+    d2 = pd.read_excel(cfg.paths["interpretation_d2"], sheet_name="D2_scores")
     d2 = d2.rename(columns={d2.columns[0]: "timestamp"})
     d2["timestamp"] = pd.to_datetime(d2["timestamp"])
     d2["veto_flag"] = pd.to_numeric(d2["veto_flag"], errors="coerce").fillna(1).astype(int)
     d2_run = str(d2["run_id"].dropna().iloc[0])
     d2_calibration = str(d2["calibration_id"].dropna().iloc[0])
-    return d1, d2, regime, d2_run, d2_calibration
+    return d1, d2, d2_run, d2_calibration
 
 
 def _pair_metrics(
@@ -187,7 +178,7 @@ def _pair_metrics(
         row.pop("q_cp_rule")
         row.update(cp_evidence.iloc[row_no].to_dict())
         row.update(
-            # The 23:00 D2 row represents the completed 23:00-23:59 hour.
+            # Hour-start labels represent evidence available at the next hour.
             timestamp=residuals.index[end_pos - 1].floor("h"),
             pair_id=pair.pair_id,
             sensor_id=pair.target,
@@ -243,6 +234,16 @@ def _fit_and_score(
     cfg: D4Config,
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     frame = raw.copy()
+    for name in ("D1_target", "D1_ref", "D2_target", "D2_ref",
+                 "D2_target_veto", "D2_ref_veto"):
+        if name not in frame:
+            frame[name] = np.nan
+    for name in ("D2_target_tag", "D2_ref_tag"):
+        if name not in frame:
+            frame[name] = "not_consumed_by_core"
+    for name in ("D2_target_continuous_24h", "D2_ref_continuous_24h"):
+        if name not in frame:
+            frame[name] = False
     frame["phase_id"] = _phase_labels(frame["timestamp"], cfg)
     data_ok = (
         frame["valid_fraction_common"].ge(float(cfg.common_support["min_fraction"]))
@@ -250,23 +251,32 @@ def _fit_and_score(
             float(cfg.common_support["trend_min_common_hour_fraction"])
         )
     )
-    d2_ok = frame["D2_target_veto"].eq(0) & frame["D2_ref_veto"].eq(0)
+    neutral_support_ok = (
+        frame["raw_common_fraction_24h"].ge(float(cfg.common_support["min_fraction"]))
+        & frame["raw_supported_hours_fraction"].ge(float(cfg.common_support["trend_min_common_hour_fraction"]))
+        & frame["raw_complete_window"].eq(True)
+    )
+    frame["neutral_support_ok"] = neutral_support_ok
     high_quality = (
         data_ok
-        & frame["D1_target"].ge(float(cfg.benchmark["d1_min_score"]))
-        & frame["D1_ref"].ge(float(cfg.benchmark["d1_min_score"]))
-        & frame["D2_target_continuous_24h"]
-        & frame["D2_ref_continuous_24h"]
+        & neutral_support_ok
+        & frame["context_24h_valid"].eq(True)
+        & frame["window_purity"].ge(float(cfg.benchmark["context_min_purity"]))
         & frame["phase_id"].eq("development")
     )
+    if cfg.benchmark["reference_route"] == "screened_sensitivity":
+        high_quality &= (frame["D1_target"].ge(cfg.benchmark["screened_reference_min_score"])
+                         & frame["D1_ref"].ge(cfg.benchmark["screened_reference_min_score"])
+                         & frame["D2_target_continuous_24h"] & frame["D2_ref_continuous_24h"])
+    frame["reference_eligible"] = high_quality
     benchmark = frame.loc[high_quality].copy()
     benchmark["D5_screen_pass"] = pd.NA
     benchmark["benchmark_status"] = str(cfg.benchmark["d5_screen_status"])
     benchmark["benchmark_source"] = (
-        "development_only_D1ge4.5_D2continuous24h_common_support_external_D5_gate"
+        "development_neutral_raw_support_stable_frozen_context"
     )
     benchmark["inclusion_criteria"] = (
-        "D1_target>=4.5; D1_ref>=4.5; bilateral D2 usable for 24 h; "
+        "raw bilateral support for complete 24 h; frozen context purity>=configured value; "
         "common timestamp support>=0.80; common-hour support>=0.80; "
         "phase=development; D5 screen pending"
     )
@@ -290,7 +300,7 @@ def _fit_and_score(
     for q_column, _ in risk_to_q.values():
         frame[q_column] = np.nan
 
-    group_keys = frame[["variable", "regime_id"]].drop_duplicates()
+    group_keys = frame[["variable", "regime_id"]].dropna().drop_duplicates()
     for _, key in group_keys.iterrows():
         variable = str(key["variable"])
         regime_value = key["regime_id"]
@@ -333,7 +343,7 @@ def _fit_and_score(
                 f"variable_independent_blocks={variable_blocks}<{min_exact_blocks}"
             )
         if calibration.empty:
-            raise ValueError("No v1.2 high-quality benchmark windows are available")
+            raise ValueError("No development reference windows satisfy the locked admission contract")
         for risk_column, (q_column, mapping_role) in risk_to_q.items():
             calibration_rows = calibration.loc[calibration[risk_column].notna()].copy()
             values = calibration_rows[risk_column].to_numpy(dtype=float)
@@ -430,7 +440,7 @@ def _fit_and_score(
                     cfg.distribution["component_version"]
                 ),
                 "benchmark_source": (
-                    "development_only_high_quality_common_support_external_D5_gate"
+                    "development_neutral_raw_support_stable_context"
                 ),
                 "mapping_type": "public_quantile_by_variable_and_regime",
             }
@@ -445,26 +455,18 @@ def _fit_and_score(
         weights=cfg.weights,
         lambda_blend=cfg.lambda_blend,
     )
-    frame["usable_for_D4"] = data_ok & d2_ok & frame["D4_raw"].notna()
+    frame["usable_for_D4"] = data_ok & neutral_support_ok & frame["regime_id"].notna() & frame["D4_raw"].notna()
     frame["D4_total"] = frame["D4_raw"].where(frame["usable_for_D4"])
 
-    d1_available = frame["D1_target"].notna() & frame["D1_ref"].notna()
-    after_d1, fuse_state = apply_d1_fuse(
-        frame["D4_raw"].to_numpy(),
-        frame["D1_target"].to_numpy(),
-        frame["D1_ref"].to_numpy(),
-        frame["usable_for_D4"].to_numpy(),
-        unreliable_below=float(cfg.arbitration["d1_unreliable_below"]),
-    )
-    frame["fuse_state"] = fuse_state
-    frame["fuse_active"] = frame["fuse_state"].ne("valid_pair")
-    frame["D4_after_D1"] = after_d1
-    frame["D4_forDQR_provisional"] = after_d1
+    frame["fuse_state"] = "retired_interpretation_only"
+    frame["fuse_active"] = False
+    frame["D4_after_D1"] = np.nan
+    frame["D4_forDQR_provisional"] = frame["D4_total"]
     frame["D4_forDQR"] = np.nan
     frame["D4_forDQR_status"] = np.where(
-        frame["usable_for_D4"] & d1_available,
+        frame["usable_for_D4"],
         str(cfg.arbitration["provisional_status"]),
-        "not_evaluable_or_D1_missing",
+        "not_evaluable_raw_support_or_metric",
     )
     frame["D4_forDQR_is_final"] = False
     frame["D5_zone_consensus_label"] = "not_available"
@@ -486,18 +488,24 @@ def _fit_and_score(
         ["not_evaluable", "pair_asymmetry", "paired_consistent"],
         default="borderline",
     )
-    frame["status_label"] = np.select(
-        [~frame["usable_for_D4"], frame["D4_after_D1"].ge(consistent_min),
-         frame["fuse_active"]],
-        ["not_evaluable", "paired_consistent", "ambiguous_asymmetry"],
-        default="core_pending_external_D5_gate",
-    )
+    frame["status_label"] = frame["raw_status_label"]
     frame["causal_attribution"] = np.where(
         frame["status_label"].eq("core_pending_external_D5_gate"),
         "pending_sensor_vs_process_adjudication",
         "external_D5_action_gate_required",
     )
-    return frame, pd.DataFrame(param_rows), benchmark
+    params = pd.DataFrame(param_rows)
+    metadata = params.loc[params["mapping_role"].eq("production")].groupby(
+        ["variable", "regime_id"], as_index=False
+    ).agg(
+        calibration_scope=("mapping_scope", lambda x: "|".join(sorted(set(x)))),
+        calibration_quality=("calibration_quality", lambda x: "|".join(sorted(set(x)))),
+        calibration_evidence_quality=("mapping_evidence_quality", lambda x: "|".join(sorted(set(x)))),
+        calibration_independent_blocks=("independent_blocks", "min"),
+        calibration_tail_precision_grade=("percentile_precision_grade", lambda x: "wide_interval" if "wide_interval" in set(x) else "supported"),
+    )
+    frame = frame.merge(metadata, on=["variable", "regime_id"], how="left", validate="many_to_one")
+    return frame, params, benchmark
 
 
 def _events(main: pd.DataFrame, min_hours: int) -> pd.DataFrame:
@@ -581,24 +589,41 @@ def _write_excel(path: Path, sheets: dict[str, pd.DataFrame]) -> None:
             frame.to_excel(writer, sheet_name=sheet_name[:31], index=False)
 
 
-def run_pipeline(project_root: Path, d4_root: Path) -> dict[str, object]:
+def run_pipeline(project_root: Path, d4_root: Path, *, include_interpretation: bool = True) -> dict[str, object]:
     config_path = d4_root / "configs" / "d4.yaml"
     cfg = load_config(config_path, project_root)
     output_dir = d4_root / "outputs" / "data"
     output_dir.mkdir(parents=True, exist_ok=True)
-    run_id = datetime.now(timezone.utc).strftime("D4V151_%Y%m%d_%H%M%S")
+    run_id = datetime.now(timezone.utc).strftime("D4V16_%Y%m%d_%H%M%S")
 
     residuals = pd.read_parquet(cfg.paths["residuals"])
     columns = sorted({p.target for p in cfg.pairs} | {p.reference for p in cfg.pairs})
-    residuals = residuals[columns].resample(f"{cfg.analysis_interval_minutes}min").median()
-    d1, d2, regime, d2_run, d2_calibration = _load_context(cfg)
+    observations, context, context_asset = build_foundation(
+        project_root, str(cfg.phase_contract["development_start"]),
+        str(pd.Timestamp(cfg.phase_contract["development_end"]) + pd.Timedelta(seconds=1)),
+    )
+    frequency = f"{cfg.analysis_interval_minutes}min"
+    raw_presence = observations[columns].notna().resample(frequency).mean()
+    residuals = residuals[columns].where(observations[columns].notna()).resample(frequency).median()
+    residuals = residuals.where(raw_presence.ge(float(cfg.common_support["min_fraction"])))
     raw = pd.concat([_pair_metrics(residuals, pair, cfg) for pair in cfg.pairs], ignore_index=True)
-    raw = _add_context(raw, d1, d2, regime, cfg)
+    raw = raw.merge(context, left_on="timestamp", right_index=True, validate="many_to_one")
+    parts = []
+    for pair in cfg.pairs:
+        support = pair_support(observations, pair.target, pair.reference, cfg.window_hours)
+        parts.append(raw.loc[raw["pair_id"].eq(pair.pair_id)].merge(
+            support, left_on="timestamp", right_index=True, validate="one_to_one"))
+    raw = pd.concat(parts, ignore_index=True)
+    raw.to_parquet(output_dir / "D4_neutral_core_input.parquet", index=False)
     main, params, benchmark = _fit_and_score(raw, cfg)
+    d2_run, d2_calibration = "not_consumed_by_core", "not_consumed_by_core"
+    if include_interpretation and all(cfg.paths[k].exists() for k in ("interpretation_d1", "interpretation_d2")):
+        d1, d2, d2_run, d2_calibration = _load_interpretation(cfg)
+        main = _add_context(main, d1, d2, context["regime_id"], cfg)
     calibration_digest = hashlib.sha256(
         pd.util.hash_pandas_object(params.fillna("<NA>"), index=False).to_numpy().tobytes()
     ).hexdigest()
-    calibration_id = f"D4CAL-V151-{calibration_digest[:12]}"
+    calibration_id = f"D4CAL-V16-{calibration_digest[:12]}"
     main["run_id"] = run_id
     main["config_version"] = cfg.version
     main["calibration_id"] = calibration_id
@@ -608,6 +633,11 @@ def run_pipeline(project_root: Path, d4_root: Path) -> dict[str, object]:
     multiscale = _multiscale(main)
 
     score_columns = [
+        "calibration_scope", "calibration_quality", "calibration_evidence_quality",
+        "calibration_independent_blocks", "calibration_tail_precision_grade",
+        "reference_eligible", "neutral_support_ok", "raw_common_fraction_24h",
+        "raw_supported_hours_fraction", "raw_complete_window", "window_purity",
+        "context_24h_valid", "context_model_id", "available_at",
         "timestamp", "phase_id", "pair_id", "sensor_id", "pair_sensor_id", "zone", "variable", "regime_id",
         "Q_dist", "Q_trend", "Q_var", "Q_cp", "D4_base", "D4_raw", "D4_total",
         "D4_after_D1", "D4_forDQR_provisional", "D4_forDQR", "D4_forDQR_status",
@@ -676,8 +706,8 @@ def run_pipeline(project_root: Path, d4_root: Path) -> dict[str, object]:
     _write_excel(output_dir / "D4_pair_profile_summary.xlsx", {"pair_profile": profile})
     _write_excel(output_dir / "D4_multiscale_aggregates.xlsx", multiscale)
     boundary = pd.DataFrame([
-        {"layer": "D2 continuity", "effect": "gate D4 evaluability", "output": "usable_for_D4"},
-        {"layer": "D1 bilateral fuse", "effect": "true v1.2 fuse", "output": "D4_after_D1"},
+        {"layer": "shared raw support", "effect": "gate D4 evaluability", "output": "usable_for_D4"},
+        {"layer": "D1 interpretation", "effect": "post-score join only", "output": "D1_target;D1_ref"},
         {
             "layer": "D5 report/gate interface",
             "effect": "isolated from the core; no proxy generated",
@@ -696,6 +726,8 @@ def run_pipeline(project_root: Path, d4_root: Path) -> dict[str, object]:
 
     dependencies = []
     for name, path in cfg.paths.items():
+        if name.startswith("interpretation_"):
+            continue
         dependencies.append({
             "dependency": name, "path_role": path.name, "sha256": _sha256(path),
             "modified_utc": datetime.fromtimestamp(path.stat().st_mtime, timezone.utc).isoformat(),
@@ -704,6 +736,7 @@ def run_pipeline(project_root: Path, d4_root: Path) -> dict[str, object]:
         ("d4_config", config_path),
         ("d4_pipeline_code", Path(__file__)),
         ("d4_scoring_code", Path(__file__).with_name("scoring.py")),
+        ("shared_context_code", project_root / "shared_data_foundation" / "context.py"),
     ):
         dependencies.append({
             "dependency": name, "path_role": path.name, "sha256": _sha256(path),
@@ -752,8 +785,11 @@ def run_pipeline(project_root: Path, d4_root: Path) -> dict[str, object]:
         },
         "terminal_status": cfg.phase_contract["terminal_status"],
         "dependencies": dependencies,
+        "context_asset": context_asset,
+        "reference_route": cfg.benchmark["reference_route"],
+        "D1_D2_core_score_or_gate_inputs": False,
         "scientific_boundary": (
-            "D4_raw is the independent numeric dimension. D2 gates observability; "
+            "D4_raw uses neutral reference and raw observability; "
             "D1 is interpretation-only; the separate D5 report/gate interface "
             "cannot rewrite D4_raw."
         ),

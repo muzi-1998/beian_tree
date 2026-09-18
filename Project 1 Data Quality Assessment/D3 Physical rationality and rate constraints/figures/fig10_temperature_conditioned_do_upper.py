@@ -72,7 +72,7 @@ ax.set_xticks(x, [short_sensor(sensor) for sensor in sensors], rotation=35, ha="
 ax.set_ylabel("Validation 2 h warning windows (%)")
 ax.legend(loc="upper left")
 ax.text(4.5, 48, "Diagnostic only", ha="center", color=COLORS["orange"], fontsize=6.2)
-ax.set_title("Fixed 8 mg L$^{-1}$ masks position-specific burden")
+ax.set_title("Temperature envelope versus fixed 8 mg L$^{-1}$")
 style_axis(ax, grid=True)
 panel_label(ax, "b")
 
@@ -92,7 +92,7 @@ ax.axvspan(3.5, 5.5, color=COLORS["very_light"], zorder=0)
 _warning_rate_axis(ax)
 ax.set_xticks(x, [short_sensor(sensor) for sensor in sensors], rotation=35, ha="right")
 ax.set_ylabel("Validation 2 h warning windows (%)")
-ax.legend(loc="center left", bbox_to_anchor=(0.02, 0.55))
+ax.legend(loc="upper left", bbox_to_anchor=(0.02, 0.99))
 ax.set_title(r"Warning burden reflects $\alpha$ uncertainty")
 style_axis(ax, grid=True)
 panel_label(ax, "c")
@@ -101,8 +101,8 @@ panel_label(ax, "c")
 ax = axes[1, 1]
 plot = phase.loc[phase["phase"].isin(["validation", "terminal_test"])]
 for phase_name, color, marker, offset, filled, label in (
-    ("validation", COLORS["blue"], "o", -0.11, True, "Independent validation"),
-    ("terminal_test", COLORS["orange"], "s", 0.11, False, "Locked terminal test"),
+    ("validation", COLORS["blue"], "o", -0.11, True, "Validation-period re-evaluation"),
+    ("terminal_test", COLORS["orange"], "s", 0.11, False, "Terminal-period re-evaluation"),
 ):
     group = plot.loc[plot["phase"].eq(phase_name)].set_index("sensor_id").reindex(sensors)
     rate = 100 * group["warning_2h_window_rate_high_quality"].to_numpy(dtype=float)
@@ -114,10 +114,10 @@ ax.axhline(2.0, color=COLORS["red"], lw=0.8, ls="--", label="2% criterion")
 ax.axvspan(3.5, 5.5, color=COLORS["very_light"], zorder=0)
 _warning_rate_axis(ax)
 ax.set_xticks(x, [short_sensor(sensor) for sensor in sensors], rotation=35, ha="right")
-ax.set_ylabel("High-quality 2 h warning windows (%)")
+ax.set_ylabel("Reference-eligible 2 h warning windows (%)")
 ax.legend(loc="upper left")
 ax.text(0.98, 0.07, "Position 3 remains\ndiagnostic only", transform=ax.transAxes, ha="right", va="bottom", color=COLORS["orange"], fontsize=6.2, bbox={"facecolor": "white", "edgecolor": "none", "alpha": 0.78, "pad": 0.1})
-ax.set_title("Failed transfer is retained, not tuned away")
+ax.set_title("Frozen envelope across evaluation periods")
 style_axis(ax, grid=True)
 panel_label(ax, "d")
 

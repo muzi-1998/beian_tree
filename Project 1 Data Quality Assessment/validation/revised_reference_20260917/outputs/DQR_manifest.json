@@ -1,0 +1,45 @@
+{
+  "status": "revised_temporal_out_of_sample_re_evaluation_not_first_blind_test",
+  "period": [
+    "2026-04-14 00:00:00",
+    "2026-07-31 00:00:00"
+  ],
+  "run_id": "REVISED-REFERENCE-20260917",
+  "stage": "DQR",
+  "no_later_refit": true,
+  "inputs": [
+    {
+      "path": "D:\\004_git\\beian-val-260905\\Project 1 Data Quality Assessment\\validation\\temporal_holdout_2026\\.local_qa\\holdout_T0\\D1_scores.parquet",
+      "sha256": "de1383c223f09e6f95998d9a42e24c108cd500b09df470d62ee2814f9cb3208f"
+    },
+    {
+      "path": "D:\\004_git\\beian-val-260905\\Project 1 Data Quality Assessment\\validation\\temporal_holdout_2026\\.local_qa\\holdout_T0\\D2_scores.parquet",
+      "sha256": "bdbf6a68db0b9253d36506df581b76f00e785df14f1c435c9de42be94e968c07"
+    },
+    {
+      "path": "D:\\004_git\\beian_tree-main\\Project 1 Data Quality Assessment\\validation\\revised_reference_20260917\\outputs\\D3_scores.parquet",
+      "sha256": "5db5870971c48c3b230f1fcfa93c652ce24bab4f4183a915f839dcd513bd2a28"
+    },
+    {
+      "path": "D:\\004_git\\beian_tree-main\\Project 1 Data Quality Assessment\\validation\\revised_reference_20260917\\outputs\\D4_scores.parquet",
+      "sha256": "81e19977ff68fd5a3d1296b31f962cf0a74a6642fd5c97f07ca813b50893100b"
+    },
+    {
+      "path": "D:\\004_git\\beian-val-260905\\Project 1 Data Quality Assessment\\validation\\temporal_holdout_2026\\.local_qa\\holdout_T0\\D5_scores.parquet",
+      "sha256": "cdfe275f687340a47b61ab10073c1ce19c00476faab36be9154c75ac41ca617c"
+    },
+    {
+      "path": "D:\\004_git\\beian-val-260905\\Project 1 Data Quality Assessment\\validation\\temporal_holdout_2026\\dqr_asof_adapter.py",
+      "sha256": "6967ae57b015fd208fb8f85968d47e1800ec90342a0e682b62e49ad2ed975d5b"
+    },
+    {
+      "path": "D:\\004_git\\beian_tree-main\\Project 1 Data Quality Assessment\\DQR Multidimensional Aggregation and Evidence-Aware Integration\\configs\\aggregation_v2_4.yaml",
+      "sha256": "75957df8efaed86cb91e753302220e7ae966db2211d6087edddbc0387232e650"
+    }
+  ],
+  "outputs": {
+    "DQR_node.parquet": "74d4646d1ab33460d7e35f6850b5db2503e2444aba175ca4be2c4cd5fa4c625e",
+    "DQR_pair.parquet": "602db759b7283642ff0329a1f66e109ee763ececbf9ddc607ba114f9993594ae",
+    "DQR_time_join.parquet": "db0317f5da7c3b75a789ce67c23a8aa5c93a035f288ccf19fd376480622fe676"
+  }
+}

@@ -3,95 +3,95 @@
   "claim_boundary": "descriptive_mapping_evidence_audit_no_score_recalibration",
   "low_tail_threshold": 3.0,
   "inputs": {
-    "D4_main_scores_sha256": "c21738a331d19632cc915e4d29cf692920aeccd346a6c74912f0f52dd4a9ca04",
-    "D4_mapping_params_sha256": "9c60c08c501ffd8b6b1810607d84d8259b20eead2a763a179ade4bb90335cf12"
+    "D4_main_scores_sha256": "a41e89ab86b3d91d7d7aeacb1947f4cc2ae85d523a60924993a994597889ba4e",
+    "D4_mapping_params_sha256": "fc4384a6686f2f4698fe0693d04e50277cb39b434db64f7ee7779a9d4062352c"
   },
   "summary": {
     "n_pair_hours": 42847,
-    "exact_pair_hour_rate": 0.6409550260228254,
-    "fallback_pair_hour_rate": 0.3580647419889374,
+    "exact_pair_hour_rate": 0.8572128737134456,
+    "fallback_pair_hour_rate": 0.1274301584708381,
     "global_fallback_pair_hour_rate": 0.0
   },
   "artifacts": [
     {
       "relative_path": "data/D4_event_summary.parquet",
-      "sha256": "f82b2b9f2bf7bdd33a1fe5bf90f455d6d071a928c6ad49c8dcec62bffb0888b6",
-      "size_bytes": 5135
+      "sha256": "2e890d3018d175e5979b200a59d79cae9f62513253599cd9f1a412df340e01fb",
+      "size_bytes": 5079
     },
     {
       "relative_path": "data/D4_events.parquet",
-      "sha256": "2f36a901ad076b5f504bb104967f57548db971df4f30c8470c14b8035017f412",
-      "size_bytes": 36924
+      "sha256": "1530adcb831d02278c68211b8da1e578cdfed864768c2d3e74be9daf7e7a8883",
+      "size_bytes": 31021
     },
     {
       "relative_path": "data/D4_mapping_lookup.parquet",
-      "sha256": "d32a17747966afe6404fa166a4b81fb985a8dd6b25637a7e232204fd0fdbf179",
-      "size_bytes": 10426
+      "sha256": "8fe847282ecfd897121b24e4def0e0b437561c1b1747f28dd7de1389fe3f6d09",
+      "size_bytes": 10429
     },
     {
       "relative_path": "data/D4_mapping_support_migration_audit.xlsx",
-      "sha256": "e635a2c38c2b7622a56be44a06ed8fed8754b992ea18617fb1b719e73402763a",
-      "size_bytes": 69116
+      "sha256": "f165b3b2ddaa71f4a48d199215cbad48645ed360a905be89aa2a4fe2a81f28fb",
+      "size_bytes": 58714
     },
     {
       "relative_path": "data/D4_monthly_composition.parquet",
-      "sha256": "b9774348f6b076ba44095416e3ea9a70bf6a98ad6accee3647e4f4cfcf45dd8c",
-      "size_bytes": 4026
+      "sha256": "278cb769fa4a24946fc47fc6cac7e0411ccfcc86993e557ef42ebeac8ef6a8bf",
+      "size_bytes": 4042
     },
     {
       "relative_path": "data/D4_outcome_summary.parquet",
-      "sha256": "570e73615902109092ef49997bd1774c935d490fdb11ca81e2275d9d38dfa812",
-      "size_bytes": 6287
+      "sha256": "5ecf1b6b23bb119b9c1575c4ae207351818aa085215578f1bbc8cd5be98526e3",
+      "size_bytes": 6188
     },
     {
       "relative_path": "data/D4_pair_hours_with_mapping_support.parquet",
-      "sha256": "1a279aee7d8c09c56b4286220894f5e2c585ecbf28ff28b296e19ccf7f48a922",
-      "size_bytes": 1251064
+      "sha256": "57638fe81451d9f87fd537b32f5c311f4f89cb62e728d351a48a11da44f4b90a",
+      "size_bytes": 1327489
     },
     {
       "relative_path": "data/D4_pair_ranking.parquet",
-      "sha256": "3f7b7f78edd23469bcb59f75f44848ee4b751410c98b8b87654f27a7a5241f6b",
-      "size_bytes": 6052
+      "sha256": "3ab16372ac20e489e41c3849b9ee13e02996a4001f614b8de97fecba21ec5156",
+      "size_bytes": 6026
     },
     {
       "relative_path": "data/D4_phase_composition.parquet",
-      "sha256": "d3835f61a55644ff1a6fd872067aab6157d71cb019f28d4560d2a0a67d900d1c",
-      "size_bytes": 3969
+      "sha256": "326f8cb8be716f4ff7e89d55a4a8bc6468d5259c0968aa3915b2140a19507a85",
+      "size_bytes": 3939
     },
     {
       "relative_path": "data/D4_phase_variable_composition.parquet",
-      "sha256": "c19f49a43e5184eeee3357b16c4ef7090976cb71b446ce05fb30037ffe06e5b0",
-      "size_bytes": 4508
+      "sha256": "c6b307f2ad950ad89b19f481c212115959ef52ee0601f3ee3f3690ba54fc0583",
+      "size_bytes": 4525
     },
     {
       "relative_path": "figures/D4_MappingSupportMigration.pdf",
-      "sha256": "8656feefbb0881b8173313e1365d2d7fa426404352d303de8d42dd38d7d0b1ec",
-      "size_bytes": 45322
+      "sha256": "cc3187a9da2d1b0ab350f8728a5f48a61bb80bec7ff3b0f9af7751c538a72e12",
+      "size_bytes": 45316
     },
     {
       "relative_path": "figures/D4_MappingSupportMigration.png",
-      "sha256": "652f589b030e3505d7d6268d3a40fb6c53deefb8d51572d58388ffa64139ca76",
-      "size_bytes": 344730
+      "sha256": "27ab3e5a105122a8b5ccd24c2c7d933067ddfb1827e46a90e84850ef5d29437a",
+      "size_bytes": 345034
     },
     {
       "relative_path": "figures/D4_MappingSupportMigration.svg",
-      "sha256": "cd91199676444b8d96b207f78ff8b360f4ed5df7efdb0935ac796c3b388e3012",
-      "size_bytes": 42573
+      "sha256": "96fd2a98e7bc21243af812d43261d7afd139416edfcf81243e4adbe1ba487229",
+      "size_bytes": 43147
     },
     {
       "relative_path": "figures/D4_MappingSupportMigration.tiff",
-      "sha256": "ac50289ebb16395f2e9aba9aace2ab9a7af544b13fc5b574309975b44c3a37f1",
-      "size_bytes": 998348
+      "sha256": "af0cb9169a9985816cb4362fcd232fe66762bb6187130131bb95a8d1e1e6ec1a",
+      "size_bytes": 1039656
     },
     {
       "relative_path": "reports/D4_mapping_support_migration_audit.md",
-      "sha256": "a0e04e96d2772da278348a41d392b233df681fe08574c0ad260879522385f7c1",
-      "size_bytes": 1288
+      "sha256": "88e10ca6241efab6723a2214ba657e181b65da83da07bbe30cc63ab6f7d8b76d",
+      "size_bytes": 1289
     },
     {
       "relative_path": "source_data/D4_mapping_support_migration_figure_source_data.xlsx",
-      "sha256": "795ec9aa87758e119e495356bacdaa4d68d198232c560cca97175ccf84d26cb3",
-      "size_bytes": 8528
+      "sha256": "b3dfb688363c937c2fd57b650c85da17994d925fcc13e7f762b29e9aa3cf2580",
+      "size_bytes": 8386
     }
   ]
 }

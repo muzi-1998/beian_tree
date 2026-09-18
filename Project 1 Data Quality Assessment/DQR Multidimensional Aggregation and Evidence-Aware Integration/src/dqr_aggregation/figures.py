@@ -228,7 +228,7 @@ def _figure_2(
     ax.set_xticks(x, labels)
     ax.set_ylim(0, 1.02)
     ax.set_ylabel("Fraction of sensor-hours")
-    ax.legend(ncol=2, loc="lower left", bbox_to_anchor=(0.0, 1.01))
+    ax.legend(ncol=2, loc="lower left", bbox_to_anchor=(0.0, 1.07))
     style_axes(ax)
 
     ax = axes[0, 1]
@@ -264,7 +264,7 @@ def _figure_2(
     ax.set_xticks(x, labels)
     ax.set_ylim(0, 1.02)
     ax.set_ylabel("Fraction of sensor-hours")
-    ax.legend(ncol=3, loc="lower left", bbox_to_anchor=(0.0, 1.01))
+    ax.legend(ncol=3, loc="lower left", bbox_to_anchor=(0.0, 1.07))
     style_axes(ax)
 
     source = node.copy()
@@ -356,7 +356,7 @@ def _figure_2(
     ax.set_xticks(xq, qlabels)
     ax.set_ylim(0.3, 1.03)
     ax.set_ylabel("Evidence fraction")
-    ax.legend(loc="lower left")
+    ax.legend(loc="lower right")
     style_axes(ax)
 
     effect_order = [
@@ -512,7 +512,7 @@ def _figure_3(
     ax.set_yticks(y, ["Formal D5 report", "D5 raw calculable"])
     ax.set_xlim(-0.15, 0.5)
     ax.set_xlabel("Association or overlap (7 d block 95% CI)")
-    ax.legend(loc="lower right")
+    ax.legend(loc="center right")
     style_axes(ax)
 
     strat_path = PROJECT_ROOT / config["inputs"]["D5"]["stratified_dependence_path"]
@@ -1013,7 +1013,7 @@ def run_figure_qa(figure_root: Path, report_path: Path) -> dict[str, Any]:
         },
         "figures": checks,
         "pending_figures": {
-            "DQR_Fig06_prospective_validation": "pending_unscored_future_holdout",
+            "DQR_Fig06_prospective_validation": "replaced_by_separate_revised_temporal_evaluation_not_first_blind_test",
             "DQR_Fig07_downstream_validation": "pending_no_frozen_endpoint_bundle",
         },
     }
