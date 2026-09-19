@@ -1,0 +1,15 @@
+{
+  "test_kind": "synthetic_three_level_target_stable_reference",
+  "holdout_loaded": false,
+  "append_only_prefix_end_exclusive": "2026-02-03 12:00:00",
+  "compared_hours": 37,
+  "changed_past_cp_time_hours": 7,
+  "changed_past_Q_cp_hours": 7,
+  "native_prefix_passed": false,
+  "asof_oracle_prefix_passed": true,
+  "corrected_adapter_matches_independent_asof_oracle": true,
+  "corrected_adapter_prefix_passed": true,
+  "corrected_adapter_in_published_D4": false,
+  "oracle_is_production_adapter": false,
+  "scope": "detector Q_cp only; not a full D4/DQR numerical-effect claim"
+}

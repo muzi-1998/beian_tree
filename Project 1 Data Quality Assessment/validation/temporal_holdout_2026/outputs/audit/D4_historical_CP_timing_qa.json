@@ -1,0 +1,13 @@
+{
+  "native_CP_replay_exact": true,
+  "n_pair_hours": 42847,
+  "changed_Q_cp_hours": 9245,
+  "changed_Q_cp_dedup_only_hours": 8869,
+  "changed_Q_cp_clock_after_dedup_hours": 824,
+  "low_tail_flip_hours": 1940,
+  "scope": "one_factor_historical_sensitivity_not_revised_full_D4_release",
+  "raw_residual_sha256": "62857e27b4b81b3829e2891c7b9ac350c9b14984ccea6033dc2e87afc7e795c8",
+  "holdout_opened": false,
+  "historical_release_overwritten": false,
+  "new_threshold_selection": false
+}

@@ -1,0 +1,24 @@
+{
+  "passed": true,
+  "n_pair_hours": 42847,
+  "numeric_tolerance": 1e-10,
+  "scope": "published_detector_inputs_to_frozen_mapping_and_raw_aggregation_only",
+  "change_point_detector_recomputed": false,
+  "D2_gate_recomputed": false,
+  "calibration_refitted": false,
+  "holdout_scored": false,
+  "sources": {
+    "mapping": {
+      "path": "D4 Parallel-redundancy Temporal Consistency\\outputs\\data\\D4_mapping_params.xlsx",
+      "sha256": "9c60c08c501ffd8b6b1810607d84d8259b20eead2a763a179ade4bb90335cf12"
+    },
+    "scores": {
+      "path": "D4 Parallel-redundancy Temporal Consistency\\outputs\\data\\D4_main_scores.xlsx",
+      "sha256": "c21738a331d19632cc915e4d29cf692920aeccd346a6c74912f0f52dd4a9ca04"
+    },
+    "detectors": {
+      "path": "D4 Parallel-redundancy Temporal Consistency\\outputs\\data\\D4_detector_outputs_raw.xlsx",
+      "sha256": "ab7b8c3340197b6d5de4a5f0b92a0012d4d258efb4d77cf4f1395e59f013c35a"
+    }
+  }
+}

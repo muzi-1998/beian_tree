@@ -1,0 +1,12 @@
+{
+  "D4_risk_replay_passed": true,
+  "D4_asof_CP_equal_to_audited_candidate": true,
+  "D4_CP_max_error": 0.0,
+  "DQR_no_future_source": true,
+  "node_core_formula": true,
+  "node_full_formula": true,
+  "pair_core_formula": true,
+  "n_node_hours": 336,
+  "n_pair_hours": 168,
+  "holdout_opened": false
+}

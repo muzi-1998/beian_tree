@@ -1,0 +1,21 @@
+{
+  "passed": true,
+  "Strict_and_Sensitive_tested": true,
+  "frozen_response_loss_reference": true,
+  "unknown_source_timestamp_metrics": true,
+  "comparisons": [
+    {
+      "artifact": "D2_scores",
+      "rows": 686,
+      "columns": 18,
+      "prefix_equal": true
+    },
+    {
+      "artifact": "D2_evidence",
+      "rows": 686,
+      "columns": 37,
+      "prefix_equal": true
+    }
+  ],
+  "holdout_opened": false
+}

@@ -1,0 +1,27 @@
+{
+  "figures": [
+    {
+      "name": "Holdout_H3_frozen_coverage_boundary",
+      "width_mm": 183,
+      "font": "Arial",
+      "editable_text": true,
+      "tiff_dpi": 600,
+      "outside_canvas_text": [],
+      "interpretation": "natural outcomes; not field truth",
+      "visual_review": "reviewed_at_export_size_fonts_legends_IDs_NA_gaps_and_zero_values"
+    },
+    {
+      "name": "Holdout_H4_time_aligned_quality_burden",
+      "width_mm": 183,
+      "font": "Arial",
+      "editable_text": true,
+      "tiff_dpi": 600,
+      "outside_canvas_text": [],
+      "interpretation": "natural outcomes; not field truth",
+      "visual_review": "reviewed_at_export_size_fonts_legends_IDs_NA_gaps_and_zero_values"
+    }
+  ],
+  "data_scope": "all nominal later-period channels; finite scores use evaluated denominators",
+  "intervals": "descriptive values, no inferential intervals claimed",
+  "backend": "Python matplotlib"
+}

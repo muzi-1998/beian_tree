@@ -1,0 +1,217 @@
+{
+  "audit_id": "DQR-TEMPORAL-INTAKE-20260905-v1.0",
+  "audit_scope": "structural_QA_and_historical_bridge_no_holdout_scores_or_model_selection",
+  "freeze_commit": "6799c3a916bbc6840aa2623f915b44d05e5192d6",
+  "software": {
+    "python": "3.10.5",
+    "pandas": "2.3.3"
+  },
+  "sources": {
+    "minute": {
+      "file_name": "整年对齐_分钟数据_2025-08-01_2026-07-30_02_shengwuchi.csv",
+      "sha256_raw_bytes": "18cb7f4617095655d1cb15a932621a5fbf58ac6b8b16a092e6586caba5aa4856",
+      "size_bytes": 69633238,
+      "row_count": 524160,
+      "first_timestamp": "2025-08-01 00:00:00",
+      "last_timestamp": "2026-07-30 23:59:00",
+      "duplicate_timestamp_rows": 0,
+      "backward_intervals": 0,
+      "interval_seconds_counts": {
+        "60.0": 524159
+      },
+      "invalid_numeric_cells": {
+        "1#生物池ORP1（mV）": 0,
+        "1#生物池ORP2（mV）": 0,
+        "1#生物池ORP3（mV）": 0,
+        "1#生物池DO1（mg/L）": 0,
+        "1#生物池DO2（mg/L）": 0,
+        "1#生物池DO3（mg/L）": 0,
+        "1#生物池DO4（mg/L）": 0,
+        "2#生物池ORP1（mV）": 0,
+        "2#生物池ORP2（mV）": 0,
+        "2#生物池ORP3（mV）": 0,
+        "2#生物池DO1（mg/L）": 0,
+        "2#生物池DO2（mg/L）": 0,
+        "2#生物池DO3（mg/L）": 0,
+        "2#生物池DO4（mg/L）": 0,
+        "1#生物池外回流流量（m³/h）": 0,
+        "2#生物池外回流流量（m³/h）": 0,
+        "1#生物池内回流流量（m³/h）": 0,
+        "2#生物池内回流流量（m³/h）": 0
+      }
+    },
+    "hourly": {
+      "file_name": "整年对齐_小时均值_2025-08-01_2026-07-30_02_shengwuchi.csv",
+      "sha256_raw_bytes": "3bceb420646e54c64dd63c150748a45fcc7ad470c59843356369330dd58a170d",
+      "size_bytes": 1186646,
+      "row_count": 8736,
+      "first_timestamp": "2025-08-01 00:00:00",
+      "last_timestamp": "2026-07-30 23:00:00",
+      "duplicate_timestamp_rows": 0,
+      "backward_intervals": 0,
+      "interval_seconds_counts": {
+        "3600.0": 8735
+      },
+      "invalid_numeric_cells": {
+        "1#生物池ORP1（mV）": 0,
+        "1#生物池ORP2（mV）": 0,
+        "1#生物池ORP3（mV）": 0,
+        "1#生物池DO1（mg/L）": 0,
+        "1#生物池DO2（mg/L）": 0,
+        "1#生物池DO3（mg/L）": 0,
+        "1#生物池DO4（mg/L）": 0,
+        "2#生物池ORP1（mV）": 0,
+        "2#生物池ORP2（mV）": 0,
+        "2#生物池ORP3（mV）": 0,
+        "2#生物池DO1（mg/L）": 0,
+        "2#生物池DO2（mg/L）": 0,
+        "2#生物池DO3（mg/L）": 0,
+        "2#生物池DO4（mg/L）": 0,
+        "1#生物池外回流流量（m³/h）": 0,
+        "2#生物池外回流流量（m³/h）": 0,
+        "1#生物池内回流流量（m³/h）": 0,
+        "2#生物池内回流流量（m³/h）": 0
+      }
+    },
+    "daily": {
+      "file_name": "整年对齐_日报表_2025-08-01_2026-07-30_02_shengwuchi.csv",
+      "sha256_raw_bytes": "94df5f3604a47944a0d6b2fed096d6e3ab45379c2c6bc127a2dd353a2ea140ba",
+      "size_bytes": 50166,
+      "row_count": 364,
+      "first_timestamp": "2025-08-01 00:00:00",
+      "last_timestamp": "2026-07-30 00:00:00",
+      "duplicate_timestamp_rows": 0,
+      "backward_intervals": 0,
+      "interval_seconds_counts": {
+        "86400.0": 363
+      },
+      "invalid_numeric_cells": {
+        "1#生物池ORP1（mV）": 0,
+        "1#生物池ORP2（mV）": 0,
+        "1#生物池ORP3（mV）": 0,
+        "1#生物池DO1（mg/L）": 0,
+        "1#生物池DO2（mg/L）": 0,
+        "1#生物池DO3（mg/L）": 0,
+        "1#生物池DO4（mg/L）": 0,
+        "2#生物池ORP1（mV）": 0,
+        "2#生物池ORP2（mV）": 0,
+        "2#生物池ORP3（mV）": 0,
+        "2#生物池DO1（mg/L）": 0,
+        "2#生物池DO2（mg/L）": 0,
+        "2#生物池DO3（mg/L）": 0,
+        "2#生物池DO4（mg/L）": 0,
+        "1#生物池外回流流量（m³/h）": 0,
+        "2#生物池外回流流量（m³/h）": 0,
+        "1#生物池内回流流量（m³/h）": 0,
+        "2#生物池内回流流量（m³/h）": 0
+      }
+    },
+    "temperature": {
+      "file_name": "整年对齐_分钟数据_2025-08-01_2026-07-30_01_influent+effluent.csv",
+      "sha256_raw_bytes": "441d9dfd6d7273670ec11bd91588759f6784acfec78172b1ff2555d6fccc30af",
+      "size_bytes": 63041057,
+      "row_count": 524160,
+      "first_timestamp": "2025-08-01 00:00:00",
+      "last_timestamp": "2026-07-30 23:59:00",
+      "duplicate_timestamp_rows": 0,
+      "backward_intervals": 0,
+      "interval_seconds_counts": {
+        "60.0": 524159
+      },
+      "invalid_numeric_cells": {
+        "出水瞬时流量（m³/h）": 0,
+        "进水PH": 0,
+        "进水COD（mg/L）": 0,
+        "进水氨氮（mg/L）": 0,
+        "进水温度（℃）": 0,
+        "进水总磷（mg/L）": 0,
+        "进水总氮（mg/L）": 0,
+        "进水SS（mg/L）": 0,
+        "进水流量今日累计（m³）": 0,
+        "出水浊度（NTU）": 0,
+        "进水泵坑液位（m）": 0,
+        "出水总磷（mg/L）": 715,
+        "出水COD（mg/L）": 715,
+        "出水总氮（mg/L）": 715,
+        "出水氨氮（mg/L）": 715,
+        "出水PH": 716,
+        "出水温度（℃）": 716,
+        "当日出水累计流量（m³）": 0
+      },
+      "new_period_present_fraction": 0.9961869855967078,
+      "prior_use": "D3 temperature source already referenced; old study alignment ends 2026-04-13"
+    }
+  },
+  "legacy_sources": [
+    {
+      "file_name": "beian_min_1_DO_25-08-26-04.xlsx",
+      "sha256_raw_bytes": "1ecc29eab54497013c01446905574bc99e6e6ba5c2df112834688bed5f6abe85",
+      "rows": 367156,
+      "first_timestamp": "2025-08-01 00:00:00",
+      "last_timestamp": "2026-04-13 17:17:00",
+      "backward_intervals": 0,
+      "columns": [
+        "DO_1_1",
+        "DO_1_2",
+        "DO_1_3",
+        "DO_1_4",
+        "DO_2_1",
+        "DO_2_2",
+        "DO_2_3",
+        "DO_2_4"
+      ]
+    },
+    {
+      "file_name": "beian_min_2_ORP-08-26-04.xlsx",
+      "sha256_raw_bytes": "44cd9b8501a6251347f5b741d1f02a57801450aa599f2559d66ec79272b25de5",
+      "rows": 367156,
+      "first_timestamp": "2025-08-01 00:00:00",
+      "last_timestamp": "2026-04-13 17:17:00",
+      "backward_intervals": 0,
+      "columns": [
+        "ORP_1_1",
+        "ORP_1_2",
+        "ORP_1_3",
+        "ORP_2_1",
+        "ORP_2_2",
+        "ORP_2_3"
+      ]
+    },
+    {
+      "file_name": "beian_min_3_QR+QIR-08-26-04.xlsx",
+      "sha256_raw_bytes": "d25c73367dc9a362b42cf2729348e4696d053bd6ea9d25b4133befadefd9cccc",
+      "rows": 367156,
+      "first_timestamp": "2025-08-01 00:00:00",
+      "last_timestamp": "2026-04-13 17:17:00",
+      "backward_intervals": 0,
+      "columns": [
+        "QR_1",
+        "QR_2",
+        "QIR_1",
+        "QIR_2"
+      ]
+    }
+  ],
+  "holdout": {
+    "start": "2026-04-14 00:00:00",
+    "end_inclusive": "2026-07-30 23:59:00",
+    "end_exclusive": "2026-07-31 00:00:00",
+    "minute_rows": 155520,
+    "hour_bins": 2592,
+    "day_bins": 108,
+    "sensor_count": 14,
+    "nominal_sensor_hours": 36288,
+    "original_config_end": "2026-07-31 23:00:00",
+    "source_timestamp_provenance": "aligned_export_does_not_reveal_pre_sort_duplicate_or_missing_masks"
+  },
+  "holdout_distribution_and_performance_unexamined": true,
+  "private_raw_files_copied_or_modified": false,
+  "audit_script_sha256": "5281e01daeaab54dffcaafef73ed74139c8549b21624b3a095ac2570ad0b1926",
+  "source_config_sha256": "0770fea41dd694e7f558ebd928349863930e616f23362b823a23ab3e5ddb65a6",
+  "audit_tables_sha256": {
+    "channel_mapping.csv": "42fd3e8de00e0293584cbe109012f2e4e66cbd5ec5acb613b0ed138b9b849a46",
+    "historical_aggregation_identity.csv": "39d606d6988ce47e3ade237b87c706ba345eb97966a0216672b3e9ef96b4b173",
+    "historical_overlap.csv": "ff7a8aec781e3e4361384c93548b5bd3ccefe08f008c119ffddb62943e6e5cad",
+    "new_period_completeness.csv": "2e7245f47951024c96e5813f971f494c1eebd77fd1d220eaed67002d9c7bc33d"
+  }
+}

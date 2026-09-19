@@ -1,0 +1,20 @@
+schema_version: temporal-source-attestation-1.0
+recorded_on: '2026-09-05'
+source: researcher_statement_in_this_task
+period_start: '2026-04-14 00:00:00'
+period_end_exclusive: '2026-07-31 00:00:00'
+instrument_identity:
+  process_positions_unchanged: true
+  scada_labels_unchanged: true
+  measurement_ranges_unchanged: true
+  probes_and_channels_unchanged: true
+  documentary_maintenance_log_verified: false
+minute_export:
+  grid_alignment_only: true
+  original_missing_values_preserved: true
+  interpolation_or_forward_fill_applied: false
+  original_pre_alignment_duplicate_and_order_evidence: not_observed
+limitations:
+  - Researcher confirmation is not an independent SCADA or maintenance-log audit.
+  - A regular exported grid does not establish the absence of original timestamp defects.
+  - Hourly and daily export aggregation rules remain unverified; use minute observations.

@@ -9,8 +9,9 @@ from d5_local.templates.builder import SpatialTemplate
 
 
 class SpatialEvidenceEngine:
-    def __init__(self, topology: TopologyRegistry) -> None:
+    def __init__(self, topology: TopologyRegistry, *, stable_row_reduction: bool = False) -> None:
         self.topology = topology
+        self.stable_row_reduction = stable_row_reduction
         self.nodes = topology.nodes.set_index("sensor_id")
 
     def score(
@@ -108,9 +109,12 @@ class SpatialEvidenceEngine:
         neighbor_matrix = frame[neighbors].to_numpy(dtype=float)
         neighbor_valid = np.isfinite(neighbor_matrix).all(axis=1)
         prediction = np.full(len(frame), np.nan)
-        prediction[neighbor_valid] = (
-            neighbor_matrix[neighbor_valid] @ coefficients + template.reconstruction_intercept
-        )
+        selected = neighbor_matrix[neighbor_valid]
+        # BLAS may choose a different summation kernel for a longer batch.
+        # ECDF ties make even roundoff observable in a frozen score.
+        product = (np.einsum("ij,j->i", selected, coefficients, optimize=False)
+                   if self.stable_row_reduction else selected @ coefficients)
+        prediction[neighbor_valid] = product + template.reconstruction_intercept
         observed = frame[template.target_sensor].to_numpy(dtype=float)
         normalized_residual = np.abs(observed - prediction) / template.reconstruction_scale
         graph_energy_full, graph_energy_replaced, energy_delta = self._energy_delta(

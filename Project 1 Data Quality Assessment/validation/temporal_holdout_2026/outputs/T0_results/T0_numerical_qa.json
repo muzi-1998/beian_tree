@@ -1,0 +1,44 @@
+{
+  "run_id": "HOLDOUT-T0-20260907",
+  "completed_at_UTC": "2026-09-07T06:47:49.967152+00:00",
+  "n_node_hours": 36288,
+  "n_pair_hours": 18144,
+  "D1_evaluable": 36163,
+  "D2_evaluable": 36288,
+  "D4_evaluable": 17787,
+  "D5_raw_calculable": 35672,
+  "D5_report_evaluable": 924,
+  "D5_mutually_exclusive_unavailability": {
+    "OOD": 20788,
+    "L1_limited": 14434,
+    "report_available": 924,
+    "current_observation_missing": 128,
+    "other_not_evaluable": 14
+  },
+  "node_coverage": {
+    "basic": 35253,
+    "full": 910,
+    "limited": 125
+  },
+  "pair_coverage": {
+    "basic": 17311,
+    "full": 455,
+    "limited": 378
+  },
+  "D3_window_gates": {
+    "Pass": 15299,
+    "Warn": 2775,
+    "NotEvaluated": 70
+  },
+  "node_core_sensor_hour_pooled_mean": 4.63082836790742,
+  "node_core_plant_hour_aggregated_mean": 4.630374693905432,
+  "pair_core_pair_hour_pooled_mean": 4.140785780153223,
+  "pair_core_plant_hour_aggregated_mean": 4.140785780153224,
+  "formal_recall_or_FAR_estimated": false,
+  "thresholds_retuned": false,
+  "frozen_support_updated": false,
+  "full_research_plan_complete": false,
+  "causal_QA_passed": true,
+  "opening_lock_sha256": "dce9a28f3533364c94f10020627e4794bbe29bdf2196080d071dfc903cf6b6cc",
+  "source_period_days": 108
+}

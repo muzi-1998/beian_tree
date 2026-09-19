@@ -1,0 +1,15 @@
+sensor_id,n_hours,native_state_changed_hours,native_state_max_abs_difference,native_D1_max_abs_difference,native_drift_max_abs_difference,native_veto_changed_hours,native_NA_mismatches,native_transitions_equal,native_pelt_events_equal,native_event_count,scheduled_event_count,scheduled_score_changed_hours,scheduled_low_tail_flips,scheduled_state_changed_hours,checkpoint_output_changed_hours,checkpoint_transitions_equal,incomplete_detector_hours,n_transitions,journal_sha256
+DO_1_1,6138,0,0.0,0.0,0.0,0,0,True,True,0,0,0,0,0,0,True,0,0,1e993f5ded59052fd44829ba927bfe512c77ac16121a0ee2ebacb79db5f1ac75
+DO_1_2,6138,0,0.0,0.0,0.0,0,0,True,True,11,11,0,0,0,0,True,0,15,8e94428d7c1e00c6377eb1f5e918a70ead147725c912415d4854dcbda28a4980
+DO_1_3,6138,0,0.0,0.0,0.0,0,0,True,True,7,7,0,0,0,0,True,0,2,b95c4e439e8ca87ef481e07e195cb7fc1f4166b3be99a5025d2ba7f93ddf6772
+DO_1_4,6138,0,0.0,0.0,0.0,0,0,True,True,0,0,0,0,0,0,True,0,0,a1fecf09f2d61487ca18cb496eed5e2f137d981a4e989a9fb3d2385016b9d413
+DO_2_1,6138,0,0.0,0.0,0.0,0,0,True,True,0,0,0,0,0,0,True,0,0,2e89d2e61a0ec6adf5c174556ba6853a662885adcdaeb381c6bf74af675594f4
+DO_2_2,6138,0,0.0,0.0,0.0,0,0,True,True,0,0,0,0,0,0,True,0,0,8574c5ef1f6cd2c6f7aad9a1d38ca32d70ed5ad82873c3ebd82c1e95c8724b62
+DO_2_3,6138,0,0.0,0.0,0.0,0,0,True,True,29,29,0,0,0,0,True,0,48,28655013907bb9a17cec8d73df271f30aa4b3d2fe9affa6b03f3c8291a43029c
+DO_2_4,6138,0,0.0,0.0,0.0,0,0,True,True,19,19,0,0,0,0,True,0,4,18687f6d8e04028976ee38b0215350397735a048fdb8d9ebebb202c0ca8c464f
+ORP_1_1,6138,0,0.0,0.0,0.0,0,0,True,True,3,3,0,0,0,0,True,0,0,fe12223fa9d9e58b71c62aea7c1ab75933b3ae0e56a3748d4c7cf81bfeff347d
+ORP_1_2,6138,0,0.0,0.0,0.0,0,0,True,True,5,5,0,0,0,0,True,0,48,a4fc66f1bb3d3fbec68094d51eda546cd2e21eb1d0c0407a13c3dcf0c04b6572
+ORP_1_3,6138,0,0.0,0.0,0.0,0,0,True,True,48,48,0,0,0,0,True,0,15,9ad08f55358f8b430539d5ba8b000911c7fbe83d8b9f155212d034c0943be526
+ORP_2_1,6138,0,0.0,0.0,0.0,0,0,True,True,6,6,0,0,0,0,True,0,0,bafe8ee36d2995f62d107982b45ce4f0a776a5a41ba0d46aa807094885fdcc84
+ORP_2_2,6138,0,0.0,0.0,0.0,0,0,True,True,2,2,0,0,0,0,True,0,10,3d74b631c7e9c059c87abf9f26e44947d81fee20615feee3b821df98e5eb75f6
+ORP_2_3,6138,0,0.0,0.0,0.0,0,0,True,True,3,3,0,0,0,0,True,0,0,90ecec0304d9e60b0b00f35c1e212035e4bb00232871f5ff2447cc477903b95e

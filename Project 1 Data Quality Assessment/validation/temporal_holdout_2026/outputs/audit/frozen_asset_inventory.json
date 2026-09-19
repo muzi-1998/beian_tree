@@ -1,0 +1,4914 @@
+{
+  "schema": "temporal-frozen-inventory-1.0",
+  "holdout_scores_computed": false,
+  "pickle_assets": [
+    {
+      "dimension": "1.1",
+      "path": "D:\\004_git\\beian_tree\\Project 1 Data Quality Assessment\\1.1 Decomposition\\outputs\\_w2_checkpoint.pkl",
+      "exists": true,
+      "sha256": "acb736bc3ea99aa606fd87da687cd4744868a8ee8116ad7eddc73cdf4650a3e7",
+      "size_bytes": 386603593,
+      "contents": {
+        "config_hash": "91f353e4a107",
+        "out": {
+          "df_min": {
+            "kind": "DataFrame",
+            "shape": [
+              368640,
+              18
+            ],
+            "columns": [
+              "DO_1_1",
+              "DO_1_2",
+              "DO_1_3",
+              "DO_1_4",
+              "DO_2_1",
+              "DO_2_2",
+              "DO_2_3",
+              "DO_2_4",
+              "ORP_1_1",
+              "ORP_1_2",
+              "ORP_1_3",
+              "ORP_2_1",
+              "ORP_2_2",
+              "ORP_2_3",
+              "QR_1",
+              "QR_2",
+              "QIR_1",
+              "QIR_2"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 23:59:00"
+          },
+          "fl_min": {
+            "kind": "DataFrame",
+            "shape": [
+              368640,
+              18
+            ],
+            "columns": [
+              "DO_1_1",
+              "DO_1_2",
+              "DO_1_3",
+              "DO_1_4",
+              "DO_2_1",
+              "DO_2_2",
+              "DO_2_3",
+              "DO_2_4",
+              "ORP_1_1",
+              "ORP_1_2",
+              "ORP_1_3",
+              "ORP_2_1",
+              "ORP_2_2",
+              "ORP_2_3",
+              "QR_1",
+              "QR_2",
+              "QIR_1",
+              "QIR_2"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 23:59:00"
+          },
+          "inf_f": {
+            "kind": "DataFrame",
+            "shape": [
+              4801,
+              8
+            ],
+            "columns": [
+              "inf_pH",
+              "inf_T",
+              "inf_SS",
+              "inf_NH4",
+              "inf_TP",
+              "inf_TN",
+              "inf_COD",
+              "inf_Q"
+            ],
+            "start": "2025-10-01 00:00:00",
+            "end": "2026-04-19 00:00:00"
+          },
+          "fl_inf": {
+            "kind": "DataFrame",
+            "shape": [
+              4801,
+              8
+            ],
+            "columns": [
+              "inf_pH",
+              "inf_T",
+              "inf_SS",
+              "inf_NH4",
+              "inf_TP",
+              "inf_TN",
+              "inf_COD",
+              "inf_Q"
+            ],
+            "start": "2025-10-01 00:00:00",
+            "end": "2026-04-19 00:00:00"
+          },
+          "eff_f": {
+            "kind": "DataFrame",
+            "shape": [
+              7729,
+              7
+            ],
+            "columns": [
+              "eff_COD",
+              "eff_TP",
+              "eff_NH4",
+              "eff_TN",
+              "eff_pH",
+              "eff_T",
+              "eff_sludge"
+            ],
+            "start": "2025-06-01 00:00:00",
+            "end": "2026-04-19 00:00:00"
+          },
+          "fl_eff": {
+            "kind": "DataFrame",
+            "shape": [
+              7729,
+              7
+            ],
+            "columns": [
+              "eff_COD",
+              "eff_TP",
+              "eff_NH4",
+              "eff_TN",
+              "eff_pH",
+              "eff_T",
+              "eff_sludge"
+            ],
+            "start": "2025-06-01 00:00:00",
+            "end": "2026-04-19 00:00:00"
+          },
+          "inventory": {
+            "kind": "DataFrame",
+            "shape": [
+              33,
+              21
+            ],
+            "columns": [
+              "variable",
+              "cls",
+              "zone",
+              "role",
+              "group",
+              "track",
+              "train",
+              "range_lo",
+              "range_hi",
+              "t_start",
+              "t_end",
+              "n_rows",
+              "missing_pct",
+              "range_violation_pct",
+              "iqr_outlier_pct",
+              "censored_pct",
+              "mean",
+              "std",
+              "min",
+              "p50",
+              "max"
+            ]
+          },
+          "consistency": {
+            "kind": "dict",
+            "keys": [
+              "value_rate",
+              "parallel_symmetry",
+              "along_train_gradient",
+              "do4_floor_vs_freeze",
+              "nitrogen_balance"
+            ]
+          },
+          "decomp": {
+            "kind": "dict",
+            "keys": [
+              "DO_1_1",
+              "DO_1_2",
+              "DO_1_3",
+              "DO_1_4",
+              "DO_2_1",
+              "DO_2_2",
+              "DO_2_3",
+              "DO_2_4",
+              "ORP_1_1",
+              "ORP_1_2",
+              "ORP_1_3",
+              "ORP_2_1",
+              "ORP_2_2",
+              "ORP_2_3",
+              "QR_1",
+              "QR_2",
+              "QIR_1",
+              "QIR_2",
+              "inf_pH",
+              "inf_T",
+              "inf_SS",
+              "inf_NH4",
+              "inf_TP",
+              "inf_TN",
+              "inf_COD",
+              "inf_Q",
+              "eff_COD",
+              "eff_TP",
+              "eff_NH4",
+              "eff_TN",
+              "eff_pH",
+              "eff_T",
+              "eff_sludge"
+            ]
+          },
+          "order_df": {
+            "kind": "DataFrame",
+            "shape": [
+              33,
+              11
+            ],
+            "columns": [
+              "channel",
+              "track",
+              "group",
+              "zone",
+              "periods",
+              "selected_order",
+              "nyquist_cap",
+              "f_driven",
+              "aic_best",
+              "bic_best",
+              "f_pvalues"
+            ]
+          },
+          "resid_min": {
+            "kind": "dict",
+            "keys": [
+              "DO_1_1",
+              "DO_1_2",
+              "DO_1_3",
+              "DO_1_4",
+              "DO_2_1",
+              "DO_2_2",
+              "DO_2_3",
+              "DO_2_4",
+              "ORP_1_1",
+              "ORP_1_2",
+              "ORP_1_3",
+              "ORP_2_1",
+              "ORP_2_2",
+              "ORP_2_3",
+              "QR_1",
+              "QR_2",
+              "QIR_1",
+              "QIR_2"
+            ]
+          },
+          "resid_inf": {
+            "kind": "dict",
+            "keys": [
+              "inf_pH",
+              "inf_T",
+              "inf_SS",
+              "inf_NH4",
+              "inf_TP",
+              "inf_TN",
+              "inf_COD",
+              "inf_Q"
+            ]
+          },
+          "resid_eff": {
+            "kind": "dict",
+            "keys": [
+              "eff_COD",
+              "eff_TP",
+              "eff_NH4",
+              "eff_TN",
+              "eff_pH",
+              "eff_T",
+              "eff_sludge"
+            ]
+          }
+        }
+      },
+      "read_status": "readable_not_yet_release_verified"
+    },
+    {
+      "dimension": "1.1",
+      "path": "D:\\004_git\\beian_tree\\Project 1 Data Quality Assessment\\1.1 Decomposition\\outputs\\_pipeline_state.pkl",
+      "exists": true,
+      "sha256": "4ecc110c52b4c712d553ec135c58588a90b5d059cbcc5f086e0c90930550448e",
+      "size_bytes": 218390207,
+      "contents": {
+        "order_df": {
+          "kind": "DataFrame",
+          "shape": [
+            33,
+            11
+          ],
+          "columns": [
+            "channel",
+            "track",
+            "group",
+            "zone",
+            "periods",
+            "selected_order",
+            "nyquist_cap",
+            "f_driven",
+            "aic_best",
+            "bic_best",
+            "f_pvalues"
+          ]
+        },
+        "arma_df": {
+          "kind": "DataFrame",
+          "shape": [
+            33,
+            16
+          ],
+          "columns": [
+            "channel",
+            "track",
+            "family",
+            "d",
+            "D",
+            "p",
+            "q",
+            "fd",
+            "garch",
+            "lrd_flag",
+            "lrd_d_gph",
+            "aic",
+            "bic",
+            "accepted",
+            "fallback",
+            "gate"
+          ]
+        },
+        "cmp_df": {
+          "kind": "DataFrame",
+          "shape": [
+            33,
+            17
+          ],
+          "columns": [
+            "channel",
+            "track",
+            "lb_passrate_resid",
+            "lb_passrate_innov",
+            "n_windows",
+            "acf1_resid",
+            "acf1_innov",
+            "mabsacf_resid",
+            "mabsacf_innov",
+            "adf_p_innov",
+            "adf_reject_innov",
+            "kpss_p_innov",
+            "kpss_stat_innov",
+            "arch_p_innov",
+            "arch_het_innov",
+            "arch_effect",
+            "signbias_p"
+          ]
+        },
+        "resid_min": {
+          "DO_1_1": {
+            "kind": "Series",
+            "shape": [
+              368640
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 23:59:00"
+          },
+          "DO_1_2": {
+            "kind": "Series",
+            "shape": [
+              368640
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 23:59:00"
+          },
+          "DO_1_3": {
+            "kind": "Series",
+            "shape": [
+              368640
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 23:59:00"
+          },
+          "DO_1_4": {
+            "kind": "Series",
+            "shape": [
+              368640
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 23:59:00"
+          },
+          "DO_2_1": {
+            "kind": "Series",
+            "shape": [
+              368640
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 23:59:00"
+          },
+          "DO_2_2": {
+            "kind": "Series",
+            "shape": [
+              368640
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 23:59:00"
+          },
+          "DO_2_3": {
+            "kind": "Series",
+            "shape": [
+              368640
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 23:59:00"
+          },
+          "DO_2_4": {
+            "kind": "Series",
+            "shape": [
+              368640
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 23:59:00"
+          },
+          "ORP_1_1": {
+            "kind": "Series",
+            "shape": [
+              368640
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 23:59:00"
+          },
+          "ORP_1_2": {
+            "kind": "Series",
+            "shape": [
+              368640
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 23:59:00"
+          },
+          "ORP_1_3": {
+            "kind": "Series",
+            "shape": [
+              368640
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 23:59:00"
+          },
+          "ORP_2_1": {
+            "kind": "Series",
+            "shape": [
+              368640
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 23:59:00"
+          },
+          "ORP_2_2": {
+            "kind": "Series",
+            "shape": [
+              368640
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 23:59:00"
+          },
+          "ORP_2_3": {
+            "kind": "Series",
+            "shape": [
+              368640
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 23:59:00"
+          },
+          "QR_1": {
+            "kind": "Series",
+            "shape": [
+              368640
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 23:59:00"
+          },
+          "QR_2": {
+            "kind": "Series",
+            "shape": [
+              368640
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 23:59:00"
+          },
+          "QIR_1": {
+            "kind": "Series",
+            "shape": [
+              368640
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 23:59:00"
+          },
+          "QIR_2": {
+            "kind": "Series",
+            "shape": [
+              368640
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 23:59:00"
+          }
+        },
+        "std_min": {
+          "DO_1_1": {
+            "kind": "Series",
+            "shape": [
+              368640
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 23:59:00"
+          },
+          "DO_1_2": {
+            "kind": "Series",
+            "shape": [
+              368640
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 23:59:00"
+          },
+          "DO_1_3": {
+            "kind": "Series",
+            "shape": [
+              368640
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 23:59:00"
+          },
+          "DO_1_4": {
+            "kind": "Series",
+            "shape": [
+              368640
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 23:59:00"
+          },
+          "DO_2_1": {
+            "kind": "Series",
+            "shape": [
+              368640
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 23:59:00"
+          },
+          "DO_2_2": {
+            "kind": "Series",
+            "shape": [
+              368640
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 23:59:00"
+          },
+          "DO_2_3": {
+            "kind": "Series",
+            "shape": [
+              368640
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 23:59:00"
+          },
+          "DO_2_4": {
+            "kind": "Series",
+            "shape": [
+              368640
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 23:59:00"
+          },
+          "ORP_1_1": {
+            "kind": "Series",
+            "shape": [
+              368640
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 23:59:00"
+          },
+          "ORP_1_2": {
+            "kind": "Series",
+            "shape": [
+              368640
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 23:59:00"
+          },
+          "ORP_1_3": {
+            "kind": "Series",
+            "shape": [
+              368640
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 23:59:00"
+          },
+          "ORP_2_1": {
+            "kind": "Series",
+            "shape": [
+              368640
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 23:59:00"
+          },
+          "ORP_2_2": {
+            "kind": "Series",
+            "shape": [
+              368640
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 23:59:00"
+          },
+          "ORP_2_3": {
+            "kind": "Series",
+            "shape": [
+              368640
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 23:59:00"
+          },
+          "QR_1": {
+            "kind": "Series",
+            "shape": [
+              368640
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 23:59:00"
+          },
+          "QR_2": {
+            "kind": "Series",
+            "shape": [
+              368640
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 23:59:00"
+          },
+          "QIR_1": {
+            "kind": "Series",
+            "shape": [
+              368640
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 23:59:00"
+          },
+          "QIR_2": {
+            "kind": "Series",
+            "shape": [
+              368640
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 23:59:00"
+          }
+        },
+        "resid_inf": {
+          "inf_pH": {
+            "kind": "Series",
+            "shape": [
+              4801
+            ],
+            "start": "2025-10-01 00:00:00",
+            "end": "2026-04-19 00:00:00"
+          },
+          "inf_T": {
+            "kind": "Series",
+            "shape": [
+              4801
+            ],
+            "start": "2025-10-01 00:00:00",
+            "end": "2026-04-19 00:00:00"
+          },
+          "inf_SS": {
+            "kind": "Series",
+            "shape": [
+              4801
+            ],
+            "start": "2025-10-01 00:00:00",
+            "end": "2026-04-19 00:00:00"
+          },
+          "inf_NH4": {
+            "kind": "Series",
+            "shape": [
+              4801
+            ],
+            "start": "2025-10-01 00:00:00",
+            "end": "2026-04-19 00:00:00"
+          },
+          "inf_TP": {
+            "kind": "Series",
+            "shape": [
+              4801
+            ],
+            "start": "2025-10-01 00:00:00",
+            "end": "2026-04-19 00:00:00"
+          },
+          "inf_TN": {
+            "kind": "Series",
+            "shape": [
+              4801
+            ],
+            "start": "2025-10-01 00:00:00",
+            "end": "2026-04-19 00:00:00"
+          },
+          "inf_COD": {
+            "kind": "Series",
+            "shape": [
+              4801
+            ],
+            "start": "2025-10-01 00:00:00",
+            "end": "2026-04-19 00:00:00"
+          },
+          "inf_Q": {
+            "kind": "Series",
+            "shape": [
+              4801
+            ],
+            "start": "2025-10-01 00:00:00",
+            "end": "2026-04-19 00:00:00"
+          }
+        },
+        "resid_eff": {
+          "eff_COD": {
+            "kind": "Series",
+            "shape": [
+              7729
+            ],
+            "start": "2025-06-01 00:00:00",
+            "end": "2026-04-19 00:00:00"
+          },
+          "eff_TP": {
+            "kind": "Series",
+            "shape": [
+              7729
+            ],
+            "start": "2025-06-01 00:00:00",
+            "end": "2026-04-19 00:00:00"
+          },
+          "eff_NH4": {
+            "kind": "Series",
+            "shape": [
+              7729
+            ],
+            "start": "2025-06-01 00:00:00",
+            "end": "2026-04-19 00:00:00"
+          },
+          "eff_TN": {
+            "kind": "Series",
+            "shape": [
+              7729
+            ],
+            "start": "2025-06-01 00:00:00",
+            "end": "2026-04-19 00:00:00"
+          },
+          "eff_pH": {
+            "kind": "Series",
+            "shape": [
+              7729
+            ],
+            "start": "2025-06-01 00:00:00",
+            "end": "2026-04-19 00:00:00"
+          },
+          "eff_T": {
+            "kind": "Series",
+            "shape": [
+              7729
+            ],
+            "start": "2025-06-01 00:00:00",
+            "end": "2026-04-19 00:00:00"
+          },
+          "eff_sludge": {
+            "kind": "Series",
+            "shape": [
+              7729
+            ],
+            "start": "2025-06-01 00:00:00",
+            "end": "2026-04-19 00:00:00"
+          }
+        },
+        "innov_inf": {
+          "inf_pH": {
+            "kind": "Series",
+            "shape": [
+              4801
+            ],
+            "start": "2025-10-01 00:00:00",
+            "end": "2026-04-19 00:00:00"
+          },
+          "inf_T": {
+            "kind": "Series",
+            "shape": [
+              4801
+            ],
+            "start": "2025-10-01 00:00:00",
+            "end": "2026-04-19 00:00:00"
+          },
+          "inf_SS": {
+            "kind": "Series",
+            "shape": [
+              4801
+            ],
+            "start": "2025-10-01 00:00:00",
+            "end": "2026-04-19 00:00:00"
+          },
+          "inf_NH4": {
+            "kind": "Series",
+            "shape": [
+              4801
+            ],
+            "start": "2025-10-01 00:00:00",
+            "end": "2026-04-19 00:00:00"
+          },
+          "inf_TP": {
+            "kind": "Series",
+            "shape": [
+              4801
+            ],
+            "start": "2025-10-01 00:00:00",
+            "end": "2026-04-19 00:00:00"
+          },
+          "inf_TN": {
+            "kind": "Series",
+            "shape": [
+              4801
+            ],
+            "start": "2025-10-01 00:00:00",
+            "end": "2026-04-19 00:00:00"
+          },
+          "inf_COD": {
+            "kind": "Series",
+            "shape": [
+              4801
+            ],
+            "start": "2025-10-01 00:00:00",
+            "end": "2026-04-19 00:00:00"
+          },
+          "inf_Q": {
+            "kind": "Series",
+            "shape": [
+              4801
+            ],
+            "start": "2025-10-01 00:00:00",
+            "end": "2026-04-19 00:00:00"
+          }
+        },
+        "innov_eff": {
+          "eff_COD": {
+            "kind": "Series",
+            "shape": [
+              7729
+            ],
+            "start": "2025-06-01 00:00:00",
+            "end": "2026-04-19 00:00:00"
+          },
+          "eff_TP": {
+            "kind": "Series",
+            "shape": [
+              7729
+            ],
+            "start": "2025-06-01 00:00:00",
+            "end": "2026-04-19 00:00:00"
+          },
+          "eff_NH4": {
+            "kind": "Series",
+            "shape": [
+              7729
+            ],
+            "start": "2025-06-01 00:00:00",
+            "end": "2026-04-19 00:00:00"
+          },
+          "eff_TN": {
+            "kind": "Series",
+            "shape": [
+              7729
+            ],
+            "start": "2025-06-01 00:00:00",
+            "end": "2026-04-19 00:00:00"
+          },
+          "eff_pH": {
+            "kind": "Series",
+            "shape": [
+              7729
+            ],
+            "start": "2025-06-01 00:00:00",
+            "end": "2026-04-19 00:00:00"
+          },
+          "eff_T": {
+            "kind": "Series",
+            "shape": [
+              7729
+            ],
+            "start": "2025-06-01 00:00:00",
+            "end": "2026-04-19 00:00:00"
+          },
+          "eff_sludge": {
+            "kind": "Series",
+            "shape": [
+              7729
+            ],
+            "start": "2025-06-01 00:00:00",
+            "end": "2026-04-19 00:00:00"
+          }
+        },
+        "consistency": {
+          "value_rate": {
+            "kind": "DataFrame",
+            "shape": [
+              14,
+              4
+            ],
+            "columns": [
+              "variable",
+              "kind",
+              "neg_pct",
+              "note"
+            ]
+          },
+          "parallel_symmetry": {
+            "kind": "DataFrame",
+            "shape": [
+              7,
+              5
+            ],
+            "columns": [
+              "sensor",
+              "seq",
+              "train1_mean",
+              "train2_mean",
+              "abs_diff"
+            ]
+          },
+          "along_train_gradient": {
+            "kind": "DataFrame",
+            "shape": [
+              2,
+              15
+            ],
+            "columns": [
+              "train",
+              "DO_1_1",
+              "DO_1_2",
+              "DO_1_3",
+              "DO_1_4",
+              "ORP_1_1",
+              "ORP_1_2",
+              "ORP_1_3",
+              "DO_2_1",
+              "DO_2_2",
+              "DO_2_3",
+              "DO_2_4",
+              "ORP_2_1",
+              "ORP_2_2",
+              "ORP_2_3"
+            ]
+          },
+          "do4_floor_vs_freeze": {
+            "kind": "DataFrame",
+            "shape": [
+              2,
+              8
+            ],
+            "columns": [
+              "channel",
+              "mean",
+              "day_mean",
+              "night_mean",
+              "day_night_diff",
+              "abs_corr_QIR",
+              "micro_var",
+              "interpretation"
+            ]
+          },
+          "nitrogen_balance": {
+            "kind": "DataFrame",
+            "shape": [
+              196,
+              5
+            ],
+            "columns": [
+              "timestamp",
+              "inf_TN",
+              "eff_TN",
+              "removed_TN",
+              "removal_pct"
+            ]
+          }
+        }
+      },
+      "read_status": "readable_not_yet_release_verified"
+    },
+    {
+      "dimension": "D1",
+      "path": "D:\\004_git\\beian_tree-main\\Project 1 Data Quality Assessment\\D1 Sensor health\\strict_v1_inputs.pkl",
+      "exists": true,
+      "sha256": "7de8f54722ac1f804a9456d4883eebe5aa35990f2210e22add0eb6c023675d96",
+      "size_bytes": 12137371,
+      "contents": {
+        "subs_v1": {
+          "Q_spike": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              14
+            ],
+            "columns": [
+              "DO_1_1",
+              "DO_1_2",
+              "DO_1_3",
+              "DO_1_4",
+              "DO_2_1",
+              "DO_2_2",
+              "DO_2_3",
+              "DO_2_4",
+              "ORP_1_1",
+              "ORP_1_2",
+              "ORP_1_3",
+              "ORP_2_1",
+              "ORP_2_2",
+              "ORP_2_3"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "Q_step": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              14
+            ],
+            "columns": [
+              "DO_1_1",
+              "DO_1_2",
+              "DO_1_3",
+              "DO_1_4",
+              "DO_2_1",
+              "DO_2_2",
+              "DO_2_3",
+              "DO_2_4",
+              "ORP_1_1",
+              "ORP_1_2",
+              "ORP_1_3",
+              "ORP_2_1",
+              "ORP_2_2",
+              "ORP_2_3"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "Q_drift": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              14
+            ],
+            "columns": [
+              "DO_1_1",
+              "DO_1_2",
+              "DO_1_3",
+              "DO_1_4",
+              "DO_2_1",
+              "DO_2_2",
+              "DO_2_3",
+              "DO_2_4",
+              "ORP_1_1",
+              "ORP_1_2",
+              "ORP_1_3",
+              "ORP_2_1",
+              "ORP_2_2",
+              "ORP_2_3"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "Q_freeze": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              14
+            ],
+            "columns": [
+              "DO_1_1",
+              "DO_1_2",
+              "DO_1_3",
+              "DO_1_4",
+              "DO_2_1",
+              "DO_2_2",
+              "DO_2_3",
+              "DO_2_4",
+              "ORP_1_1",
+              "ORP_1_2",
+              "ORP_1_3",
+              "ORP_2_1",
+              "ORP_2_2",
+              "ORP_2_3"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "Q_regime": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              14
+            ],
+            "columns": [
+              "DO_1_1",
+              "DO_1_2",
+              "DO_1_3",
+              "DO_1_4",
+              "DO_2_1",
+              "DO_2_2",
+              "DO_2_3",
+              "DO_2_4",
+              "ORP_1_1",
+              "ORP_1_2",
+              "ORP_1_3",
+              "ORP_2_1",
+              "ORP_2_2",
+              "ORP_2_3"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          }
+        },
+        "D1_v1": {
+          "kind": "DataFrame",
+          "shape": [
+            6138,
+            14
+          ],
+          "columns": [
+            "DO_1_1",
+            "DO_1_2",
+            "DO_1_3",
+            "DO_1_4",
+            "DO_2_1",
+            "DO_2_2",
+            "DO_2_3",
+            "DO_2_4",
+            "ORP_1_1",
+            "ORP_1_2",
+            "ORP_1_3",
+            "ORP_2_1",
+            "ORP_2_2",
+            "ORP_2_3"
+          ],
+          "start": "2025-08-01 00:00:00",
+          "end": "2026-04-13 17:00:00"
+        },
+        "detectors": {
+          "ks_statistic_hourly": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              14
+            ],
+            "columns": [
+              "DO_1_1",
+              "DO_1_2",
+              "DO_1_3",
+              "DO_1_4",
+              "DO_2_1",
+              "DO_2_2",
+              "DO_2_3",
+              "DO_2_4",
+              "ORP_1_1",
+              "ORP_1_2",
+              "ORP_1_3",
+              "ORP_2_1",
+              "ORP_2_2",
+              "ORP_2_3"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "ks_statistic_36h": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              14
+            ],
+            "columns": [
+              "DO_1_1",
+              "DO_1_2",
+              "DO_1_3",
+              "DO_1_4",
+              "DO_2_1",
+              "DO_2_2",
+              "DO_2_3",
+              "DO_2_4",
+              "ORP_1_1",
+              "ORP_1_2",
+              "ORP_1_3",
+              "ORP_2_1",
+              "ORP_2_2",
+              "ORP_2_3"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "step_confirmed_flag": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              14
+            ],
+            "columns": [
+              "DO_1_1",
+              "DO_1_2",
+              "DO_1_3",
+              "DO_1_4",
+              "DO_2_1",
+              "DO_2_2",
+              "DO_2_3",
+              "DO_2_4",
+              "ORP_1_1",
+              "ORP_1_2",
+              "ORP_1_3",
+              "ORP_2_1",
+              "ORP_2_2",
+              "ORP_2_3"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "w1_normalised_hourly": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              14
+            ],
+            "columns": [
+              "DO_1_1",
+              "DO_1_2",
+              "DO_1_3",
+              "DO_1_4",
+              "DO_2_1",
+              "DO_2_2",
+              "DO_2_3",
+              "DO_2_4",
+              "ORP_1_1",
+              "ORP_1_2",
+              "ORP_1_3",
+              "ORP_2_1",
+              "ORP_2_2",
+              "ORP_2_3"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "hampel_z_hourly_max": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              14
+            ],
+            "columns": [
+              "DO_1_1",
+              "DO_1_2",
+              "DO_1_3",
+              "DO_1_4",
+              "DO_2_1",
+              "DO_2_2",
+              "DO_2_3",
+              "DO_2_4",
+              "ORP_1_1",
+              "ORP_1_2",
+              "ORP_1_3",
+              "ORP_2_1",
+              "ORP_2_2",
+              "ORP_2_3"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "pls_residual_z_hourly": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              14
+            ],
+            "columns": [
+              "DO_1_1",
+              "DO_1_2",
+              "DO_1_3",
+              "DO_1_4",
+              "DO_2_1",
+              "DO_2_2",
+              "DO_2_3",
+              "DO_2_4",
+              "ORP_1_1",
+              "ORP_1_2",
+              "ORP_1_3",
+              "ORP_2_1",
+              "ORP_2_2",
+              "ORP_2_3"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "spike_rate_6h_input": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              14
+            ],
+            "columns": [
+              "DO_1_1",
+              "DO_1_2",
+              "DO_1_3",
+              "DO_1_4",
+              "DO_2_1",
+              "DO_2_2",
+              "DO_2_3",
+              "DO_2_4",
+              "ORP_1_1",
+              "ORP_1_2",
+              "ORP_1_3",
+              "ORP_2_1",
+              "ORP_2_2",
+              "ORP_2_3"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "freeze_routing_audit": {
+            "kind": "DataFrame",
+            "shape": [
+              14,
+              4
+            ],
+            "columns": [
+              "scoring_mode",
+              "freeze_mapping_mode",
+              "low_var_in_production",
+              "unique_in_production"
+            ]
+          },
+          "pls_peer_selection_audit": {
+            "kind": "DataFrame",
+            "shape": [
+              14,
+              18
+            ],
+            "columns": [
+              "core_peers",
+              "candidate_peers",
+              "selected_peers",
+              "selected_noncore_peers",
+              "selected_n_components",
+              "core_cv_nrmse_median",
+              "core_cv_nrmse_p90",
+              "selected_cv_nrmse_median",
+              "selected_cv_nrmse_p90",
+              "cv_improvement_pct",
+              "n_blocked_folds",
+              "selected_peer_count",
+              "redundancy_status",
+              "topology_contract",
+              "selection_rule",
+              "validation_status",
+              "nominated_before_test",
+              "validation_rationale"
+            ]
+          },
+          "pls_peer_matrix": {
+            "kind": "DataFrame",
+            "shape": [
+              14,
+              14
+            ],
+            "columns": [
+              "DO_1_1",
+              "DO_1_2",
+              "DO_1_3",
+              "DO_1_4",
+              "DO_2_1",
+              "DO_2_2",
+              "DO_2_3",
+              "DO_2_4",
+              "ORP_1_1",
+              "ORP_1_2",
+              "ORP_1_3",
+              "ORP_2_1",
+              "ORP_2_2",
+              "ORP_2_3"
+            ]
+          },
+          "pls_do24_config": {
+            "kind": "DataFrame",
+            "shape": [
+              1,
+              26
+            ],
+            "columns": [
+              "target",
+              "core_peer",
+              "candidate_peer",
+              "train_days",
+              "terminal_test_days",
+              "validation_block_days",
+              "bootstrap_replicates",
+              "bootstrap_block_folds",
+              "random_seed",
+              "injection_window_h",
+              "injection_ramp_h",
+              "injection_scan_stride_h",
+              "clean_abs_z_max",
+              "clean_fraction_min",
+              "alarm_abs_z",
+              "alarm_duration_h",
+              "injection_amplitudes_sigma",
+              "injection_signs",
+              "material_amplitude_sigma",
+              "min_median_gain_pct",
+              "min_positive_fold_fraction",
+              "max_p90_degradation_pct",
+              "max_detection_loss_fraction",
+              "max_false_alarm_increase_fraction",
+              "max_absolute_false_alarm_fraction",
+              "min_test_gain_pct"
+            ]
+          },
+          "pls_do24_model_definitions": {
+            "kind": "DataFrame",
+            "shape": [
+              3,
+              5
+            ],
+            "columns": [
+              "model_id",
+              "label",
+              "n_components",
+              "role",
+              "peers"
+            ]
+          },
+          "pls_do24_split_manifest": {
+            "kind": "DataFrame",
+            "shape": [
+              1,
+              12
+            ],
+            "columns": [
+              "train_start",
+              "train_end",
+              "train_n_h",
+              "development_start",
+              "development_end",
+              "development_n_h",
+              "independent_test_start",
+              "independent_test_end",
+              "independent_test_n_h",
+              "validation_block_h",
+              "n_validation_folds",
+              "n_nonoverlapping_clean_windows"
+            ]
+          },
+          "pls_do24_hourly_predictions": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              17
+            ],
+            "columns": [
+              "timestamp",
+              "row_number",
+              "split",
+              "validation_fold_id",
+              "target_residual_used",
+              "M0_prediction",
+              "M0_signed_error",
+              "M0_abs_normalised_error",
+              "M0_abs_residual_z",
+              "M1_1_prediction",
+              "M1_1_signed_error",
+              "M1_1_abs_normalised_error",
+              "M1_1_abs_residual_z",
+              "M1_2_prediction",
+              "M1_2_signed_error",
+              "M1_2_abs_normalised_error",
+              "M1_2_abs_residual_z"
+            ]
+          },
+          "pls_do24_fold_metrics": {
+            "kind": "DataFrame",
+            "shape": [
+              84,
+              10
+            ],
+            "columns": [
+              "fold_id",
+              "model_id",
+              "model_label",
+              "start",
+              "end",
+              "n_h",
+              "nrmse",
+              "p90_abs_normalised_error",
+              "baseline_nrmse",
+              "gain_pct_vs_M0"
+            ]
+          },
+          "pls_do24_performance_summary": {
+            "kind": "DataFrame",
+            "shape": [
+              3,
+              14
+            ],
+            "columns": [
+              "model_id",
+              "model_label",
+              "peers",
+              "n_components",
+              "n_validation_folds",
+              "median_fold_nrmse",
+              "median_gain_pct",
+              "gain_ci95_low_pct",
+              "gain_ci95_high_pct",
+              "positive_gain_fold_fraction",
+              "development_p90_change_pct",
+              "independent_test_nrmse",
+              "independent_test_gain_pct",
+              "independent_test_p90_change_pct"
+            ]
+          },
+          "pls_do24_bootstrap_samples": {
+            "kind": "DataFrame",
+            "shape": [
+              15000,
+              3
+            ],
+            "columns": [
+              "model_id",
+              "bootstrap_replicate",
+              "median_gain_pct"
+            ]
+          },
+          "pls_do24_clean_windows": {
+            "kind": "DataFrame",
+            "shape": [
+              13,
+              8
+            ],
+            "columns": [
+              "window_id",
+              "start_row",
+              "end_row_exclusive",
+              "start",
+              "end",
+              "clean_fraction_M0",
+              "clean_fraction_M1_1",
+              "clean_fraction_M1_2"
+            ]
+          },
+          "pls_do24_injection_scenarios": {
+            "kind": "DataFrame",
+            "shape": [
+              936,
+              11
+            ],
+            "columns": [
+              "window_id",
+              "window_start",
+              "window_end",
+              "injection_type",
+              "affected_channels",
+              "amplitude_sigma",
+              "sign",
+              "model_id",
+              "detected_3h",
+              "detection_delay_h",
+              "max_abs_residual_z"
+            ]
+          },
+          "pls_do24_injection_summary": {
+            "kind": "DataFrame",
+            "shape": [
+              36,
+              7
+            ],
+            "columns": [
+              "model_id",
+              "injection_type",
+              "amplitude_sigma",
+              "n_scenarios",
+              "alarm_fraction",
+              "median_detection_delay_h",
+              "median_max_abs_residual_z"
+            ]
+          },
+          "pls_do24_gate_results": {
+            "kind": "DataFrame",
+            "shape": [
+              24,
+              5
+            ],
+            "columns": [
+              "model_id",
+              "gate",
+              "value",
+              "passed",
+              "stage"
+            ]
+          },
+          "pls_do24_decision": {
+            "kind": "DataFrame",
+            "shape": [
+              1,
+              9
+            ],
+            "columns": [
+              "nominated_before_test",
+              "final_model_id",
+              "decision_status",
+              "rationale",
+              "parsimony_rule",
+              "model_id",
+              "model_label",
+              "peers",
+              "n_components"
+            ]
+          },
+          "freeze_rle_run_min": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              14
+            ],
+            "columns": [
+              "DO_1_1",
+              "DO_1_2",
+              "DO_1_3",
+              "DO_1_4",
+              "DO_2_1",
+              "DO_2_2",
+              "DO_2_3",
+              "DO_2_4",
+              "ORP_1_1",
+              "ORP_1_2",
+              "ORP_1_3",
+              "ORP_2_1",
+              "ORP_2_2",
+              "ORP_2_3"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "freeze_rel_var": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              14
+            ],
+            "columns": [
+              "DO_1_1",
+              "DO_1_2",
+              "DO_1_3",
+              "DO_1_4",
+              "DO_2_1",
+              "DO_2_2",
+              "DO_2_3",
+              "DO_2_4",
+              "ORP_1_1",
+              "ORP_1_2",
+              "ORP_1_3",
+              "ORP_2_1",
+              "ORP_2_2",
+              "ORP_2_3"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "freeze_unique_ratio": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              14
+            ],
+            "columns": [
+              "DO_1_1",
+              "DO_1_2",
+              "DO_1_3",
+              "DO_1_4",
+              "DO_2_1",
+              "DO_2_2",
+              "DO_2_3",
+              "DO_2_4",
+              "ORP_1_1",
+              "ORP_1_2",
+              "ORP_1_3",
+              "ORP_2_1",
+              "ORP_2_2",
+              "ORP_2_3"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          }
+        },
+        "decomp_11": {
+          "active": true,
+          "scoring_mode": {
+            "kind": "dict",
+            "keys": [
+              "DO_1_1",
+              "DO_1_2",
+              "DO_1_3",
+              "DO_1_4",
+              "DO_2_1",
+              "DO_2_2",
+              "DO_2_3",
+              "DO_2_4",
+              "ORP_1_1",
+              "ORP_1_2",
+              "ORP_1_3",
+              "ORP_2_1",
+              "ORP_2_2",
+              "ORP_2_3",
+              "QR_1",
+              "QR_2",
+              "QIR_1",
+              "QIR_2"
+            ]
+          },
+          "neff": {
+            "kind": "dict",
+            "keys": [
+              "DO_1_1",
+              "DO_1_2",
+              "DO_1_3",
+              "DO_1_4",
+              "DO_2_1",
+              "DO_2_2",
+              "DO_2_3",
+              "DO_2_4",
+              "ORP_1_1",
+              "ORP_1_2",
+              "ORP_1_3",
+              "ORP_2_1",
+              "ORP_2_2",
+              "ORP_2_3",
+              "QR_1",
+              "QR_2",
+              "QIR_1",
+              "QIR_2"
+            ]
+          },
+          "eff_neff": {
+            "kind": "dict",
+            "keys": [
+              "DO_1_1",
+              "DO_1_2",
+              "DO_1_3",
+              "DO_1_4",
+              "DO_2_1",
+              "DO_2_2",
+              "DO_2_3",
+              "DO_2_4",
+              "ORP_1_1",
+              "ORP_1_2",
+              "ORP_1_3",
+              "ORP_2_1",
+              "ORP_2_2",
+              "ORP_2_3",
+              "QR_1",
+              "QR_2",
+              "QIR_1",
+              "QIR_2"
+            ]
+          }
+        }
+      },
+      "read_status": "readable_not_yet_release_verified"
+    },
+    {
+      "dimension": "D1",
+      "path": "D:\\004_git\\beian_tree-main\\Project 1 Data Quality Assessment\\D1 Sensor health\\raw_hourly.pkl",
+      "exists": true,
+      "sha256": "3ff3d9cd4600b88e89fcc5c106d622ae5ae46edb0508f32a153a215b1a066568",
+      "size_bytes": 2359485,
+      "contents": {
+        "df_h": {
+          "kind": "DataFrame",
+          "shape": [
+            6138,
+            18
+          ],
+          "columns": [
+            "DO_1_1",
+            "DO_1_2",
+            "DO_1_3",
+            "DO_1_4",
+            "DO_2_1",
+            "DO_2_2",
+            "DO_2_3",
+            "DO_2_4",
+            "ORP_1_1",
+            "ORP_1_2",
+            "ORP_1_3",
+            "ORP_2_1",
+            "ORP_2_2",
+            "ORP_2_3",
+            "QR_1",
+            "QR_2",
+            "QIR_1",
+            "QIR_2"
+          ],
+          "start": "2025-08-01 00:00:00",
+          "end": "2026-04-13 17:00:00"
+        },
+        "resid_h": {
+          "kind": "DataFrame",
+          "shape": [
+            6138,
+            14
+          ],
+          "columns": [
+            "DO_1_1",
+            "DO_1_2",
+            "DO_1_3",
+            "DO_1_4",
+            "DO_2_1",
+            "DO_2_2",
+            "DO_2_3",
+            "DO_2_4",
+            "ORP_1_1",
+            "ORP_1_2",
+            "ORP_1_3",
+            "ORP_2_1",
+            "ORP_2_2",
+            "ORP_2_3"
+          ],
+          "start": "2025-08-01 00:00:00",
+          "end": "2026-04-13 17:00:00"
+        },
+        "whitened_input_h": {
+          "kind": "DataFrame",
+          "shape": [
+            6138,
+            14
+          ],
+          "columns": [
+            "DO_1_1",
+            "DO_1_2",
+            "DO_1_3",
+            "DO_1_4",
+            "DO_2_1",
+            "DO_2_2",
+            "DO_2_3",
+            "DO_2_4",
+            "ORP_1_1",
+            "ORP_1_2",
+            "ORP_1_3",
+            "ORP_2_1",
+            "ORP_2_2",
+            "ORP_2_3"
+          ],
+          "start": "2025-08-01 00:00:00",
+          "end": "2026-04-13 17:00:00"
+        },
+        "eff_neff": {
+          "DO_1_1": 0.012,
+          "DO_1_2": 1.0,
+          "DO_1_3": 1.0,
+          "DO_1_4": 0.0,
+          "DO_2_1": 0.0085,
+          "DO_2_2": 0.0076,
+          "DO_2_3": 1.0,
+          "DO_2_4": 1.0,
+          "ORP_1_1": 1.0,
+          "ORP_1_2": 1.0,
+          "ORP_1_3": 1.0,
+          "ORP_2_1": 1.0,
+          "ORP_2_2": 1.0,
+          "ORP_2_3": 1.0,
+          "QR_1": 1.0,
+          "QR_2": 0.0364,
+          "QIR_1": 1.0,
+          "QIR_2": 1.0
+        },
+        "scoring_mode": {
+          "DO_1_1": "autocorr_aware",
+          "DO_1_2": "iid",
+          "DO_1_3": "iid",
+          "DO_1_4": "floor_freeze",
+          "DO_2_1": "autocorr_aware",
+          "DO_2_2": "autocorr_aware",
+          "DO_2_3": "iid",
+          "DO_2_4": "iid",
+          "ORP_1_1": "iid",
+          "ORP_1_2": "iid",
+          "ORP_1_3": "iid",
+          "ORP_2_1": "iid",
+          "ORP_2_2": "iid",
+          "ORP_2_3": "iid",
+          "QR_1": "iid",
+          "QR_2": "autocorr_aware",
+          "QIR_1": "iid",
+          "QIR_2": "iid"
+        }
+      },
+      "read_status": "readable_not_yet_release_verified"
+    },
+    {
+      "dimension": "D1",
+      "path": "D:\\004_git\\beian_tree-main\\Project 1 Data Quality Assessment\\D1 Sensor health\\v11_state.pkl",
+      "exists": true,
+      "sha256": "6aaede79b37d64c5af627364cc98b8fa1344b05f1ff37524a68d8732c3889a96",
+      "size_bytes": 39848471,
+      "contents": {
+        "subs_v1": {
+          "Q_spike": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              14
+            ],
+            "columns": [
+              "DO_1_1",
+              "DO_1_2",
+              "DO_1_3",
+              "DO_1_4",
+              "DO_2_1",
+              "DO_2_2",
+              "DO_2_3",
+              "DO_2_4",
+              "ORP_1_1",
+              "ORP_1_2",
+              "ORP_1_3",
+              "ORP_2_1",
+              "ORP_2_2",
+              "ORP_2_3"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "Q_step": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              14
+            ],
+            "columns": [
+              "DO_1_1",
+              "DO_1_2",
+              "DO_1_3",
+              "DO_1_4",
+              "DO_2_1",
+              "DO_2_2",
+              "DO_2_3",
+              "DO_2_4",
+              "ORP_1_1",
+              "ORP_1_2",
+              "ORP_1_3",
+              "ORP_2_1",
+              "ORP_2_2",
+              "ORP_2_3"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "Q_drift": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              14
+            ],
+            "columns": [
+              "DO_1_1",
+              "DO_1_2",
+              "DO_1_3",
+              "DO_1_4",
+              "DO_2_1",
+              "DO_2_2",
+              "DO_2_3",
+              "DO_2_4",
+              "ORP_1_1",
+              "ORP_1_2",
+              "ORP_1_3",
+              "ORP_2_1",
+              "ORP_2_2",
+              "ORP_2_3"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "Q_freeze": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              14
+            ],
+            "columns": [
+              "DO_1_1",
+              "DO_1_2",
+              "DO_1_3",
+              "DO_1_4",
+              "DO_2_1",
+              "DO_2_2",
+              "DO_2_3",
+              "DO_2_4",
+              "ORP_1_1",
+              "ORP_1_2",
+              "ORP_1_3",
+              "ORP_2_1",
+              "ORP_2_2",
+              "ORP_2_3"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "Q_regime": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              14
+            ],
+            "columns": [
+              "DO_1_1",
+              "DO_1_2",
+              "DO_1_3",
+              "DO_1_4",
+              "DO_2_1",
+              "DO_2_2",
+              "DO_2_3",
+              "DO_2_4",
+              "ORP_1_1",
+              "ORP_1_2",
+              "ORP_1_3",
+              "ORP_2_1",
+              "ORP_2_2",
+              "ORP_2_3"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          }
+        },
+        "subs_v11": {
+          "DO_1_1": {
+            "kind": "dict",
+            "keys": [
+              "Q_spike",
+              "Q_step",
+              "Q_drift",
+              "Q_drift_raw",
+              "Q_freeze",
+              "Q_regime"
+            ]
+          },
+          "DO_1_2": {
+            "kind": "dict",
+            "keys": [
+              "Q_spike",
+              "Q_step",
+              "Q_drift",
+              "Q_drift_raw",
+              "Q_freeze",
+              "Q_regime"
+            ]
+          },
+          "DO_1_3": {
+            "kind": "dict",
+            "keys": [
+              "Q_spike",
+              "Q_step",
+              "Q_drift",
+              "Q_drift_raw",
+              "Q_freeze",
+              "Q_regime"
+            ]
+          },
+          "DO_1_4": {
+            "kind": "dict",
+            "keys": [
+              "Q_spike",
+              "Q_step",
+              "Q_drift",
+              "Q_drift_raw",
+              "Q_freeze",
+              "Q_regime"
+            ]
+          },
+          "DO_2_1": {
+            "kind": "dict",
+            "keys": [
+              "Q_spike",
+              "Q_step",
+              "Q_drift",
+              "Q_drift_raw",
+              "Q_freeze",
+              "Q_regime"
+            ]
+          },
+          "DO_2_2": {
+            "kind": "dict",
+            "keys": [
+              "Q_spike",
+              "Q_step",
+              "Q_drift",
+              "Q_drift_raw",
+              "Q_freeze",
+              "Q_regime"
+            ]
+          },
+          "DO_2_3": {
+            "kind": "dict",
+            "keys": [
+              "Q_spike",
+              "Q_step",
+              "Q_drift",
+              "Q_drift_raw",
+              "Q_freeze",
+              "Q_regime"
+            ]
+          },
+          "DO_2_4": {
+            "kind": "dict",
+            "keys": [
+              "Q_spike",
+              "Q_step",
+              "Q_drift",
+              "Q_drift_raw",
+              "Q_freeze",
+              "Q_regime"
+            ]
+          },
+          "ORP_1_1": {
+            "kind": "dict",
+            "keys": [
+              "Q_spike",
+              "Q_step",
+              "Q_drift",
+              "Q_drift_raw",
+              "Q_freeze",
+              "Q_regime"
+            ]
+          },
+          "ORP_1_2": {
+            "kind": "dict",
+            "keys": [
+              "Q_spike",
+              "Q_step",
+              "Q_drift",
+              "Q_drift_raw",
+              "Q_freeze",
+              "Q_regime"
+            ]
+          },
+          "ORP_1_3": {
+            "kind": "dict",
+            "keys": [
+              "Q_spike",
+              "Q_step",
+              "Q_drift",
+              "Q_drift_raw",
+              "Q_freeze",
+              "Q_regime"
+            ]
+          },
+          "ORP_2_1": {
+            "kind": "dict",
+            "keys": [
+              "Q_spike",
+              "Q_step",
+              "Q_drift",
+              "Q_drift_raw",
+              "Q_freeze",
+              "Q_regime"
+            ]
+          },
+          "ORP_2_2": {
+            "kind": "dict",
+            "keys": [
+              "Q_spike",
+              "Q_step",
+              "Q_drift",
+              "Q_drift_raw",
+              "Q_freeze",
+              "Q_regime"
+            ]
+          },
+          "ORP_2_3": {
+            "kind": "dict",
+            "keys": [
+              "Q_spike",
+              "Q_step",
+              "Q_drift",
+              "Q_drift_raw",
+              "Q_freeze",
+              "Q_regime"
+            ]
+          }
+        },
+        "D1_v1_full": {
+          "kind": "DataFrame",
+          "shape": [
+            6138,
+            14
+          ],
+          "columns": [
+            "DO_1_1",
+            "DO_1_2",
+            "DO_1_3",
+            "DO_1_4",
+            "DO_2_1",
+            "DO_2_2",
+            "DO_2_3",
+            "DO_2_4",
+            "ORP_1_1",
+            "ORP_1_2",
+            "ORP_1_3",
+            "ORP_2_1",
+            "ORP_2_2",
+            "ORP_2_3"
+          ],
+          "start": "2025-08-01 00:00:00",
+          "end": "2026-04-13 17:00:00"
+        },
+        "D1_v1_scored": {
+          "kind": "DataFrame",
+          "shape": [
+            6138,
+            14
+          ],
+          "columns": [
+            "DO_1_1",
+            "DO_1_2",
+            "DO_1_3",
+            "DO_1_4",
+            "DO_2_1",
+            "DO_2_2",
+            "DO_2_3",
+            "DO_2_4",
+            "ORP_1_1",
+            "ORP_1_2",
+            "ORP_1_3",
+            "ORP_2_1",
+            "ORP_2_2",
+            "ORP_2_3"
+          ],
+          "start": "2025-08-01 00:00:00",
+          "end": "2026-04-13 17:00:00"
+        },
+        "D1_v11": {
+          "kind": "DataFrame",
+          "shape": [
+            6138,
+            14
+          ],
+          "columns": [
+            "DO_1_1",
+            "DO_1_2",
+            "DO_1_3",
+            "DO_1_4",
+            "DO_2_1",
+            "DO_2_2",
+            "DO_2_3",
+            "DO_2_4",
+            "ORP_1_1",
+            "ORP_1_2",
+            "ORP_1_3",
+            "ORP_2_1",
+            "ORP_2_2",
+            "ORP_2_3"
+          ],
+          "start": "2025-08-01 00:00:00",
+          "end": "2026-04-13 17:00:00"
+        },
+        "D1_d_v11": {
+          "kind": "DataFrame",
+          "shape": [
+            256,
+            14
+          ],
+          "columns": [
+            "DO_1_1",
+            "DO_1_2",
+            "DO_1_3",
+            "DO_1_4",
+            "DO_2_1",
+            "DO_2_2",
+            "DO_2_3",
+            "DO_2_4",
+            "ORP_1_1",
+            "ORP_1_2",
+            "ORP_1_3",
+            "ORP_2_1",
+            "ORP_2_2",
+            "ORP_2_3"
+          ],
+          "start": "2025-08-01 00:00:00",
+          "end": "2026-04-13 00:00:00"
+        },
+        "D1_w_v11": {
+          "kind": "DataFrame",
+          "shape": [
+            37,
+            14
+          ],
+          "columns": [
+            "DO_1_1",
+            "DO_1_2",
+            "DO_1_3",
+            "DO_1_4",
+            "DO_2_1",
+            "DO_2_2",
+            "DO_2_3",
+            "DO_2_4",
+            "ORP_1_1",
+            "ORP_1_2",
+            "ORP_1_3",
+            "ORP_2_1",
+            "ORP_2_2",
+            "ORP_2_3"
+          ],
+          "start": "2025-08-01 00:00:00",
+          "end": "2026-04-10 00:00:00"
+        },
+        "components_v11": {
+          "DO_1_1": {
+            "kind": "dict",
+            "keys": [
+              "D1_base",
+              "D1_pre",
+              "min_q"
+            ]
+          },
+          "DO_1_2": {
+            "kind": "dict",
+            "keys": [
+              "D1_base",
+              "D1_pre",
+              "min_q"
+            ]
+          },
+          "DO_1_3": {
+            "kind": "dict",
+            "keys": [
+              "D1_base",
+              "D1_pre",
+              "min_q"
+            ]
+          },
+          "DO_1_4": {
+            "kind": "dict",
+            "keys": [
+              "D1_base",
+              "D1_pre",
+              "min_q"
+            ]
+          },
+          "DO_2_1": {
+            "kind": "dict",
+            "keys": [
+              "D1_base",
+              "D1_pre",
+              "min_q"
+            ]
+          },
+          "DO_2_2": {
+            "kind": "dict",
+            "keys": [
+              "D1_base",
+              "D1_pre",
+              "min_q"
+            ]
+          },
+          "DO_2_3": {
+            "kind": "dict",
+            "keys": [
+              "D1_base",
+              "D1_pre",
+              "min_q"
+            ]
+          },
+          "DO_2_4": {
+            "kind": "dict",
+            "keys": [
+              "D1_base",
+              "D1_pre",
+              "min_q"
+            ]
+          },
+          "ORP_1_1": {
+            "kind": "dict",
+            "keys": [
+              "D1_base",
+              "D1_pre",
+              "min_q"
+            ]
+          },
+          "ORP_1_2": {
+            "kind": "dict",
+            "keys": [
+              "D1_base",
+              "D1_pre",
+              "min_q"
+            ]
+          },
+          "ORP_1_3": {
+            "kind": "dict",
+            "keys": [
+              "D1_base",
+              "D1_pre",
+              "min_q"
+            ]
+          },
+          "ORP_2_1": {
+            "kind": "dict",
+            "keys": [
+              "D1_base",
+              "D1_pre",
+              "min_q"
+            ]
+          },
+          "ORP_2_2": {
+            "kind": "dict",
+            "keys": [
+              "D1_base",
+              "D1_pre",
+              "min_q"
+            ]
+          },
+          "ORP_2_3": {
+            "kind": "dict",
+            "keys": [
+              "D1_base",
+              "D1_pre",
+              "min_q"
+            ]
+          }
+        },
+        "veto_logs_v11": {
+          "DO_1_1": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              7
+            ],
+            "columns": [
+              "state_name",
+              "cooldown_active",
+              "sustained_active",
+              "veto_freeze",
+              "veto_regime",
+              "veto3_signal_only",
+              "veto_active"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "DO_1_2": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              7
+            ],
+            "columns": [
+              "state_name",
+              "cooldown_active",
+              "sustained_active",
+              "veto_freeze",
+              "veto_regime",
+              "veto3_signal_only",
+              "veto_active"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "DO_1_3": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              7
+            ],
+            "columns": [
+              "state_name",
+              "cooldown_active",
+              "sustained_active",
+              "veto_freeze",
+              "veto_regime",
+              "veto3_signal_only",
+              "veto_active"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "DO_1_4": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              7
+            ],
+            "columns": [
+              "state_name",
+              "cooldown_active",
+              "sustained_active",
+              "veto_freeze",
+              "veto_regime",
+              "veto3_signal_only",
+              "veto_active"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "DO_2_1": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              7
+            ],
+            "columns": [
+              "state_name",
+              "cooldown_active",
+              "sustained_active",
+              "veto_freeze",
+              "veto_regime",
+              "veto3_signal_only",
+              "veto_active"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "DO_2_2": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              7
+            ],
+            "columns": [
+              "state_name",
+              "cooldown_active",
+              "sustained_active",
+              "veto_freeze",
+              "veto_regime",
+              "veto3_signal_only",
+              "veto_active"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "DO_2_3": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              7
+            ],
+            "columns": [
+              "state_name",
+              "cooldown_active",
+              "sustained_active",
+              "veto_freeze",
+              "veto_regime",
+              "veto3_signal_only",
+              "veto_active"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "DO_2_4": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              7
+            ],
+            "columns": [
+              "state_name",
+              "cooldown_active",
+              "sustained_active",
+              "veto_freeze",
+              "veto_regime",
+              "veto3_signal_only",
+              "veto_active"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "ORP_1_1": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              7
+            ],
+            "columns": [
+              "state_name",
+              "cooldown_active",
+              "sustained_active",
+              "veto_freeze",
+              "veto_regime",
+              "veto3_signal_only",
+              "veto_active"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "ORP_1_2": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              7
+            ],
+            "columns": [
+              "state_name",
+              "cooldown_active",
+              "sustained_active",
+              "veto_freeze",
+              "veto_regime",
+              "veto3_signal_only",
+              "veto_active"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "ORP_1_3": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              7
+            ],
+            "columns": [
+              "state_name",
+              "cooldown_active",
+              "sustained_active",
+              "veto_freeze",
+              "veto_regime",
+              "veto3_signal_only",
+              "veto_active"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "ORP_2_1": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              7
+            ],
+            "columns": [
+              "state_name",
+              "cooldown_active",
+              "sustained_active",
+              "veto_freeze",
+              "veto_regime",
+              "veto3_signal_only",
+              "veto_active"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "ORP_2_2": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              7
+            ],
+            "columns": [
+              "state_name",
+              "cooldown_active",
+              "sustained_active",
+              "veto_freeze",
+              "veto_regime",
+              "veto3_signal_only",
+              "veto_active"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "ORP_2_3": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              7
+            ],
+            "columns": [
+              "state_name",
+              "cooldown_active",
+              "sustained_active",
+              "veto_freeze",
+              "veto_regime",
+              "veto3_signal_only",
+              "veto_active"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          }
+        },
+        "Q_drift_eff_dict": {
+          "DO_1_1": {
+            "kind": "Series",
+            "shape": [
+              6138
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "DO_1_2": {
+            "kind": "Series",
+            "shape": [
+              6138
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "DO_1_3": {
+            "kind": "Series",
+            "shape": [
+              6138
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "DO_1_4": {
+            "kind": "Series",
+            "shape": [
+              6138
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "DO_2_1": {
+            "kind": "Series",
+            "shape": [
+              6138
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "DO_2_2": {
+            "kind": "Series",
+            "shape": [
+              6138
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "DO_2_3": {
+            "kind": "Series",
+            "shape": [
+              6138
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "DO_2_4": {
+            "kind": "Series",
+            "shape": [
+              6138
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "ORP_1_1": {
+            "kind": "Series",
+            "shape": [
+              6138
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "ORP_1_2": {
+            "kind": "Series",
+            "shape": [
+              6138
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "ORP_1_3": {
+            "kind": "Series",
+            "shape": [
+              6138
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "ORP_2_1": {
+            "kind": "Series",
+            "shape": [
+              6138
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "ORP_2_2": {
+            "kind": "Series",
+            "shape": [
+              6138
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "ORP_2_3": {
+            "kind": "Series",
+            "shape": [
+              6138
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          }
+        },
+        "state_log_dict": {
+          "DO_1_1": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              24
+            ],
+            "columns": [
+              "state_name",
+              "event_id",
+              "event_type",
+              "pelt_segment_id",
+              "local_baseline_version",
+              "local_baseline_scale",
+              "sustained_flag",
+              "recovery_streak",
+              "recovery_entry_streak",
+              "recovery_window_elapsed",
+              "recovery_soft_failures",
+              "recovery_missing",
+              "observation_elapsed",
+              "observation_passes",
+              "direct_recovery_streak",
+              "drift_mask_reason",
+              "recovery_gate_status",
+              "recovery_gate_reason",
+              "regime_acceptance",
+              "local_z",
+              "alpha",
+              "step_suspicion_flag",
+              "accepted_contextual_regime",
+              "episode_outcome"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "DO_1_2": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              24
+            ],
+            "columns": [
+              "state_name",
+              "event_id",
+              "event_type",
+              "pelt_segment_id",
+              "local_baseline_version",
+              "local_baseline_scale",
+              "sustained_flag",
+              "recovery_streak",
+              "recovery_entry_streak",
+              "recovery_window_elapsed",
+              "recovery_soft_failures",
+              "recovery_missing",
+              "observation_elapsed",
+              "observation_passes",
+              "direct_recovery_streak",
+              "drift_mask_reason",
+              "recovery_gate_status",
+              "recovery_gate_reason",
+              "regime_acceptance",
+              "local_z",
+              "alpha",
+              "step_suspicion_flag",
+              "accepted_contextual_regime",
+              "episode_outcome"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "DO_1_3": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              24
+            ],
+            "columns": [
+              "state_name",
+              "event_id",
+              "event_type",
+              "pelt_segment_id",
+              "local_baseline_version",
+              "local_baseline_scale",
+              "sustained_flag",
+              "recovery_streak",
+              "recovery_entry_streak",
+              "recovery_window_elapsed",
+              "recovery_soft_failures",
+              "recovery_missing",
+              "observation_elapsed",
+              "observation_passes",
+              "direct_recovery_streak",
+              "drift_mask_reason",
+              "recovery_gate_status",
+              "recovery_gate_reason",
+              "regime_acceptance",
+              "local_z",
+              "alpha",
+              "step_suspicion_flag",
+              "accepted_contextual_regime",
+              "episode_outcome"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "DO_1_4": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              24
+            ],
+            "columns": [
+              "state_name",
+              "event_id",
+              "event_type",
+              "pelt_segment_id",
+              "local_baseline_version",
+              "local_baseline_scale",
+              "sustained_flag",
+              "recovery_streak",
+              "recovery_entry_streak",
+              "recovery_window_elapsed",
+              "recovery_soft_failures",
+              "recovery_missing",
+              "observation_elapsed",
+              "observation_passes",
+              "direct_recovery_streak",
+              "drift_mask_reason",
+              "recovery_gate_status",
+              "recovery_gate_reason",
+              "regime_acceptance",
+              "local_z",
+              "alpha",
+              "step_suspicion_flag",
+              "accepted_contextual_regime",
+              "episode_outcome"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "DO_2_1": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              24
+            ],
+            "columns": [
+              "state_name",
+              "event_id",
+              "event_type",
+              "pelt_segment_id",
+              "local_baseline_version",
+              "local_baseline_scale",
+              "sustained_flag",
+              "recovery_streak",
+              "recovery_entry_streak",
+              "recovery_window_elapsed",
+              "recovery_soft_failures",
+              "recovery_missing",
+              "observation_elapsed",
+              "observation_passes",
+              "direct_recovery_streak",
+              "drift_mask_reason",
+              "recovery_gate_status",
+              "recovery_gate_reason",
+              "regime_acceptance",
+              "local_z",
+              "alpha",
+              "step_suspicion_flag",
+              "accepted_contextual_regime",
+              "episode_outcome"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "DO_2_2": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              24
+            ],
+            "columns": [
+              "state_name",
+              "event_id",
+              "event_type",
+              "pelt_segment_id",
+              "local_baseline_version",
+              "local_baseline_scale",
+              "sustained_flag",
+              "recovery_streak",
+              "recovery_entry_streak",
+              "recovery_window_elapsed",
+              "recovery_soft_failures",
+              "recovery_missing",
+              "observation_elapsed",
+              "observation_passes",
+              "direct_recovery_streak",
+              "drift_mask_reason",
+              "recovery_gate_status",
+              "recovery_gate_reason",
+              "regime_acceptance",
+              "local_z",
+              "alpha",
+              "step_suspicion_flag",
+              "accepted_contextual_regime",
+              "episode_outcome"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "DO_2_3": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              24
+            ],
+            "columns": [
+              "state_name",
+              "event_id",
+              "event_type",
+              "pelt_segment_id",
+              "local_baseline_version",
+              "local_baseline_scale",
+              "sustained_flag",
+              "recovery_streak",
+              "recovery_entry_streak",
+              "recovery_window_elapsed",
+              "recovery_soft_failures",
+              "recovery_missing",
+              "observation_elapsed",
+              "observation_passes",
+              "direct_recovery_streak",
+              "drift_mask_reason",
+              "recovery_gate_status",
+              "recovery_gate_reason",
+              "regime_acceptance",
+              "local_z",
+              "alpha",
+              "step_suspicion_flag",
+              "accepted_contextual_regime",
+              "episode_outcome"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "DO_2_4": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              24
+            ],
+            "columns": [
+              "state_name",
+              "event_id",
+              "event_type",
+              "pelt_segment_id",
+              "local_baseline_version",
+              "local_baseline_scale",
+              "sustained_flag",
+              "recovery_streak",
+              "recovery_entry_streak",
+              "recovery_window_elapsed",
+              "recovery_soft_failures",
+              "recovery_missing",
+              "observation_elapsed",
+              "observation_passes",
+              "direct_recovery_streak",
+              "drift_mask_reason",
+              "recovery_gate_status",
+              "recovery_gate_reason",
+              "regime_acceptance",
+              "local_z",
+              "alpha",
+              "step_suspicion_flag",
+              "accepted_contextual_regime",
+              "episode_outcome"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "ORP_1_1": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              24
+            ],
+            "columns": [
+              "state_name",
+              "event_id",
+              "event_type",
+              "pelt_segment_id",
+              "local_baseline_version",
+              "local_baseline_scale",
+              "sustained_flag",
+              "recovery_streak",
+              "recovery_entry_streak",
+              "recovery_window_elapsed",
+              "recovery_soft_failures",
+              "recovery_missing",
+              "observation_elapsed",
+              "observation_passes",
+              "direct_recovery_streak",
+              "drift_mask_reason",
+              "recovery_gate_status",
+              "recovery_gate_reason",
+              "regime_acceptance",
+              "local_z",
+              "alpha",
+              "step_suspicion_flag",
+              "accepted_contextual_regime",
+              "episode_outcome"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "ORP_1_2": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              24
+            ],
+            "columns": [
+              "state_name",
+              "event_id",
+              "event_type",
+              "pelt_segment_id",
+              "local_baseline_version",
+              "local_baseline_scale",
+              "sustained_flag",
+              "recovery_streak",
+              "recovery_entry_streak",
+              "recovery_window_elapsed",
+              "recovery_soft_failures",
+              "recovery_missing",
+              "observation_elapsed",
+              "observation_passes",
+              "direct_recovery_streak",
+              "drift_mask_reason",
+              "recovery_gate_status",
+              "recovery_gate_reason",
+              "regime_acceptance",
+              "local_z",
+              "alpha",
+              "step_suspicion_flag",
+              "accepted_contextual_regime",
+              "episode_outcome"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "ORP_1_3": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              24
+            ],
+            "columns": [
+              "state_name",
+              "event_id",
+              "event_type",
+              "pelt_segment_id",
+              "local_baseline_version",
+              "local_baseline_scale",
+              "sustained_flag",
+              "recovery_streak",
+              "recovery_entry_streak",
+              "recovery_window_elapsed",
+              "recovery_soft_failures",
+              "recovery_missing",
+              "observation_elapsed",
+              "observation_passes",
+              "direct_recovery_streak",
+              "drift_mask_reason",
+              "recovery_gate_status",
+              "recovery_gate_reason",
+              "regime_acceptance",
+              "local_z",
+              "alpha",
+              "step_suspicion_flag",
+              "accepted_contextual_regime",
+              "episode_outcome"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "ORP_2_1": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              24
+            ],
+            "columns": [
+              "state_name",
+              "event_id",
+              "event_type",
+              "pelt_segment_id",
+              "local_baseline_version",
+              "local_baseline_scale",
+              "sustained_flag",
+              "recovery_streak",
+              "recovery_entry_streak",
+              "recovery_window_elapsed",
+              "recovery_soft_failures",
+              "recovery_missing",
+              "observation_elapsed",
+              "observation_passes",
+              "direct_recovery_streak",
+              "drift_mask_reason",
+              "recovery_gate_status",
+              "recovery_gate_reason",
+              "regime_acceptance",
+              "local_z",
+              "alpha",
+              "step_suspicion_flag",
+              "accepted_contextual_regime",
+              "episode_outcome"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "ORP_2_2": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              24
+            ],
+            "columns": [
+              "state_name",
+              "event_id",
+              "event_type",
+              "pelt_segment_id",
+              "local_baseline_version",
+              "local_baseline_scale",
+              "sustained_flag",
+              "recovery_streak",
+              "recovery_entry_streak",
+              "recovery_window_elapsed",
+              "recovery_soft_failures",
+              "recovery_missing",
+              "observation_elapsed",
+              "observation_passes",
+              "direct_recovery_streak",
+              "drift_mask_reason",
+              "recovery_gate_status",
+              "recovery_gate_reason",
+              "regime_acceptance",
+              "local_z",
+              "alpha",
+              "step_suspicion_flag",
+              "accepted_contextual_regime",
+              "episode_outcome"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "ORP_2_3": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              24
+            ],
+            "columns": [
+              "state_name",
+              "event_id",
+              "event_type",
+              "pelt_segment_id",
+              "local_baseline_version",
+              "local_baseline_scale",
+              "sustained_flag",
+              "recovery_streak",
+              "recovery_entry_streak",
+              "recovery_window_elapsed",
+              "recovery_soft_failures",
+              "recovery_missing",
+              "observation_elapsed",
+              "observation_passes",
+              "direct_recovery_streak",
+              "drift_mask_reason",
+              "recovery_gate_status",
+              "recovery_gate_reason",
+              "regime_acceptance",
+              "local_z",
+              "alpha",
+              "step_suspicion_flag",
+              "accepted_contextual_regime",
+              "episode_outcome"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          }
+        },
+        "transitions_all": {
+          "kind": "list",
+          "length": 142,
+          "first_kind": "dict"
+        },
+        "state_dist": {
+          "Normal": {
+            "kind": "int64"
+          },
+          "Refractory": {
+            "kind": "int64"
+          },
+          "BaselinePending": {
+            "kind": "int64"
+          },
+          "SustainedAnomaly": {
+            "kind": "int64"
+          },
+          "RecoveryCandidate": {
+            "kind": "int64"
+          },
+          "Recovered": {
+            "kind": "int64"
+          }
+        },
+        "events_v11": {
+          "kind": "DataFrame",
+          "shape": [
+            81,
+            6
+          ],
+          "columns": [
+            "sensor_id",
+            "start",
+            "end",
+            "duration_h",
+            "min_d1",
+            "mean_d1"
+          ]
+        },
+        "dominant_v11": {
+          "kind": "DataFrame",
+          "shape": [
+            6138,
+            14
+          ],
+          "columns": [
+            "DO_1_1",
+            "DO_1_2",
+            "DO_1_3",
+            "DO_1_4",
+            "DO_2_1",
+            "DO_2_2",
+            "DO_2_3",
+            "DO_2_4",
+            "ORP_1_1",
+            "ORP_1_2",
+            "ORP_1_3",
+            "ORP_2_1",
+            "ORP_2_2",
+            "ORP_2_3"
+          ],
+          "start": "2025-08-01 00:00:00",
+          "end": "2026-04-13 17:00:00"
+        },
+        "pelt_results": {
+          "DO_1_1": {
+            "kind": "list",
+            "length": 0
+          },
+          "DO_1_2": {
+            "kind": "list",
+            "length": 11,
+            "first_kind": "dict"
+          },
+          "DO_1_3": {
+            "kind": "list",
+            "length": 7,
+            "first_kind": "dict"
+          },
+          "DO_1_4": {
+            "kind": "list",
+            "length": 0
+          },
+          "DO_2_1": {
+            "kind": "list",
+            "length": 0
+          },
+          "DO_2_2": {
+            "kind": "list",
+            "length": 0
+          },
+          "DO_2_3": {
+            "kind": "list",
+            "length": 29,
+            "first_kind": "dict"
+          },
+          "DO_2_4": {
+            "kind": "list",
+            "length": 19,
+            "first_kind": "dict"
+          },
+          "ORP_1_1": {
+            "kind": "list",
+            "length": 3,
+            "first_kind": "dict"
+          },
+          "ORP_1_2": {
+            "kind": "list",
+            "length": 5,
+            "first_kind": "dict"
+          },
+          "ORP_1_3": {
+            "kind": "list",
+            "length": 48,
+            "first_kind": "dict"
+          },
+          "ORP_2_1": {
+            "kind": "list",
+            "length": 6,
+            "first_kind": "dict"
+          },
+          "ORP_2_2": {
+            "kind": "list",
+            "length": 2,
+            "first_kind": "dict"
+          },
+          "ORP_2_3": {
+            "kind": "list",
+            "length": 3,
+            "first_kind": "dict"
+          }
+        },
+        "scale_calibration": {
+          "DO_1_1": {
+            "kind": "dict",
+            "keys": [
+              "scale_floor",
+              "noise_floor",
+              "resolution_estimate",
+              "calibration_n"
+            ]
+          },
+          "DO_1_2": {
+            "kind": "dict",
+            "keys": [
+              "scale_floor",
+              "noise_floor",
+              "resolution_estimate",
+              "calibration_n"
+            ]
+          },
+          "DO_1_3": {
+            "kind": "dict",
+            "keys": [
+              "scale_floor",
+              "noise_floor",
+              "resolution_estimate",
+              "calibration_n"
+            ]
+          },
+          "DO_1_4": {
+            "kind": "dict",
+            "keys": [
+              "scale_floor",
+              "noise_floor",
+              "resolution_estimate",
+              "calibration_n"
+            ]
+          },
+          "DO_2_1": {
+            "kind": "dict",
+            "keys": [
+              "scale_floor",
+              "noise_floor",
+              "resolution_estimate",
+              "calibration_n"
+            ]
+          },
+          "DO_2_2": {
+            "kind": "dict",
+            "keys": [
+              "scale_floor",
+              "noise_floor",
+              "resolution_estimate",
+              "calibration_n"
+            ]
+          },
+          "DO_2_3": {
+            "kind": "dict",
+            "keys": [
+              "scale_floor",
+              "noise_floor",
+              "resolution_estimate",
+              "calibration_n"
+            ]
+          },
+          "DO_2_4": {
+            "kind": "dict",
+            "keys": [
+              "scale_floor",
+              "noise_floor",
+              "resolution_estimate",
+              "calibration_n"
+            ]
+          },
+          "ORP_1_1": {
+            "kind": "dict",
+            "keys": [
+              "scale_floor",
+              "noise_floor",
+              "resolution_estimate",
+              "calibration_n"
+            ]
+          },
+          "ORP_1_2": {
+            "kind": "dict",
+            "keys": [
+              "scale_floor",
+              "noise_floor",
+              "resolution_estimate",
+              "calibration_n"
+            ]
+          },
+          "ORP_1_3": {
+            "kind": "dict",
+            "keys": [
+              "scale_floor",
+              "noise_floor",
+              "resolution_estimate",
+              "calibration_n"
+            ]
+          },
+          "ORP_2_1": {
+            "kind": "dict",
+            "keys": [
+              "scale_floor",
+              "noise_floor",
+              "resolution_estimate",
+              "calibration_n"
+            ]
+          },
+          "ORP_2_2": {
+            "kind": "dict",
+            "keys": [
+              "scale_floor",
+              "noise_floor",
+              "resolution_estimate",
+              "calibration_n"
+            ]
+          },
+          "ORP_2_3": {
+            "kind": "dict",
+            "keys": [
+              "scale_floor",
+              "noise_floor",
+              "resolution_estimate",
+              "calibration_n"
+            ]
+          }
+        },
+        "recovery_episodes": {
+          "kind": "DataFrame",
+          "shape": [
+            22,
+            19
+          ],
+          "columns": [
+            "sensor_id",
+            "episode_id",
+            "event_type",
+            "episode_start",
+            "pelt_segment_id",
+            "signed_magnitude",
+            "episode_end",
+            "outcome",
+            "right_censored",
+            "recovered",
+            "followup_h",
+            "time_to_recovery_h",
+            "candidate_entry_count",
+            "candidate_recovered_count",
+            "candidate_max_contiguous_h",
+            "recovered_observation_max_h",
+            "relapse_within_24h",
+            "relapse_within_48h",
+            "relapse_within_72h"
+          ]
+        },
+        "recovery_summary": {
+          "kind": "DataFrame",
+          "shape": [
+            8,
+            23
+          ],
+          "columns": [
+            "sensor_id",
+            "n_episodes",
+            "n_completed",
+            "n_right_censored",
+            "n_direct_recovery",
+            "n_adapted_recovery",
+            "n_recovered",
+            "event_recovery_rate",
+            "event_recovery_rate_ci95_low",
+            "event_recovery_rate_ci95_high",
+            "median_recovery_h",
+            "candidate_episode_count",
+            "candidate_attempt_count",
+            "candidate_reached_recovered_count",
+            "candidate_attempt_confirmation_rate",
+            "candidate_attempt_adapted_rate",
+            "candidate_conversion_rate",
+            "candidate_max_contiguous_h",
+            "recovered_state_occupancy",
+            "candidate_state_occupancy",
+            "relapse_rate_24h",
+            "relapse_rate_48h",
+            "relapse_rate_72h"
+          ]
+        },
+        "recovery_km": {
+          "kind": "DataFrame",
+          "shape": [
+            10,
+            6
+          ],
+          "columns": [
+            "time_h",
+            "at_risk",
+            "n_recovered",
+            "n_censored",
+            "survival",
+            "cumulative_recovery"
+          ]
+        },
+        "transition_qa": {
+          "kind": "DataFrame",
+          "shape": [
+            1,
+            5
+          ],
+          "columns": [
+            "opened_episode_count",
+            "episode_table_count",
+            "duplicate_episode_ids",
+            "all_opened_accounted",
+            "all_episodes_terminal_or_censored"
+          ]
+        },
+        "regime_info": {
+          "labels": {
+            "kind": "Series",
+            "shape": [
+              6138
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "centers": {
+            "kind": "DataFrame",
+            "shape": [
+              4,
+              40
+            ],
+            "columns": [
+              "DO_1_1_mean",
+              "DO_1_1_std",
+              "DO_1_2_mean",
+              "DO_1_2_std",
+              "DO_1_3_mean",
+              "DO_1_3_std",
+              "DO_1_4_mean",
+              "DO_1_4_std",
+              "DO_2_1_mean",
+              "DO_2_1_std",
+              "DO_2_2_mean",
+              "DO_2_2_std",
+              "DO_2_3_mean",
+              "DO_2_3_std",
+              "DO_2_4_mean",
+              "DO_2_4_std",
+              "ORP_1_1_mean",
+              "ORP_1_1_std",
+              "ORP_1_2_mean",
+              "ORP_1_2_std",
+              "ORP_1_3_mean",
+              "ORP_1_3_std",
+              "ORP_2_1_mean",
+              "ORP_2_1_std",
+              "ORP_2_2_mean",
+              "ORP_2_2_std",
+              "ORP_2_3_mean",
+              "ORP_2_3_std",
+              "QR_1_mean",
+              "QR_1_std",
+              "QR_2_mean",
+              "QR_2_std",
+              "QIR_1_mean",
+              "QIR_1_std",
+              "QIR_2_mean",
+              "QIR_2_std",
+              "sin_h",
+              "cos_h",
+              "sin_d",
+              "cos_d"
+            ]
+          },
+          "k": 4,
+          "scaler": {
+            "kind": "StandardScaler",
+            "attributes": [
+              "copy",
+              "mean_",
+              "n_features_in_",
+              "n_samples_seen_",
+              "scale_",
+              "var_",
+              "with_mean",
+              "with_std"
+            ]
+          },
+          "kmeans": {
+            "kind": "KMeans",
+            "attributes": [
+              "_algorithm",
+              "_n_features_out",
+              "_n_init",
+              "_n_threads",
+              "_tol",
+              "algorithm",
+              "cluster_centers_",
+              "copy_x",
+              "inertia_",
+              "init",
+              "labels_",
+              "max_iter",
+              "n_clusters",
+              "n_features_in_",
+              "n_init",
+              "n_iter_",
+              "random_state",
+              "tol",
+              "verbose"
+            ]
+          },
+          "feature_names": {
+            "kind": "list",
+            "length": 40,
+            "first_kind": "str"
+          }
+        },
+        "regime_labels": {
+          "kind": "Series",
+          "shape": [
+            6138
+          ],
+          "start": "2025-08-01 00:00:00",
+          "end": "2026-04-13 17:00:00"
+        },
+        "regime_templates": {
+          "0": {
+            "kind": "dict",
+            "keys": [
+              "centers",
+              "stds",
+              "rank",
+              "gradient",
+              "symmetry",
+              "n_hours_used"
+            ]
+          },
+          "1": {
+            "kind": "dict",
+            "keys": [
+              "centers",
+              "stds",
+              "rank",
+              "gradient",
+              "symmetry",
+              "n_hours_used"
+            ]
+          },
+          "2": {
+            "kind": "dict",
+            "keys": [
+              "centers",
+              "stds",
+              "rank",
+              "gradient",
+              "symmetry",
+              "n_hours_used"
+            ]
+          },
+          "3": {
+            "kind": "dict",
+            "keys": [
+              "centers",
+              "stds",
+              "rank",
+              "gradient",
+              "symmetry",
+              "n_hours_used"
+            ]
+          }
+        },
+        "qr_qir_annotations": {
+          "kind": "DataFrame",
+          "shape": [
+            6138,
+            5
+          ],
+          "columns": [
+            "qr_context_available",
+            "qir_context_available",
+            "qr_jump_annotation",
+            "qir_jump_annotation",
+            "driver_note"
+          ],
+          "start": "2025-08-01 00:00:00",
+          "end": "2026-04-13 17:00:00"
+        },
+        "df_h": {
+          "kind": "DataFrame",
+          "shape": [
+            6138,
+            18
+          ],
+          "columns": [
+            "DO_1_1",
+            "DO_1_2",
+            "DO_1_3",
+            "DO_1_4",
+            "DO_2_1",
+            "DO_2_2",
+            "DO_2_3",
+            "DO_2_4",
+            "ORP_1_1",
+            "ORP_1_2",
+            "ORP_1_3",
+            "ORP_2_1",
+            "ORP_2_2",
+            "ORP_2_3",
+            "QR_1",
+            "QR_2",
+            "QIR_1",
+            "QIR_2"
+          ],
+          "start": "2025-08-01 00:00:00",
+          "end": "2026-04-13 17:00:00"
+        },
+        "resid_h": {
+          "kind": "DataFrame",
+          "shape": [
+            6138,
+            14
+          ],
+          "columns": [
+            "DO_1_1",
+            "DO_1_2",
+            "DO_1_3",
+            "DO_1_4",
+            "DO_2_1",
+            "DO_2_2",
+            "DO_2_3",
+            "DO_2_4",
+            "ORP_1_1",
+            "ORP_1_2",
+            "ORP_1_3",
+            "ORP_2_1",
+            "ORP_2_2",
+            "ORP_2_3"
+          ],
+          "start": "2025-08-01 00:00:00",
+          "end": "2026-04-13 17:00:00"
+        },
+        "whitened_input_h": {
+          "kind": "DataFrame",
+          "shape": [
+            6138,
+            14
+          ],
+          "columns": [
+            "DO_1_1",
+            "DO_1_2",
+            "DO_1_3",
+            "DO_1_4",
+            "DO_2_1",
+            "DO_2_2",
+            "DO_2_3",
+            "DO_2_4",
+            "ORP_1_1",
+            "ORP_1_2",
+            "ORP_1_3",
+            "ORP_2_1",
+            "ORP_2_2",
+            "ORP_2_3"
+          ],
+          "start": "2025-08-01 00:00:00",
+          "end": "2026-04-13 17:00:00"
+        },
+        "scoring_mode": {
+          "DO_1_1": "autocorr_aware",
+          "DO_1_2": "iid",
+          "DO_1_3": "iid",
+          "DO_1_4": "floor_freeze",
+          "DO_2_1": "autocorr_aware",
+          "DO_2_2": "autocorr_aware",
+          "DO_2_3": "iid",
+          "DO_2_4": "iid",
+          "ORP_1_1": "iid",
+          "ORP_1_2": "iid",
+          "ORP_1_3": "iid",
+          "ORP_2_1": "iid",
+          "ORP_2_2": "iid",
+          "ORP_2_3": "iid",
+          "QR_1": "iid",
+          "QR_2": "autocorr_aware",
+          "QIR_1": "iid",
+          "QIR_2": "iid"
+        },
+        "eff_neff": {
+          "DO_1_1": 0.012,
+          "DO_1_2": 1.0,
+          "DO_1_3": 1.0,
+          "DO_1_4": 0.0,
+          "DO_2_1": 0.0085,
+          "DO_2_2": 0.0076,
+          "DO_2_3": 1.0,
+          "DO_2_4": 1.0,
+          "ORP_1_1": 1.0,
+          "ORP_1_2": 1.0,
+          "ORP_1_3": 1.0,
+          "ORP_2_1": 1.0,
+          "ORP_2_2": 1.0,
+          "ORP_2_3": 1.0,
+          "QR_1": 1.0,
+          "QR_2": 0.0364,
+          "QIR_1": 1.0,
+          "QIR_2": 1.0
+        },
+        "step_mapping_calibration": {
+          "calibration_id": "step-injection-ea8d55282211",
+          "library_sha256": "775d423be3d728fd48533c6e84bfc07af3233164dc6186bf33b3c1969259b970",
+          "selected_k": 16.0,
+          "selected_x0": 0.55,
+          "metrics": {
+            "kind": "dict",
+            "keys": [
+              "rmse_channel_balanced",
+              "null_warning_rate",
+              "small_hard_rate",
+              "material_detection_rate",
+              "material_miss_rate"
+            ]
+          },
+          "config": {
+            "kind": "dict",
+            "keys": [
+              "window_h",
+              "event_h",
+              "evaluation_start_h",
+              "evaluation_end_h",
+              "windows_per_channel",
+              "amplitudes_sigma",
+              "k_grid",
+              "x0_grid",
+              "max_null_warning_rate",
+              "max_small_hard_rate",
+              "max_material_miss_rate",
+              "min_normal_fraction",
+              "calibration_scoring_modes"
+            ]
+          },
+          "source_run_id": "d1-final-8fdd3599890f",
+          "included_scoring_modes": {
+            "kind": "list",
+            "length": 1,
+            "first_kind": "str"
+          },
+          "excluded_scoring_modes": {
+            "kind": "list",
+            "length": 2,
+            "first_kind": "str"
+          },
+          "applicability": {
+            "kind": "list",
+            "length": 14,
+            "first_kind": "dict"
+          }
+        },
+        "detectors_raw": {
+          "ks_statistic_hourly": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              14
+            ],
+            "columns": [
+              "DO_1_1",
+              "DO_1_2",
+              "DO_1_3",
+              "DO_1_4",
+              "DO_2_1",
+              "DO_2_2",
+              "DO_2_3",
+              "DO_2_4",
+              "ORP_1_1",
+              "ORP_1_2",
+              "ORP_1_3",
+              "ORP_2_1",
+              "ORP_2_2",
+              "ORP_2_3"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "ks_statistic_36h": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              14
+            ],
+            "columns": [
+              "DO_1_1",
+              "DO_1_2",
+              "DO_1_3",
+              "DO_1_4",
+              "DO_2_1",
+              "DO_2_2",
+              "DO_2_3",
+              "DO_2_4",
+              "ORP_1_1",
+              "ORP_1_2",
+              "ORP_1_3",
+              "ORP_2_1",
+              "ORP_2_2",
+              "ORP_2_3"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "step_confirmed_flag": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              14
+            ],
+            "columns": [
+              "DO_1_1",
+              "DO_1_2",
+              "DO_1_3",
+              "DO_1_4",
+              "DO_2_1",
+              "DO_2_2",
+              "DO_2_3",
+              "DO_2_4",
+              "ORP_1_1",
+              "ORP_1_2",
+              "ORP_1_3",
+              "ORP_2_1",
+              "ORP_2_2",
+              "ORP_2_3"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "w1_normalised_hourly": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              14
+            ],
+            "columns": [
+              "DO_1_1",
+              "DO_1_2",
+              "DO_1_3",
+              "DO_1_4",
+              "DO_2_1",
+              "DO_2_2",
+              "DO_2_3",
+              "DO_2_4",
+              "ORP_1_1",
+              "ORP_1_2",
+              "ORP_1_3",
+              "ORP_2_1",
+              "ORP_2_2",
+              "ORP_2_3"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "hampel_z_hourly_max": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              14
+            ],
+            "columns": [
+              "DO_1_1",
+              "DO_1_2",
+              "DO_1_3",
+              "DO_1_4",
+              "DO_2_1",
+              "DO_2_2",
+              "DO_2_3",
+              "DO_2_4",
+              "ORP_1_1",
+              "ORP_1_2",
+              "ORP_1_3",
+              "ORP_2_1",
+              "ORP_2_2",
+              "ORP_2_3"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "pls_residual_z_hourly": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              14
+            ],
+            "columns": [
+              "DO_1_1",
+              "DO_1_2",
+              "DO_1_3",
+              "DO_1_4",
+              "DO_2_1",
+              "DO_2_2",
+              "DO_2_3",
+              "DO_2_4",
+              "ORP_1_1",
+              "ORP_1_2",
+              "ORP_1_3",
+              "ORP_2_1",
+              "ORP_2_2",
+              "ORP_2_3"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "spike_rate_6h_input": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              14
+            ],
+            "columns": [
+              "DO_1_1",
+              "DO_1_2",
+              "DO_1_3",
+              "DO_1_4",
+              "DO_2_1",
+              "DO_2_2",
+              "DO_2_3",
+              "DO_2_4",
+              "ORP_1_1",
+              "ORP_1_2",
+              "ORP_1_3",
+              "ORP_2_1",
+              "ORP_2_2",
+              "ORP_2_3"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "freeze_routing_audit": {
+            "kind": "DataFrame",
+            "shape": [
+              14,
+              4
+            ],
+            "columns": [
+              "scoring_mode",
+              "freeze_mapping_mode",
+              "low_var_in_production",
+              "unique_in_production"
+            ]
+          },
+          "pls_peer_selection_audit": {
+            "kind": "DataFrame",
+            "shape": [
+              14,
+              18
+            ],
+            "columns": [
+              "core_peers",
+              "candidate_peers",
+              "selected_peers",
+              "selected_noncore_peers",
+              "selected_n_components",
+              "core_cv_nrmse_median",
+              "core_cv_nrmse_p90",
+              "selected_cv_nrmse_median",
+              "selected_cv_nrmse_p90",
+              "cv_improvement_pct",
+              "n_blocked_folds",
+              "selected_peer_count",
+              "redundancy_status",
+              "topology_contract",
+              "selection_rule",
+              "validation_status",
+              "nominated_before_test",
+              "validation_rationale"
+            ]
+          },
+          "pls_peer_matrix": {
+            "kind": "DataFrame",
+            "shape": [
+              14,
+              14
+            ],
+            "columns": [
+              "DO_1_1",
+              "DO_1_2",
+              "DO_1_3",
+              "DO_1_4",
+              "DO_2_1",
+              "DO_2_2",
+              "DO_2_3",
+              "DO_2_4",
+              "ORP_1_1",
+              "ORP_1_2",
+              "ORP_1_3",
+              "ORP_2_1",
+              "ORP_2_2",
+              "ORP_2_3"
+            ]
+          },
+          "pls_do24_config": {
+            "kind": "DataFrame",
+            "shape": [
+              1,
+              26
+            ],
+            "columns": [
+              "target",
+              "core_peer",
+              "candidate_peer",
+              "train_days",
+              "terminal_test_days",
+              "validation_block_days",
+              "bootstrap_replicates",
+              "bootstrap_block_folds",
+              "random_seed",
+              "injection_window_h",
+              "injection_ramp_h",
+              "injection_scan_stride_h",
+              "clean_abs_z_max",
+              "clean_fraction_min",
+              "alarm_abs_z",
+              "alarm_duration_h",
+              "injection_amplitudes_sigma",
+              "injection_signs",
+              "material_amplitude_sigma",
+              "min_median_gain_pct",
+              "min_positive_fold_fraction",
+              "max_p90_degradation_pct",
+              "max_detection_loss_fraction",
+              "max_false_alarm_increase_fraction",
+              "max_absolute_false_alarm_fraction",
+              "min_test_gain_pct"
+            ]
+          },
+          "pls_do24_model_definitions": {
+            "kind": "DataFrame",
+            "shape": [
+              3,
+              5
+            ],
+            "columns": [
+              "model_id",
+              "label",
+              "n_components",
+              "role",
+              "peers"
+            ]
+          },
+          "pls_do24_split_manifest": {
+            "kind": "DataFrame",
+            "shape": [
+              1,
+              12
+            ],
+            "columns": [
+              "train_start",
+              "train_end",
+              "train_n_h",
+              "development_start",
+              "development_end",
+              "development_n_h",
+              "independent_test_start",
+              "independent_test_end",
+              "independent_test_n_h",
+              "validation_block_h",
+              "n_validation_folds",
+              "n_nonoverlapping_clean_windows"
+            ]
+          },
+          "pls_do24_hourly_predictions": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              17
+            ],
+            "columns": [
+              "timestamp",
+              "row_number",
+              "split",
+              "validation_fold_id",
+              "target_residual_used",
+              "M0_prediction",
+              "M0_signed_error",
+              "M0_abs_normalised_error",
+              "M0_abs_residual_z",
+              "M1_1_prediction",
+              "M1_1_signed_error",
+              "M1_1_abs_normalised_error",
+              "M1_1_abs_residual_z",
+              "M1_2_prediction",
+              "M1_2_signed_error",
+              "M1_2_abs_normalised_error",
+              "M1_2_abs_residual_z"
+            ]
+          },
+          "pls_do24_fold_metrics": {
+            "kind": "DataFrame",
+            "shape": [
+              84,
+              10
+            ],
+            "columns": [
+              "fold_id",
+              "model_id",
+              "model_label",
+              "start",
+              "end",
+              "n_h",
+              "nrmse",
+              "p90_abs_normalised_error",
+              "baseline_nrmse",
+              "gain_pct_vs_M0"
+            ]
+          },
+          "pls_do24_performance_summary": {
+            "kind": "DataFrame",
+            "shape": [
+              3,
+              14
+            ],
+            "columns": [
+              "model_id",
+              "model_label",
+              "peers",
+              "n_components",
+              "n_validation_folds",
+              "median_fold_nrmse",
+              "median_gain_pct",
+              "gain_ci95_low_pct",
+              "gain_ci95_high_pct",
+              "positive_gain_fold_fraction",
+              "development_p90_change_pct",
+              "independent_test_nrmse",
+              "independent_test_gain_pct",
+              "independent_test_p90_change_pct"
+            ]
+          },
+          "pls_do24_bootstrap_samples": {
+            "kind": "DataFrame",
+            "shape": [
+              15000,
+              3
+            ],
+            "columns": [
+              "model_id",
+              "bootstrap_replicate",
+              "median_gain_pct"
+            ]
+          },
+          "pls_do24_clean_windows": {
+            "kind": "DataFrame",
+            "shape": [
+              13,
+              8
+            ],
+            "columns": [
+              "window_id",
+              "start_row",
+              "end_row_exclusive",
+              "start",
+              "end",
+              "clean_fraction_M0",
+              "clean_fraction_M1_1",
+              "clean_fraction_M1_2"
+            ]
+          },
+          "pls_do24_injection_scenarios": {
+            "kind": "DataFrame",
+            "shape": [
+              936,
+              11
+            ],
+            "columns": [
+              "window_id",
+              "window_start",
+              "window_end",
+              "injection_type",
+              "affected_channels",
+              "amplitude_sigma",
+              "sign",
+              "model_id",
+              "detected_3h",
+              "detection_delay_h",
+              "max_abs_residual_z"
+            ]
+          },
+          "pls_do24_injection_summary": {
+            "kind": "DataFrame",
+            "shape": [
+              36,
+              7
+            ],
+            "columns": [
+              "model_id",
+              "injection_type",
+              "amplitude_sigma",
+              "n_scenarios",
+              "alarm_fraction",
+              "median_detection_delay_h",
+              "median_max_abs_residual_z"
+            ]
+          },
+          "pls_do24_gate_results": {
+            "kind": "DataFrame",
+            "shape": [
+              24,
+              5
+            ],
+            "columns": [
+              "model_id",
+              "gate",
+              "value",
+              "passed",
+              "stage"
+            ]
+          },
+          "pls_do24_decision": {
+            "kind": "DataFrame",
+            "shape": [
+              1,
+              9
+            ],
+            "columns": [
+              "nominated_before_test",
+              "final_model_id",
+              "decision_status",
+              "rationale",
+              "parsimony_rule",
+              "model_id",
+              "model_label",
+              "peers",
+              "n_components"
+            ]
+          },
+          "freeze_rle_run_min": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              14
+            ],
+            "columns": [
+              "DO_1_1",
+              "DO_1_2",
+              "DO_1_3",
+              "DO_1_4",
+              "DO_2_1",
+              "DO_2_2",
+              "DO_2_3",
+              "DO_2_4",
+              "ORP_1_1",
+              "ORP_1_2",
+              "ORP_1_3",
+              "ORP_2_1",
+              "ORP_2_2",
+              "ORP_2_3"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "freeze_rel_var": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              14
+            ],
+            "columns": [
+              "DO_1_1",
+              "DO_1_2",
+              "DO_1_3",
+              "DO_1_4",
+              "DO_2_1",
+              "DO_2_2",
+              "DO_2_3",
+              "DO_2_4",
+              "ORP_1_1",
+              "ORP_1_2",
+              "ORP_1_3",
+              "ORP_2_1",
+              "ORP_2_2",
+              "ORP_2_3"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          },
+          "freeze_unique_ratio": {
+            "kind": "DataFrame",
+            "shape": [
+              6138,
+              14
+            ],
+            "columns": [
+              "DO_1_1",
+              "DO_1_2",
+              "DO_1_3",
+              "DO_1_4",
+              "DO_2_1",
+              "DO_2_2",
+              "DO_2_3",
+              "DO_2_4",
+              "ORP_1_1",
+              "ORP_1_2",
+              "ORP_1_3",
+              "ORP_2_1",
+              "ORP_2_2",
+              "ORP_2_3"
+            ],
+            "start": "2025-08-01 00:00:00",
+            "end": "2026-04-13 17:00:00"
+          }
+        },
+        "delta_df": {
+          "kind": "DataFrame",
+          "shape": [
+            14,
+            11
+          ],
+          "columns": [
+            "channel",
+            "D1_v1",
+            "D1_v11",
+            "delta_D1",
+            "Refractory_pct",
+            "BaselinePending_pct",
+            "Sustained_pct",
+            "RecCand_pct",
+            "Recovered_state_occupancy_pct",
+            "Normal_pct",
+            "veto3_signal_only_pct"
+          ]
+        },
+        "rules_yaml": {
+          "scored_channels": {
+            "kind": "list",
+            "length": 14,
+            "first_kind": "str"
+          },
+          "support_channels": {
+            "kind": "list",
+            "length": 4,
+            "first_kind": "str"
+          },
+          "aggregation": {
+            "kind": "dict",
+            "keys": [
+              "weights",
+              "lambda_blend"
+            ]
+          },
+          "veto": {
+            "kind": "dict",
+            "keys": [
+              "freeze_threshold",
+              "freeze_cap",
+              "regime_threshold",
+              "regime_cap",
+              "veto3_step_threshold",
+              "veto3_duration_h",
+              "veto3_min_event_count_36h",
+              "veto3_cap",
+              "veto3_mode",
+              "veto3_excluded_states"
+            ]
+          },
+          "process_aware_step_masking": false,
+          "response_loss_online": false,
+          "pls_exogenous_drivers": false,
+          "freeze_floor_policy": {
+            "kind": "dict",
+            "keys": [
+              "enabled",
+              "scoring_modes",
+              "production_mode",
+              "diagnostic_components"
+            ]
+          },
+          "drift_restart_policy": {
+            "kind": "dict",
+            "keys": [
+              "mode",
+              "thaw_duration_h",
+              "alpha_schedule",
+              "use_local_baseline"
+            ]
+          },
+          "qr_qir_side_outputs": {
+            "kind": "dict",
+            "keys": [
+              "enabled",
+              "fields"
+            ]
+          }
+        },
+        "state_machine_yaml": {
+          "version": "1.3.0-final-candidate",
+          "states": {
+            "kind": "list",
+            "length": 6,
+            "first_kind": "str"
+          },
+          "refractory": {
+            "kind": "dict",
+            "keys": [
+              "step_h",
+              "regime_h",
+              "drift_neutral_score"
+            ]
+          },
+          "event_uniqueness": {
+            "kind": "dict",
+            "keys": [
+              "min_separation_h",
+              "magnitude_change_pct",
+              "require_direction_change",
+              "pelt_match_tolerance_h",
+              "require_pelt_for_retrigger"
+            ]
+          },
+          "sustained_anomaly": {
+            "kind": "dict",
+            "keys": [
+              "candidate_window_search",
+              "baseline_init",
+              "thaw"
+            ]
+          },
+          "recovery": {
+            "kind": "dict",
+            "keys": [
+              "enter_thresholds",
+              "trigger_thresholds",
+              "residual_check",
+              "evidence_window",
+              "recovered_observation",
+              "direct_recovery"
+            ]
+          },
+          "sustained_anomaly_cap": 2.5,
+          "audit_fields": {
+            "kind": "list",
+            "length": 21,
+            "first_kind": "str"
+          }
+        },
+        "scored_channels": {
+          "kind": "list",
+          "length": 14,
+          "first_kind": "str"
+        },
+        "support_channels": {
+          "kind": "list",
+          "length": 4,
+          "first_kind": "str"
+        },
+        "n_pelt_cps": 133,
+        "algorithm_version": "1.3.0-final-candidate",
+        "run_id": "d1-final-33fa914b2f71",
+        "dependency_hashes": {
+          "strict_v1_inputs": "7de8f54722ac1f804a9456d4883eebe5aa35990f2210e22add0eb6c023675d96",
+          "raw_hourly": "3ff3d9cd4600b88e89fcc5c106d622ae5ae46edb0508f32a153a215b1a066568",
+          "state_machine_config": "af52f70efce08486bec1067fc1cf1c7e81a68517b5cc1d25e683ef01a839b5fa",
+          "rules_config": "abadac5b4dfd104f8e8509f0d3a14f5091fec609db948725f8d0f19b8c9d39f7",
+          "mapping_config": "67e6705ade9383184f88b71a780b8b02e51b94438e547fe291cc8550c20ce0f0",
+          "state_machine_code": "07a21c71db5d70ce283412706704548250f407121c7899364aad2a644bfdeb48",
+          "local_baseline_code": "89c150fb64a30870bc2fb8babec415adf7fc5ad2879ede90dc7c9a34be643788",
+          "detector_bridge_code": "3d8c8755b627407c1dbdf957540d566cb82ea6ed203a3b52fbca8e8cee2d3ebf",
+          "pls_detector_code": "087cfbcfb520ee2c2d8e0e66469866318918394327eeff7f17b62421b51c9c8f",
+          "pls_peer_validation_code": "ea1646bfc61e69d507fae03bcb830d70fca673686539f9bf6213b904cf854cbb",
+          "pipeline_code": "30f0bdafb478060f5521765ebf4fd59d6c1ded6cd6962d3fcbf955b253e462f4"
+        },
+        "elapsed_sec": 14.259209632873535
+      },
+      "read_status": "readable_not_yet_release_verified"
+    }
+  ],
+  "configuration_files": [
+    {
+      "dimension": "D1",
+      "role": "configuration",
+      "path": "D1 Sensor health/configs/mapping.yaml",
+      "sha256_raw_bytes": "67e6705ade9383184f88b71a780b8b02e51b94438e547fe291cc8550c20ce0f0"
+    },
+    {
+      "dimension": "D1",
+      "role": "configuration",
+      "path": "D1 Sensor health/configs/paths.yaml",
+      "sha256_raw_bytes": "8ff4df13aa216b74defe5b20c7a69ff4b1b742d29695a318819a25a677aada6d"
+    },
+    {
+      "dimension": "D1",
+      "role": "configuration",
+      "path": "D1 Sensor health/configs/rules.yaml",
+      "sha256_raw_bytes": "abadac5b4dfd104f8e8509f0d3a14f5091fec609db948725f8d0f19b8c9d39f7"
+    },
+    {
+      "dimension": "D1",
+      "role": "configuration",
+      "path": "D1 Sensor health/configs/state_machine.yaml",
+      "sha256_raw_bytes": "af52f70efce08486bec1067fc1cf1c7e81a68517b5cc1d25e683ef01a839b5fa"
+    },
+    {
+      "dimension": "D1",
+      "role": "configuration",
+      "path": "D1 Sensor health/configs/windows.yaml",
+      "sha256_raw_bytes": "ab90378554e8449147e0a35089c30f1476b2063222e6fd8b22a8df209b1b7341"
+    },
+    {
+      "dimension": "D2",
+      "role": "configuration",
+      "path": "D2 Temporal Continuity & Information Availability/configs/d2_mapping.yaml",
+      "sha256_raw_bytes": "8cfe6d7f455c82d832c4bd56a1808b5098280d065b655f521846e601171161d8"
+    },
+    {
+      "dimension": "D2",
+      "role": "configuration",
+      "path": "D2 Temporal Continuity & Information Availability/configs/d2_sensors.yaml",
+      "sha256_raw_bytes": "dfd8e40a497ea80efd6778387d565e900a7b521749d5175ec68dd5e73d432d02"
+    },
+    {
+      "dimension": "D2",
+      "role": "configuration",
+      "path": "D2 Temporal Continuity & Information Availability/configs/d2_study_design.yaml",
+      "sha256_raw_bytes": "b435ea3099cd7b0ab7c2085f3889f39b12136a247d0a3cf00ca5ea24235d3b39"
+    },
+    {
+      "dimension": "D2",
+      "role": "configuration",
+      "path": "D2 Temporal Continuity & Information Availability/configs/d2_windows.yaml",
+      "sha256_raw_bytes": "3ee0c8559e93e40e5ec4b1536f79229da94d5cae03699cef578b1ab1b628911e"
+    },
+    {
+      "dimension": "D3",
+      "role": "configuration",
+      "path": "D3 Physical rationality and rate constraints/configs/d3_dag.yaml",
+      "sha256_raw_bytes": "d927a69ed699da0a4f763d12a9bf25cc65ce8c3cdf3a17fefbd4b260248df951"
+    },
+    {
+      "dimension": "D3",
+      "role": "configuration",
+      "path": "D3 Physical rationality and rate constraints/configs/d3_figure_cases.yaml",
+      "sha256_raw_bytes": "34d5dc5d0047175553747a86d803685907c1d1d70b788a86a4737202d30fe13c"
+    },
+    {
+      "dimension": "D3",
+      "role": "configuration",
+      "path": "D3 Physical rationality and rate constraints/configs/d3_mapping.yaml",
+      "sha256_raw_bytes": "8a96ae154fa25741121c3389f45d809ebaa299ae121227b581f397ba7b73fee6"
+    },
+    {
+      "dimension": "D3",
+      "role": "configuration",
+      "path": "D3 Physical rationality and rate constraints/configs/d3_paths.yaml",
+      "sha256_raw_bytes": "b682efe5f2b6205ea0fe4cc02c2ca8b47e679598ab49c6e92ab6b1731d8c64f2"
+    },
+    {
+      "dimension": "D3",
+      "role": "configuration",
+      "path": "D3 Physical rationality and rate constraints/configs/d3_physical_bounds.yaml",
+      "sha256_raw_bytes": "40e93a16a91722087f8364d213564aa26a18d889af0cd2e2a220dd7e52a50006"
+    },
+    {
+      "dimension": "D3",
+      "role": "configuration",
+      "path": "D3 Physical rationality and rate constraints/configs/d3_rate_limits.yaml",
+      "sha256_raw_bytes": "d4ee43dbce800bc736dbbde5fbc1032af641263389050150ca915da71eb1b423"
+    },
+    {
+      "dimension": "D3",
+      "role": "configuration",
+      "path": "D3 Physical rationality and rate constraints/configs/d3_rules.yaml",
+      "sha256_raw_bytes": "6022d99d4c1da6abd1067d816c911323bc879f56b82101680a3872f78fc3504f"
+    },
+    {
+      "dimension": "D3",
+      "role": "configuration",
+      "path": "D3 Physical rationality and rate constraints/configs/d3_sensors.yaml",
+      "sha256_raw_bytes": "0b8de83e73e1d30f185c2f615f944cc3da984b361fbc8842e240fe65c03dc426"
+    },
+    {
+      "dimension": "D4",
+      "role": "configuration",
+      "path": "D4 Parallel-redundancy Temporal Consistency/configs/d4.yaml",
+      "sha256_raw_bytes": "4a5a9e6fc43d5bd8e60420d348a50933222bf8b19ffc0aa41cdfc81bfbc97272"
+    },
+    {
+      "dimension": "D5",
+      "role": "configuration",
+      "path": "D5 Topological Role Consistency and Structural Representativeness/configs/common/paths.yaml",
+      "sha256_raw_bytes": "11e6c1261c9e7fc90825c88b177d784f72f8c841b20de037766b8c326433c9e8"
+    },
+    {
+      "dimension": "D5",
+      "role": "configuration",
+      "path": "D5 Topological Role Consistency and Structural Representativeness/configs/common/sensors.yaml",
+      "sha256_raw_bytes": "87223161b520b7843d51535628fce9db99df72aa50ef7a8ce729a8e7d45d5e97"
+    },
+    {
+      "dimension": "D5",
+      "role": "configuration",
+      "path": "D5 Topological Role Consistency and Structural Representativeness/configs/common/topology.yaml",
+      "sha256_raw_bytes": "a032be1c2b96b9672ef62aa94de243087b558be5718c03f3126d132ea9d695b3"
+    },
+    {
+      "dimension": "D5",
+      "role": "configuration",
+      "path": "D5 Topological Role Consistency and Structural Representativeness/configs/common/topology_evidence.yaml",
+      "sha256_raw_bytes": "43cd626703298b200185c6f2a7c92d728322efde15cdc7129db40b916ee80bc4"
+    },
+    {
+      "dimension": "D5",
+      "role": "configuration",
+      "path": "D5 Topological Role Consistency and Structural Representativeness/configs/common/windows.yaml",
+      "sha256_raw_bytes": "87ac5363066e1aa6f9660748da4c84c8d5ff14f59110b88ed7ae14de93002b62"
+    },
+    {
+      "dimension": "D5",
+      "role": "configuration",
+      "path": "D5 Topological Role Consistency and Structural Representativeness/configs/local/aggregation.yaml",
+      "sha256_raw_bytes": "1047c087bee4fd78572b71c625eb32b71f248107f96b96c8eec5bd3c27f80a70"
+    },
+    {
+      "dimension": "D5",
+      "role": "configuration",
+      "path": "D5 Topological Role Consistency and Structural Representativeness/configs/local/d5_local.yaml",
+      "sha256_raw_bytes": "8f8ab668d2d633efea1967c77151ee57dc387cf3a7fc6871fbe3ffc70fa1fa01"
+    },
+    {
+      "dimension": "D5",
+      "role": "configuration",
+      "path": "D5 Topological Role Consistency and Structural Representativeness/configs/local/events.yaml",
+      "sha256_raw_bytes": "d19fc7ef7bad86cbc7feaac7b52ca5d70dbe6af86b8ed66a8310e9454e592edf"
+    },
+    {
+      "dimension": "D5",
+      "role": "configuration",
+      "path": "D5 Topological Role Consistency and Structural Representativeness/configs/local/hysteresis.yaml",
+      "sha256_raw_bytes": "8ff1b8c57d23d51f0f26343e6e91bb78d977070552681af73fd229276ef6e8cc"
+    },
+    {
+      "dimension": "D5",
+      "role": "configuration",
+      "path": "D5 Topological Role Consistency and Structural Representativeness/configs/local/mapping.yaml",
+      "sha256_raw_bytes": "374a759d83458252f68f78e94c2b47ab906dc65d530ecc531a7bed1f420790b4"
+    },
+    {
+      "dimension": "D5",
+      "role": "configuration",
+      "path": "D5 Topological Role Consistency and Structural Representativeness/configs/local/orp_degradation.yaml",
+      "sha256_raw_bytes": "b63324bee91f4b1257480816f66939fd3806ee8107ab9ae3002431abac764122"
+    },
+    {
+      "dimension": "D5",
+      "role": "configuration",
+      "path": "D5 Topological Role Consistency and Structural Representativeness/configs/local/templates.yaml",
+      "sha256_raw_bytes": "2cf3bd58b5cbd92d39fe730cfbf575e725b41680260ba4425375ed71dd6b7a4f"
+    },
+    {
+      "dimension": "D5",
+      "role": "configuration",
+      "path": "D5 Topological Role Consistency and Structural Representativeness/configs/publication/d5_final_contract.yaml",
+      "sha256_raw_bytes": "61398b663850150febbc3a04840d915ae7f2c1cf332794ac6c3c5b46160bd9a8"
+    },
+    {
+      "dimension": "D5",
+      "role": "configuration",
+      "path": "D5 Topological Role Consistency and Structural Representativeness/configs/sensitivity/d5_sensitivity.yaml",
+      "sha256_raw_bytes": "395385f21797c2ad0346dbb213a5ab7afaa31546ad5d4a20b16898dbdc858de4"
+    },
+    {
+      "dimension": "D5",
+      "role": "configuration",
+      "path": "D5 Topological Role Consistency and Structural Representativeness/configs/shadow_v2/graph_structure_learning.yaml",
+      "sha256_raw_bytes": "9d7959662c1995ce58ff7df22f56b1b005e76e4e271e5956a915fc903d0b4e29"
+    },
+    {
+      "dimension": "D5",
+      "role": "configuration",
+      "path": "D5 Topological Role Consistency and Structural Representativeness/configs/shadow_v2/topology_drift.yaml",
+      "sha256_raw_bytes": "fc2b854fde8302328051901ccd7497190754f1ef81d1581d4effb9028d8c66fc"
+    }
+  ]
+}

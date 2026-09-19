@@ -1,0 +1,211 @@
+sensor_id,kind,field,compared_rows,changed_prefix_rows,first_changed_time,prefix_end,future_change
+DO_1_1,minute_flag,present_raw,2880,0,,2026-02-02 23:59:00,append_only
+DO_1_1,minute_flag,missing,2880,0,,2026-02-02 23:59:00,append_only
+DO_1_1,minute_flag,long_gap,2880,2,2026-02-02 23:58:00,2026-02-02 23:59:00,append_only
+DO_1_1,minute_flag,sensor_freeze,2880,0,,2026-02-02 23:59:00,append_only
+DO_1_1,minute_flag,info_empty,2880,0,,2026-02-02 23:59:00,append_only
+DO_1_1,window_stat,missing_rate,25,0,,2026-02-02 23:59:00,append_only
+DO_1_1,window_stat,L_max_min,25,0,,2026-02-02 23:59:00,append_only
+DO_1_1,window_stat,gap_run_count,25,0,,2026-02-02 23:59:00,append_only
+DO_1_1,window_stat,P95_gap_min,25,1,2026-02-02 23:00:00,2026-02-02 23:59:00,append_only
+DO_1_1,hourly_score,Q_TI,25,0,,2026-02-02 23:59:00,append_only
+DO_1_1,hourly_score,Q_GS,25,0,,2026-02-02 23:59:00,append_only
+DO_1_1,hourly_score,Q_HA,25,0,,2026-02-02 23:59:00,append_only
+DO_1_1,hourly_score,D2_total,25,0,,2026-02-02 23:59:00,append_only
+DO_1_1,hourly_score,veto_flag,25,0,,2026-02-02 23:59:00,append_only
+DO_1_1,hourly_score,usable_tag,25,0,,2026-02-02 23:59:00,append_only
+DO_1_2,minute_flag,present_raw,2880,0,,2026-02-02 23:59:00,append_only
+DO_1_2,minute_flag,missing,2880,0,,2026-02-02 23:59:00,append_only
+DO_1_2,minute_flag,long_gap,2880,2,2026-02-02 23:58:00,2026-02-02 23:59:00,append_only
+DO_1_2,minute_flag,sensor_freeze,2880,0,,2026-02-02 23:59:00,append_only
+DO_1_2,minute_flag,info_empty,2880,0,,2026-02-02 23:59:00,append_only
+DO_1_2,window_stat,missing_rate,25,0,,2026-02-02 23:59:00,append_only
+DO_1_2,window_stat,L_max_min,25,0,,2026-02-02 23:59:00,append_only
+DO_1_2,window_stat,gap_run_count,25,0,,2026-02-02 23:59:00,append_only
+DO_1_2,window_stat,P95_gap_min,25,1,2026-02-02 23:00:00,2026-02-02 23:59:00,append_only
+DO_1_2,hourly_score,Q_TI,25,0,,2026-02-02 23:59:00,append_only
+DO_1_2,hourly_score,Q_GS,25,0,,2026-02-02 23:59:00,append_only
+DO_1_2,hourly_score,Q_HA,25,0,,2026-02-02 23:59:00,append_only
+DO_1_2,hourly_score,D2_total,25,0,,2026-02-02 23:59:00,append_only
+DO_1_2,hourly_score,veto_flag,25,0,,2026-02-02 23:59:00,append_only
+DO_1_2,hourly_score,usable_tag,25,0,,2026-02-02 23:59:00,append_only
+DO_1_3,minute_flag,present_raw,2880,0,,2026-02-02 23:59:00,append_only
+DO_1_3,minute_flag,missing,2880,0,,2026-02-02 23:59:00,append_only
+DO_1_3,minute_flag,long_gap,2880,2,2026-02-02 23:58:00,2026-02-02 23:59:00,append_only
+DO_1_3,minute_flag,sensor_freeze,2880,0,,2026-02-02 23:59:00,append_only
+DO_1_3,minute_flag,info_empty,2880,0,,2026-02-02 23:59:00,append_only
+DO_1_3,window_stat,missing_rate,25,0,,2026-02-02 23:59:00,append_only
+DO_1_3,window_stat,L_max_min,25,0,,2026-02-02 23:59:00,append_only
+DO_1_3,window_stat,gap_run_count,25,0,,2026-02-02 23:59:00,append_only
+DO_1_3,window_stat,P95_gap_min,25,1,2026-02-02 23:00:00,2026-02-02 23:59:00,append_only
+DO_1_3,hourly_score,Q_TI,25,0,,2026-02-02 23:59:00,append_only
+DO_1_3,hourly_score,Q_GS,25,0,,2026-02-02 23:59:00,append_only
+DO_1_3,hourly_score,Q_HA,25,0,,2026-02-02 23:59:00,append_only
+DO_1_3,hourly_score,D2_total,25,0,,2026-02-02 23:59:00,append_only
+DO_1_3,hourly_score,veto_flag,25,0,,2026-02-02 23:59:00,append_only
+DO_1_3,hourly_score,usable_tag,25,0,,2026-02-02 23:59:00,append_only
+DO_1_4,minute_flag,present_raw,2880,0,,2026-02-02 23:59:00,append_only
+DO_1_4,minute_flag,missing,2880,0,,2026-02-02 23:59:00,append_only
+DO_1_4,minute_flag,long_gap,2880,2,2026-02-02 23:58:00,2026-02-02 23:59:00,append_only
+DO_1_4,minute_flag,sensor_freeze,2880,0,,2026-02-02 23:59:00,append_only
+DO_1_4,minute_flag,info_empty,2880,0,,2026-02-02 23:59:00,append_only
+DO_1_4,window_stat,missing_rate,25,0,,2026-02-02 23:59:00,append_only
+DO_1_4,window_stat,L_max_min,25,0,,2026-02-02 23:59:00,append_only
+DO_1_4,window_stat,gap_run_count,25,0,,2026-02-02 23:59:00,append_only
+DO_1_4,window_stat,P95_gap_min,25,1,2026-02-02 23:00:00,2026-02-02 23:59:00,append_only
+DO_1_4,hourly_score,Q_TI,25,0,,2026-02-02 23:59:00,append_only
+DO_1_4,hourly_score,Q_GS,25,0,,2026-02-02 23:59:00,append_only
+DO_1_4,hourly_score,Q_HA,25,0,,2026-02-02 23:59:00,append_only
+DO_1_4,hourly_score,D2_total,25,0,,2026-02-02 23:59:00,append_only
+DO_1_4,hourly_score,veto_flag,25,0,,2026-02-02 23:59:00,append_only
+DO_1_4,hourly_score,usable_tag,25,0,,2026-02-02 23:59:00,append_only
+DO_2_1,minute_flag,present_raw,2880,0,,2026-02-02 23:59:00,append_only
+DO_2_1,minute_flag,missing,2880,0,,2026-02-02 23:59:00,append_only
+DO_2_1,minute_flag,long_gap,2880,2,2026-02-02 23:58:00,2026-02-02 23:59:00,append_only
+DO_2_1,minute_flag,sensor_freeze,2880,0,,2026-02-02 23:59:00,append_only
+DO_2_1,minute_flag,info_empty,2880,0,,2026-02-02 23:59:00,append_only
+DO_2_1,window_stat,missing_rate,25,0,,2026-02-02 23:59:00,append_only
+DO_2_1,window_stat,L_max_min,25,0,,2026-02-02 23:59:00,append_only
+DO_2_1,window_stat,gap_run_count,25,0,,2026-02-02 23:59:00,append_only
+DO_2_1,window_stat,P95_gap_min,25,1,2026-02-02 23:00:00,2026-02-02 23:59:00,append_only
+DO_2_1,hourly_score,Q_TI,25,0,,2026-02-02 23:59:00,append_only
+DO_2_1,hourly_score,Q_GS,25,0,,2026-02-02 23:59:00,append_only
+DO_2_1,hourly_score,Q_HA,25,0,,2026-02-02 23:59:00,append_only
+DO_2_1,hourly_score,D2_total,25,0,,2026-02-02 23:59:00,append_only
+DO_2_1,hourly_score,veto_flag,25,0,,2026-02-02 23:59:00,append_only
+DO_2_1,hourly_score,usable_tag,25,0,,2026-02-02 23:59:00,append_only
+DO_2_2,minute_flag,present_raw,2880,0,,2026-02-02 23:59:00,append_only
+DO_2_2,minute_flag,missing,2880,0,,2026-02-02 23:59:00,append_only
+DO_2_2,minute_flag,long_gap,2880,2,2026-02-02 23:58:00,2026-02-02 23:59:00,append_only
+DO_2_2,minute_flag,sensor_freeze,2880,0,,2026-02-02 23:59:00,append_only
+DO_2_2,minute_flag,info_empty,2880,0,,2026-02-02 23:59:00,append_only
+DO_2_2,window_stat,missing_rate,25,0,,2026-02-02 23:59:00,append_only
+DO_2_2,window_stat,L_max_min,25,0,,2026-02-02 23:59:00,append_only
+DO_2_2,window_stat,gap_run_count,25,0,,2026-02-02 23:59:00,append_only
+DO_2_2,window_stat,P95_gap_min,25,1,2026-02-02 23:00:00,2026-02-02 23:59:00,append_only
+DO_2_2,hourly_score,Q_TI,25,0,,2026-02-02 23:59:00,append_only
+DO_2_2,hourly_score,Q_GS,25,0,,2026-02-02 23:59:00,append_only
+DO_2_2,hourly_score,Q_HA,25,0,,2026-02-02 23:59:00,append_only
+DO_2_2,hourly_score,D2_total,25,0,,2026-02-02 23:59:00,append_only
+DO_2_2,hourly_score,veto_flag,25,0,,2026-02-02 23:59:00,append_only
+DO_2_2,hourly_score,usable_tag,25,0,,2026-02-02 23:59:00,append_only
+DO_2_3,minute_flag,present_raw,2880,0,,2026-02-02 23:59:00,append_only
+DO_2_3,minute_flag,missing,2880,0,,2026-02-02 23:59:00,append_only
+DO_2_3,minute_flag,long_gap,2880,2,2026-02-02 23:58:00,2026-02-02 23:59:00,append_only
+DO_2_3,minute_flag,sensor_freeze,2880,0,,2026-02-02 23:59:00,append_only
+DO_2_3,minute_flag,info_empty,2880,0,,2026-02-02 23:59:00,append_only
+DO_2_3,window_stat,missing_rate,25,0,,2026-02-02 23:59:00,append_only
+DO_2_3,window_stat,L_max_min,25,0,,2026-02-02 23:59:00,append_only
+DO_2_3,window_stat,gap_run_count,25,0,,2026-02-02 23:59:00,append_only
+DO_2_3,window_stat,P95_gap_min,25,1,2026-02-02 23:00:00,2026-02-02 23:59:00,append_only
+DO_2_3,hourly_score,Q_TI,25,0,,2026-02-02 23:59:00,append_only
+DO_2_3,hourly_score,Q_GS,25,0,,2026-02-02 23:59:00,append_only
+DO_2_3,hourly_score,Q_HA,25,0,,2026-02-02 23:59:00,append_only
+DO_2_3,hourly_score,D2_total,25,0,,2026-02-02 23:59:00,append_only
+DO_2_3,hourly_score,veto_flag,25,0,,2026-02-02 23:59:00,append_only
+DO_2_3,hourly_score,usable_tag,25,0,,2026-02-02 23:59:00,append_only
+DO_2_4,minute_flag,present_raw,2880,0,,2026-02-02 23:59:00,append_only
+DO_2_4,minute_flag,missing,2880,0,,2026-02-02 23:59:00,append_only
+DO_2_4,minute_flag,long_gap,2880,2,2026-02-02 23:58:00,2026-02-02 23:59:00,append_only
+DO_2_4,minute_flag,sensor_freeze,2880,0,,2026-02-02 23:59:00,append_only
+DO_2_4,minute_flag,info_empty,2880,0,,2026-02-02 23:59:00,append_only
+DO_2_4,window_stat,missing_rate,25,0,,2026-02-02 23:59:00,append_only
+DO_2_4,window_stat,L_max_min,25,0,,2026-02-02 23:59:00,append_only
+DO_2_4,window_stat,gap_run_count,25,0,,2026-02-02 23:59:00,append_only
+DO_2_4,window_stat,P95_gap_min,25,1,2026-02-02 23:00:00,2026-02-02 23:59:00,append_only
+DO_2_4,hourly_score,Q_TI,25,0,,2026-02-02 23:59:00,append_only
+DO_2_4,hourly_score,Q_GS,25,0,,2026-02-02 23:59:00,append_only
+DO_2_4,hourly_score,Q_HA,25,0,,2026-02-02 23:59:00,append_only
+DO_2_4,hourly_score,D2_total,25,0,,2026-02-02 23:59:00,append_only
+DO_2_4,hourly_score,veto_flag,25,0,,2026-02-02 23:59:00,append_only
+DO_2_4,hourly_score,usable_tag,25,0,,2026-02-02 23:59:00,append_only
+ORP_1_1,minute_flag,present_raw,2880,0,,2026-02-02 23:59:00,append_only
+ORP_1_1,minute_flag,missing,2880,0,,2026-02-02 23:59:00,append_only
+ORP_1_1,minute_flag,long_gap,2880,2,2026-02-02 23:58:00,2026-02-02 23:59:00,append_only
+ORP_1_1,minute_flag,sensor_freeze,2880,0,,2026-02-02 23:59:00,append_only
+ORP_1_1,minute_flag,info_empty,2880,0,,2026-02-02 23:59:00,append_only
+ORP_1_1,window_stat,missing_rate,25,0,,2026-02-02 23:59:00,append_only
+ORP_1_1,window_stat,L_max_min,25,0,,2026-02-02 23:59:00,append_only
+ORP_1_1,window_stat,gap_run_count,25,0,,2026-02-02 23:59:00,append_only
+ORP_1_1,window_stat,P95_gap_min,25,1,2026-02-02 23:00:00,2026-02-02 23:59:00,append_only
+ORP_1_1,hourly_score,Q_TI,25,0,,2026-02-02 23:59:00,append_only
+ORP_1_1,hourly_score,Q_GS,25,0,,2026-02-02 23:59:00,append_only
+ORP_1_1,hourly_score,Q_HA,25,0,,2026-02-02 23:59:00,append_only
+ORP_1_1,hourly_score,D2_total,25,0,,2026-02-02 23:59:00,append_only
+ORP_1_1,hourly_score,veto_flag,25,0,,2026-02-02 23:59:00,append_only
+ORP_1_1,hourly_score,usable_tag,25,0,,2026-02-02 23:59:00,append_only
+ORP_1_2,minute_flag,present_raw,2880,0,,2026-02-02 23:59:00,append_only
+ORP_1_2,minute_flag,missing,2880,0,,2026-02-02 23:59:00,append_only
+ORP_1_2,minute_flag,long_gap,2880,2,2026-02-02 23:58:00,2026-02-02 23:59:00,append_only
+ORP_1_2,minute_flag,sensor_freeze,2880,0,,2026-02-02 23:59:00,append_only
+ORP_1_2,minute_flag,info_empty,2880,0,,2026-02-02 23:59:00,append_only
+ORP_1_2,window_stat,missing_rate,25,0,,2026-02-02 23:59:00,append_only
+ORP_1_2,window_stat,L_max_min,25,0,,2026-02-02 23:59:00,append_only
+ORP_1_2,window_stat,gap_run_count,25,0,,2026-02-02 23:59:00,append_only
+ORP_1_2,window_stat,P95_gap_min,25,1,2026-02-02 23:00:00,2026-02-02 23:59:00,append_only
+ORP_1_2,hourly_score,Q_TI,25,0,,2026-02-02 23:59:00,append_only
+ORP_1_2,hourly_score,Q_GS,25,0,,2026-02-02 23:59:00,append_only
+ORP_1_2,hourly_score,Q_HA,25,0,,2026-02-02 23:59:00,append_only
+ORP_1_2,hourly_score,D2_total,25,0,,2026-02-02 23:59:00,append_only
+ORP_1_2,hourly_score,veto_flag,25,0,,2026-02-02 23:59:00,append_only
+ORP_1_2,hourly_score,usable_tag,25,0,,2026-02-02 23:59:00,append_only
+ORP_1_3,minute_flag,present_raw,2880,0,,2026-02-02 23:59:00,append_only
+ORP_1_3,minute_flag,missing,2880,0,,2026-02-02 23:59:00,append_only
+ORP_1_3,minute_flag,long_gap,2880,2,2026-02-02 23:58:00,2026-02-02 23:59:00,append_only
+ORP_1_3,minute_flag,sensor_freeze,2880,0,,2026-02-02 23:59:00,append_only
+ORP_1_3,minute_flag,info_empty,2880,0,,2026-02-02 23:59:00,append_only
+ORP_1_3,window_stat,missing_rate,25,0,,2026-02-02 23:59:00,append_only
+ORP_1_3,window_stat,L_max_min,25,0,,2026-02-02 23:59:00,append_only
+ORP_1_3,window_stat,gap_run_count,25,0,,2026-02-02 23:59:00,append_only
+ORP_1_3,window_stat,P95_gap_min,25,1,2026-02-02 23:00:00,2026-02-02 23:59:00,append_only
+ORP_1_3,hourly_score,Q_TI,25,0,,2026-02-02 23:59:00,append_only
+ORP_1_3,hourly_score,Q_GS,25,0,,2026-02-02 23:59:00,append_only
+ORP_1_3,hourly_score,Q_HA,25,0,,2026-02-02 23:59:00,append_only
+ORP_1_3,hourly_score,D2_total,25,0,,2026-02-02 23:59:00,append_only
+ORP_1_3,hourly_score,veto_flag,25,0,,2026-02-02 23:59:00,append_only
+ORP_1_3,hourly_score,usable_tag,25,0,,2026-02-02 23:59:00,append_only
+ORP_2_1,minute_flag,present_raw,2880,0,,2026-02-02 23:59:00,append_only
+ORP_2_1,minute_flag,missing,2880,0,,2026-02-02 23:59:00,append_only
+ORP_2_1,minute_flag,long_gap,2880,2,2026-02-02 23:58:00,2026-02-02 23:59:00,append_only
+ORP_2_1,minute_flag,sensor_freeze,2880,0,,2026-02-02 23:59:00,append_only
+ORP_2_1,minute_flag,info_empty,2880,0,,2026-02-02 23:59:00,append_only
+ORP_2_1,window_stat,missing_rate,25,0,,2026-02-02 23:59:00,append_only
+ORP_2_1,window_stat,L_max_min,25,0,,2026-02-02 23:59:00,append_only
+ORP_2_1,window_stat,gap_run_count,25,0,,2026-02-02 23:59:00,append_only
+ORP_2_1,window_stat,P95_gap_min,25,1,2026-02-02 23:00:00,2026-02-02 23:59:00,append_only
+ORP_2_1,hourly_score,Q_TI,25,0,,2026-02-02 23:59:00,append_only
+ORP_2_1,hourly_score,Q_GS,25,0,,2026-02-02 23:59:00,append_only
+ORP_2_1,hourly_score,Q_HA,25,0,,2026-02-02 23:59:00,append_only
+ORP_2_1,hourly_score,D2_total,25,0,,2026-02-02 23:59:00,append_only
+ORP_2_1,hourly_score,veto_flag,25,0,,2026-02-02 23:59:00,append_only
+ORP_2_1,hourly_score,usable_tag,25,0,,2026-02-02 23:59:00,append_only
+ORP_2_2,minute_flag,present_raw,2880,0,,2026-02-02 23:59:00,append_only
+ORP_2_2,minute_flag,missing,2880,0,,2026-02-02 23:59:00,append_only
+ORP_2_2,minute_flag,long_gap,2880,2,2026-02-02 23:58:00,2026-02-02 23:59:00,append_only
+ORP_2_2,minute_flag,sensor_freeze,2880,0,,2026-02-02 23:59:00,append_only
+ORP_2_2,minute_flag,info_empty,2880,0,,2026-02-02 23:59:00,append_only
+ORP_2_2,window_stat,missing_rate,25,0,,2026-02-02 23:59:00,append_only
+ORP_2_2,window_stat,L_max_min,25,0,,2026-02-02 23:59:00,append_only
+ORP_2_2,window_stat,gap_run_count,25,0,,2026-02-02 23:59:00,append_only
+ORP_2_2,window_stat,P95_gap_min,25,1,2026-02-02 23:00:00,2026-02-02 23:59:00,append_only
+ORP_2_2,hourly_score,Q_TI,25,0,,2026-02-02 23:59:00,append_only
+ORP_2_2,hourly_score,Q_GS,25,0,,2026-02-02 23:59:00,append_only
+ORP_2_2,hourly_score,Q_HA,25,0,,2026-02-02 23:59:00,append_only
+ORP_2_2,hourly_score,D2_total,25,0,,2026-02-02 23:59:00,append_only
+ORP_2_2,hourly_score,veto_flag,25,0,,2026-02-02 23:59:00,append_only
+ORP_2_2,hourly_score,usable_tag,25,0,,2026-02-02 23:59:00,append_only
+ORP_2_3,minute_flag,present_raw,2880,0,,2026-02-02 23:59:00,append_only
+ORP_2_3,minute_flag,missing,2880,0,,2026-02-02 23:59:00,append_only
+ORP_2_3,minute_flag,long_gap,2880,2,2026-02-02 23:58:00,2026-02-02 23:59:00,append_only
+ORP_2_3,minute_flag,sensor_freeze,2880,0,,2026-02-02 23:59:00,append_only
+ORP_2_3,minute_flag,info_empty,2880,0,,2026-02-02 23:59:00,append_only
+ORP_2_3,window_stat,missing_rate,25,0,,2026-02-02 23:59:00,append_only
+ORP_2_3,window_stat,L_max_min,25,0,,2026-02-02 23:59:00,append_only
+ORP_2_3,window_stat,gap_run_count,25,0,,2026-02-02 23:59:00,append_only
+ORP_2_3,window_stat,P95_gap_min,25,1,2026-02-02 23:00:00,2026-02-02 23:59:00,append_only
+ORP_2_3,hourly_score,Q_TI,25,0,,2026-02-02 23:59:00,append_only
+ORP_2_3,hourly_score,Q_GS,25,0,,2026-02-02 23:59:00,append_only
+ORP_2_3,hourly_score,Q_HA,25,0,,2026-02-02 23:59:00,append_only
+ORP_2_3,hourly_score,D2_total,25,0,,2026-02-02 23:59:00,append_only
+ORP_2_3,hourly_score,veto_flag,25,0,,2026-02-02 23:59:00,append_only
+ORP_2_3,hourly_score,usable_tag,25,0,,2026-02-02 23:59:00,append_only

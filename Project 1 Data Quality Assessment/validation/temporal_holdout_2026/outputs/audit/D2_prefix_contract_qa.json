@@ -1,0 +1,15 @@
+{
+  "test_kind": "production_functions_synthetic_pre_holdout_clock",
+  "raw_holdout_loaded": false,
+  "all_evidence_prefix_invariant": false,
+  "changed_fields": [
+    "P95_gap_min",
+    "long_gap"
+  ],
+  "strict_response_loss": "disabled_by_production_contract",
+  "sensitive_peer_route_tested": false,
+  "new_asof_gap_helper_prefix_test": "passed",
+  "new_helper_in_production_D2": false,
+  "isolated_candidate_flags_stats_Strict_prefix_passed": true,
+  "notes": "Scores are hour-start-labelled, available at the next hour; completion-dependent evidence requires separate audit."
+}

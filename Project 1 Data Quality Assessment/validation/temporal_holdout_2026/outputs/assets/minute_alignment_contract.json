@@ -1,0 +1,83 @@
+{
+  "ranges": {
+    "DO_1_1": [
+      -0.5,
+      12.0
+    ],
+    "DO_1_2": [
+      -0.5,
+      12.0
+    ],
+    "DO_1_3": [
+      -0.5,
+      12.0
+    ],
+    "DO_1_4": [
+      -0.5,
+      12.0
+    ],
+    "DO_2_1": [
+      -0.5,
+      12.0
+    ],
+    "DO_2_2": [
+      -0.5,
+      12.0
+    ],
+    "DO_2_3": [
+      -0.5,
+      12.0
+    ],
+    "DO_2_4": [
+      -0.5,
+      12.0
+    ],
+    "ORP_1_1": [
+      -550,
+      550
+    ],
+    "ORP_1_2": [
+      -550,
+      550
+    ],
+    "ORP_1_3": [
+      -550,
+      550
+    ],
+    "ORP_2_1": [
+      -550,
+      550
+    ],
+    "ORP_2_2": [
+      -550,
+      550
+    ],
+    "ORP_2_3": [
+      -550,
+      550
+    ],
+    "QR_1": [
+      0,
+      8000
+    ],
+    "QR_2": [
+      0,
+      8000
+    ],
+    "QIR_1": [
+      0,
+      5000
+    ],
+    "QIR_2": [
+      0,
+      5000
+    ]
+  },
+  "short_gap_min": 3,
+  "publication_delay_min": 3,
+  "source": "frozen_section_1_1_preprocessing_contract",
+  "range_invalid_never_filled": true,
+  "complete_invalid_span_short": true,
+  "raw_observations_preserved": true,
+  "temperature_route": "separate_native_minute_source"
+}
