@@ -1,0 +1,9 @@
+outputs/*.xlsx
+outputs/*.csv
+outputs/*.parquet
+outputs/previews/
+outputs/intermediate/
+__pycache__/
+.pytest_cache/
+*.pyc
+node_modules/
