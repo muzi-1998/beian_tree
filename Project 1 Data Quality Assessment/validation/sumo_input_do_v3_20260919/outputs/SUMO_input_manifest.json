@@ -1,0 +1,144 @@
+{
+  "run_id": "SUMO-INPUT-V3-20260919",
+  "period": {
+    "start": "2025-08-01 00:00:00",
+    "end": "2026-07-30 23:59:00"
+  },
+  "time_scale": {
+    "primary": "5min",
+    "sensitivity": "1min",
+    "context": "1h"
+  },
+  "cleaning": {
+    "hampel_window_min": 15,
+    "hampel_k": 6.0,
+    "hampel_alignment": "centered_offline_common_technical_qc",
+    "linear_interpolation_max_gap_min": 3,
+    "aggregation_min_support_fraction": 0.8
+  },
+  "source_audit": {
+    "flow": {
+      "rows": 524160,
+      "start": "2025-08-01 00:00:00",
+      "end": "2026-07-30 23:59:00"
+    },
+    "water": {
+      "rows": 524160,
+      "start": "2025-08-01 00:00:00",
+      "end": "2026-07-30 23:59:00"
+    },
+    "dose": {
+      "rows": 524160,
+      "start": "2025-08-01 00:00:00",
+      "end": "2026-07-30 23:59:00"
+    },
+    "s3d": {
+      "rows": 524160,
+      "start": "2025-08-01 00:00:00",
+      "end": "2026-07-30 23:59:00"
+    },
+    "bio": {
+      "rows": 524160,
+      "start": "2025-08-01 00:00:00",
+      "end": "2026-07-30 23:59:00"
+    },
+    "residual": {
+      "time_only_cells_repaired": 226,
+      "duplicate_rows_marked_ambiguous": 2880,
+      "duplicate_timestamps_marked_ambiguous": 1440
+    }
+  },
+  "input_sha256": {
+    "water": "441d9dfd6d7273670ec11bd91588759f6784acfec78172b1ff2555d6fccc30af",
+    "bio": "18cb7f4617095655d1cb15a932621a5fbf58ac6b8b16a092e6586caba5aa4856",
+    "dose": "e0e5321ba88a08b4d1a4f3989a8a23c9298ef69932267bf99e02d357984d626d",
+    "s3d": "d9c2aebc4d1b512803ddefff44401925756cb89b3dbb8b02430f53a12ebb4755",
+    "flow": "e5654b874d61fc9a3f4b68e220c8608c5f61773393999dbc40b62776dc59ee22",
+    "residual": "ec2496dc57bb3d8ab4455f9cad0162b680e1e894b9f1fd24cbf246a21880adca"
+  },
+  "intermediate_sha256": {
+    "process_1min_raw.csv": "05fe896a3df9338fc9ace619baf069fac1116d2500aa37aa396f42430972d9ef",
+    "process_1min_clean.csv": "29eb4a0b465c93b45ec0faeb61759b93c9849f3d3ff83350efe52a1bb5c789bd",
+    "process_1min_derived.csv": "9a3b8e2ae6addd44b45c6363d9f9f2f80f6b0f76a07a87da6c9a5c238b6d7c00",
+    "process_5min_raw.csv": "fc75b20393a9000f6baf415e4dfb96c70f2d561159c3ab3e341d07e838a89254",
+    "process_5min_clean.csv": "2d9eeffb9036180cdd11955e1e1eb4149adc187b0a2e8f15dcf6a2503a966728",
+    "process_5min_derived.csv": "ff88de9c7354a843312efd421577c50e122db5f2df0d5e29df04147525376ad6",
+    "process_1h_raw.csv": "fe615c30a041a6619d8074134f3f16e59af07a8754aa0602642c727295a00768",
+    "process_1h_clean.csv": "4b4bc51c66e4f8ad3fc0789109d71bc0b81d3913ad5ea9e8c29da15cfae0f9e8",
+    "process_1h_derived.csv": "49aa89c36aad9c8b749629ea3017b79b89f1c99801bc9e910c66af5a793ebea4",
+    "sensors_1min_raw.csv": "9d2d3d6b216584dafd3bda54537389438da46e267c33cd5fca4232d0f7a2b8b1",
+    "sensors_1min_clean.csv": "cde179c925a5a0b65cefb784cb78e0abd73ff9c02579dbd6af72e205d017bd42",
+    "sensors_5min_raw.csv": "2eb69d9901050de35d2e8998c9d694d01e41072e79cea169fd7fe26198978c3a",
+    "sensors_5min_clean.csv": "095f01349aabb0997bcd7d4ab777fc7093764d27c138f45ee1566955ac2c7903"
+  },
+  "final_outputs": {
+    "derived_formula_QA.json": {
+      "bytes": 1655,
+      "sha256": "f79433f7110c15ac5d88763985ae8b78247a851431c699909fdebd99f5feeff5"
+    },
+    "SUMO_DO_ORP_1min.xlsx": {
+      "bytes": 83421762,
+      "sha256": "0f905b33326e07a1d185e71f28a780ef3e2a6c52b51efa8b52caea421dd80f93"
+    },
+    "SUMO_DO_ORP_1min_clean.parquet": {
+      "bytes": 14928234,
+      "sha256": "beca4154646e60311c194039599a9d4d5e5f8ebbc790f42408602ece5bd4d43f"
+    },
+    "SUMO_DO_ORP_1min_raw.parquet": {
+      "bytes": 14960329,
+      "sha256": "c43fc3e50df1c51bc4106c31accbfc8a401b848250e37cbb4ff32b9e29392359"
+    },
+    "SUMO_DO_ORP_5min.xlsx": {
+      "bytes": 18836687,
+      "sha256": "7868c2b47f73f2293a34122fde9b3322d46479a06fe323ecd19996365232918a"
+    },
+    "SUMO_DO_ORP_5min_ready.parquet": {
+      "bytes": 5544148,
+      "sha256": "8cda4573791e74b7f6a72dc0576dd79a4c69980348d7d49c5536c110eace7e44"
+    },
+    "SUMO_input_preparation_QA_ZH.md": {
+      "bytes": 2237,
+      "sha256": "2a74beccc055c646576ea83671236c6cfe83ef3e72851476ef2391257e20251d"
+    },
+    "SUMO_input_quality_flags_1min.parquet": {
+      "bytes": 4392660,
+      "sha256": "fd9fb2f37fbdc134982274a3fbdcb51a0b4e29e8a63061d9b4aa17bfaf0c6bb1"
+    },
+    "SUMO_process_inputs_1h.xlsx": {
+      "bytes": 4661385,
+      "sha256": "93368d9f8d1acaacf01e7e3dee0d37f03638ee551cc4102da1a41dd50162095a"
+    },
+    "SUMO_process_inputs_1h_ready.parquet": {
+      "bytes": 2601611,
+      "sha256": "41cc7f6af2bfb1c62d76abe1d9f3bda27923fa9ecf9e3ddb6745458ef93c0509"
+    },
+    "SUMO_process_inputs_1min.xlsx": {
+      "bytes": 202491194,
+      "sha256": "33f91db52dcf3d7f3b0b77e7d5b7a82216c07ef1d17563c2b3958dc4428094a7"
+    },
+    "SUMO_process_inputs_1min_clean.parquet": {
+      "bytes": 23343491,
+      "sha256": "af5b1eb087385f6f2dad322010f7fb39ae75b48126646962dfef4833f03d66ec"
+    },
+    "SUMO_process_inputs_1min_derived.parquet": {
+      "bytes": 23336379,
+      "sha256": "e4a1dc13583fdf2d455d07b4a96a421080ff36c9a7cc27631dca0d24e4bafa32"
+    },
+    "SUMO_process_inputs_1min_raw.parquet": {
+      "bytes": 24232463,
+      "sha256": "ccc0e28468c8baf27df2f152d860e4da1a8f100705ca5f0c939361e76511cab4"
+    },
+    "SUMO_process_inputs_5min.xlsx": {
+      "bytes": 46327150,
+      "sha256": "911e86744ab404f914dce52fead0e6c8358d571ff69dfee9f74b4e7a08c69d55"
+    },
+    "SUMO_process_inputs_5min_ready.parquet": {
+      "bytes": 17027128,
+      "sha256": "090f1309af1e044d80851edc5bcfe87a548db28f9f07f632025169be1e2ec590"
+    },
+    "workbook_structural_QA.json": {
+      "bytes": 10770,
+      "sha256": "a460043e0887f0ac3a1425c251e307bb83679ad032fa86d0dca49719bf946b48"
+    }
+  }
+}
