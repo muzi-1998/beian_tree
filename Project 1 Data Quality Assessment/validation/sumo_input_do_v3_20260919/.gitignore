@@ -7,3 +7,8 @@ __pycache__/
 .pytest_cache/
 *.pyc
 node_modules/
+outputs/dqr_forcing/*.parquet
+outputs/dqr_forcing/*.csv
+outputs/dqr_forcing/*.gz
+outputs/dqr_forcing/audit_tables.json
+outputs/dqr_forcing/previews/

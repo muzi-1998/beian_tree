@@ -1,0 +1,22 @@
+{
+  "version": "DQR-INPUTDO-EXPORT-20260919-v1",
+  "validation_start": "2026-04-14 00:00:00",
+  "end_exclusive": "2026-07-31 00:00:00",
+  "warmup_days": 14,
+  "pilot_evaluation_days": 28,
+  "score_low_threshold": 3.0,
+  "complete_evidence": 1.0,
+  "quality_clock": "latest_decision_at_no_later_than_measurement_time",
+  "score_expiry_minutes": 60,
+  "common_native_gap_max_minutes": 3,
+  "native_gap_endpoint_min_score": 4.0,
+  "native_gap_endpoint_requires_complete_evidence": true,
+  "aggregation_minutes": 5,
+  "aggregation_required_minutes": 5,
+  "qualified_fault_repair_operator": null,
+  "do4_handling": "common_zero_equivalent_physicalized_input_with_raw_retained",
+  "do4_zero_tolerance_source": "D3/configs/d3_physical_bounds.yaml",
+  "d4_handling": "pair_diagnostic_no_automatic_blame_assignment",
+  "orp_handling": "diagnostic_series_not_generic_ASM_forcing",
+  "temporal_claim": "revised_temporal_out_of_sample_evaluation_not_first_blind_test"
+}

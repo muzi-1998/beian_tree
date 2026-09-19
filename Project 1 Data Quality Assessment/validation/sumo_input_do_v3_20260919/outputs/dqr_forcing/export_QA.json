@@ -1,0 +1,15 @@
+{
+  "source_hashes_match": true,
+  "holdout_5min_rows": 31104,
+  "no_future_score": true,
+  "unrecoverable_forcing_stays_nan": true,
+  "kept_observations_unchanged": true,
+  "ORP_negative_values_retained": true,
+  "SUMO_DO_nonnegative": true,
+  "pilot_DO8_complete": true,
+  "pilot_required_process_complete": false,
+  "DO6_numeric_changes_vs_common_raw_5min": 0,
+  "all_108d_DO8_continuous": false,
+  "no_fault_repair_qualification_claimed": true,
+  "selected_14d_pilot_complete_except_documented_model_unit_limits": true
+}
