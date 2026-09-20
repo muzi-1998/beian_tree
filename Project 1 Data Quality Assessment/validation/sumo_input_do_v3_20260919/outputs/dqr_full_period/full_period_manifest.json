@@ -1,0 +1,43 @@
+{
+  "version": "DQR-FULL-PERIOD-SUMO-V1",
+  "inputs": {
+    "D:\\004_git\\beian_tree-main\\Project 1 Data Quality Assessment\\validation\\sumo_input_do_v3_20260919\\outputs\\SUMO_DO_ORP_1min_raw.parquet": "c43fc3e50df1c51bc4106c31accbfc8a401b848250e37cbb4ff32b9e29392359",
+    "D:\\004_git\\beian_tree-main\\Project 1 Data Quality Assessment\\validation\\sumo_input_do_v3_20260919\\outputs\\SUMO_input_manifest.json": "80506df021acec19fa0579db30e61bc78607625b8b028b37bffaa99f5e04414c",
+    "D:\\004_git\\beian_tree-main\\Project 1 Data Quality Assessment\\1.1 Decomposition\\outputs\\parquet\\time_base_1min_raw.parquet": "df2acf4d548b8e6faee0bda3c73ea195fe131ca56a4fa8e8f3a72614c71dd7e5",
+    "D:\\004_git\\beian_tree-main\\Project 1 Data Quality Assessment\\DQR Multidimensional Aggregation and Evidence-Aware Integration\\outputs\\aggregation_v2_4\\data\\DQR_node_scores_v2.4.parquet": "b239c63fd92eeabe33a9fd468e58fc750743bc1c7b4241a4d527a60a92332b1c",
+    "D:\\004_git\\beian_tree-main\\Project 1 Data Quality Assessment\\DQR Multidimensional Aggregation and Evidence-Aware Integration\\outputs\\aggregation_v2_4\\manifests\\DQR_publication_manifest.json": "a1df173f0a08af5e4fe759af7c05db2634e6b614142c49a720b0873f5601f3df",
+    "D:\\004_git\\beian_tree-main\\Project 1 Data Quality Assessment\\validation\\revised_reference_20260917\\outputs\\DQR_node.parquet": "74d4646d1ab33460d7e35f6850b5db2503e2444aba175ca4be2c4cd5fa4c625e",
+    "D:\\004_git\\beian_tree-main\\Project 1 Data Quality Assessment\\validation\\revised_reference_20260917\\outputs\\Reevaluation_publication_manifest.json": "33c588d8759e9bb6cbfbf6869313b09b10e681c3b47950a147f1c62cd628172a",
+    "D:\\004_git\\beian_tree-main\\Project 1 Data Quality Assessment\\validation\\sumo_input_do_v3_20260919\\outputs\\dqr_forcing\\do_orp_strategy_audit_1min.parquet": "f5701b77e3707a3ada88b3db8662a370b6d7264ddc7005db5034555b44f13a37",
+    "D:\\004_git\\beian_tree-main\\Project 1 Data Quality Assessment\\validation\\sumo_input_do_v3_20260919\\outputs\\dqr_forcing\\DQR_forcing_manifest.json": "cb3c9d2429bffd367168c7014dbc1314bb769ef3e2caff574440c61b4f48b087",
+    "D:\\004_git\\beian_tree-main\\Project 1 Data Quality Assessment\\D3 Physical rationality and rate constraints\\configs\\d3_physical_bounds.yaml": "900180b44c0e6a0db9bbfe8c58d9658d2748e9d26622b14dac49f4a1ec1011c3",
+    "D:\\004_git\\beian_tree-main\\Project 1 Data Quality Assessment\\D5 Topological Role Consistency and Structural Representativeness\\outputs\\audit\\support_migration\\D5_support_migration_manifest.json": "a6492107558845059640727792d600394367e16b8d9205d5b96346064871abff"
+  },
+  "outputs": {
+    "audit_tables.json": "68afdccc7e39bdaeb6fac13fc082ee0d3b1455ff6ceeca38306e6f78b105e532",
+    "Common_technical_DO_ORP14_5min_20250801_20260730.csv": "02c7281df6428b88a06b2e2a600e498c96f4df14c57a81763ac4ed0cb6a64bcc",
+    "DQR_action_summary.csv": "573ae370ea07547e76c3f66b4608bdd7950ab8fad33bd37c1b2c0e850021aed4",
+    "DQR_DO8_5min_20250801_20260730.csv": "adddba9e144cb695f0def6eaf1e3f508d1f2e4dada612d9d122d422e8bd1dcb6",
+    "DQR_DO_ORP_full_period_1min_long.parquet": "c4bc10de16d1f9743152675df11908a9b6f48b51d171cf4b2e2e21ec23977ce1",
+    "DQR_DO_ORP_measurement_full_period_1min.csv.gz": "10fcc95f233182bf78a4050107d7ed36ba6f8f0775215edc2cea3b1a35a7896a",
+    "DQR_full_period_SUMO_audit.xlsx": "10d5d8d272e62241151df894cfb1a5bdf89af9d8adaf9ee34fcf7b8ef1b64959",
+    "DQR_full_period_SUMO_audit.xlsx.inspect.ndjson": "d9f57e68ca6651d2af34a5de5baeab2e6e89a1bb2489ed555c0d21c03f557e15",
+    "DQR_ORP6_5min_20250801_20260730.csv": "7800fafd4a6747fa68fcaf9d5c5c4b9156cad4a6f96852a6bb10cdd99187728a",
+    "DQR_period_summary.csv": "91c37bde4d2e9201b335affa045ff2c55b96b30d95187065ddd43742fa4f4d4c",
+    "DQR_Raw_14d_window_comparison.csv": "0f07f4ad34dfa975a3df5d2ab15325955765c3b2e7166bd580fecde295c28942",
+    "DQR_Raw_channel_comparison.csv": "4e247d479375d6416bcaeda7bb909fc0fdc85ece3c93d60326358026ad79678a",
+    "FULL_PERIOD_DQR_SUMO_REVIEW_ZH.md": "9f96ce28b41de3d584fb91d72dbab13a283a69dac6fc8d979367a08077ba5783",
+    "full_period_summary.json": "c906fa8775b98af4192c7a33c1d4754ed6a7cfad6831ee9cb1a63f8278bd47fd",
+    "Raw_DO_ORP14_5min_20250801_20260730.csv": "9213e86399e6ade9d7ce753e78e798f808c9e6f3f538af0122be76c70b4cf1e0",
+    "verification.json": "7411b1e341b3efe18ff467d20d1aaf684ac7fcc51e3b21b6bf3ea2548ba0c5dd",
+    "workbook_error_scan.json": "acc0111e19cf44d2753fc9ecd164bf1b27fbd65597463a25cf48bd1c65e90146"
+  },
+  "code": {
+    "export_full_period_dqr.py": "a57f18f8a1abfef5ef01a60c7961ada56970b6e7b2c93a0a69b884bca0347c0e",
+    "export_dqr_forcing.py": "852c251fd5a43aa41fb3e40a9bad4a101d5caa94339d47bd055945b0405cba28",
+    "prepare_sumo_inputs.py": "f54589cb4bf12a20cda4bbbd93b7524d4b73815f573e9142a76c7504ae16dda3",
+    "verify_full_period_dqr.py": "ade2542442bd74a38fa8bd96efae0a7ad8a9eb81b724501e04585993ee2ce749",
+    "test_full_period_dqr.py": "2a7369d4469d8a5f6cf89393de9cf23c198c8ef0cb61e0e0e786debfecec4bfd",
+    "build_full_period_audit.mjs": "023c5923b8850cbe9a3323390f52878e50d67eba12f7b9e9990abc79b947d8bc"
+  }
+}

@@ -12,3 +12,9 @@ outputs/dqr_forcing/*.csv
 outputs/dqr_forcing/*.gz
 outputs/dqr_forcing/audit_tables.json
 outputs/dqr_forcing/previews/
+outputs/dqr_full_period/*.parquet
+outputs/dqr_full_period/*.csv
+outputs/dqr_full_period/*.gz
+outputs/dqr_full_period/audit_tables.json
+outputs/dqr_full_period/previews/
+outputs/dqr_full_period/*.inspect.ndjson

@@ -104,3 +104,24 @@ that message alone: the independent verifier reopens the delivered workbook
 and checks every window timestamp and channel summary against the source
 tables. Those checks pass for this release; runtime teardown remains an
 authoring-tool limitation, not a reason to suppress verification errors.
+
+## Full observed-period export
+
+`export_full_period_dqr.py` extends the machine-readable forcing export over
+the actual observed period, 2025-08-01 through 2026-07-30 23:59. It does not
+claim data through 2028-07 because those observations are absent. Historical
+scores through 2026-04-13 are retrospective same-hour labels; the 2026-04-14
+onward segment uses the revised temporal decision clock and is explicitly
+labelled a re-evaluation rather than a first blind test.
+
+The bundle separates three 14-day uses: maximum observed DQR contrast for a
+post-hoc mechanism stress test, a high-coverage window that still contains DO
+interventions, and a fully complete pipeline window. These are different
+estimands. In particular, maximum contrast does not imply direct SUMO
+runnability, and a fully complete window may contain no DQR intervention.
+
+Later observations on 2026-04-13 that were not present in the historical DQR
+source are fail-closed as `UNASSESSED`. D5's frozen reference endpoint is read
+from the canonical support-migration manifest (2026-01-27 04:30); low report
+coverage after that boundary is an evidence-maturity/applicability limitation,
+not evidence that the underlying measurements are poor.
