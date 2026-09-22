@@ -34,8 +34,8 @@ ORP 是诊断及自定义模型辅助数据；常规 Input DO 反应器不把 OR
 
 长期评价目标仍为 2026-04-14 至 2026-07-30 共 108 天；建议动态预热 2026-03-31 至 2026-04-13。
 原拟 2026-04-14 至 2026-05-11 的28天验证候选，因共同过程输入断点，暂不作为完整可运行包。
-当前短期试运行选择为 2026-04-10 00:00:00 至 2026-05-08 00:00:00（结束时刻不含）：
-预热 14 天，评价从 2026-04-24 00:00:00 开始，共14天。
+当前短期试运行选择为 2026-03-31 00:00:00 至 2026-04-28 00:00:00（结束时刻不含）：
+预热 14 天，评价从 2026-04-14 00:00:00 开始，共14天。
 选择依据是最早的完整日界连续输入窗口，不依据 DQR 高低或下游结果。
 14 天只是预热起点建议，必须先建立统一的稳态/已校核状态，并检查 NH4、MLSS、氮平衡是否稳定。
 若需从任意初态起步，应按 SRT/状态收敛决定更长预热，不能保证 14 天自动足够。
@@ -101,103 +101,38 @@ ORP 是诊断及自定义模型辅助数据；常规 Input DO 反应器不把 OR
 
 | scope                                                   | start               | end_exclusive       |        days |   warmup_days |   post_warmup_days | supports_28d_plus_warmup   |
 |:--------------------------------------------------------|:--------------------|:--------------------|------------:|--------------:|-------------------:|:---------------------------|
-| six_aerobic_DO                                          | 2026-03-31 00:00:00 | 2026-06-29 16:30:00 | 90.6875     |            14 |           76.6875  | True                       |
-| six_aerobic_DO                                          | 2026-06-29 23:30:00 | 2026-06-30 10:50:00 |  0.472222   |            14 |            0       | False                      |
-| six_aerobic_DO                                          | 2026-06-30 11:05:00 | 2026-06-30 11:25:00 |  0.0138889  |            14 |            0       | False                      |
-| six_aerobic_DO                                          | 2026-06-30 13:55:00 | 2026-06-30 14:05:00 |  0.00694444 |            14 |            0       | False                      |
-| six_aerobic_DO                                          | 2026-06-30 14:35:00 | 2026-06-30 15:00:00 |  0.0173611  |            14 |            0       | False                      |
-| six_aerobic_DO                                          | 2026-06-30 15:10:00 | 2026-06-30 15:25:00 |  0.0104167  |            14 |            0       | False                      |
-| six_aerobic_DO                                          | 2026-06-30 15:30:00 | 2026-06-30 15:35:00 |  0.00347222 |            14 |            0       | False                      |
-| six_aerobic_DO                                          | 2026-06-30 15:40:00 | 2026-06-30 15:55:00 |  0.0104167  |            14 |            0       | False                      |
-| six_aerobic_DO                                          | 2026-06-30 16:05:00 | 2026-07-06 14:10:00 |  5.92014    |            14 |            0       | False                      |
-| six_aerobic_DO                                          | 2026-07-06 14:20:00 | 2026-07-31 00:00:00 | 24.4028     |            14 |           10.4028  | False                      |
-| eight_DO_common_DO4                                     | 2026-03-31 00:00:00 | 2026-06-29 16:30:00 | 90.6875     |            14 |           76.6875  | True                       |
-| eight_DO_common_DO4                                     | 2026-06-29 23:30:00 | 2026-06-30 10:50:00 |  0.472222   |            14 |            0       | False                      |
-| eight_DO_common_DO4                                     | 2026-06-30 11:05:00 | 2026-06-30 11:25:00 |  0.0138889  |            14 |            0       | False                      |
-| eight_DO_common_DO4                                     | 2026-06-30 13:55:00 | 2026-06-30 14:00:00 |  0.00347222 |            14 |            0       | False                      |
-| eight_DO_common_DO4                                     | 2026-06-30 14:35:00 | 2026-06-30 14:55:00 |  0.0138889  |            14 |            0       | False                      |
-| eight_DO_common_DO4                                     | 2026-06-30 15:10:00 | 2026-06-30 15:25:00 |  0.0104167  |            14 |            0       | False                      |
-| eight_DO_common_DO4                                     | 2026-06-30 15:30:00 | 2026-06-30 15:35:00 |  0.00347222 |            14 |            0       | False                      |
-| eight_DO_common_DO4                                     | 2026-06-30 15:40:00 | 2026-06-30 15:55:00 |  0.0104167  |            14 |            0       | False                      |
-| eight_DO_common_DO4                                     | 2026-06-30 16:05:00 | 2026-07-06 14:10:00 |  5.92014    |            14 |            0       | False                      |
-| eight_DO_common_DO4                                     | 2026-07-06 14:20:00 | 2026-07-31 00:00:00 | 24.4028     |            14 |           10.4028  | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-03-31 00:00:00 | 2026-04-09 15:05:00 |  9.62847    |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-04-09 15:10:00 | 2026-04-09 17:30:00 |  0.0972222  |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-04-09 18:00:00 | 2026-05-09 17:05:00 | 29.9618     |            14 |           15.9618  | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-05-09 19:35:00 | 2026-06-07 13:15:00 | 28.7361     |            14 |           14.7361  | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-06-07 13:20:00 | 2026-06-22 15:55:00 | 15.1076     |            14 |            1.10764 | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-06-22 16:40:00 | 2026-06-23 13:25:00 |  0.864583   |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-06-23 13:40:00 | 2026-06-26 14:20:00 |  3.02778    |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-06-26 14:25:00 | 2026-06-29 12:15:00 |  2.90972    |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-06-29 15:10:00 | 2026-06-29 16:30:00 |  0.0555556  |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-06-29 23:30:00 | 2026-06-30 10:50:00 |  0.472222   |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-06-30 11:05:00 | 2026-06-30 11:25:00 |  0.0138889  |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-06-30 13:55:00 | 2026-06-30 14:00:00 |  0.00347222 |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-06-30 14:35:00 | 2026-06-30 14:55:00 |  0.0138889  |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-06-30 15:10:00 | 2026-06-30 15:25:00 |  0.0104167  |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-06-30 15:30:00 | 2026-06-30 15:35:00 |  0.00347222 |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-06-30 15:40:00 | 2026-06-30 15:55:00 |  0.0104167  |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-06-30 16:05:00 | 2026-07-06 14:10:00 |  5.92014    |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-06 14:20:00 | 2026-07-06 15:15:00 |  0.0381944  |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-06 15:25:00 | 2026-07-07 05:05:00 |  0.569444   |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-07 05:10:00 | 2026-07-07 05:25:00 |  0.0104167  |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-07 05:35:00 | 2026-07-07 06:00:00 |  0.0173611  |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-07 06:05:00 | 2026-07-07 06:35:00 |  0.0208333  |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-07 06:40:00 | 2026-07-07 08:05:00 |  0.0590278  |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-07 08:10:00 | 2026-07-07 08:15:00 |  0.00347222 |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-07 08:25:00 | 2026-07-07 08:55:00 |  0.0208333  |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-07 09:20:00 | 2026-07-07 09:45:00 |  0.0173611  |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-07 09:55:00 | 2026-07-07 10:05:00 |  0.00694444 |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-07 10:15:00 | 2026-07-07 10:35:00 |  0.0138889  |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-07 10:45:00 | 2026-07-07 11:00:00 |  0.0104167  |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-07 11:10:00 | 2026-07-07 11:25:00 |  0.0104167  |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-07 11:35:00 | 2026-07-08 15:00:00 |  1.14236    |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-08 15:05:00 | 2026-07-11 23:00:00 |  3.32986    |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-11 23:05:00 | 2026-07-11 23:15:00 |  0.00694444 |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-11 23:20:00 | 2026-07-12 01:55:00 |  0.107639   |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-12 02:00:00 | 2026-07-12 02:05:00 |  0.00347222 |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-12 02:10:00 | 2026-07-12 02:15:00 |  0.00347222 |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-12 02:25:00 | 2026-07-12 11:55:00 |  0.395833   |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-12 12:15:00 | 2026-07-15 13:10:00 |  3.03819    |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-15 13:15:00 | 2026-07-21 22:25:00 |  6.38194    |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-21 22:35:00 | 2026-07-21 22:50:00 |  0.0104167  |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-21 23:10:00 | 2026-07-25 03:20:00 |  3.17361    |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-25 03:35:00 | 2026-07-26 03:15:00 |  0.986111   |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-26 03:20:00 | 2026-07-26 03:25:00 |  0.00347222 |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-26 03:45:00 | 2026-07-26 05:45:00 |  0.0833333  |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-26 05:55:00 | 2026-07-26 06:05:00 |  0.00694444 |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-26 06:10:00 | 2026-07-26 06:20:00 |  0.00694444 |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-26 06:25:00 | 2026-07-26 07:10:00 |  0.03125    |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-26 07:20:00 | 2026-07-26 07:30:00 |  0.00694444 |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-26 07:40:00 | 2026-07-26 08:50:00 |  0.0486111  |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-26 09:00:00 | 2026-07-26 09:20:00 |  0.0138889  |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-26 09:25:00 | 2026-07-26 09:30:00 |  0.00347222 |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-26 09:40:00 | 2026-07-26 10:00:00 |  0.0138889  |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-26 10:10:00 | 2026-07-26 10:15:00 |  0.00347222 |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-26 10:25:00 | 2026-07-26 10:40:00 |  0.0104167  |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-26 10:45:00 | 2026-07-28 21:50:00 |  2.46181    |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-28 22:10:00 | 2026-07-28 22:15:00 |  0.00347222 |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-28 22:20:00 | 2026-07-28 22:25:00 |  0.00347222 |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-28 22:30:00 | 2026-07-29 09:10:00 |  0.444444   |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-29 09:20:00 | 2026-07-29 09:35:00 |  0.0104167  |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-29 09:45:00 | 2026-07-29 13:45:00 |  0.166667   |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-29 13:50:00 | 2026-07-29 13:55:00 |  0.00347222 |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-29 14:10:00 | 2026-07-29 14:15:00 |  0.00347222 |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-29 14:20:00 | 2026-07-29 14:25:00 |  0.00347222 |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-29 14:35:00 | 2026-07-29 15:35:00 |  0.0416667  |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-29 15:45:00 | 2026-07-29 15:55:00 |  0.00694444 |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-29 16:05:00 | 2026-07-29 16:40:00 |  0.0243056  |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-29 16:55:00 | 2026-07-29 17:00:00 |  0.00347222 |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-29 17:20:00 | 2026-07-29 17:40:00 |  0.0138889  |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-29 17:45:00 | 2026-07-29 21:45:00 |  0.166667   |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-29 21:55:00 | 2026-07-29 22:25:00 |  0.0208333  |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-29 22:30:00 | 2026-07-29 22:35:00 |  0.00347222 |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-29 22:45:00 | 2026-07-30 21:55:00 |  0.965278   |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-30 22:15:00 | 2026-07-30 22:20:00 |  0.00347222 |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-30 22:35:00 | 2026-07-30 22:40:00 |  0.00347222 |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-30 22:50:00 | 2026-07-30 23:20:00 |  0.0208333  |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-30 23:30:00 | 2026-07-30 23:35:00 |  0.00347222 |            14 |            0       | False                      |
-| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-30 23:55:00 | 2026-07-31 00:00:00 |  0.00347222 |            14 |            0       | False                      |
+| six_aerobic_DO                                          | 2026-03-31 00:00:00 | 2026-06-29 16:30:00 | 90.6875     |            14 |            76.6875 | True                       |
+| six_aerobic_DO                                          | 2026-06-29 23:30:00 | 2026-06-30 10:50:00 |  0.472222   |            14 |             0      | False                      |
+| six_aerobic_DO                                          | 2026-06-30 11:05:00 | 2026-06-30 11:25:00 |  0.0138889  |            14 |             0      | False                      |
+| six_aerobic_DO                                          | 2026-06-30 13:55:00 | 2026-06-30 14:05:00 |  0.00694444 |            14 |             0      | False                      |
+| six_aerobic_DO                                          | 2026-06-30 14:35:00 | 2026-06-30 15:00:00 |  0.0173611  |            14 |             0      | False                      |
+| six_aerobic_DO                                          | 2026-06-30 15:10:00 | 2026-06-30 15:25:00 |  0.0104167  |            14 |             0      | False                      |
+| six_aerobic_DO                                          | 2026-06-30 15:30:00 | 2026-06-30 15:35:00 |  0.00347222 |            14 |             0      | False                      |
+| six_aerobic_DO                                          | 2026-06-30 15:40:00 | 2026-06-30 15:55:00 |  0.0104167  |            14 |             0      | False                      |
+| six_aerobic_DO                                          | 2026-06-30 16:05:00 | 2026-07-06 14:10:00 |  5.92014    |            14 |             0      | False                      |
+| six_aerobic_DO                                          | 2026-07-06 14:20:00 | 2026-07-31 00:00:00 | 24.4028     |            14 |            10.4028 | False                      |
+| eight_DO_common_DO4                                     | 2026-03-31 00:00:00 | 2026-06-29 16:30:00 | 90.6875     |            14 |            76.6875 | True                       |
+| eight_DO_common_DO4                                     | 2026-06-29 23:30:00 | 2026-06-30 10:50:00 |  0.472222   |            14 |             0      | False                      |
+| eight_DO_common_DO4                                     | 2026-06-30 11:05:00 | 2026-06-30 11:25:00 |  0.0138889  |            14 |             0      | False                      |
+| eight_DO_common_DO4                                     | 2026-06-30 13:55:00 | 2026-06-30 14:00:00 |  0.00347222 |            14 |             0      | False                      |
+| eight_DO_common_DO4                                     | 2026-06-30 14:35:00 | 2026-06-30 14:55:00 |  0.0138889  |            14 |             0      | False                      |
+| eight_DO_common_DO4                                     | 2026-06-30 15:10:00 | 2026-06-30 15:25:00 |  0.0104167  |            14 |             0      | False                      |
+| eight_DO_common_DO4                                     | 2026-06-30 15:30:00 | 2026-06-30 15:35:00 |  0.00347222 |            14 |             0      | False                      |
+| eight_DO_common_DO4                                     | 2026-06-30 15:40:00 | 2026-06-30 15:55:00 |  0.0104167  |            14 |             0      | False                      |
+| eight_DO_common_DO4                                     | 2026-06-30 16:05:00 | 2026-07-06 14:10:00 |  5.92014    |            14 |             0      | False                      |
+| eight_DO_common_DO4                                     | 2026-07-06 14:20:00 | 2026-07-31 00:00:00 | 24.4028     |            14 |            10.4028 | False                      |
+| eight_DO_plus_required_process_nonmissing_units_pending | 2026-03-31 00:00:00 | 2026-05-09 17:05:00 | 39.7118     |            14 |            25.7118 | False                      |
+| eight_DO_plus_required_process_nonmissing_units_pending | 2026-05-09 19:35:00 | 2026-06-29 12:15:00 | 50.6944     |            14 |            36.6944 | True                       |
+| eight_DO_plus_required_process_nonmissing_units_pending | 2026-06-29 15:10:00 | 2026-06-29 16:25:00 |  0.0520833  |            14 |             0      | False                      |
+| eight_DO_plus_required_process_nonmissing_units_pending | 2026-06-29 23:30:00 | 2026-06-30 10:50:00 |  0.472222   |            14 |             0      | False                      |
+| eight_DO_plus_required_process_nonmissing_units_pending | 2026-06-30 11:05:00 | 2026-06-30 11:25:00 |  0.0138889  |            14 |             0      | False                      |
+| eight_DO_plus_required_process_nonmissing_units_pending | 2026-06-30 13:55:00 | 2026-06-30 14:00:00 |  0.00347222 |            14 |             0      | False                      |
+| eight_DO_plus_required_process_nonmissing_units_pending | 2026-06-30 14:35:00 | 2026-06-30 14:55:00 |  0.0138889  |            14 |             0      | False                      |
+| eight_DO_plus_required_process_nonmissing_units_pending | 2026-06-30 15:10:00 | 2026-06-30 15:25:00 |  0.0104167  |            14 |             0      | False                      |
+| eight_DO_plus_required_process_nonmissing_units_pending | 2026-06-30 15:30:00 | 2026-06-30 15:35:00 |  0.00347222 |            14 |             0      | False                      |
+| eight_DO_plus_required_process_nonmissing_units_pending | 2026-06-30 15:40:00 | 2026-06-30 15:55:00 |  0.0104167  |            14 |             0      | False                      |
+| eight_DO_plus_required_process_nonmissing_units_pending | 2026-06-30 16:05:00 | 2026-07-06 14:10:00 |  5.92014    |            14 |             0      | False                      |
+| eight_DO_plus_required_process_nonmissing_units_pending | 2026-07-06 14:20:00 | 2026-07-30 21:45:00 | 24.309      |            14 |            10.309  | False                      |
 
 ## 软件依据
 

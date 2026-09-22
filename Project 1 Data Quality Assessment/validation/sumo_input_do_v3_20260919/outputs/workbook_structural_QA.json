@@ -1,6 +1,6 @@
 {
   "SUMO_process_inputs_1min.xlsx": {
-    "bytes": 202491194,
+    "bytes": 276990858,
     "zip_test": null,
     "sheets": {
       "Raw": {
@@ -33,6 +33,21 @@
         "bold": true,
         "fill": "FF1F4E78"
       },
+      "SUMO_Ready": {
+        "rows": 524161,
+        "cols": 28,
+        "pane": "<pane xSplit=\"1\" ySplit=\"1\" topLeftCell=\"B2\" activePane=\"bottomRight\" state=\"frozen\"/>",
+        "header": [
+          "日期",
+          "进水瞬时流量（m³/h）",
+          "出水瞬时流量（m³/h）",
+          "进水pH",
+          "进水COD（mg/L）"
+        ],
+        "font": "Arial",
+        "bold": true,
+        "fill": "FF1F4E78"
+      },
       "Derived_m3d": {
         "rows": 524161,
         "cols": 17,
@@ -50,7 +65,7 @@
       },
       "QA": {
         "rows": 28,
-        "cols": 14,
+        "cols": 22,
         "pane": "<pane ySplit=\"1\" topLeftCell=\"A2\" activePane=\"bottomLeft\" state=\"frozen\"/>",
         "header": [
           "变量",
@@ -65,7 +80,7 @@
       },
       "DataDictionary": {
         "rows": 31,
-        "cols": 8,
+        "cols": 10,
         "pane": "<pane ySplit=\"1\" topLeftCell=\"A2\" activePane=\"bottomLeft\" state=\"frozen\"/>",
         "header": [
           "输出变量",
@@ -73,6 +88,18 @@
           "原始文件组",
           "单位",
           "变量类型"
+        ],
+        "font": "Arial",
+        "bold": true,
+        "fill": "FF44546A"
+      },
+      "CleaningContract": {
+        "rows": 10,
+        "cols": 2,
+        "pane": "<pane ySplit=\"1\" topLeftCell=\"A2\" activePane=\"bottomLeft\" state=\"frozen\"/>",
+        "header": [
+          "Contract item",
+          "Definition"
         ],
         "font": "Arial",
         "bold": true,
@@ -81,7 +108,7 @@
     }
   },
   "SUMO_process_inputs_5min.xlsx": {
-    "bytes": 46327150,
+    "bytes": 63328157,
     "zip_test": null,
     "sheets": {
       "Raw": {
@@ -114,6 +141,21 @@
         "bold": true,
         "fill": "FF1F4E78"
       },
+      "SUMO_Ready": {
+        "rows": 104833,
+        "cols": 28,
+        "pane": "<pane xSplit=\"1\" ySplit=\"1\" topLeftCell=\"B2\" activePane=\"bottomRight\" state=\"frozen\"/>",
+        "header": [
+          "日期",
+          "进水瞬时流量（m³/h）",
+          "出水瞬时流量（m³/h）",
+          "进水pH",
+          "进水COD（mg/L）"
+        ],
+        "font": "Arial",
+        "bold": true,
+        "fill": "FF1F4E78"
+      },
       "Derived_m3d": {
         "rows": 104833,
         "cols": 17,
@@ -131,7 +173,7 @@
       },
       "QA": {
         "rows": 28,
-        "cols": 14,
+        "cols": 22,
         "pane": "<pane ySplit=\"1\" topLeftCell=\"A2\" activePane=\"bottomLeft\" state=\"frozen\"/>",
         "header": [
           "变量",
@@ -146,7 +188,7 @@
       },
       "DataDictionary": {
         "rows": 31,
-        "cols": 8,
+        "cols": 10,
         "pane": "<pane ySplit=\"1\" topLeftCell=\"A2\" activePane=\"bottomLeft\" state=\"frozen\"/>",
         "header": [
           "输出变量",
@@ -154,6 +196,18 @@
           "原始文件组",
           "单位",
           "变量类型"
+        ],
+        "font": "Arial",
+        "bold": true,
+        "fill": "FF44546A"
+      },
+      "CleaningContract": {
+        "rows": 10,
+        "cols": 2,
+        "pane": "<pane ySplit=\"1\" topLeftCell=\"A2\" activePane=\"bottomLeft\" state=\"frozen\"/>",
+        "header": [
+          "Contract item",
+          "Definition"
         ],
         "font": "Arial",
         "bold": true,
@@ -162,7 +216,7 @@
     }
   },
   "SUMO_process_inputs_1h.xlsx": {
-    "bytes": 4661385,
+    "bytes": 6430737,
     "zip_test": null,
     "sheets": {
       "Raw": {
@@ -181,6 +235,21 @@
         "fill": "FF1F4E78"
       },
       "Clean": {
+        "rows": 8737,
+        "cols": 28,
+        "pane": "<pane xSplit=\"1\" ySplit=\"1\" topLeftCell=\"B2\" activePane=\"bottomRight\" state=\"frozen\"/>",
+        "header": [
+          "日期",
+          "进水瞬时流量（m³/h）",
+          "出水瞬时流量（m³/h）",
+          "进水pH",
+          "进水COD（mg/L）"
+        ],
+        "font": "Arial",
+        "bold": true,
+        "fill": "FF1F4E78"
+      },
+      "SUMO_Ready": {
         "rows": 8737,
         "cols": 28,
         "pane": "<pane xSplit=\"1\" ySplit=\"1\" topLeftCell=\"B2\" activePane=\"bottomRight\" state=\"frozen\"/>",
@@ -212,7 +281,7 @@
       },
       "QA": {
         "rows": 28,
-        "cols": 14,
+        "cols": 22,
         "pane": "<pane ySplit=\"1\" topLeftCell=\"A2\" activePane=\"bottomLeft\" state=\"frozen\"/>",
         "header": [
           "变量",
@@ -227,7 +296,7 @@
       },
       "DataDictionary": {
         "rows": 31,
-        "cols": 8,
+        "cols": 10,
         "pane": "<pane ySplit=\"1\" topLeftCell=\"A2\" activePane=\"bottomLeft\" state=\"frozen\"/>",
         "header": [
           "输出变量",
@@ -235,6 +304,18 @@
           "原始文件组",
           "单位",
           "变量类型"
+        ],
+        "font": "Arial",
+        "bold": true,
+        "fill": "FF44546A"
+      },
+      "CleaningContract": {
+        "rows": 10,
+        "cols": 2,
+        "pane": "<pane ySplit=\"1\" topLeftCell=\"A2\" activePane=\"bottomLeft\" state=\"frozen\"/>",
+        "header": [
+          "Contract item",
+          "Definition"
         ],
         "font": "Arial",
         "bold": true,
@@ -243,7 +324,7 @@
     }
   },
   "SUMO_DO_ORP_1min.xlsx": {
-    "bytes": 83421762,
+    "bytes": 125193928,
     "zip_test": null,
     "sheets": {
       "Raw": {
@@ -276,9 +357,24 @@
         "bold": true,
         "fill": "FF1F4E78"
       },
+      "SUMO_Ready": {
+        "rows": 524161,
+        "cols": 15,
+        "pane": "<pane xSplit=\"1\" ySplit=\"1\" topLeftCell=\"B2\" activePane=\"bottomRight\" state=\"frozen\"/>",
+        "header": [
+          "日期",
+          "DO_1_1（mg/L）",
+          "DO_1_2（mg/L）",
+          "DO_1_3（mg/L）",
+          "DO_1_4（mg/L）"
+        ],
+        "font": "Arial",
+        "bold": true,
+        "fill": "FF1F4E78"
+      },
       "QA": {
         "rows": 15,
-        "cols": 14,
+        "cols": 22,
         "pane": "<pane ySplit=\"1\" topLeftCell=\"A2\" activePane=\"bottomLeft\" state=\"frozen\"/>",
         "header": [
           "变量",
@@ -293,7 +389,7 @@
       },
       "DataDictionary": {
         "rows": 15,
-        "cols": 8,
+        "cols": 10,
         "pane": "<pane ySplit=\"1\" topLeftCell=\"A2\" activePane=\"bottomLeft\" state=\"frozen\"/>",
         "header": [
           "输出变量",
@@ -301,6 +397,18 @@
           "原始文件组",
           "单位",
           "变量类型"
+        ],
+        "font": "Arial",
+        "bold": true,
+        "fill": "FF44546A"
+      },
+      "CleaningContract": {
+        "rows": 10,
+        "cols": 2,
+        "pane": "<pane ySplit=\"1\" topLeftCell=\"A2\" activePane=\"bottomLeft\" state=\"frozen\"/>",
+        "header": [
+          "Contract item",
+          "Definition"
         ],
         "font": "Arial",
         "bold": true,
@@ -309,7 +417,7 @@
     }
   },
   "SUMO_DO_ORP_5min.xlsx": {
-    "bytes": 18836687,
+    "bytes": 28267429,
     "zip_test": null,
     "sheets": {
       "Raw": {
@@ -342,9 +450,24 @@
         "bold": true,
         "fill": "FF1F4E78"
       },
+      "SUMO_Ready": {
+        "rows": 104833,
+        "cols": 15,
+        "pane": "<pane xSplit=\"1\" ySplit=\"1\" topLeftCell=\"B2\" activePane=\"bottomRight\" state=\"frozen\"/>",
+        "header": [
+          "日期",
+          "DO_1_1（mg/L）",
+          "DO_1_2（mg/L）",
+          "DO_1_3（mg/L）",
+          "DO_1_4（mg/L）"
+        ],
+        "font": "Arial",
+        "bold": true,
+        "fill": "FF1F4E78"
+      },
       "QA": {
         "rows": 15,
-        "cols": 14,
+        "cols": 22,
         "pane": "<pane ySplit=\"1\" topLeftCell=\"A2\" activePane=\"bottomLeft\" state=\"frozen\"/>",
         "header": [
           "变量",
@@ -359,7 +482,7 @@
       },
       "DataDictionary": {
         "rows": 15,
-        "cols": 8,
+        "cols": 10,
         "pane": "<pane ySplit=\"1\" topLeftCell=\"A2\" activePane=\"bottomLeft\" state=\"frozen\"/>",
         "header": [
           "输出变量",
@@ -367,6 +490,18 @@
           "原始文件组",
           "单位",
           "变量类型"
+        ],
+        "font": "Arial",
+        "bold": true,
+        "fill": "FF44546A"
+      },
+      "CleaningContract": {
+        "rows": 10,
+        "cols": 2,
+        "pane": "<pane ySplit=\"1\" topLeftCell=\"A2\" activePane=\"bottomLeft\" state=\"frozen\"/>",
+        "header": [
+          "Contract item",
+          "Definition"
         ],
         "font": "Arial",
         "bold": true,

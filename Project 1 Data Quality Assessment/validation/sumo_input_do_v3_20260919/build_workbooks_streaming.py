@@ -16,27 +16,27 @@ INTERMEDIATE_DIR = OUTPUT_DIR / "intermediate"
 SPECIFICATIONS = [
     (
         "SUMO_process_inputs_1min.xlsx",
-        [("Raw", "process_1min_raw.csv"), ("Clean", "process_1min_clean.csv"), ("Derived_m3d", "process_1min_derived.csv")],
+        [("Raw", "process_1min_raw.csv"), ("Clean", "process_1min_clean.csv"), ("SUMO_Ready", "process_1min_ready.csv"), ("Derived_m3d", "process_1min_derived.csv")],
         "process",
     ),
     (
         "SUMO_process_inputs_5min.xlsx",
-        [("Raw", "process_5min_raw.csv"), ("Clean", "process_5min_clean.csv"), ("Derived_m3d", "process_5min_derived.csv")],
+        [("Raw", "process_5min_raw.csv"), ("Clean", "process_5min_clean.csv"), ("SUMO_Ready", "process_5min_ready.csv"), ("Derived_m3d", "process_5min_derived.csv")],
         "process",
     ),
     (
         "SUMO_process_inputs_1h.xlsx",
-        [("Raw", "process_1h_raw.csv"), ("Clean", "process_1h_clean.csv"), ("Derived_m3d", "process_1h_derived.csv")],
+        [("Raw", "process_1h_raw.csv"), ("Clean", "process_1h_clean.csv"), ("SUMO_Ready", "process_1h_ready.csv"), ("Derived_m3d", "process_1h_derived.csv")],
         "process",
     ),
     (
         "SUMO_DO_ORP_1min.xlsx",
-        [("Raw", "sensors_1min_raw.csv"), ("Clean", "sensors_1min_clean.csv")],
+        [("Raw", "sensors_1min_raw.csv"), ("Clean", "sensors_1min_clean.csv"), ("SUMO_Ready", "sensors_1min_ready.csv")],
         "sensor",
     ),
     (
         "SUMO_DO_ORP_5min.xlsx",
-        [("Raw", "sensors_5min_raw.csv"), ("Clean", "sensors_5min_clean.csv")],
+        [("Raw", "sensors_5min_raw.csv"), ("Clean", "sensors_5min_clean.csv"), ("SUMO_Ready", "sensors_5min_ready.csv")],
         "sensor",
     ),
 ]
@@ -96,16 +96,36 @@ def _write_small_sheet(workbook, name: str, frame: pd.DataFrame, formats: dict[s
             elif isinstance(value, (int, float)):
                 worksheet.write_number(row_index, column_index, float(value), formats["number"])
             else:
-                worksheet.write(row_index, column_index, str(value), formats["text"])
+                style = formats["text_wrap"] if name == "CleaningContract" else formats["text"]
+                worksheet.write(row_index, column_index, str(value), style)
     for column_index, column in enumerate(frame.columns):
         longest = max(len(str(column)), *(len(str(value)) for value in frame[column].head(200).fillna("")))
         worksheet.set_column(column_index, column_index, min(max(longest + 2, 12), 30))
+    if name == "CleaningContract":
+        worksheet.set_column(0, 0, 24)
+        worksheet.set_column(1, 1, 100)
+        for row_index in range(1, len(frame) + 1):
+            worksheet.set_row(row_index, 38)
     worksheet.autofilter(0, 0, len(frame), len(frame.columns) - 1)
 
 
 def build() -> None:
     qa_all = pd.read_csv(INTERMEDIATE_DIR / "qa_summary.csv", encoding="utf-8-sig")
     dictionary_all = pd.read_csv(INTERMEDIATE_DIR / "data_dictionary.csv", encoding="utf-8-sig")
+    contract = pd.DataFrame(
+        [
+            ("Processing order", "Physical/near-zero screening -> centered 15 min rolling median/MAD -> set confirmed anomalies missing -> linear interpolation"),
+            ("Clean", "Only internally bounded gaps of 15 min or less are linearly interpolated"),
+            ("SUMO_Ready", "Extends bounded interpolation to 60 min for flow/DO/ORP and 360 min for slow state variables; longer gaps remain missing"),
+            ("Negative flow", "Within the variable-specific zero deadband: zero-equivalent; beyond the deadband: invalid and eligible for bounded interpolation"),
+            ("Flow Hampel", "Diagnostic only without pump/actuator-state evidence; real start-stop pulses are retained"),
+            ("Near-zero exemptions", "Effluent ammonia, effluent total phosphorus and post-anoxic DO4 retain valid near-zero observations"),
+            ("ORP", "Signed negative ORP values are physical and are retained"),
+            ("Long gaps", "No unlimited interpolation and no edge extrapolation; unresolved gaps remain blank"),
+            ("Derived_m3d", "Calculated from SUMO_Ready; dosing units remain provisional pending PLC scaling verification"),
+        ],
+        columns=["Contract item", "Definition"],
+    )
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
     for filename, sheets, scope in SPECIFICATIONS:
@@ -118,7 +138,7 @@ def build() -> None:
                 "title": filename.removesuffix(".xlsx"),
                 "subject": "SUMO Input DO downstream-validation data package",
                 "author": "Project 1 Data Quality Assessment",
-                "comments": "Raw observations are preserved. See QA and DataDictionary.",
+                "comments": "Raw observations are preserved. Clean and SUMO_Ready have different interpolation limits. See QA, DataDictionary and CleaningContract.",
             }
         )
         formats = {
@@ -131,6 +151,7 @@ def build() -> None:
             "date": workbook.add_format({"font_name": "Arial", "font_size": 9, "num_format": "yyyy-mm-dd hh:mm", "valign": "vcenter"}),
             "number": workbook.add_format({"font_name": "Arial", "font_size": 9, "num_format": "0.0000", "valign": "vcenter"}),
             "text": workbook.add_format({"font_name": "Arial", "font_size": 9, "valign": "vcenter"}),
+            "text_wrap": workbook.add_format({"font_name": "Arial", "font_size": 9, "valign": "vcenter", "text_wrap": True}),
         }
         for sheet_name, csv_name in sheets:
             _write_csv_sheet(workbook, sheet_name, INTERMEDIATE_DIR / csv_name, formats)
@@ -139,6 +160,7 @@ def build() -> None:
         dictionary = dictionary_all[dictionary_all["输出变量"].map(_is_sensor) == sensor_scope]
         _write_small_sheet(workbook, "QA", qa, formats)
         _write_small_sheet(workbook, "DataDictionary", dictionary, formats)
+        _write_small_sheet(workbook, "CleaningContract", contract, formats)
         workbook.close()
 
 

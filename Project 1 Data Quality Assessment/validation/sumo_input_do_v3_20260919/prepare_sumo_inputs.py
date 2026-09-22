@@ -31,6 +31,20 @@ FLAG_ZERO_EQUIVALENT = 4
 FLAG_HAMPEL_REPLACED = 8
 FLAG_SHORT_INTERPOLATED = 16
 FLAG_LONG_GAP = 32
+FLAG_NEAR_ZERO_INVALID = 64
+FLAG_EXTENDED_INTERPOLATED = 128
+FLAG_HAMPEL_CANDIDATE = 256
+
+SHORT_INTERPOLATION_MAX_MIN = 15
+EXTENDED_INTERPOLATION_MAX_MIN = {
+    "flow": 60,
+    "do": 60,
+    "orp": 60,
+    "ph": 360,
+    "temperature": 360,
+    "concentration": 360,
+    "mlss": 360,
+}
 
 
 @dataclass(frozen=True)
@@ -43,6 +57,7 @@ class ColumnSpec:
     lower: float | None = None
     upper: float | None = None
     unit_status: str = "registered"
+    near_zero_threshold: float | None = None
 
 
 SOURCES = {
@@ -56,21 +71,21 @@ SOURCES = {
 
 
 PROCESS_SPECS = [
-    ColumnSpec("flow", "进水瞬时流量（m³/h）", "进水瞬时流量（m³/h）", "m3/h", "flow"),
-    ColumnSpec("flow", "出水瞬时流量（m³/h）", "出水瞬时流量（m³/h）", "m3/h", "flow"),
-    ColumnSpec("water", "进水PH", "进水pH", "pH", "ph", 0, 14),
-    ColumnSpec("water", "进水COD（mg/L）", "进水COD（mg/L）", "mg/L", "concentration", 0),
-    ColumnSpec("water", "进水氨氮（mg/L）", "进水氨氮（mg/L）", "mg/L", "concentration", 0),
-    ColumnSpec("water", "进水温度（℃）", "进水温度（℃）", "degC", "temperature", 0, 50),
-    ColumnSpec("water", "进水总磷（mg/L）", "进水总磷（mg/L）", "mg/L", "concentration", 0),
-    ColumnSpec("water", "进水总氮（mg/L）", "进水总氮（mg/L）", "mg/L", "concentration", 0),
-    ColumnSpec("water", "进水SS（mg/L）", "进水SS（mg/L）", "mg/L", "concentration", 0),
-    ColumnSpec("water", "出水PH", "出水pH", "pH", "ph", 0, 14),
-    ColumnSpec("water", "出水COD（mg/L）", "出水COD（mg/L）", "mg/L", "concentration", 0),
+    ColumnSpec("flow", "进水瞬时流量（m³/h）", "进水瞬时流量（m³/h）", "m3/h", "flow", near_zero_threshold=1.0),
+    ColumnSpec("flow", "出水瞬时流量（m³/h）", "出水瞬时流量（m³/h）", "m3/h", "flow", near_zero_threshold=1.0),
+    ColumnSpec("water", "进水PH", "进水pH", "pH", "ph", 0, 14, near_zero_threshold=2.0),
+    ColumnSpec("water", "进水COD（mg/L）", "进水COD（mg/L）", "mg/L", "concentration", 0, near_zero_threshold=1.0),
+    ColumnSpec("water", "进水氨氮（mg/L）", "进水氨氮（mg/L）", "mg/L", "concentration", 0, near_zero_threshold=0.05),
+    ColumnSpec("water", "进水温度（℃）", "进水温度（℃）", "degC", "temperature", 0, 50, near_zero_threshold=5.0),
+    ColumnSpec("water", "进水总磷（mg/L）", "进水总磷（mg/L）", "mg/L", "concentration", 0, near_zero_threshold=0.05),
+    ColumnSpec("water", "进水总氮（mg/L）", "进水总氮（mg/L）", "mg/L", "concentration", 0, near_zero_threshold=0.1),
+    ColumnSpec("water", "进水SS（mg/L）", "进水SS（mg/L）", "mg/L", "concentration", 0, near_zero_threshold=1.0),
+    ColumnSpec("water", "出水PH", "出水pH", "pH", "ph", 0, 14, near_zero_threshold=2.0),
+    ColumnSpec("water", "出水COD（mg/L）", "出水COD（mg/L）", "mg/L", "concentration", 0, near_zero_threshold=0.1),
     ColumnSpec("water", "出水氨氮（mg/L）", "出水氨氮（mg/L）", "mg/L", "concentration", 0),
-    ColumnSpec("water", "出水温度（℃）", "出水温度（℃）", "degC", "temperature", 0, 50),
+    ColumnSpec("water", "出水温度（℃）", "出水温度（℃）", "degC", "temperature", 0, 50, near_zero_threshold=5.0),
     ColumnSpec("water", "出水总磷（mg/L）", "出水总磷（mg/L）", "mg/L", "concentration", 0),
-    ColumnSpec("water", "出水总氮（mg/L）", "出水总氮（mg/L）", "mg/L", "concentration", 0),
+    ColumnSpec("water", "出水总氮（mg/L）", "出水总氮（mg/L）", "mg/L", "concentration", 0, near_zero_threshold=0.1),
     ColumnSpec("dose", "氯化铁流量计1（m³/h）", "氯化铁流量计1（m³/h）", "m3/h", "flow", unit_status="provisional_unverified"),
     ColumnSpec("dose", "氯化铁流量计2（m³/h）", "氯化铁流量计2（m³/h）", "m3/h", "flow", unit_status="provisional_unverified"),
     ColumnSpec("dose", "乙酸钠流量计2（m³/h）", "乙酸钠流量计2（m³/h）", "m3/h", "flow", unit_status="provisional_unverified"),
@@ -82,13 +97,16 @@ PROCESS_SPECS = [
     ColumnSpec("bio", "1#生物池内回流流量（m³/h）", "1#生物池内回流流量（m³/h）", "m3/h", "flow"),
     ColumnSpec("bio", "2#生物池内回流流量（m³/h）", "2#生物池内回流流量（m³/h）", "m3/h", "flow"),
     ColumnSpec("residual", "剩余污泥流量（m³/h）", "剩余污泥流量（m³/h）", "m3/h", "flow"),
-    ColumnSpec("residual", "回流渠MLSS", "回流渠MLSS（mg/L）", "mg/L", "mlss", 0, 30000),
+    ColumnSpec("residual", "回流渠MLSS", "回流渠MLSS（mg/L）", "mg/L", "mlss", 0, 30000, near_zero_threshold=100.0),
 ]
 
 
 DO_ORP_SPECS = [
     *[
-        ColumnSpec("bio", f"{line}#生物池DO{pos}（mg/L）", f"DO_{line}_{pos}（mg/L）", "mg/L", "do", -0.2, 20)
+        ColumnSpec(
+            "bio", f"{line}#生物池DO{pos}（mg/L）", f"DO_{line}_{pos}（mg/L）", "mg/L", "do", -0.2, 20,
+            near_zero_threshold=0.05 if pos != 4 else None,
+        )
         for line in (1, 2)
         for pos in (1, 2, 3, 4)
     ],
@@ -212,6 +230,13 @@ def _longest_missing_run(series: pd.Series) -> int:
     return int(sizes.max())
 
 
+def _longest_true_run(mask: pd.Series) -> int:
+    if not mask.any():
+        return 0
+    group = mask.ne(mask.shift(fill_value=False)).cumsum()
+    return int(mask.groupby(group).sum().max())
+
+
 def _physical_screen(series: pd.Series, spec: ColumnSpec) -> tuple[pd.Series, pd.Series, pd.Series, float | None]:
     clean = series.copy()
     invalid = pd.Series(False, index=series.index)
@@ -247,6 +272,13 @@ def _physical_screen(series: pd.Series, spec: ColumnSpec) -> tuple[pd.Series, pd
     return clean, invalid, zero_equivalent, zero_deadband
 
 
+def _near_zero_screen(series: pd.Series, spec: ColumnSpec) -> pd.Series:
+    """Identify non-negative near-zero values that are implausible for this location."""
+    if spec.near_zero_threshold is None:
+        return pd.Series(False, index=series.index)
+    return series.notna() & series.ge(0) & series.le(spec.near_zero_threshold)
+
+
 def _hampel(series: pd.Series, window: int = 15, k: float = 6.0) -> tuple[pd.Series, pd.Series, float]:
     rolling_median = series.rolling(window=window, center=True, min_periods=8).median()
     absolute_deviation = (series - rolling_median).abs()
@@ -262,34 +294,53 @@ def _hampel(series: pd.Series, window: int = 15, k: float = 6.0) -> tuple[pd.Ser
     return result, outlier, global_floor
 
 
-def clean_frame(raw: pd.DataFrame, specs: list[ColumnSpec]) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+def clean_frame(
+    raw: pd.DataFrame, specs: list[ColumnSpec]
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     clean = pd.DataFrame(index=raw.index)
+    ready = pd.DataFrame(index=raw.index)
     flags = pd.DataFrame(index=raw.index)
     qa_rows: list[dict[str, object]] = []
 
     for spec in specs:
         source = raw[spec.canonical]
         value, invalid, zero_equivalent, zero_deadband = _physical_screen(source, spec)
-        hampel_value, hampel_candidate, noise_floor = _hampel(value)
+        near_zero = _near_zero_screen(value, spec)
+        value = value.mask(near_zero)
+        _, hampel_candidate, noise_floor = _hampel(value)
         if spec.kind == "flow":
             # Pump, recycle and dosing pulses are process inputs. A local MAD
             # excursion alone is insufficient evidence for replacement.
-            hampel_replaced = pd.Series(False, index=value.index)
+            hampel_removed = pd.Series(False, index=value.index)
         else:
-            value = hampel_value
-            hampel_replaced = hampel_candidate
-        value, interpolated = _bounded_linear_interpolate(value, max_gap=3)
-        long_gap = value.isna()
+            value = value.mask(hampel_candidate)
+            hampel_removed = hampel_candidate
+        clean_value, short_interpolated = _bounded_linear_interpolate(
+            value, max_gap=SHORT_INTERPOLATION_MAX_MIN
+        )
+        ready_value, all_ready_interpolated = _bounded_linear_interpolate(
+            clean_value, max_gap=EXTENDED_INTERPOLATION_MAX_MIN[spec.kind]
+        )
+        extended_interpolated = all_ready_interpolated & ~short_interpolated
+        long_gap = ready_value.isna()
+        anomaly = invalid | near_zero | hampel_removed
+        long_anomaly = anomaly & anomaly.groupby(
+            anomaly.ne(anomaly.shift(fill_value=False)).cumsum()
+        ).transform("sum").ge(15)
 
-        bitmask = np.zeros(len(value), dtype=np.uint8)
+        bitmask = np.zeros(len(value), dtype=np.uint16)
         bitmask[source.isna().to_numpy()] |= FLAG_SOURCE_MISSING
         bitmask[invalid.to_numpy()] |= FLAG_PHYSICAL_INVALID
         bitmask[zero_equivalent.to_numpy()] |= FLAG_ZERO_EQUIVALENT
-        bitmask[hampel_replaced.to_numpy()] |= FLAG_HAMPEL_REPLACED
-        bitmask[interpolated.to_numpy()] |= FLAG_SHORT_INTERPOLATED
+        bitmask[hampel_removed.to_numpy()] |= FLAG_HAMPEL_REPLACED
+        bitmask[short_interpolated.to_numpy()] |= FLAG_SHORT_INTERPOLATED
         bitmask[long_gap.to_numpy()] |= FLAG_LONG_GAP
+        bitmask[near_zero.to_numpy()] |= FLAG_NEAR_ZERO_INVALID
+        bitmask[extended_interpolated.to_numpy()] |= FLAG_EXTENDED_INTERPOLATED
+        bitmask[hampel_candidate.to_numpy()] |= FLAG_HAMPEL_CANDIDATE
 
-        clean[spec.canonical] = value
+        clean[spec.canonical] = clean_value
+        ready[spec.canonical] = ready_value
         flags[spec.canonical] = bitmask
         qa_rows.append(
             {
@@ -299,17 +350,25 @@ def clean_frame(raw: pd.DataFrame, specs: list[ColumnSpec]) -> tuple[pd.DataFram
                 "单位状态": spec.unit_status,
                 "原始缺失率（%）": 100 * source.isna().mean(),
                 "物理无效率（%）": 100 * invalid.mean(),
+                "原始负值率（%）": 100 * source.lt(0).mean(),
                 "零点等效率（%）": 100 * zero_equivalent.mean(),
+                "近零异常率（%）": 100 * near_zero.mean(),
                 "Hampel候选率（%）": 100 * hampel_candidate.mean(),
-                "Hampel替换率（%）": 100 * hampel_replaced.mean(),
-                "短缺口插值率（%）": 100 * interpolated.mean(),
-                "清洗后缺失率（%）": 100 * value.isna().mean(),
-                "最长剩余缺口（min）": _longest_missing_run(value),
+                "Hampel剔除率（%）": 100 * hampel_removed.mean(),
+                "15min内插值率（%）": 100 * short_interpolated.mean(),
+                "扩展插值率（%）": 100 * extended_interpolated.mean(),
+                "Clean缺失率（%）": 100 * clean_value.isna().mean(),
+                "SUMOReady缺失率（%）": 100 * ready_value.isna().mean(),
+                "最长剩余缺口（min）": _longest_missing_run(ready_value),
+                "最长异常段（min）": _longest_true_run(anomaly),
+                "长期异常率（≥15min，%）": 100 * long_anomaly.mean(),
                 "Hampel全局尺度下限": noise_floor,
                 "零点等效阈值": zero_deadband,
+                "近零异常阈值": spec.near_zero_threshold,
+                "扩展插值上限（min）": EXTENDED_INTERPOLATION_MAX_MIN[spec.kind],
             }
         )
-    return clean, flags.astype("uint8"), pd.DataFrame(qa_rows)
+    return clean, ready, flags.astype("uint16"), pd.DataFrame(qa_rows)
 
 
 def aggregate(frame: pd.DataFrame, freq: str, expected: int, min_fraction: float = 0.8) -> pd.DataFrame:
@@ -340,14 +399,16 @@ def _write_csv(frame: pd.DataFrame, path: Path) -> None:
     output.to_csv(path, index=False, encoding="utf-8-sig", date_format="%Y-%m-%d %H:%M:%S", float_format="%.8g")
 
 
-def _write_data_products(prefix: str, raw: pd.DataFrame, clean: pd.DataFrame) -> list[Path]:
+def _write_data_products(
+    prefix: str, raw: pd.DataFrame, clean: pd.DataFrame, ready: pd.DataFrame
+) -> list[Path]:
     paths: list[Path] = []
-    for label, frame in (("raw", raw), ("clean", clean)):
+    for label, frame in (("raw", raw), ("clean", clean), ("ready", ready)):
         path = INTERMEDIATE_DIR / f"{prefix}_{label}.csv"
         _write_csv(frame, path)
         paths.append(path)
     if prefix.startswith("process"):
-        derived = make_derived(clean)
+        derived = make_derived(ready)
         path = INTERMEDIATE_DIR / f"{prefix}_derived.csv"
         _write_csv(derived, path)
         paths.append(path)
@@ -367,6 +428,8 @@ def _dictionary(specs: Iterable[ColumnSpec]) -> pd.DataFrame:
                 "物理下限": spec.lower,
                 "物理上限": spec.upper,
                 "单位确认状态": spec.unit_status,
+                "近零异常阈值": spec.near_zero_threshold,
+                "扩展插值上限（min）": EXTENDED_INTERPOLATION_MAX_MIN[spec.kind],
             }
         )
     rows.extend(
@@ -380,8 +443,8 @@ def _dictionary(specs: Iterable[ColumnSpec]) -> pd.DataFrame:
 
 
 def _write_report(qa: pd.DataFrame, residual_audit: dict[str, object]) -> None:
-    top_hampel = qa.nlargest(5, "Hampel替换率（%）")[["变量", "Hampel替换率（%）"]]
-    top_missing = qa.nlargest(5, "清洗后缺失率（%）")[["变量", "清洗后缺失率（%）"]]
+    top_hampel = qa.nlargest(5, "Hampel剔除率（%）")[["变量", "Hampel剔除率（%）"]]
+    top_missing = qa.nlargest(5, "SUMOReady缺失率（%）")[["变量", "SUMOReady缺失率（%）"]]
     report = f"""# SUMO 输入数据准备与质量审计
 
 ## 结论
@@ -390,11 +453,20 @@ def _write_report(qa: pd.DataFrame, residual_audit: dict[str, object]) -> None:
 - 1 min：保留用于原始证据、异常定位与时间尺度敏感性。
 - 1 h：仅用于 DQR 小时证据连接、工况摘要和报告，不作为主 SUMO forcing。
 - 所有清洗先在 1 min 完成，随后生成 5 min 与 1 h，避免不同时间尺度分别清洗造成结果漂移。
-- 缺失值只对内部有界且不超过 3 min 的缺口进行线性插值；长缺口保留为空值，进入 unrecoverable/repair 资格判断。
+- `Clean`仅对内部有界且不超过15 min的缺口线性插值。
+- `SUMO_Ready`对慢变量最多扩展至360 min，对流量、DO和ORP最多扩展至60 min；更长或端点缺口保留为空，不以无限插值伪造动态过程。
+- 所有异常均先识别并置空，再插值；禁止先插值后检测异常。
 
 ## 15 min rolling median/MAD
 
-采用中心 15 min、至少 8 个有效点、`k=6` 的保守 Hampel 技术异常筛查。流量、回流、排泥和加药通道仅输出 Hampel 候选诊断，不因局部偏离自动替换，避免删除真实泵启停脉冲。状态量清洗副本可替换候选值。该步骤不得在论文中描述为实时因果滤波；未来在线部署应补做 trailing-window 敏感性。
+采用中心15 min、至少8个有效点、`k=6`的保守Hampel技术异常筛查。状态量候选先置空，再按插值合同处理；流量、回流、排泥和加药通道仅输出Hampel候选诊断，不因局部偏离自动删除，避免把真实泵启停脉冲误判为故障。该步骤是离线清洗，不得描述为实时因果滤波。
+
+## 负值与近零语义
+
+- 原始负值始终保留在`Raw`。
+- 流量小负值仅在变量特异零点死区内映射为0；超出死区的负值置空。FIT1531B和剩余污泥等长期轻微负偏主要解释为停泵零偏，不跨长时间段虚构流量。
+- ORP负值是正常物理量，保留；DO4近零是后缺氧工艺地板，保留。
+- 出水氨氮和总磷近零可真实存在，保留。其他由本次冻结清洗合同预先指定的近零阈值用于识别物理上不可信的零值；这些阈值仍需在外部数据上验证可迁移性。
 
 ## 剩余污泥与回流渠 MLSS 时间戳
 
@@ -408,11 +480,11 @@ def _write_report(qa: pd.DataFrame, residual_audit: dict[str, object]) -> None:
 
 氯化铁和乙酸钠标签登记为 m3/h，但数值量级要求继续核对 PLC scaling、仪表工程单位及小数点。工作簿中的 m3/d 仅按登记单位乘以 24，状态为 provisional，不应直接写成已核实的实际日投加量。
 
-## Hampel 替换率最高的变量
+## Hampel剔除率最高的变量
 
 {top_hampel.to_markdown(index=False, floatfmt='.4f')}
 
-## 清洗后缺失率最高的变量
+## SUMOReady缺失率最高的变量
 
 {top_missing.to_markdown(index=False, floatfmt='.4f')}
 """
@@ -425,23 +497,26 @@ def prepare() -> None:
 
     process_raw, process_source_audit = load_raw(PROCESS_SPECS)
     sensor_raw, sensor_source_audit = load_raw(DO_ORP_SPECS)
-    process_clean, process_flags, process_qa = clean_frame(process_raw, PROCESS_SPECS)
-    sensor_clean, sensor_flags, sensor_qa = clean_frame(sensor_raw, DO_ORP_SPECS)
+    process_clean, process_ready, process_flags, process_qa = clean_frame(process_raw, PROCESS_SPECS)
+    sensor_clean, sensor_ready, sensor_flags, sensor_qa = clean_frame(sensor_raw, DO_ORP_SPECS)
     qa = pd.concat([process_qa, sensor_qa], ignore_index=True)
 
     process_5m_raw = aggregate(process_raw, "5min", 5)
     process_5m_clean = aggregate(process_clean, "5min", 5)
+    process_5m_ready = aggregate(process_ready, "5min", 5)
     process_1h_raw = aggregate(process_raw, "1h", 60)
     process_1h_clean = aggregate(process_clean, "1h", 60)
+    process_1h_ready = aggregate(process_ready, "1h", 60)
     sensor_5m_raw = aggregate(sensor_raw, "5min", 5)
     sensor_5m_clean = aggregate(sensor_clean, "5min", 5)
+    sensor_5m_ready = aggregate(sensor_ready, "5min", 5)
 
     csv_paths: list[Path] = []
-    csv_paths += _write_data_products("process_1min", process_raw, process_clean)
-    csv_paths += _write_data_products("process_5min", process_5m_raw, process_5m_clean)
-    csv_paths += _write_data_products("process_1h", process_1h_raw, process_1h_clean)
-    csv_paths += _write_data_products("sensors_1min", sensor_raw, sensor_clean)
-    csv_paths += _write_data_products("sensors_5min", sensor_5m_raw, sensor_5m_clean)
+    csv_paths += _write_data_products("process_1min", process_raw, process_clean, process_ready)
+    csv_paths += _write_data_products("process_5min", process_5m_raw, process_5m_clean, process_5m_ready)
+    csv_paths += _write_data_products("process_1h", process_1h_raw, process_1h_clean, process_1h_ready)
+    csv_paths += _write_data_products("sensors_1min", sensor_raw, sensor_clean, sensor_ready)
+    csv_paths += _write_data_products("sensors_5min", sensor_5m_raw, sensor_5m_clean, sensor_5m_ready)
 
     qa.to_csv(INTERMEDIATE_DIR / "qa_summary.csv", index=False, encoding="utf-8-sig")
     dictionary = _dictionary([*PROCESS_SPECS, *DO_ORP_SPECS])
@@ -449,16 +524,18 @@ def prepare() -> None:
 
     process_raw.to_parquet(OUTPUT_DIR / "SUMO_process_inputs_1min_raw.parquet")
     process_clean.to_parquet(OUTPUT_DIR / "SUMO_process_inputs_1min_clean.parquet")
-    make_derived(process_clean).to_parquet(OUTPUT_DIR / "SUMO_process_inputs_1min_derived.parquet")
-    process_5m_clean.join(make_derived(process_5m_clean), rsuffix="_derived").to_parquet(
+    process_ready.to_parquet(OUTPUT_DIR / "SUMO_process_inputs_1min_ready.parquet")
+    make_derived(process_ready).to_parquet(OUTPUT_DIR / "SUMO_process_inputs_1min_derived.parquet")
+    process_5m_ready.join(make_derived(process_5m_ready), rsuffix="_derived").to_parquet(
         OUTPUT_DIR / "SUMO_process_inputs_5min_ready.parquet"
     )
-    process_1h_clean.join(make_derived(process_1h_clean), rsuffix="_derived").to_parquet(
+    process_1h_ready.join(make_derived(process_1h_ready), rsuffix="_derived").to_parquet(
         OUTPUT_DIR / "SUMO_process_inputs_1h_ready.parquet"
     )
     sensor_raw.to_parquet(OUTPUT_DIR / "SUMO_DO_ORP_1min_raw.parquet")
     sensor_clean.to_parquet(OUTPUT_DIR / "SUMO_DO_ORP_1min_clean.parquet")
-    sensor_5m_clean.to_parquet(OUTPUT_DIR / "SUMO_DO_ORP_5min_ready.parquet")
+    sensor_ready.to_parquet(OUTPUT_DIR / "SUMO_DO_ORP_1min_ready.parquet")
+    sensor_5m_ready.to_parquet(OUTPUT_DIR / "SUMO_DO_ORP_5min_ready.parquet")
     pd.concat(
         {"process": process_flags, "sensor": sensor_flags}, axis=1
     ).to_parquet(OUTPUT_DIR / "SUMO_input_quality_flags_1min.parquet")
@@ -466,18 +543,33 @@ def prepare() -> None:
     residual_audit = process_source_audit.get("residual", {})
     _write_report(qa, residual_audit if isinstance(residual_audit, dict) else {})
     manifest = {
-        "run_id": "SUMO-INPUT-V3-20260919",
+        "run_id": "SUMO-INPUT-V3.1-20260922",
         "period": {"start": str(START), "end": str(END)},
         "time_scale": {"primary": "5min", "sensitivity": "1min", "context": "1h"},
         "cleaning": {
             "hampel_window_min": 15,
             "hampel_k": 6.0,
             "hampel_alignment": "centered_offline_common_technical_qc",
-            "linear_interpolation_max_gap_min": 3,
+            "operation_order": "physical_and_near_zero_screen_then_hampel_then_interpolation",
+            "clean_interpolation_max_gap_min": SHORT_INTERPOLATION_MAX_MIN,
+            "sumo_ready_extended_interpolation_max_gap_min": EXTENDED_INTERPOLATION_MAX_MIN,
             "aggregation_min_support_fraction": 0.8,
+            "flow_hampel_action": "diagnostic_only_without_actuator_state",
+            "orp_negative_values": "retained_as_physical",
+            "post_anoxic_DO4_near_zero": "retained_as_process_floor",
         },
         "source_audit": {**process_source_audit, **sensor_source_audit},
         "input_sha256": {key: sha256(path) for key, path in SOURCES.items()},
+        "code_sha256": {
+            name: sha256(Path(__file__).resolve().parent / name)
+            for name in [
+                "prepare_sumo_inputs.py",
+                "build_workbooks_streaming.py",
+                "verify_outputs.py",
+                "verify_cleaning_v2.py",
+                "test_prepare_sumo_inputs.py",
+            ]
+        },
         "intermediate_sha256": {path.name: sha256(path) for path in csv_paths},
         "final_outputs": {},
     }

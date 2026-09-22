@@ -15,11 +15,11 @@ OUTPUT_DIR = BASE_DIR / "outputs"
 INTERMEDIATE_DIR = OUTPUT_DIR / "intermediate"
 
 EXPECTED = {
-    "SUMO_process_inputs_1min.xlsx": {"Raw": (524161, 28), "Clean": (524161, 28), "Derived_m3d": (524161, 17), "QA": (28, 14), "DataDictionary": (31, 8)},
-    "SUMO_process_inputs_5min.xlsx": {"Raw": (104833, 28), "Clean": (104833, 28), "Derived_m3d": (104833, 17), "QA": (28, 14), "DataDictionary": (31, 8)},
-    "SUMO_process_inputs_1h.xlsx": {"Raw": (8737, 28), "Clean": (8737, 28), "Derived_m3d": (8737, 17), "QA": (28, 14), "DataDictionary": (31, 8)},
-    "SUMO_DO_ORP_1min.xlsx": {"Raw": (524161, 15), "Clean": (524161, 15), "QA": (15, 14), "DataDictionary": (15, 8)},
-    "SUMO_DO_ORP_5min.xlsx": {"Raw": (104833, 15), "Clean": (104833, 15), "QA": (15, 14), "DataDictionary": (15, 8)},
+    "SUMO_process_inputs_1min.xlsx": {"Raw": (524161, 28), "Clean": (524161, 28), "SUMO_Ready": (524161, 28), "Derived_m3d": (524161, 17), "QA": (28, 22), "DataDictionary": (31, 10), "CleaningContract": (10, 2)},
+    "SUMO_process_inputs_5min.xlsx": {"Raw": (104833, 28), "Clean": (104833, 28), "SUMO_Ready": (104833, 28), "Derived_m3d": (104833, 17), "QA": (28, 22), "DataDictionary": (31, 10), "CleaningContract": (10, 2)},
+    "SUMO_process_inputs_1h.xlsx": {"Raw": (8737, 28), "Clean": (8737, 28), "SUMO_Ready": (8737, 28), "Derived_m3d": (8737, 17), "QA": (28, 22), "DataDictionary": (31, 10), "CleaningContract": (10, 2)},
+    "SUMO_DO_ORP_1min.xlsx": {"Raw": (524161, 15), "Clean": (524161, 15), "SUMO_Ready": (524161, 15), "QA": (15, 22), "DataDictionary": (15, 10), "CleaningContract": (10, 2)},
+    "SUMO_DO_ORP_5min.xlsx": {"Raw": (104833, 15), "Clean": (104833, 15), "SUMO_Ready": (104833, 15), "QA": (15, 22), "DataDictionary": (15, 10), "CleaningContract": (10, 2)},
 }
 
 
@@ -79,7 +79,7 @@ def formula_checks() -> dict[str, object]:
     checks = {}
     for scale, rows in (("1min", 524160), ("5min", 104832), ("1h", 8736)):
         targets = {1, rows // 2, rows}
-        clean = _sample_rows(INTERMEDIATE_DIR / f"process_{scale}_clean.csv", targets)
+        clean = _sample_rows(INTERMEDIATE_DIR / f"process_{scale}_ready.csv", targets)
         derived = _sample_rows(INTERMEDIATE_DIR / f"process_{scale}_derived.csv", targets)
         results = []
         for index in sorted(targets):

@@ -18,14 +18,20 @@ products therefore share the same provenance and cannot silently diverge.
 2. Apply registered or primitive physical-domain checks.
 3. Treat small negative flow readings as zero-equivalent only when their
    magnitude is no more than 5% of the channel's positive median. More extreme
-   negative values remain invalid.
-4. Apply a conservative 15 min centered rolling median/MAD Hampel screen
-   (`k = 6`) to state variables. For flow and dosing channels, Hampel is
-   diagnostic-only because short actuator/pump pulses are valid process input
-   unless corroborating actuator-state evidence proves otherwise.
-5. Linearly interpolate only internally bounded gaps of at most 3 min. Longer
-   gaps remain missing and are carried to the QA outputs.
-6. Aggregate cleaned minute data by arithmetic mean with at least 80% native
+   negative values remain invalid. Signed negative ORP remains physical.
+4. Apply location- and analyte-specific near-zero rules. Effluent ammonia,
+   effluent total phosphorus and post-anoxic DO4 are exempt because true
+   process-floor values are plausible.
+5. Apply a conservative 15 min centered rolling median/MAD Hampel screen
+   (`k = 6`) after physical screening. State-variable candidates are set
+   missing before interpolation. Flow and dosing candidates remain diagnostic
+   because short actuator/pump pulses may be valid without actuator-state
+   evidence.
+6. `Clean` linearly interpolates internally bounded gaps of at most 15 min.
+   `SUMO_Ready` extends this to 60 min for flow/DO/ORP and 360 min for slow
+   state variables. Longer and edge gaps remain missing; unlimited linear
+   interpolation is prohibited.
+7. Aggregate cleaned minute data by arithmetic mean with at least 80% native
    support (4/5 points for 5 min; 48/60 points for 1 h).
 
 The centered Hampel operation is an offline common technical-QC step shared by
@@ -39,10 +45,11 @@ filter. A trailing-window implementation is required for future online use.
 - process inputs at 1 min, 5 min and 1 h;
 - DO/ORP at 1 min and 5 min.
 
-Each process workbook starts with `Raw`, `Clean` and `Derived_m3d`. The DO/ORP
-workbooks start with `Raw` and `Clean`. Compact QA and data-dictionary sheets
-follow the requested data sheets. Machine-readable Parquet files preserve the
-same values and a bit-mask provenance table.
+Each process workbook starts with `Raw`, `Clean`, `SUMO_Ready` and
+`Derived_m3d`. The DO/ORP workbooks start with `Raw`, `Clean` and
+`SUMO_Ready`. Compact QA, data-dictionary and cleaning-contract sheets follow.
+Machine-readable Parquet files preserve the same values and a bit-mask
+provenance table.
 
 The methodological rationale and downstream-use boundaries are frozen in
 `TIME_SCALE_AND_DATA_CONTRACT_ZH.md`. In particular, the DO/ORP `Clean` sheet
