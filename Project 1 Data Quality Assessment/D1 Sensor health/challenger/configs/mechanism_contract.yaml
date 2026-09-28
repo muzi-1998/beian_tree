@@ -1,0 +1,44 @@
+schema_version: d1-challenger-mechanism-v1.1
+mechanisms:
+  impulse_spike:
+    detector_track: minute_glr
+    duration_minutes: [1, 1]
+    amplitude_sigma: [1.0, 5.0]
+    primary_region:
+      amplitude_sigma_min: 3.0
+      duration_minutes: [1, 1]
+    timely_detection_minutes: 1
+  short_burst:
+    detector_track: minute_glr
+    duration_minutes: [2, 10]
+    amplitude_sigma: [0.75, 4.0]
+    primary_region:
+      amplitude_sigma_min: 2.0
+      duration_minutes_min: 3
+    timely_detection_minutes: 5
+  temporary_shift:
+    detector_track: hourly_glr
+    duration_hours: [1.0, 24.0]
+    amplitude_sigma: [0.5, 3.0]
+    primary_region:
+      amplitude_sigma_min: 1.5
+      duration_hours_min: 2.0
+    timely_detection_hours: 3
+    limitation: shifts_shorter_than_1h_pending_minute_level_frozen_transform
+  persistent_step:
+    detector_track: hourly_glr_plus_ks_confirmation
+    duration_hours: [24.0, 72.0]
+    amplitude_sigma: [0.5, 3.0]
+    primary_region:
+      amplitude_sigma_min: 1.5
+      duration_hours_min: 24.0
+    timely_candidate_hours: 3
+    persistence_confirmation: released_24h_36h_adjacent_ks
+excluded_from_ordinary_step:
+  sensors: [DO_1_4, DO_2_4]
+  reason: process_floor_contract_owned_by_D2_and_not_supported_by_identifiable_excitation
+out_of_scope:
+  - linear_drift
+  - hard_freeze
+  - dropout_or_missingness
+  - process_floor_responsiveness_without_observed_excitation

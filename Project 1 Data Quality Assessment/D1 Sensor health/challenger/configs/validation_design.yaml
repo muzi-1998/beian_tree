@@ -1,0 +1,42 @@
+schema_version: d1-challenger-validation-v1.1
+trials_per_mechanism: 96
+trial_split:
+  internal_validation: 64
+  terminal_shadow: 32
+base_window:
+  minimum_D1: 4.5
+  state_required: Normal
+  Q_freeze_min: 3.0
+  Q_regime_min: 3.0
+  group_block_days: 7
+  minimum_onset_separation_hours_same_sensor: 24
+minute_innovation:
+  location_window_minutes: 360
+  scale_window_minutes: 1440
+  guard_minutes: 10
+  minimum_location_observations: 180
+  minimum_scale_observations: 360
+  resolution_floor_multiplier: 1.5
+  glr_scales_minutes: [1, 2, 3, 5, 10]
+  event_merge_minutes: 15
+hourly_innovation:
+  model: frozen_AR1_by_sensor_fit_on_development_clean_history
+  phi_clip: 0.95
+  glr_scales_hours: [1, 2, 4, 8, 12, 24]
+  event_merge_hours: 6
+baseline_comparators:
+  spike: released_causal_Hampel_window21_k3
+  step: released_adjacent_KS_24h_36h_Q_le_2_5
+  fixed_far_rule: calibrate_score_threshold_on_same_clean_development_history
+resolution_2x:
+  role: exploratory_only
+negative_controls:
+  - eligible_no_injection_windows
+  - observed_rapid_process_change
+  - coherent_parallel_line_change
+  - process_floor_platform
+limitations:
+  - current_record_has_been_seen_by_prior_D1_development
+  - terminal_shadow_is_not_external_confirmation
+  - no_maintenance_truth_available
+  - no_verified_aeration_or_recycle_excitation_available

@@ -1,0 +1,77 @@
+{
+  "schema_version": "d1-challenger-run-v1.1",
+  "scientific_status": "retrospective_development_and_terminal_shadow",
+  "production_release_modified": false,
+  "D1_D5_aggregation_inputs_modified": false,
+  "random_seed": 20260802,
+  "thresholds": {
+    "minute_glr:challenger": {
+      "threshold": 50.59070282452609,
+      "n_events": 27,
+      "exposure_sensor_days": 682.0583333333334,
+      "far": 0.039586056911065766,
+      "far_ci95_low": 0.026087460943122805,
+      "far_ci95_high": 0.0575956344572123,
+      "threshold_gate_failed": false,
+      "merge_gap": "0 days 00:15:00"
+    },
+    "minute_glr:baseline_fixed_far": {
+      "threshold": 23.95586430745349,
+      "n_events": 31,
+      "exposure_sensor_days": 682.0583333333334,
+      "far": 0.04545065793492736,
+      "far_ci95_low": 0.03088151694621699,
+      "far_ci95_high": 0.06451358095458418,
+      "threshold_gate_failed": false,
+      "merge_gap": "0 days 00:15:00"
+    },
+    "hourly_glr:challenger": {
+      "threshold": 11.543084473324873,
+      "n_events": 25,
+      "exposure_sensor_days": 550.7083333333333,
+      "far": 0.04539608080502384,
+      "far_ci95_low": 0.029377949939313298,
+      "far_ci95_high": 0.06701357045779896,
+      "threshold_gate_failed": false,
+      "merge_gap": "0 days 06:00:00"
+    },
+    "hourly_glr:baseline_fixed_far": {
+      "threshold": 0.78582282214632,
+      "n_events": 1,
+      "exposure_sensor_days": 550.7083333333333,
+      "far": 0.0018158432322009535,
+      "far_ci95_low": 4.597317028243604e-05,
+      "far_ci95_high": 0.01011723094367357,
+      "threshold_gate_failed": false,
+      "merge_gap": "0 days 06:00:00"
+    }
+  },
+  "input_sha256": {
+    "D1 Sensor health\\v11_state.pkl": "6aaede79b37d64c5af627364cc98b8fa1344b05f1ff37524a68d8732c3889a96",
+    "D1 Sensor health\\cache\\df_min_aligned.pkl": "9adf1cef999649d9f6243ad207308224a736c884d4269aee5475dee56d61ec6a"
+  },
+  "outputs": {
+    "D1_challenger_expert_report.md": "f0dd642b75a9d4bbdd004ae32bf53ca6fd5bbe264bd2496d05f1ed8c6293b867",
+    "data\\D1_challenger_applicability_surface.parquet": "7f0fd3b4d71b10318d3eee27129f94fdfb12e14856047fa528bf5526b4295503",
+    "data\\D1_challenger_exclusions.parquet": "95b49ff3adf62e5f74a5458cf54ba62a0f487d4ca4b0872c1d9f90e216e655a3",
+    "data\\D1_challenger_model_registry.parquet": "7942b587f97deb85d0d406f2df8fc300d34b11ffee5508b61677932a58087eea",
+    "data\\D1_challenger_shadow_events.parquet": "776662c6631ca6aeb812ac58841561450cbf70e948d6c33aa0ba694ad3048b8f",
+    "data\\D1_challenger_source_data.xlsx": "293fa87671ec35dd9f1eeace28d5fc57257dd1e39cb1b6616c5d7d7a23efa6b3",
+    "data\\D1_challenger_threshold_audit.parquet": "73c89b649be3d1dc7d01341b81a2c6a01586fc0a19d07c1c282e0c78cbe5abc2",
+    "data\\D1_challenger_thresholds.json": "4ae58de55d0efcf619bf92556ceeee7c8f29db20117f0551836c86278dd66c1d",
+    "data\\D1_challenger_trials.parquet": "70164463cbbc9017dba0bf46198e418eb8700c7e28f0ae5e5bd0db2c664b3daa",
+    "data\\D1_challenger_validation.parquet": "34a360cca05f0b9c8f6dd476dd24afec8f572802fd7ca011735545ef909f6bfe",
+    "figures\\FigC1_fixed_far_performance.pdf": "0eb5510b226a5325b2197a39fc0b41dfe00167f54eb96449d24e3b495981a365",
+    "figures\\FigC1_fixed_far_performance.png": "21e08912a1a8e0c7c0af746d4984cda0adbae60753dad6878bee2807e5e6efb0",
+    "figures\\FigC1_fixed_far_performance.svg": "2500435cfed7877c2e9015936636d14710ca2277d73c8261b965f4463072329f",
+    "figures\\FigC1_fixed_far_performance.tiff": "f2630d3b7a3bb68c6fadb776b5bb67084f64fd0162545643f7817d934a97bd4e",
+    "figures\\FigC2_applicability_surfaces.pdf": "833b2710494d80e5160e27a4499a6eda2416f12de6d186e3b7ecfe783822b0a3",
+    "figures\\FigC2_applicability_surfaces.png": "d9ea6d5d9f99992c6fc5a9f9dc1938347e3c80c345390cf9d4775b739a1d3683",
+    "figures\\FigC2_applicability_surfaces.svg": "202faf0eb6ed10e65c212163b74d268cc8a57b83964598a3383cb5b7905deb1d",
+    "figures\\FigC2_applicability_surfaces.tiff": "31e0065e4fb5c293bf5b846bec39730f6034f696fbff7b19bff702a008e4f2cd",
+    "figures\\FigC3_shadow_event_profile.pdf": "adf0f2012a46b1071f9ce9f93556673094792049a379e44a4af7602d058f8741",
+    "figures\\FigC3_shadow_event_profile.png": "95535f404ce0090a8dea7482c0a173acd427057d16ade53520e8c061f48e5043",
+    "figures\\FigC3_shadow_event_profile.svg": "0fd75d7e79185b8933ae9c3b588cfabee4ade4f03392c7214d5e3bceccfa3c9a",
+    "figures\\FigC3_shadow_event_profile.tiff": "c3e21c3e35cfad1a75b67d6c951b1f5e2c7ff8675f79af21e6c67438648ece36"
+  }
+}
