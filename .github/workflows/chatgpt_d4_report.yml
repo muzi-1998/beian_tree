@@ -1,0 +1,75 @@
+name: Build D4 repository-original figure Word report
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.chatgpt_d4_report/**'
+      - '.github/workflows/chatgpt_d4_report.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install document dependencies
+        run: pip install python-docx pillow
+
+      - name: Correct panel-count wording
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('.chatgpt_d4_report/build_d4_figure_review.py')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace('FigD4_1–FigD4_8 的 19 个面板', 'FigD4_1–FigD4_8 的 20 个可视面板（其中 19 个带字母面板标签，FigD4_4 为单面板热图）')
+          s=s.replace("('Figure bundle','8 figures; 19 panels; repository PNG/SVG/PDF all passed QA')", "('Figure bundle','8 figures; 20 visual panels (19 letter-labelled + 1 single heatmap); repository PNG/SVG/PDF all passed QA')")
+          p.write_text(s,encoding='utf-8')
+          PY
+
+      - name: Build report from repository-original figures
+        run: python .chatgpt_d4_report/build_d4_figure_review.py
+
+      - name: Verify Word package
+        run: |
+          python - <<'PY'
+          import zipfile
+          from pathlib import Path
+          p=Path('deliverables/260810_D4_GitHub_outputs八组图件逐面板定量分析_准确性审查_SCI文献对照_仓库原图最终版.docx')
+          assert p.exists() and p.stat().st_size > 100000
+          with zipfile.ZipFile(p) as z:
+              names=z.namelist()
+              media=[n for n in names if n.startswith('word/media/')]
+              assert len(media) == 8, media
+              assert 'word/document.xml' in names
+          print('verified', p, p.stat().st_size, 'bytes; media=', len(media))
+          PY
+
+      - name: Commit generated Word report to PR branch
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add deliverables/*.docx
+          git diff --cached --quiet && exit 0
+          git commit -m 'Rebuild D4 repository-original figure Word report'
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
+
+      - name: Upload report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: d4-repository-original-figure-word-report
+          path: deliverables/*.docx
+          if-no-files-found: error
