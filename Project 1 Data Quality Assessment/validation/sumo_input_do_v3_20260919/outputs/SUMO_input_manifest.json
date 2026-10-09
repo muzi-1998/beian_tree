@@ -1,0 +1,181 @@
+{
+  "run_id": "SUMO-INPUT-V3.1-20260922",
+  "period": {
+    "start": "2025-08-01 00:00:00",
+    "end": "2026-07-30 23:59:00"
+  },
+  "time_scale": {
+    "primary": "5min",
+    "sensitivity": "1min",
+    "context": "1h"
+  },
+  "cleaning": {
+    "hampel_window_min": 15,
+    "hampel_k": 6.0,
+    "hampel_alignment": "centered_offline_common_technical_qc",
+    "operation_order": "physical_and_near_zero_screen_then_hampel_then_interpolation",
+    "clean_interpolation_max_gap_min": 15,
+    "sumo_ready_extended_interpolation_max_gap_min": {
+      "flow": 60,
+      "do": 60,
+      "orp": 60,
+      "ph": 360,
+      "temperature": 360,
+      "concentration": 360,
+      "mlss": 360
+    },
+    "aggregation_min_support_fraction": 0.8,
+    "flow_hampel_action": "diagnostic_only_without_actuator_state",
+    "orp_negative_values": "retained_as_physical",
+    "post_anoxic_DO4_near_zero": "retained_as_process_floor"
+  },
+  "source_audit": {
+    "flow": {
+      "rows": 524160,
+      "start": "2025-08-01 00:00:00",
+      "end": "2026-07-30 23:59:00"
+    },
+    "water": {
+      "rows": 524160,
+      "start": "2025-08-01 00:00:00",
+      "end": "2026-07-30 23:59:00"
+    },
+    "dose": {
+      "rows": 524160,
+      "start": "2025-08-01 00:00:00",
+      "end": "2026-07-30 23:59:00"
+    },
+    "s3d": {
+      "rows": 524160,
+      "start": "2025-08-01 00:00:00",
+      "end": "2026-07-30 23:59:00"
+    },
+    "bio": {
+      "rows": 524160,
+      "start": "2025-08-01 00:00:00",
+      "end": "2026-07-30 23:59:00"
+    },
+    "residual": {
+      "time_only_cells_repaired": 226,
+      "duplicate_rows_marked_ambiguous": 2880,
+      "duplicate_timestamps_marked_ambiguous": 1440
+    }
+  },
+  "input_sha256": {
+    "water": "441d9dfd6d7273670ec11bd91588759f6784acfec78172b1ff2555d6fccc30af",
+    "bio": "18cb7f4617095655d1cb15a932621a5fbf58ac6b8b16a092e6586caba5aa4856",
+    "dose": "e0e5321ba88a08b4d1a4f3989a8a23c9298ef69932267bf99e02d357984d626d",
+    "s3d": "d9c2aebc4d1b512803ddefff44401925756cb89b3dbb8b02430f53a12ebb4755",
+    "flow": "e5654b874d61fc9a3f4b68e220c8608c5f61773393999dbc40b62776dc59ee22",
+    "residual": "ec2496dc57bb3d8ab4455f9cad0162b680e1e894b9f1fd24cbf246a21880adca"
+  },
+  "code_sha256": {
+    "prepare_sumo_inputs.py": "1d7f56bcd455eec62750194dd60365312c852ab4a2f26cba8995bd43db7a8993",
+    "build_workbooks_streaming.py": "18013a2824136c907849887b2eb6fc629ae8491576654460b7be96abec8fe69b",
+    "verify_outputs.py": "21188d8b661bb93ec78a4b5ccc153afa89105078f16862d1a0d0282c53ce4067",
+    "verify_cleaning_v2.py": "ced56d4daf5639a7d57d00f4566dc1da9e118ebdba1f8ce8c64ac9a43b09ca7f",
+    "test_prepare_sumo_inputs.py": "4c3c2626b155531d47ee6b6e2e2f5a0e5151288b224c8655ea36d8f52e28ed44"
+  },
+  "intermediate_sha256": {
+    "process_1min_raw.csv": "05fe896a3df9338fc9ace619baf069fac1116d2500aa37aa396f42430972d9ef",
+    "process_1min_clean.csv": "65573abcc44787cbf4fed06429690cc2b26ba9ac446aa332ef09716bb1191a1b",
+    "process_1min_ready.csv": "16d4d9bd9be1a073e8a0784bbfee39881297a9ee6fc0728dfc9bbbf5e0b30758",
+    "process_1min_derived.csv": "38b8e8d8899380a2f0a605fbbaa8a606d76f41858e2c19b3876786a305a2caed",
+    "process_5min_raw.csv": "fc75b20393a9000f6baf415e4dfb96c70f2d561159c3ab3e341d07e838a89254",
+    "process_5min_clean.csv": "c9ffc947b0b3ddf139336e1dc52f6d27e431649913efece61444521a11480235",
+    "process_5min_ready.csv": "9ae09bb6dcbd98be5bae2b51d88a73ecfcd4752ccd33e4c38c7cbda63d8f8552",
+    "process_5min_derived.csv": "2b6d9f6d5bf9f9bbea9d4050b6f57a35ccfd5e7f9fdc62d7d8ca45e9a2ad4000",
+    "process_1h_raw.csv": "fe615c30a041a6619d8074134f3f16e59af07a8754aa0602642c727295a00768",
+    "process_1h_clean.csv": "420cf1abc6751db57731742d17bc63ea910cfc062185d6d667cf2de1bc29b88f",
+    "process_1h_ready.csv": "665dbb12a2d9365555fad15bfe5ba5ffe4d5f6570b78306ee1524508951a8b78",
+    "process_1h_derived.csv": "ebfbde4600c729d104bd613c414c2b9d621424b56a7d661c2a5ac221a68b0e46",
+    "sensors_1min_raw.csv": "9d2d3d6b216584dafd3bda54537389438da46e267c33cd5fca4232d0f7a2b8b1",
+    "sensors_1min_clean.csv": "c3bc4740a1953b0ecc90594b38c399e14e590903ff025781fe034144beeafc60",
+    "sensors_1min_ready.csv": "c64311b3043ef6837959a5f7eefdd76da4cd73d5669a706e14b9b7cec9c91cf7",
+    "sensors_5min_raw.csv": "2eb69d9901050de35d2e8998c9d694d01e41072e79cea169fd7fe26198978c3a",
+    "sensors_5min_clean.csv": "2b7dfc881c0152f08e83152c6e9765407f3d7cd2f0b2e018724458d3c3452814",
+    "sensors_5min_ready.csv": "fd100128c3603591cab35d13410c6e0522db503939c496d6171c44e62b317253"
+  },
+  "final_outputs": {
+    "derived_formula_QA.json": {
+      "bytes": 1655,
+      "sha256": "f79433f7110c15ac5d88763985ae8b78247a851431c699909fdebd99f5feeff5"
+    },
+    "SUMO_cleaning_v2_QA.json": {
+      "bytes": 2077,
+      "sha256": "f8e87afc2f9027b98e926e58820f594fde5246f19b77262865351746b5926834"
+    },
+    "SUMO_DO_ORP_1min.xlsx": {
+      "bytes": 125193928,
+      "sha256": "73bfc7b620994c6dc9afd4062649c7759da65d7fda62eb6c7973dff5d2f62741"
+    },
+    "SUMO_DO_ORP_1min_clean.parquet": {
+      "bytes": 15280143,
+      "sha256": "7cd9c147d32a708429355cf871a0634aa789d527264a90b848e59c91e21e9c77"
+    },
+    "SUMO_DO_ORP_1min_raw.parquet": {
+      "bytes": 14960329,
+      "sha256": "c43fc3e50df1c51bc4106c31accbfc8a401b848250e37cbb4ff32b9e29392359"
+    },
+    "SUMO_DO_ORP_1min_ready.parquet": {
+      "bytes": 15332015,
+      "sha256": "373ce66a3ca10f14704c879fc908710a755f7f536676daef3e28593b5d9143b5"
+    },
+    "SUMO_DO_ORP_5min.xlsx": {
+      "bytes": 28267429,
+      "sha256": "b50759725a72e26220c675318ca1b16050cc4e007962c438b912ceaa7673529f"
+    },
+    "SUMO_DO_ORP_5min_ready.parquet": {
+      "bytes": 5580803,
+      "sha256": "602a9bc22a4747d38266f19aed3d3bd08a84f25c834a13039b2220edc2e88c4a"
+    },
+    "SUMO_input_preparation_QA_ZH.md": {
+      "bytes": 2988,
+      "sha256": "58b9114a09134af877bae013883f55a962a1fa8a2bba9578a0a55e8a267ade60"
+    },
+    "SUMO_input_quality_flags_1min.parquet": {
+      "bytes": 4525486,
+      "sha256": "3bf2b37203a0ba31c95010e31a6ca85d7edca34d898cdae3d7ba0e060af7b131"
+    },
+    "SUMO_process_inputs_1h.xlsx": {
+      "bytes": 6430737,
+      "sha256": "14c07e7bfb0f76b95294b9ab52c177501639d85e241ed65bcc98ae14c326e942"
+    },
+    "SUMO_process_inputs_1h_ready.parquet": {
+      "bytes": 2605857,
+      "sha256": "c368fe913ec2402662b292b8cf09c513384784d769261868af6602a670b7eb1e"
+    },
+    "SUMO_process_inputs_1min.xlsx": {
+      "bytes": 276990858,
+      "sha256": "df97f39a9f0e9b4ce524fc32c50cd66b5ba553fac09f4d8ba8c091519868930a"
+    },
+    "SUMO_process_inputs_1min_clean.parquet": {
+      "bytes": 23395825,
+      "sha256": "a2de8e3d81d89f0b845190c8c9a227ec12e01780c318c8f62561b487e1fdecf1"
+    },
+    "SUMO_process_inputs_1min_derived.parquet": {
+      "bytes": 23410215,
+      "sha256": "9515821f58437ddb5b15b97ae3b4c81a631794d66942bd018622b3ceda51857b"
+    },
+    "SUMO_process_inputs_1min_raw.parquet": {
+      "bytes": 24232463,
+      "sha256": "ccc0e28468c8baf27df2f152d860e4da1a8f100705ca5f0c939361e76511cab4"
+    },
+    "SUMO_process_inputs_1min_ready.parquet": {
+      "bytes": 23616532,
+      "sha256": "e7a67e7151aaa63c9a0d01146a9dd0c95a21f50fe08a555d73a88cc0e1a689d6"
+    },
+    "SUMO_process_inputs_5min.xlsx": {
+      "bytes": 63328157,
+      "sha256": "6eda5b9806b81748857f16657e4269d6d6eedec26a23e9e04f9e47315c05b17c"
+    },
+    "SUMO_process_inputs_5min_ready.parquet": {
+      "bytes": 17086271,
+      "sha256": "4e82efe460e190bb0725122ef29273617ac31f489ec9aa4fb9d30822b3e27174"
+    },
+    "workbook_structural_QA.json": {
+      "bytes": 14812,
+      "sha256": "65dada89855e31d8c42ff87b789f1b97d65d497ec21a3ef01f968563c9a08d98"
+    }
+  }
+}

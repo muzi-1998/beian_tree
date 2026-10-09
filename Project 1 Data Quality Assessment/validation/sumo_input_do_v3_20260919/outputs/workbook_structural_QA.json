@@ -1,0 +1,512 @@
+{
+  "SUMO_process_inputs_1min.xlsx": {
+    "bytes": 276990858,
+    "zip_test": null,
+    "sheets": {
+      "Raw": {
+        "rows": 524161,
+        "cols": 28,
+        "pane": "<pane xSplit=\"1\" ySplit=\"1\" topLeftCell=\"B2\" activePane=\"bottomRight\" state=\"frozen\"/>",
+        "header": [
+          "日期",
+          "进水瞬时流量（m³/h）",
+          "出水瞬时流量（m³/h）",
+          "进水pH",
+          "进水COD（mg/L）"
+        ],
+        "font": "Arial",
+        "bold": true,
+        "fill": "FF1F4E78"
+      },
+      "Clean": {
+        "rows": 524161,
+        "cols": 28,
+        "pane": "<pane xSplit=\"1\" ySplit=\"1\" topLeftCell=\"B2\" activePane=\"bottomRight\" state=\"frozen\"/>",
+        "header": [
+          "日期",
+          "进水瞬时流量（m³/h）",
+          "出水瞬时流量（m³/h）",
+          "进水pH",
+          "进水COD（mg/L）"
+        ],
+        "font": "Arial",
+        "bold": true,
+        "fill": "FF1F4E78"
+      },
+      "SUMO_Ready": {
+        "rows": 524161,
+        "cols": 28,
+        "pane": "<pane xSplit=\"1\" ySplit=\"1\" topLeftCell=\"B2\" activePane=\"bottomRight\" state=\"frozen\"/>",
+        "header": [
+          "日期",
+          "进水瞬时流量（m³/h）",
+          "出水瞬时流量（m³/h）",
+          "进水pH",
+          "进水COD（mg/L）"
+        ],
+        "font": "Arial",
+        "bold": true,
+        "fill": "FF1F4E78"
+      },
+      "Derived_m3d": {
+        "rows": 524161,
+        "cols": 17,
+        "pane": "<pane xSplit=\"1\" ySplit=\"1\" topLeftCell=\"B2\" activePane=\"bottomRight\" state=\"frozen\"/>",
+        "header": [
+          "日期",
+          "进水瞬时流量（m³/d）",
+          "出水瞬时流量（m³/d）",
+          "氯化铁流量计1（m³/d）",
+          "氯化铁流量计2（m³/d）"
+        ],
+        "font": "Arial",
+        "bold": true,
+        "fill": "FF1F4E78"
+      },
+      "QA": {
+        "rows": 28,
+        "cols": 22,
+        "pane": "<pane ySplit=\"1\" topLeftCell=\"A2\" activePane=\"bottomLeft\" state=\"frozen\"/>",
+        "header": [
+          "变量",
+          "来源",
+          "单位",
+          "单位状态",
+          "原始缺失率（%）"
+        ],
+        "font": "Arial",
+        "bold": true,
+        "fill": "FF44546A"
+      },
+      "DataDictionary": {
+        "rows": 31,
+        "cols": 10,
+        "pane": "<pane ySplit=\"1\" topLeftCell=\"A2\" activePane=\"bottomLeft\" state=\"frozen\"/>",
+        "header": [
+          "输出变量",
+          "原始字段",
+          "原始文件组",
+          "单位",
+          "变量类型"
+        ],
+        "font": "Arial",
+        "bold": true,
+        "fill": "FF44546A"
+      },
+      "CleaningContract": {
+        "rows": 10,
+        "cols": 2,
+        "pane": "<pane ySplit=\"1\" topLeftCell=\"A2\" activePane=\"bottomLeft\" state=\"frozen\"/>",
+        "header": [
+          "Contract item",
+          "Definition"
+        ],
+        "font": "Arial",
+        "bold": true,
+        "fill": "FF44546A"
+      }
+    }
+  },
+  "SUMO_process_inputs_5min.xlsx": {
+    "bytes": 63328157,
+    "zip_test": null,
+    "sheets": {
+      "Raw": {
+        "rows": 104833,
+        "cols": 28,
+        "pane": "<pane xSplit=\"1\" ySplit=\"1\" topLeftCell=\"B2\" activePane=\"bottomRight\" state=\"frozen\"/>",
+        "header": [
+          "日期",
+          "进水瞬时流量（m³/h）",
+          "出水瞬时流量（m³/h）",
+          "进水pH",
+          "进水COD（mg/L）"
+        ],
+        "font": "Arial",
+        "bold": true,
+        "fill": "FF1F4E78"
+      },
+      "Clean": {
+        "rows": 104833,
+        "cols": 28,
+        "pane": "<pane xSplit=\"1\" ySplit=\"1\" topLeftCell=\"B2\" activePane=\"bottomRight\" state=\"frozen\"/>",
+        "header": [
+          "日期",
+          "进水瞬时流量（m³/h）",
+          "出水瞬时流量（m³/h）",
+          "进水pH",
+          "进水COD（mg/L）"
+        ],
+        "font": "Arial",
+        "bold": true,
+        "fill": "FF1F4E78"
+      },
+      "SUMO_Ready": {
+        "rows": 104833,
+        "cols": 28,
+        "pane": "<pane xSplit=\"1\" ySplit=\"1\" topLeftCell=\"B2\" activePane=\"bottomRight\" state=\"frozen\"/>",
+        "header": [
+          "日期",
+          "进水瞬时流量（m³/h）",
+          "出水瞬时流量（m³/h）",
+          "进水pH",
+          "进水COD（mg/L）"
+        ],
+        "font": "Arial",
+        "bold": true,
+        "fill": "FF1F4E78"
+      },
+      "Derived_m3d": {
+        "rows": 104833,
+        "cols": 17,
+        "pane": "<pane xSplit=\"1\" ySplit=\"1\" topLeftCell=\"B2\" activePane=\"bottomRight\" state=\"frozen\"/>",
+        "header": [
+          "日期",
+          "进水瞬时流量（m³/d）",
+          "出水瞬时流量（m³/d）",
+          "氯化铁流量计1（m³/d）",
+          "氯化铁流量计2（m³/d）"
+        ],
+        "font": "Arial",
+        "bold": true,
+        "fill": "FF1F4E78"
+      },
+      "QA": {
+        "rows": 28,
+        "cols": 22,
+        "pane": "<pane ySplit=\"1\" topLeftCell=\"A2\" activePane=\"bottomLeft\" state=\"frozen\"/>",
+        "header": [
+          "变量",
+          "来源",
+          "单位",
+          "单位状态",
+          "原始缺失率（%）"
+        ],
+        "font": "Arial",
+        "bold": true,
+        "fill": "FF44546A"
+      },
+      "DataDictionary": {
+        "rows": 31,
+        "cols": 10,
+        "pane": "<pane ySplit=\"1\" topLeftCell=\"A2\" activePane=\"bottomLeft\" state=\"frozen\"/>",
+        "header": [
+          "输出变量",
+          "原始字段",
+          "原始文件组",
+          "单位",
+          "变量类型"
+        ],
+        "font": "Arial",
+        "bold": true,
+        "fill": "FF44546A"
+      },
+      "CleaningContract": {
+        "rows": 10,
+        "cols": 2,
+        "pane": "<pane ySplit=\"1\" topLeftCell=\"A2\" activePane=\"bottomLeft\" state=\"frozen\"/>",
+        "header": [
+          "Contract item",
+          "Definition"
+        ],
+        "font": "Arial",
+        "bold": true,
+        "fill": "FF44546A"
+      }
+    }
+  },
+  "SUMO_process_inputs_1h.xlsx": {
+    "bytes": 6430737,
+    "zip_test": null,
+    "sheets": {
+      "Raw": {
+        "rows": 8737,
+        "cols": 28,
+        "pane": "<pane xSplit=\"1\" ySplit=\"1\" topLeftCell=\"B2\" activePane=\"bottomRight\" state=\"frozen\"/>",
+        "header": [
+          "日期",
+          "进水瞬时流量（m³/h）",
+          "出水瞬时流量（m³/h）",
+          "进水pH",
+          "进水COD（mg/L）"
+        ],
+        "font": "Arial",
+        "bold": true,
+        "fill": "FF1F4E78"
+      },
+      "Clean": {
+        "rows": 8737,
+        "cols": 28,
+        "pane": "<pane xSplit=\"1\" ySplit=\"1\" topLeftCell=\"B2\" activePane=\"bottomRight\" state=\"frozen\"/>",
+        "header": [
+          "日期",
+          "进水瞬时流量（m³/h）",
+          "出水瞬时流量（m³/h）",
+          "进水pH",
+          "进水COD（mg/L）"
+        ],
+        "font": "Arial",
+        "bold": true,
+        "fill": "FF1F4E78"
+      },
+      "SUMO_Ready": {
+        "rows": 8737,
+        "cols": 28,
+        "pane": "<pane xSplit=\"1\" ySplit=\"1\" topLeftCell=\"B2\" activePane=\"bottomRight\" state=\"frozen\"/>",
+        "header": [
+          "日期",
+          "进水瞬时流量（m³/h）",
+          "出水瞬时流量（m³/h）",
+          "进水pH",
+          "进水COD（mg/L）"
+        ],
+        "font": "Arial",
+        "bold": true,
+        "fill": "FF1F4E78"
+      },
+      "Derived_m3d": {
+        "rows": 8737,
+        "cols": 17,
+        "pane": "<pane xSplit=\"1\" ySplit=\"1\" topLeftCell=\"B2\" activePane=\"bottomRight\" state=\"frozen\"/>",
+        "header": [
+          "日期",
+          "进水瞬时流量（m³/d）",
+          "出水瞬时流量（m³/d）",
+          "氯化铁流量计1（m³/d）",
+          "氯化铁流量计2（m³/d）"
+        ],
+        "font": "Arial",
+        "bold": true,
+        "fill": "FF1F4E78"
+      },
+      "QA": {
+        "rows": 28,
+        "cols": 22,
+        "pane": "<pane ySplit=\"1\" topLeftCell=\"A2\" activePane=\"bottomLeft\" state=\"frozen\"/>",
+        "header": [
+          "变量",
+          "来源",
+          "单位",
+          "单位状态",
+          "原始缺失率（%）"
+        ],
+        "font": "Arial",
+        "bold": true,
+        "fill": "FF44546A"
+      },
+      "DataDictionary": {
+        "rows": 31,
+        "cols": 10,
+        "pane": "<pane ySplit=\"1\" topLeftCell=\"A2\" activePane=\"bottomLeft\" state=\"frozen\"/>",
+        "header": [
+          "输出变量",
+          "原始字段",
+          "原始文件组",
+          "单位",
+          "变量类型"
+        ],
+        "font": "Arial",
+        "bold": true,
+        "fill": "FF44546A"
+      },
+      "CleaningContract": {
+        "rows": 10,
+        "cols": 2,
+        "pane": "<pane ySplit=\"1\" topLeftCell=\"A2\" activePane=\"bottomLeft\" state=\"frozen\"/>",
+        "header": [
+          "Contract item",
+          "Definition"
+        ],
+        "font": "Arial",
+        "bold": true,
+        "fill": "FF44546A"
+      }
+    }
+  },
+  "SUMO_DO_ORP_1min.xlsx": {
+    "bytes": 125193928,
+    "zip_test": null,
+    "sheets": {
+      "Raw": {
+        "rows": 524161,
+        "cols": 15,
+        "pane": "<pane xSplit=\"1\" ySplit=\"1\" topLeftCell=\"B2\" activePane=\"bottomRight\" state=\"frozen\"/>",
+        "header": [
+          "日期",
+          "DO_1_1（mg/L）",
+          "DO_1_2（mg/L）",
+          "DO_1_3（mg/L）",
+          "DO_1_4（mg/L）"
+        ],
+        "font": "Arial",
+        "bold": true,
+        "fill": "FF1F4E78"
+      },
+      "Clean": {
+        "rows": 524161,
+        "cols": 15,
+        "pane": "<pane xSplit=\"1\" ySplit=\"1\" topLeftCell=\"B2\" activePane=\"bottomRight\" state=\"frozen\"/>",
+        "header": [
+          "日期",
+          "DO_1_1（mg/L）",
+          "DO_1_2（mg/L）",
+          "DO_1_3（mg/L）",
+          "DO_1_4（mg/L）"
+        ],
+        "font": "Arial",
+        "bold": true,
+        "fill": "FF1F4E78"
+      },
+      "SUMO_Ready": {
+        "rows": 524161,
+        "cols": 15,
+        "pane": "<pane xSplit=\"1\" ySplit=\"1\" topLeftCell=\"B2\" activePane=\"bottomRight\" state=\"frozen\"/>",
+        "header": [
+          "日期",
+          "DO_1_1（mg/L）",
+          "DO_1_2（mg/L）",
+          "DO_1_3（mg/L）",
+          "DO_1_4（mg/L）"
+        ],
+        "font": "Arial",
+        "bold": true,
+        "fill": "FF1F4E78"
+      },
+      "QA": {
+        "rows": 15,
+        "cols": 22,
+        "pane": "<pane ySplit=\"1\" topLeftCell=\"A2\" activePane=\"bottomLeft\" state=\"frozen\"/>",
+        "header": [
+          "变量",
+          "来源",
+          "单位",
+          "单位状态",
+          "原始缺失率（%）"
+        ],
+        "font": "Arial",
+        "bold": true,
+        "fill": "FF44546A"
+      },
+      "DataDictionary": {
+        "rows": 15,
+        "cols": 10,
+        "pane": "<pane ySplit=\"1\" topLeftCell=\"A2\" activePane=\"bottomLeft\" state=\"frozen\"/>",
+        "header": [
+          "输出变量",
+          "原始字段",
+          "原始文件组",
+          "单位",
+          "变量类型"
+        ],
+        "font": "Arial",
+        "bold": true,
+        "fill": "FF44546A"
+      },
+      "CleaningContract": {
+        "rows": 10,
+        "cols": 2,
+        "pane": "<pane ySplit=\"1\" topLeftCell=\"A2\" activePane=\"bottomLeft\" state=\"frozen\"/>",
+        "header": [
+          "Contract item",
+          "Definition"
+        ],
+        "font": "Arial",
+        "bold": true,
+        "fill": "FF44546A"
+      }
+    }
+  },
+  "SUMO_DO_ORP_5min.xlsx": {
+    "bytes": 28267429,
+    "zip_test": null,
+    "sheets": {
+      "Raw": {
+        "rows": 104833,
+        "cols": 15,
+        "pane": "<pane xSplit=\"1\" ySplit=\"1\" topLeftCell=\"B2\" activePane=\"bottomRight\" state=\"frozen\"/>",
+        "header": [
+          "日期",
+          "DO_1_1（mg/L）",
+          "DO_1_2（mg/L）",
+          "DO_1_3（mg/L）",
+          "DO_1_4（mg/L）"
+        ],
+        "font": "Arial",
+        "bold": true,
+        "fill": "FF1F4E78"
+      },
+      "Clean": {
+        "rows": 104833,
+        "cols": 15,
+        "pane": "<pane xSplit=\"1\" ySplit=\"1\" topLeftCell=\"B2\" activePane=\"bottomRight\" state=\"frozen\"/>",
+        "header": [
+          "日期",
+          "DO_1_1（mg/L）",
+          "DO_1_2（mg/L）",
+          "DO_1_3（mg/L）",
+          "DO_1_4（mg/L）"
+        ],
+        "font": "Arial",
+        "bold": true,
+        "fill": "FF1F4E78"
+      },
+      "SUMO_Ready": {
+        "rows": 104833,
+        "cols": 15,
+        "pane": "<pane xSplit=\"1\" ySplit=\"1\" topLeftCell=\"B2\" activePane=\"bottomRight\" state=\"frozen\"/>",
+        "header": [
+          "日期",
+          "DO_1_1（mg/L）",
+          "DO_1_2（mg/L）",
+          "DO_1_3（mg/L）",
+          "DO_1_4（mg/L）"
+        ],
+        "font": "Arial",
+        "bold": true,
+        "fill": "FF1F4E78"
+      },
+      "QA": {
+        "rows": 15,
+        "cols": 22,
+        "pane": "<pane ySplit=\"1\" topLeftCell=\"A2\" activePane=\"bottomLeft\" state=\"frozen\"/>",
+        "header": [
+          "变量",
+          "来源",
+          "单位",
+          "单位状态",
+          "原始缺失率（%）"
+        ],
+        "font": "Arial",
+        "bold": true,
+        "fill": "FF44546A"
+      },
+      "DataDictionary": {
+        "rows": 15,
+        "cols": 10,
+        "pane": "<pane ySplit=\"1\" topLeftCell=\"A2\" activePane=\"bottomLeft\" state=\"frozen\"/>",
+        "header": [
+          "输出变量",
+          "原始字段",
+          "原始文件组",
+          "单位",
+          "变量类型"
+        ],
+        "font": "Arial",
+        "bold": true,
+        "fill": "FF44546A"
+      },
+      "CleaningContract": {
+        "rows": 10,
+        "cols": 2,
+        "pane": "<pane ySplit=\"1\" topLeftCell=\"A2\" activePane=\"bottomLeft\" state=\"frozen\"/>",
+        "header": [
+          "Contract item",
+          "Definition"
+        ],
+        "font": "Arial",
+        "bold": true,
+        "fill": "FF44546A"
+      }
+    }
+  }
+}

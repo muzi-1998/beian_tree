@@ -1,0 +1,46 @@
+{
+  "run_id": "SUMO-DQR-OCT2025-5MIN-20261009",
+  "checks": {
+    "expected_rows": true,
+    "exact_5min_timebase": true,
+    "DO_nonnegative_where_available": true,
+    "signed_negative_ORP_retained": true,
+    "no_interpolation_or_raw_fallback": true
+  },
+  "rows": 8928,
+  "channels": [
+    "DO_1_1",
+    "DO_1_2",
+    "DO_1_3",
+    "DO_1_4",
+    "DO_2_1",
+    "DO_2_2",
+    "DO_2_3",
+    "DO_2_4",
+    "ORP_1_1",
+    "ORP_1_2",
+    "ORP_1_3",
+    "ORP_2_1",
+    "ORP_2_2",
+    "ORP_2_3"
+  ],
+  "joint_complete_bins": 8176,
+  "joint_complete_pct": 91.57706093189964,
+  "longest_joint_complete_block": {
+    "start": "2025-10-29 13:40:00",
+    "endExclusive": "2025-11-01 00:00:00",
+    "bins": 700,
+    "hours": 58.333333333333336
+  },
+  "source_sha256": {
+    "dqrDo": "adddba9e144cb695f0def6eaf1e3f508d1f2e4dada612d9d122d422e8bd1dcb6",
+    "dqrOrp": "7800fafd4a6747fa68fcaf9d5c5c4b9156cad4a6f96852a6bb10cdd99187728a",
+    "raw": "9213e86399e6ade9d7ce753e78e798f808c9e6f3f538af0122be76c70b4cf1e0",
+    "manifest": "9fdfe0ad3bc69af3185e41315017f13fda3373d9b0395b9552b9fac5a65105f9"
+  },
+  "output_sha256": {
+    "csv": "e342750255e42b062478c706b65ba3b0a86ff49bd275abff3e1ffbd4c726df9b",
+    "xlsx": "6c807ac55c2e41625d13ae1ee314193202830b2c18783193a472a4fa9b586769"
+  },
+  "builder_sha256": "37e0b987f97f84a45692e84740fc478116ce7a921541c2f876c8f6e1083083a5"
+}

@@ -1,0 +1,8 @@
+.gitattributes text eol=lf
+*.py text eol=lf
+*.mjs text eol=lf
+dqr_forcing_contract.json text eol=lf
+outputs/dqr_forcing/* -text
+outputs/dqr_full_period/*.xlsx -text
+outputs/dqr_full_period/*.json -text
+outputs/dqr_full_period/*.md -text
