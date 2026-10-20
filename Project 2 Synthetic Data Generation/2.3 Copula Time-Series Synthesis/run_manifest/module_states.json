@@ -1,0 +1,324 @@
+{
+  "M01": {
+    "manifest": {
+      "run_id": "20261020T134451_986499Z_M01",
+      "module": "M01",
+      "result": {
+        "status": "PARTIAL",
+        "objective": "核对两份核心分钟对齐档案和七个输入/标签通道，保留原值与逐单元来源。",
+        "methods": "按既定日历切分；Q 使用 06 瞬时流量。只做有限/正值技术标记，不插值、不裁剪，不套用历史小时保持规则。原生刷新与可用时点一律 UNKNOWN。",
+        "inputs": "两份只读 CSV；五个进水变量及两个出口候选标签。全时段只做来源及机械质量审计；常数段统计仅使用 development。",
+        "metrics": {
+          "archive_rows_per_source": 524160,
+          "archive_days": 364,
+          "flag_cells": 3669120,
+          "split_rows": {
+            "development": 393120,
+            "validation": 44640,
+            "terminal_test": 86400
+          },
+          "technical_all_five_rows": 496652,
+          "technical_Q_COD_T_rows": 518991,
+          "missing_target_dates": [
+            "2026-07-31"
+          ],
+          "native_frequency": "UNKNOWN",
+          "confirmed_fresh_count": null,
+          "raw_hash_unchanged": true
+        },
+        "checks": [
+          {
+            "name": "来源与时钟",
+            "status": "PASS",
+            "reason": "两源时钟一致，无重复/乱序；输入前后 SHA256 相同。"
+          },
+          {
+            "name": "原生支持",
+            "status": "PENDING",
+            "reason": "暂无可核实元数据；observed/held/imputed 保持空值，刷新状态 UNKNOWN。"
+          },
+          {
+            "name": "标签和 DQR",
+            "status": "PENDING",
+            "reason": "列存在不等于独立标签、氮计量或 DQR 已准入。"
+          }
+        ],
+        "limitations": [
+          "档案数值重复可能源于平稳、量化、保持或填补，不能由本次统计区分。",
+          "2026-07-31 原始数据缺失；未伪造完整 365 天。",
+          "氮计量口径、出口观测算子、延迟与实验室对照尚待核实。"
+        ],
+        "next": [
+          "M02 仅开展开发集档案算术诊断；主步长与原生频率保持待定。",
+          "后续取得仪表/SCADA 证据时更新本报告并保留本次不可变清单。"
+        ],
+        "figure_note": "实际档案诊断图，含源 CSV、可编辑 SVG/PDF 和 PNG；不作为原生频率、主步长、事件或生成质量已通过的证据。"
+      },
+      "tests": {
+        "status": "PASS",
+        "returncode": 0,
+        "command": [
+          "D:\\000_APP\\020_APP_code\\05_python3.10\\python.exe",
+          "-X",
+          "utf8",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "tests",
+          "-v"
+        ],
+        "log": "run_manifest/runs/20261020T134451_986499Z_M01/tests.log"
+      },
+      "config_sha256": {
+        "configs/experiment_protocol.json": "652dcb19b22667d0e6412809c9c9cc68ac36053a3ac80ad8db809ba3cc6d7dc0",
+        "configs/model_candidates.json": "1dd3a22f6f57b0565ac16e3cd70a213f1fad4452f373a805b3825329ecca5bc6",
+        "configs/module_contracts.json": "82a19df3220deca912f15c7a1598f99062d90bacb16d61f045d06582427eb681",
+        "configs/study_design.json": "8ac702f9ba5307604242eb221dbb06cd50d77e2bdbfc1aedf37be61be626dd7a"
+      },
+      "outputs": [
+        {
+          "path": "artifacts/data/01_input_audit.json",
+          "bytes": 2296,
+          "sha256": "9c8c495b94d36765d81edc567763cba10c2c52f7d9f867eedf9b7eff9194f455"
+        },
+        {
+          "path": "artifacts/data/01_observation_flags.parquet",
+          "bytes": 52426420,
+          "sha256": "153d2d96fffa198e36182dfeb5a1015b25dcb674d53ac4e54ead61719aab45b7"
+        },
+        {
+          "path": "artifacts/figures/M01_audit.pdf",
+          "bytes": 40218,
+          "sha256": "42a7f5da3cc638f8a4851b54b2e46a57a698f0eed56de862942106454836d563"
+        },
+        {
+          "path": "artifacts/figures/M01_audit.png",
+          "bytes": 250774,
+          "sha256": "324f803b614197fdf6057764809910a0f250f3233974a5428e5206f29094ad3f"
+        },
+        {
+          "path": "artifacts/figures/M01_audit.svg",
+          "bytes": 22063,
+          "sha256": "f19244bd19a86dc04913644ed138925fa583668b0e27da844124cddc00b22f68"
+        },
+        {
+          "path": "artifacts/figures/M01_audit_source.csv",
+          "bytes": 5778,
+          "sha256": "a9257aa1b147a943996055cb03e2de940f76480310f006fad7adbacd8dde195d"
+        },
+        {
+          "path": "artifacts/figures/M01_figure_qa.json",
+          "bytes": 951,
+          "sha256": "489fca8973650e74dc53e8f5c346ab71893bdfd03c7be171fefeb54ab78096cc"
+        },
+        {
+          "path": "artifacts/figures/M01_frequency_source.csv",
+          "bytes": 3952,
+          "sha256": "13ba5a88bdffce3912fded766c8da07030e5a564bfd88d121f91cc578ef3c0c6"
+        },
+        {
+          "path": "artifacts/validation/01_label_admission.json",
+          "bytes": 1348,
+          "sha256": "d54c15be2194d15f9875fdd73027fce7261ec31b623e39d437af4c8eba667a44"
+        },
+        {
+          "path": "artifacts/validation/01_native_frequency.csv",
+          "bytes": 3952,
+          "sha256": "13ba5a88bdffce3912fded766c8da07030e5a564bfd88d121f91cc578ef3c0c6"
+        },
+        {
+          "path": "artifacts/validation/01_technical_quality.csv",
+          "bytes": 5778,
+          "sha256": "a9257aa1b147a943996055cb03e2de940f76480310f006fad7adbacd8dde195d"
+        }
+      ],
+      "code_sha256": {
+        "src/project2_synthesis/__init__.py": "372ab0bed771c5a02f3592e99d0f4134ff341b2f11fd49d3d65ca0ab287feeaa",
+        "src/project2_synthesis/cli.py": "b65d11b44a37df9152cddb585f27083f50aafe2133557fa81648c665a08e2ceb",
+        "src/project2_synthesis/contracts.py": "9ea1256ec8f3ac4498994ededcbed377e93f4d03a388c9894d794f6f46a4f75c",
+        "src/project2_synthesis/figures/audit_figures.py": "a081b53d9b85caa9c034ef66c6c4dcb112074663a76a244c48f739040108bf09",
+        "src/project2_synthesis/intake/label_admission.py": "5bd8d78a7663fc09025853be09efc8d29450fa9fa5fe60197003bfede9774875",
+        "src/project2_synthesis/intake/native_frequency.py": "f3bbcaed7cc1884b680f6aeff0c77fa35468f6dc62c134687bd08caee0ea74e6",
+        "src/project2_synthesis/intake/source_audit.py": "718506ac1ca47d233181a0ae648ba41df3311766d667246c7237442f41e95abd",
+        "src/project2_synthesis/preparation/aggregation.py": "70ed19041c61c1cf5e0f0f9b4cd3c2c4de50f6e7cc8f0a1d4eee4b8974cfa606",
+        "src/project2_synthesis/preparation/scale_selection.py": "7caf715b0b3e8e58062fc8cee1f48e47f6a91c2d0af19d21bb9e7b4876e7b74f",
+        "src/project2_synthesis/preparation/splitting.py": "d0831af3eb3af74cf7eefe26fd105c261a80706c9304d7a9b7b1151788a6c906",
+        "src/project2_synthesis/runtime.py": "3c8a9af8d4ff7f539d75167247327cc29d17d990289deb1ecea59eda34123f00"
+      },
+      "final_plan_sha256": "c786015cdb06cc808aa3e21b34e89f2652fb6df3e4a6f9e0c18e7353ccf8477b",
+      "timestamp_utc": "2026-10-20T13:45:30.019278+00:00"
+    },
+    "history": [
+      {
+        "run_id": "20261020T134451_986499Z_M01",
+        "status": "PARTIAL",
+        "reason": "首次实际执行",
+        "manifest": "run_manifest/runs/20261020T134451_986499Z_M01/manifest.json"
+      }
+    ]
+  },
+  "M02": {
+    "manifest": {
+      "run_id": "20261020T134719_593878Z_M02",
+      "module": "M02",
+      "result": {
+        "status": "PARTIAL",
+        "objective": "在 development 上核验候选尺度的共同技术支持、TW/FW 双视图和档案负荷算术；不批准主步长。",
+        "methods": "5/15/60 min 日历对齐；保留 Q/COD/T 与五变量两种共同支持；每行仅按名义 1 min 作矩形求积。缺口不填补，不外推满日。C_TW=ΣCΔt/ΣΔt，C_FW=ΣQCΔt/ΣQΔt，V=ΣQΔt，L=ΣQCΔt/1000。",
+        "inputs": "消费经 SHA 核验的 M01 20261020T134451_986499Z_M01；只读 development，未使用 validation/terminal_test 做分布或尺度选择。02_model_frame 仅为开发集技术档案，model_admitted=false。",
+        "metrics": {
+          "development_archive_rows": 393120,
+          "candidate_steps_minutes": [
+            5,
+            15,
+            60
+          ],
+          "support_profiles": [
+            "Q_COD_T",
+            "Q_COD_NH4_TN_T"
+          ],
+          "contiguous_technical_blocks": {
+            "Q_COD_T": 120,
+            "Q_COD_NH4_TN_T": 495
+          },
+          "concentration_view_rows": 445536,
+          "load_ledger_rows": 445536,
+          "max_scaled_numerical_error": 4.881297283851203e-16,
+          "main_step_minutes": null,
+          "fresh_count": null,
+          "validation_or_test_rows_in_aggregation": 0
+        },
+        "checks": [
+          {
+            "name": "M01 产物与配置谱系",
+            "status": "PASS",
+            "reason": "消费前核对全部上游文件 SHA 与配置 SHA。"
+          },
+          {
+            "name": "同支持 TW/FW/V/L 及日账本",
+            "status": "PASS",
+            "reason": "最大数值重算误差 4.88e-16，小于既定 1e-08；仅为算术恒等式。"
+          },
+          {
+            "name": "主步长及有效独立信息",
+            "status": "PENDING",
+            "reason": "原生信息 UNKNOWN；未报告原生峰值损失、事件相位误差或过程响应合格。"
+          }
+        ],
+        "limitations": [
+          "名义档案求积不是已验证的物理观测积分；SCADA 保持、插值或平均支持未知。",
+          "技术连续块不代表独立事件；完整档案窗口不代表原生测量覆盖达标。",
+          "氮负荷使用表头计量作暂定算术，氮质量口径未准入。两种支持的负荷不能混合比较。"
+        ],
+        "next": [
+          "保持 main_step_minutes=null；在可核实观测支持与事件/过程尺度证据到位后再提交主步长决策。",
+          "若元数据持续无法取得，应先征得用户确认有限用途研究协议，再开展敏感性研究；当前不擅自放宽主链。"
+        ],
+        "figure_note": "实际档案诊断图，含源 CSV、可编辑 SVG/PDF 和 PNG；不作为原生频率、主步长、事件或生成质量已通过的证据。"
+      },
+      "tests": {
+        "status": "PASS",
+        "returncode": 0,
+        "command": [
+          "D:\\000_APP\\020_APP_code\\05_python3.10\\python.exe",
+          "-X",
+          "utf8",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "tests",
+          "-v"
+        ],
+        "log": "run_manifest/runs/20261020T134719_593878Z_M02/tests.log"
+      },
+      "config_sha256": {
+        "configs/experiment_protocol.json": "652dcb19b22667d0e6412809c9c9cc68ac36053a3ac80ad8db809ba3cc6d7dc0",
+        "configs/model_candidates.json": "1dd3a22f6f57b0565ac16e3cd70a213f1fad4452f373a805b3825329ecca5bc6",
+        "configs/module_contracts.json": "82a19df3220deca912f15c7a1598f99062d90bacb16d61f045d06582427eb681",
+        "configs/study_design.json": "8ac702f9ba5307604242eb221dbb06cd50d77e2bdbfc1aedf37be61be626dd7a"
+      },
+      "outputs": [
+        {
+          "path": "artifacts/data/02_concentration_views.parquet",
+          "bytes": 9378167,
+          "sha256": "3b58ed1986ae8e73ff25fe31a225cc349ff2caa8b7e54cdcb265514ae3756138"
+        },
+        {
+          "path": "artifacts/data/02_load_ledger.parquet",
+          "bytes": 12191292,
+          "sha256": "85ac24d1b12ee5695c85b32bea3849bee45050585327a6018706a6f00801f1f6"
+        },
+        {
+          "path": "artifacts/data/02_model_frame.parquet",
+          "bytes": 6305120,
+          "sha256": "4e0b5aa6ab7be7bc3336130142f39f756fdee0f3e01781f09fe9827042600815"
+        },
+        {
+          "path": "artifacts/data/02_time_blocks.parquet",
+          "bytes": 18334,
+          "sha256": "3cab13555b5264556c538f784fa4eadbdb42439a9fe4defb8ad865b4bbe354de"
+        },
+        {
+          "path": "artifacts/figures/M02_audit.pdf",
+          "bytes": 41856,
+          "sha256": "34332c1843f5b06643ebe75789400eb13cde13ae0864bd9915ad75d3411c992c"
+        },
+        {
+          "path": "artifacts/figures/M02_audit.png",
+          "bytes": 233230,
+          "sha256": "e8a42b5856d77b4a7b4d2318385cd6989c897bc5d6f80271857341365d2a9363"
+        },
+        {
+          "path": "artifacts/figures/M02_audit.svg",
+          "bytes": 16743,
+          "sha256": "5f6b527f606b00eab7d2f74186c4c2a4b6c75f6e780e290dd8b9667c459a97a3"
+        },
+        {
+          "path": "artifacts/figures/M02_audit_source.csv",
+          "bytes": 2904,
+          "sha256": "ab1e80c763c36b6bfd8ec08541d1c8c5ddf769bf8b946294d58f93cb3f0c72e5"
+        },
+        {
+          "path": "artifacts/figures/M02_figure_qa.json",
+          "bytes": 984,
+          "sha256": "5328b20fbf8c5f4c01d70dd6fd341765b24616a68fcc91b5e3b504c78e0f1fe0"
+        },
+        {
+          "path": "artifacts/validation/02_scale_comparison.csv",
+          "bytes": 2918,
+          "sha256": "175c04211d9b63d219c2a04d68cc2c00f675f94da1b6cfd89f290c1be3e62fb6"
+        },
+        {
+          "path": "artifacts/validation/02_scale_decision.json",
+          "bytes": 1105,
+          "sha256": "5d3e1acd4ecbad3273da042b43e3b2ae52620bdefbe52520965ebeececdc52f1"
+        }
+      ],
+      "code_sha256": {
+        "src/project2_synthesis/__init__.py": "372ab0bed771c5a02f3592e99d0f4134ff341b2f11fd49d3d65ca0ab287feeaa",
+        "src/project2_synthesis/cli.py": "b65d11b44a37df9152cddb585f27083f50aafe2133557fa81648c665a08e2ceb",
+        "src/project2_synthesis/contracts.py": "9ea1256ec8f3ac4498994ededcbed377e93f4d03a388c9894d794f6f46a4f75c",
+        "src/project2_synthesis/figures/audit_figures.py": "a081b53d9b85caa9c034ef66c6c4dcb112074663a76a244c48f739040108bf09",
+        "src/project2_synthesis/intake/label_admission.py": "5bd8d78a7663fc09025853be09efc8d29450fa9fa5fe60197003bfede9774875",
+        "src/project2_synthesis/intake/native_frequency.py": "f3bbcaed7cc1884b680f6aeff0c77fa35468f6dc62c134687bd08caee0ea74e6",
+        "src/project2_synthesis/intake/source_audit.py": "718506ac1ca47d233181a0ae648ba41df3311766d667246c7237442f41e95abd",
+        "src/project2_synthesis/preparation/aggregation.py": "70ed19041c61c1cf5e0f0f9b4cd3c2c4de50f6e7cc8f0a1d4eee4b8974cfa606",
+        "src/project2_synthesis/preparation/scale_selection.py": "7caf715b0b3e8e58062fc8cee1f48e47f6a91c2d0af19d21bb9e7b4876e7b74f",
+        "src/project2_synthesis/preparation/splitting.py": "d0831af3eb3af74cf7eefe26fd105c261a80706c9304d7a9b7b1151788a6c906",
+        "src/project2_synthesis/runtime.py": "3c8a9af8d4ff7f539d75167247327cc29d17d990289deb1ecea59eda34123f00"
+      },
+      "final_plan_sha256": "c786015cdb06cc808aa3e21b34e89f2652fb6df3e4a6f9e0c18e7353ccf8477b",
+      "timestamp_utc": "2026-10-20T13:47:59.747898+00:00"
+    },
+    "history": [
+      {
+        "run_id": "20261020T134719_593878Z_M02",
+        "status": "PARTIAL",
+        "reason": "首次实际执行",
+        "manifest": "run_manifest/runs/20261020T134719_593878Z_M02/manifest.json"
+      }
+    ]
+  }
+}

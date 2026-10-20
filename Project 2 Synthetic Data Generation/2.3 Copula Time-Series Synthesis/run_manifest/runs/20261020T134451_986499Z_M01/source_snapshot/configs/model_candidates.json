@@ -1,0 +1,106 @@
+{
+  "version": "2.0_final_design",
+  "status": "candidate_design_not_fitted",
+  "temporal": {
+    "S0": "corrected_legacy_backward_trend_unique_harmonics_ARMA",
+    "S1": "conditional_slow_component_unique_daily_weekly_harmonics_ARMA",
+    "S2": "robust_MSTL_daily_weekly_same_stochastic_backend",
+    "arma_pq": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "include_white_noise_0_0": true,
+    "VAR_order_if_cross_lag_persists": [
+      1,
+      2
+    ],
+    "GARCH": "only_if_ARCH_supported",
+    "VMD_CEEMDAN": "optional_pilot_after_documented_S0_S1_S2_failure",
+    "S3": "low_order_direct_stationary_temporal_vine_benchmark; actual library adapter pending"
+  },
+  "regimes": {
+    "candidate_K": [
+      1,
+      2,
+      3
+    ],
+    "K4": "only_with_independent_support",
+    "temperature": "continuous_condition_preferred",
+    "all_regimes_minimum_24h": false
+  },
+  "margins": {
+    "baseline": "empirical_or_simple_parametric",
+    "candidate": "KDE_body_optional_GPD_tail",
+    "upper_quantiles": [
+      0.95,
+      0.975,
+      0.99
+    ],
+    "lower_quantiles": [
+      0.05,
+      0.025,
+      0.01
+    ],
+    "tail_support_gate": null,
+    "insufficient_support": "merge_share_or_empirical_fallback",
+    "evt_scope": "four_tiers_in_experiment_protocol; EQD not mandatory; MT_AD excluded_from_mainline",
+    "primary_estimator_if_GPD_admitted": "MLE_with_explicit_support_and_failure_return; empirical fallback",
+    "alternative_estimators": "only documented numerical rescue; no mandatory systematic comparison"
+  },
+  "dependence": {
+    "baseline": [
+      "independence",
+      "Gaussian_allow_negative_rho",
+      "Student_t"
+    ],
+    "candidate_pairs": [
+      "Gaussian",
+      "Student_t",
+      "Clayton",
+      "Gumbel"
+    ],
+    "archimedean_rotations_degrees": [
+      0,
+      90,
+      180,
+      270
+    ],
+    "four_dimensional_vine_truncation": [
+      1,
+      2,
+      3
+    ],
+    "lagged_extension": "conditional_on_innovation_CCF_failure"
+  },
+  "synthesis": {
+    "pilot_days_candidates": [
+      30,
+      90
+    ],
+    "year_replicates": "determine_after_variance_pilot",
+    "three_to_five_years": "optional_training_budget_not_forecast",
+    "seeds": "freeze_after_pilot",
+    "natural_and_stress_datasets": "separate",
+    "burn_in": "determine_from_state_decay"
+  },
+  "physics": {
+    "nitrogen_transform": "candidate_NH4_plus_other_N_after_QA",
+    "QP": "optional_with_traceable_constraints",
+    "BOD_COD": "not_validated_without_observations",
+    "engineering_envelopes": null,
+    "keep_pre_and_post_correction": true
+  },
+  "baselines": [
+    "real_only_supervised",
+    "continuous_block_resampling",
+    "independent_same_temporal",
+    "Gaussian_t_same_temporal",
+    "conditional_vine_same_temporal",
+    "low_order_direct_temporal_vine"
+  ],
+  "optional_baselines": [
+    "calibrated_classic_influent_generator_if_claiming_advantage_over_it"
+  ]
+}

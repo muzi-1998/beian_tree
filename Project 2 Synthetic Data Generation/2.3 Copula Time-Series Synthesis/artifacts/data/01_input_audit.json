@@ -1,0 +1,60 @@
+{
+  "run_id": "20261020T134451_986499Z_M01",
+  "protocol_sha256": "652dcb19b22667d0e6412809c9c9cc68ac36053a3ac80ad8db809ba3cc6d7dc0",
+  "study_sha256": "8ac702f9ba5307604242eb221dbb06cd50d77e2bdbfc1aedf37be61be626dd7a",
+  "sources": [
+    {
+      "file": "整年对齐_分钟数据_2025-08-01_2026-07-30_01_influent+effluent.csv",
+      "sha256": "441d9dfd6d7273670ec11bd91588759f6784acfec78172b1ff2555d6fccc30af",
+      "bytes": 63041057,
+      "records": 524160,
+      "start": "2025-08-01T00:00:00+08:00",
+      "end": "2026-07-30T23:59:00+08:00",
+      "duplicate_timestamps": 0,
+      "missing_archive_grid_rows": 0,
+      "source_type": "aligned_archive",
+      "source_record_index": "1-based CSV logical data record; header excluded"
+    },
+    {
+      "file": "整年对齐_分钟数据_2025-08-01_2026-07-30_06_liuliangjiance.csv",
+      "sha256": "e5654b874d61fc9a3f4b68e220c8608c5f61773393999dbc40b62776dc59ee22",
+      "bytes": 41195196,
+      "records": 524160,
+      "start": "2025-08-01T00:00:00+08:00",
+      "end": "2026-07-30T23:59:00+08:00",
+      "duplicate_timestamps": 0,
+      "missing_archive_grid_rows": 0,
+      "source_type": "aligned_archive",
+      "source_record_index": "1-based CSV logical data record; header excluded"
+    }
+  ],
+  "timezone": "Asia/Shanghai",
+  "target_period": {
+    "start": "2025-08-01",
+    "end": "2026-07-31"
+  },
+  "archive_rows": 524160,
+  "unique_archive_days": 364,
+  "split_rows": {
+    "development": 393120,
+    "validation": 44640,
+    "terminal_test": 86400
+  },
+  "missing_target_dates": [
+    "2026-07-31"
+  ],
+  "technical_all_five_rows": 496652,
+  "technical_Q_COD_T_rows": 518991,
+  "native_frequency_status": "UNKNOWN",
+  "raw_hash_unchanged": true,
+  "nitrogen_units": "source_header_mg/L; nitrogen_basis_pending_confirmation",
+  "holdout_access": {
+    "purpose": "read_only_provenance_and_mechanical_flags_only",
+    "fitting": false,
+    "distribution_diagnostics": "development_only",
+    "legacy_audit": "preexisting_audits_have_already_inspected_all_periods; no_pristine_holdout_claim"
+  },
+  "quality_rules": "finite; Q>0; COD/NH4/TN>=0; T finite_only; no_clip_no_fill_no_DQR_invention",
+  "scientific_admission": "PENDING",
+  "main_step_minutes": null
+}

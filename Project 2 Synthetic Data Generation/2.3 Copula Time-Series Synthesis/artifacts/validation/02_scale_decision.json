@@ -1,0 +1,32 @@
+{
+  "run_id": "20261020T134719_593878Z_M02",
+  "protocol_sha256": "652dcb19b22667d0e6412809c9c9cc68ac36053a3ac80ad8db809ba3cc6d7dc0",
+  "study_sha256": "8ac702f9ba5307604242eb221dbb06cd50d77e2bdbfc1aedf37be61be626dd7a",
+  "status": "PENDING",
+  "main_step_minutes": null,
+  "frozen": false,
+  "candidate_steps_minutes": [
+    5,
+    15,
+    60
+  ],
+  "fit_split": "development",
+  "input_M01_run_id": "20261020T134451_986499Z_M01",
+  "native_frequency": "UNKNOWN",
+  "one_minute_admitted": false,
+  "scientific_coverage_threshold": null,
+  "observational_basis": "nominal_1min_aligned_archive_quadrature_only",
+  "reason": "no_verifiable_native_refresh_averaging_or_hold_metadata; cannot_quantify_true_event_information_loss",
+  "numerical_identity": {
+    "status": "PASS",
+    "tolerance": 1e-08,
+    "max_scaled_error": 4.881297283851203e-16,
+    "normalizer": "max(abs(reference),1) in each native V/load unit; numerical_only"
+  },
+  "not_executed": [
+    "native_peak_phase_duration_validation",
+    "event_admission",
+    "SUMO_response",
+    "scale_selection"
+  ]
+}

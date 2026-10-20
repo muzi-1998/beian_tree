@@ -1,0 +1,230 @@
+{
+  "version": "v3_final_20261020",
+  "status": "design_only_not_executed",
+  "frozen": false,
+  "freeze_split": "validation",
+  "terminal_test_can_select": false,
+  "tolerance_provenance": "expert pilot proposals; not literature constants, sensor accuracy or validated plant tolerances",
+  "evt_tiers": {
+    "base": {
+      "required": true,
+      "content": [
+        "empirical_CDF_or_KDE",
+        "q975_support_diagnostic",
+        "event_support_audit"
+      ]
+    },
+    "main_tail": {
+      "decision": "only_if_data_sufficient",
+      "content": [
+        "optional_GPD",
+        "q95_q99_sensitivity",
+        "blocked_tail_holdout"
+      ]
+    },
+    "threshold_research": {
+      "decision": "only_if_GPD_materially_changes_primary_conclusion",
+      "content": [
+        "EQD",
+        "dependent_resampling_if_needed",
+        "selection_uncertainty_and_minimal_coverage_pilot"
+      ]
+    },
+    "extension": {
+      "enabled_in_mainline": false,
+      "content": [
+        "MT_AD",
+        "systematic_multi_estimator_study",
+        "MGPD_GPC_Hawkes"
+      ]
+    },
+    "tail_mass_population": "same_all_time_innovation_population; event_peak_is_separate",
+    "empirical_tail_can_win": true,
+    "conditional_interval_must_be_labelled": true
+  },
+  "experiments": {
+    "E1": {
+      "name": "quality_coverage_tradeoff",
+      "primary_factor": "quality_filter_strategy",
+      "fixed": [
+        "effective_training_blocks",
+        "regime_support",
+        "model",
+        "tuning_and_compute_budget",
+        "independent_real_evaluation"
+      ],
+      "coverage_audit": "all_original_candidate_events_before_training_size_matching",
+      "event_truth": "independent_logs_lab_or_multisensor_review; quality_score_is_not_truth",
+      "cannot_match_support": "report_unidentifiable_stratum; retain_coverage_loss"
+    },
+    "E2": {
+      "name": "dynamic_structure_response",
+      "primary_evidence": "controlled_time_organization_surrogate; real_synthetic_pair_is_additional_fidelity_evidence",
+      "matching_metrics": [
+        {
+          "id": "concentration_quantiles",
+          "statistic": "max_abs_quantile_error_div_reference_IQR",
+          "pilot_proposal": 0.05,
+          "final_tolerance": null,
+          "unit": "dimensionless",
+          "probabilities": [
+            0.05,
+            0.25,
+            0.5,
+            0.75,
+            0.95
+          ],
+          "status": "proposal_not_frozen",
+          "normalizer_floor": "pending_sensor_resolution_and_QA",
+          "apply_to": "each_admitted_variable_regime_and_pair; no pooled-only pass",
+          "evidence": "finite_sample_exact_invariant_or_block_interval_inside_equivalence_bounds"
+        },
+        {
+          "id": "sync_tau",
+          "statistic": "max_abs_delta_Kendall_tau",
+          "pilot_proposal": 0.05,
+          "final_tolerance": null,
+          "unit": "dimensionless",
+          "probabilities": null,
+          "status": "proposal_not_frozen",
+          "normalizer_floor": "pending_sensor_resolution_and_QA",
+          "apply_to": "each_admitted_variable_regime_and_pair; no pooled-only pass",
+          "evidence": "finite_sample_exact_invariant_or_block_interval_inside_equivalence_bounds"
+        },
+        {
+          "id": "sync_joint_exceedance",
+          "statistic": "max_abs_delta_conditional_tail_probability",
+          "pilot_proposal": 0.05,
+          "final_tolerance": null,
+          "unit": "probability",
+          "probabilities": [
+            0.9
+          ],
+          "status": "proposal_not_frozen",
+          "normalizer_floor": "pending_sensor_resolution_and_QA",
+          "apply_to": "each_admitted_variable_regime_and_pair; no pooled-only pass",
+          "evidence": "finite_sample_exact_invariant_or_block_interval_inside_equivalence_bounds"
+        },
+        {
+          "id": "daily_volume",
+          "statistic": "max_day_relative_error",
+          "pilot_proposal": 0.01,
+          "final_tolerance": null,
+          "unit": "fraction",
+          "probabilities": null,
+          "status": "proposal_not_frozen",
+          "normalizer_floor": "pending_sensor_resolution_and_QA",
+          "apply_to": "each_admitted_variable_regime_and_pair; no pooled-only pass",
+          "evidence": "finite_sample_exact_invariant_or_block_interval_inside_equivalence_bounds"
+        },
+        {
+          "id": "daily_COD_load",
+          "statistic": "max_day_relative_error",
+          "pilot_proposal": 0.02,
+          "final_tolerance": null,
+          "unit": "fraction",
+          "probabilities": null,
+          "status": "proposal_not_frozen",
+          "normalizer_floor": "pending_sensor_resolution_and_QA",
+          "apply_to": "each_admitted_variable_regime_and_pair; no pooled-only pass",
+          "evidence": "finite_sample_exact_invariant_or_block_interval_inside_equivalence_bounds"
+        },
+        {
+          "id": "daily_TN_load",
+          "statistic": "max_day_relative_error",
+          "pilot_proposal": 0.02,
+          "final_tolerance": null,
+          "unit": "fraction",
+          "probabilities": null,
+          "status": "proposal_not_frozen",
+          "normalizer_floor": "pending_sensor_resolution_and_QA",
+          "apply_to": "each_admitted_variable_regime_and_pair; no pooled-only pass",
+          "evidence": "finite_sample_exact_invariant_or_block_interval_inside_equivalence_bounds"
+        },
+        {
+          "id": "event_amplitude",
+          "statistic": "max_pair_relative_peak_error_Q_C_and_load",
+          "pilot_proposal": 0.05,
+          "final_tolerance": null,
+          "unit": "fraction",
+          "probabilities": null,
+          "status": "proposal_not_frozen",
+          "normalizer_floor": "pending_sensor_resolution_and_QA",
+          "apply_to": "each_admitted_variable_regime_and_pair; no pooled-only pass",
+          "evidence": "finite_sample_exact_invariant_or_block_interval_inside_equivalence_bounds"
+        }
+      ],
+      "manipulated_metric_ids": [
+        "univariate_ACF",
+        "cross_lag_CCF",
+        "event_duration",
+        "event_phase"
+      ],
+      "specific_cross_lag_claim_enabled": false,
+      "specific_cross_lag_claim_requires": [
+        "matched_univariate_ACF",
+        "matched_non_target_dynamics",
+        "predeclared_target_lags"
+      ],
+      "surrogate_rule": "reorder_complete_equal_duration_vectors_within_day_regime_continuous_support; fixed_external_conditions; feasibility_and_ramps_checked",
+      "surrogate_claim": "joint_time_organization; common_vector_shuffle_also_changes_univariate_dynamics",
+      "matching_admission": "all_required_metrics_and_uncertainty_pass_before_response; unidentifiable_is_not_pass",
+      "candidate_attempt_limit": null,
+      "candidate_selection_uses_response_or_field_TN": false,
+      "same_theta": true,
+      "same_process_and_controller_initial_state": true,
+      "same_warmup": true,
+      "warmup_protocol": "common_reference_input_then_clone_process_and_controller_snapshot_at_intervention_start",
+      "primary_control_mode": "same_policy",
+      "fixed_action_replay_origin": "real_input_same_policy_simulation_actions",
+      "primary_response_metric_kind": "simulation_to_simulation",
+      "real_input_vs_field_kind": "independent_model_validation",
+      "synthetic_input_vs_field_kind": "scenario_departure_not_prediction_error",
+      "response_metrics": [
+        "TN_peak",
+        "exceedance_duration",
+        "censored_recovery_time",
+        "time_aligned_response_RMSE"
+      ],
+      "permit_limit_and_recovery_band": null,
+      "recovery_not_observed": "right_censored_not_last_time_as_truth"
+    },
+    "E3": {
+      "name": "augmentation_negative_transfer",
+      "ratio_unit": "synthetic_training_windows_over_real_training_windows",
+      "ratio_candidates": [
+        0,
+        0.25,
+        0.5,
+        1,
+        2
+      ],
+      "sources": [
+        "real_only",
+        "conditional_block_resampling",
+        "frozen_generator"
+      ],
+      "fixed": [
+        "independent_real_test",
+        "predictor_and_features",
+        "real_base_training_set",
+        "optimizer_update_and_tuning_budget"
+      ],
+      "ratio_selection_split": "validation",
+      "source_selection_split": "validation",
+      "selection_rule": "minimum_validation_error_then_block_uncertainty_1SE_prefers_lower_ratio; zero_is_valid",
+      "freeze_selection_rule_before_test": true,
+      "test_curve_role": "prespecified_descriptive_curve_no_test_winner_selection",
+      "primary_metric": "real_label_RMSE_on_native_label_support; target_admission_required",
+      "same_epoch_count_is_not_equal_budget": true
+    }
+  },
+  "failure_states": [
+    "pending",
+    "not_applicable",
+    "insufficient_information",
+    "failed",
+    "passed"
+  ],
+  "scientific_pass_requires_frozen_thresholds": true
+}

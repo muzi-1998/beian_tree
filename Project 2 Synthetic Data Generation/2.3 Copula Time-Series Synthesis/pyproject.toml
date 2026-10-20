@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "project2-influent-synthesis"
+version = "0.2.0"
+description = "Research contracts, source intake and limited archive diagnostics for influent synthesis"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.optional-dependencies]
+execution = ["numpy==1.26.4", "pandas==2.3.3", "pyarrow==24.0.0", "matplotlib==3.10.7"]
+
+[tool.setuptools.packages.find]
+where = ["src"]

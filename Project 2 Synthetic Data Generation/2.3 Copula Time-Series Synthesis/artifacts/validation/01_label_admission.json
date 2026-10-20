@@ -1,0 +1,37 @@
+{
+  "run_id": "20261020T134451_986499Z_M01",
+  "protocol_sha256": "652dcb19b22667d0e6412809c9c9cc68ac36053a3ac80ad8db809ba3cc6d7dc0",
+  "study_sha256": "8ac702f9ba5307604242eb221dbb06cd50d77e2bdbfc1aedf37be61be626dd7a",
+  "status": "PENDING",
+  "silent_target_replacement": false,
+  "current_skeleton_target": "NH4_N",
+  "intended_target": "TN",
+  "targets": [
+    {
+      "target": "effluent_TN",
+      "source_column": "出水总氮（mg/L）",
+      "column_present": true,
+      "sampling_location": "UNKNOWN",
+      "native_support": "UNKNOWN",
+      "averaging_and_latency": "UNKNOWN",
+      "lab_comparison": "PENDING",
+      "observation_operator": "PENDING",
+      "available_at": null,
+      "independent_label_admitted": false,
+      "reason": "aligned_column_presence_does_not_establish_independent_native_label"
+    },
+    {
+      "target": "effluent_NH4_N",
+      "source_column": "出水氨氮（mg/L）",
+      "column_present": true,
+      "sampling_location": "UNKNOWN",
+      "native_support": "UNKNOWN",
+      "averaging_and_latency": "UNKNOWN",
+      "lab_comparison": "PENDING",
+      "observation_operator": "PENDING",
+      "available_at": null,
+      "independent_label_admitted": false,
+      "reason": "aligned_column_presence_does_not_establish_independent_native_label"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "M01": {
+    "visual_review": "PASS",
+    "reviewed_png_sha256": "324f803b614197fdf6057764809910a0f250f3233974a5428e5206f29094ad3f",
+    "inspection": "Actual Python PNG inspected: labels/legends readable, panels contained, UNKNOWN/PENDING explicit; corresponding SVG/PDF generated from the same figure.",
+    "source_preflight": "13 PASS, 1 WARN, 0 FAIL",
+    "warning_disposition": "Technical diagnostic delivery uses editable SVG/PDF and 600 dpi PNG; no TIFF submission file required at this stage.",
+    "scientific_admission": "PARTIAL"
+  },
+  "M02": {
+    "visual_review": "PASS",
+    "reviewed_png_sha256": "e8a42b5856d77b4a7b4d2318385cd6989c897bc5d6f80271857341365d2a9363",
+    "inspection": "Actual Python PNG inspected: labels/legends readable, panels contained, UNKNOWN/PENDING explicit; corresponding SVG/PDF generated from the same figure.",
+    "source_preflight": "13 PASS, 1 WARN, 0 FAIL",
+    "warning_disposition": "Technical diagnostic delivery uses editable SVG/PDF and 600 dpi PNG; no TIFF submission file required at this stage.",
+    "scientific_admission": "PARTIAL"
+  }
+}

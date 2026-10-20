@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+.venv/
+# Local observation-level outputs and immutable full run snapshots are not uploads.
+artifacts/data/*
+!artifacts/data/01_input_audit.json
+artifacts/models/
+artifacts/export/
+artifacts/release/
+run_manifest/runs/**/artifacts/
+*.tmp

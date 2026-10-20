@@ -1,0 +1,26 @@
+{
+  "M01": {
+    "status": "PASS",
+    "run_id": "20261020T134451_986499Z_M01",
+    "output_hashes": "PASS",
+    "hash_matched_source_snapshot": "PASS",
+    "snapshot_note": "post_run_supplement_verified_against_original_manifest_not_a_rerun",
+    "unknown_provenance_cells": 3669120,
+    "raw_source_hashes_rechecked": "PASS",
+    "scientific_stage_acceptance": "PARTIAL"
+  },
+  "M02": {
+    "status": "PASS",
+    "run_id": "20261020T134719_593878Z_M02",
+    "output_hashes": "PASS",
+    "hash_matched_source_snapshot": "PASS",
+    "snapshot_note": "post_run_supplement_verified_against_original_manifest_not_a_rerun",
+    "development_rows": 393120,
+    "view_ledger_pairs": 445536,
+    "max_scaled_FW_load_error": 4.881297283851203e-16,
+    "holdout_leakage": "PASS",
+    "main_step_gate_retained": "PASS",
+    "all_12_reports_have_8_sections": "PASS",
+    "scientific_stage_acceptance": "PARTIAL"
+  }
+}

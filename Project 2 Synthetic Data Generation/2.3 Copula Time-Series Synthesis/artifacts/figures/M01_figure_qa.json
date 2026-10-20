@@ -1,0 +1,18 @@
+{
+  "run_id": "20261020T134451_986499Z_M01",
+  "protocol_sha256": "652dcb19b22667d0e6412809c9c9cc68ac36053a3ac80ad8db809ba3cc6d7dc0",
+  "study_sha256": "8ac702f9ba5307604242eb221dbb06cd50d77e2bdbfc1aedf37be61be626dd7a",
+  "backend": "python",
+  "archetype": "quantitative_grid",
+  "size_mm": [
+    183,
+    88
+  ],
+  "editable_text": true,
+  "caption_zh": "a，三切分机械有效行比例；b，开发集相邻有效档案值未改变比例。不是保持率、刷新周期或独立测量数。全七通道均保留；无推断检验和独立重复数。",
+  "independent_replicates": "UNKNOWN; archive rows are not independent observations",
+  "inferential_statistics": "not_applicable; descriptive technical audit only",
+  "data_exclusion": "M01 all seven mapped channels; M02 development only per protocol, technical common support explicitly tabulated",
+  "visual_inspection": "PENDING",
+  "scientific_admission": "PENDING"
+}
