@@ -1,0 +1,220 @@
+{
+  "stage": "M04",
+  "run_id": "20261020T144227_611692Z_archive",
+  "status": "PASS",
+  "objective": "实现和核验条件慢项/唯一谐波与 AR(0/1) 的完整可逆原型。",
+  "method": "identity/log1p 两候选；截距、标准化日历时间/T、各一个日/周正弦余弦；全开发期条件 OLS。AR仅用同连续块内相邻记录，块首状态保存；不跨缺口、不选最优。 本次复用 20261020T143451_066150Z_archive 的哈希一致检查点，未重新拟合。",
+  "input": "已验证 SHA 的 M02 开发档案；Q/COD/T 同一完整日历小时支持。原生信息 UNKNOWN。",
+  "metrics": {
+    "configured_cases": 12,
+    "successful_cases": 12,
+    "failed_cases": 0,
+    "max_roundtrip_error_scaled": 9.449665875457676e-16
+  },
+  "outputs": [
+    "artifacts/archive_sensitivity/data/s05_identity_ar0_components.parquet",
+    "artifacts/archive_sensitivity/models/s05_identity_ar0_temporal.json",
+    "artifacts/archive_sensitivity/data/s05_identity_ar1_components.parquet",
+    "artifacts/archive_sensitivity/models/s05_identity_ar1_temporal.json",
+    "artifacts/archive_sensitivity/data/s05_log1p_ar0_components.parquet",
+    "artifacts/archive_sensitivity/models/s05_log1p_ar0_temporal.json",
+    "artifacts/archive_sensitivity/data/s05_log1p_ar1_components.parquet",
+    "artifacts/archive_sensitivity/models/s05_log1p_ar1_temporal.json",
+    "artifacts/archive_sensitivity/data/s15_identity_ar0_components.parquet",
+    "artifacts/archive_sensitivity/models/s15_identity_ar0_temporal.json",
+    "artifacts/archive_sensitivity/data/s15_identity_ar1_components.parquet",
+    "artifacts/archive_sensitivity/models/s15_identity_ar1_temporal.json",
+    "artifacts/archive_sensitivity/data/s15_log1p_ar0_components.parquet",
+    "artifacts/archive_sensitivity/models/s15_log1p_ar0_temporal.json",
+    "artifacts/archive_sensitivity/data/s15_log1p_ar1_components.parquet",
+    "artifacts/archive_sensitivity/models/s15_log1p_ar1_temporal.json",
+    "artifacts/archive_sensitivity/data/s60_identity_ar0_components.parquet",
+    "artifacts/archive_sensitivity/models/s60_identity_ar0_temporal.json",
+    "artifacts/archive_sensitivity/data/s60_identity_ar1_components.parquet",
+    "artifacts/archive_sensitivity/models/s60_identity_ar1_temporal.json",
+    "artifacts/archive_sensitivity/data/s60_log1p_ar0_components.parquet",
+    "artifacts/archive_sensitivity/models/s60_log1p_ar0_temporal.json",
+    "artifacts/archive_sensitivity/data/s60_log1p_ar1_components.parquet",
+    "artifacts/archive_sensitivity/models/s60_log1p_ar1_temporal.json",
+    "artifacts/archive_sensitivity/validation/temporal_roundtrip.csv"
+  ],
+  "output_hashes": {
+    "data/s05_identity_ar0_components.parquet": {
+      "sha256": "952f334f8d860caf87edc4af7474c9fe11610a0c301500c89bdc3acd6f47f56d",
+      "bytes": 7332683
+    },
+    "models/s05_identity_ar0_temporal.json": {
+      "sha256": "fef0df9c56ae5b30045d2e97ccb7114b43d78e2c273cf098f8ca2d6183f24c91",
+      "bytes": 7858
+    },
+    "data/s05_identity_ar1_components.parquet": {
+      "sha256": "3532c114c12392ce4b324be3d998cd51cb8d3ca3cda9cf5e109d225b60f1f86d",
+      "bytes": 7327895
+    },
+    "models/s05_identity_ar1_temporal.json": {
+      "sha256": "43f96d02f2a1b838e22379a37e25f2a07eea1410fe3e2d0852a10dcb479fe074",
+      "bytes": 7888
+    },
+    "data/s05_log1p_ar0_components.parquet": {
+      "sha256": "fc5151baf40d4c9483881866cecf90e1f71b69f42d6a123ce399850c8981970d",
+      "bytes": 7401668
+    },
+    "models/s05_log1p_ar0_temporal.json": {
+      "sha256": "91df2d7c3df5b49c35b2b7ed921f6c6329fd910625f3378f529bea9927600f72",
+      "bytes": 8090
+    },
+    "data/s05_log1p_ar1_components.parquet": {
+      "sha256": "0da54450721a2561d1786c36625acaf43e4739275b5dbe171465e4c58cf7ccde",
+      "bytes": 7412940
+    },
+    "models/s05_log1p_ar1_temporal.json": {
+      "sha256": "b102982ef8058d20978a261b4390e5c263851eacecdff30253eb698812cc1258",
+      "bytes": 8120
+    },
+    "data/s15_identity_ar0_components.parquet": {
+      "sha256": "23e17a1dd372a4039c25cf487a0df7d8307d3bd50554a3fd318ed8c961db7d1d",
+      "bytes": 2474880
+    },
+    "models/s15_identity_ar0_temporal.json": {
+      "sha256": "5acb188c85aca0ec695f20dfa992d2918e63a77d3d10bf085fc901f029111bf1",
+      "bytes": 7774
+    },
+    "data/s15_identity_ar1_components.parquet": {
+      "sha256": "d5d45158b4b3de1137e5201c7867d5bba9cfa42a723427c0b84c0c5017e17d6d",
+      "bytes": 2474375
+    },
+    "models/s15_identity_ar1_temporal.json": {
+      "sha256": "ef86b1de4f47adee6b667681c7c7c007f20b71f2f19a2bee78ae1fc363647973",
+      "bytes": 7804
+    },
+    "data/s15_log1p_ar0_components.parquet": {
+      "sha256": "9256bbdd2b7513edc14748791c3def896bd67ff0fbe40ce3bf72de9349506cd0",
+      "bytes": 2511478
+    },
+    "models/s15_log1p_ar0_temporal.json": {
+      "sha256": "004af754862f8902206172873f9eea46c07558f95b1b8ca446a7a430a9549310",
+      "bytes": 8009
+    },
+    "data/s15_log1p_ar1_components.parquet": {
+      "sha256": "37c736846741739a20c91c8313dc1a3f72efa181f3d4f7dbd945843f2c91ce52",
+      "bytes": 2516996
+    },
+    "models/s15_log1p_ar1_temporal.json": {
+      "sha256": "ca3a5342ef429b56da5d490429b7c4e34bb9233a3488d7bc4061ee4667f273dd",
+      "bytes": 8039
+    },
+    "data/s60_identity_ar0_components.parquet": {
+      "sha256": "8ced0b11c006a6e108f3193ca8698ba34bf7065e0512f6117855542c6d1593fe",
+      "bytes": 631568
+    },
+    "models/s60_identity_ar0_temporal.json": {
+      "sha256": "0f4a988f39f5fc7e68d21a5787105f77948d17262302b23fac2670047521eb96",
+      "bytes": 7774
+    },
+    "data/s60_identity_ar1_components.parquet": {
+      "sha256": "302cbb24148241c5cb199db9534c6c9a1664371000f9d8a6f443dd101d805034",
+      "bytes": 630826
+    },
+    "models/s60_identity_ar1_temporal.json": {
+      "sha256": "d45e40badd502634bbfc31e762c0cf42d13a3b364c0818b19edfa687c7085dfe",
+      "bytes": 7804
+    },
+    "data/s60_log1p_ar0_components.parquet": {
+      "sha256": "fa999bf9030ac889987f62e182833975da5c79c255fcc26d01041e5d1184a8dc",
+      "bytes": 630910
+    },
+    "models/s60_log1p_ar0_temporal.json": {
+      "sha256": "3fad091633fa142b1802a63ecc95628dd31b661c76ae1fe5e255646b21a2b48d",
+      "bytes": 7998
+    },
+    "data/s60_log1p_ar1_components.parquet": {
+      "sha256": "dfabaf17427158ba42a6d1abdd5ffc019cf626ae701b9b814c40835e2403ec06",
+      "bytes": 631790
+    },
+    "models/s60_log1p_ar1_temporal.json": {
+      "sha256": "9a23ad58880eac66d86fcde6aeac0786a9b1d9679aa9dce979f95bb037458790",
+      "bytes": 8027
+    },
+    "validation/temporal_roundtrip.csv": {
+      "sha256": "17dcbb58aa765f9bd6f2744cee240cc87f7866038e7b8df5404af10da05a2e62",
+      "bytes": 2206
+    }
+  },
+  "limitations": "仅既有对齐档案的开发期描述；拟合/比较不是留出效果或真实事件证据。档案行数不是独立新测量数；T/日历是回顾性条件。",
+  "next": "展示全部已配置原型及失败；正式步长/阈值/模型选择仍待证据和确认，不启用氮、SUMO 或 E1–E3。",
+  "record": "run_manifest/archive_sensitivity/runs/20261020T144227_611692Z_archive/M04_record.json",
+  "tests": {
+    "status": "PASS",
+    "returncode": 0,
+    "command": [
+      "D:\\000_APP\\020_APP_code\\05_python3.10\\python.exe",
+      "-X",
+      "utf8",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tests",
+      "-v"
+    ],
+    "log": "run_manifest/archive_sensitivity/runs/20261020T144227_611692Z_archive/tests.log"
+  },
+  "source_and_config_sha256": {
+    "configs/archive_sensitivity.json": "c6bc1217ce71cea3f507bdfd7ba10b21bf5736dd733707d57bee9a5ac23960d7",
+    "configs/experiment_protocol.json": "652dcb19b22667d0e6412809c9c9cc68ac36053a3ac80ad8db809ba3cc6d7dc0",
+    "configs/model_candidates.json": "1dd3a22f6f57b0565ac16e3cd70a213f1fad4452f373a805b3825329ecca5bc6",
+    "configs/module_contracts.json": "82a19df3220deca912f15c7a1598f99062d90bacb16d61f045d06582427eb681",
+    "configs/study_design.json": "8ac702f9ba5307604242eb221dbb06cd50d77e2bdbfc1aedf37be61be626dd7a",
+    "src/project2_synthesis/cli.py": "a768d540cbc87450f963d99749dc19babfd368618488c0dd316c89cefcb18efb",
+    "src/project2_synthesis/contracts.py": "9ea1256ec8f3ac4498994ededcbed377e93f4d03a388c9894d794f6f46a4f75c",
+    "src/project2_synthesis/runtime.py": "8d9375db3ecdfea9f2ebf67d487a22cba67bfa4ccf278a9377c844cf94b8c342",
+    "src/project2_synthesis/__init__.py": "372ab0bed771c5a02f3592e99d0f4134ff341b2f11fd49d3d65ca0ab287feeaa",
+    "src/project2_synthesis/archive_sensitivity/figures.py": "b0e428883bf757b5d474ec63c3734f61b94fce06f539a384fba34cf53c6cf06f",
+    "src/project2_synthesis/archive_sensitivity/numerics.py": "30a018bf0d3e45163f4566adb9e8d9fa702d98d985ad6a328b206e61ea5f6b8c",
+    "src/project2_synthesis/archive_sensitivity/reporting.py": "2694531e092e433f77aaf2fdf96c846bf61424e2acd79471a678bfc1d973b0fc",
+    "src/project2_synthesis/archive_sensitivity/runner.py": "0978c435e60112de68f4c7259b457b3d818642c19553f34be4feb1cb6e7bb8fa",
+    "src/project2_synthesis/archive_sensitivity/__init__.py": "e87ebcf5b47d0b9f56432f13ae510dc3adb614c5e8e3a27c6f053ed889df87cf",
+    "src/project2_synthesis/figures/audit_figures.py": "a081b53d9b85caa9c034ef66c6c4dcb112074663a76a244c48f739040108bf09",
+    "src/project2_synthesis/intake/label_admission.py": "5bd8d78a7663fc09025853be09efc8d29450fa9fa5fe60197003bfede9774875",
+    "src/project2_synthesis/intake/native_frequency.py": "f3bbcaed7cc1884b680f6aeff0c77fa35468f6dc62c134687bd08caee0ea74e6",
+    "src/project2_synthesis/intake/source_audit.py": "718506ac1ca47d233181a0ae648ba41df3311766d667246c7237442f41e95abd",
+    "src/project2_synthesis/preparation/aggregation.py": "70ed19041c61c1cf5e0f0f9b4cd3c2c4de50f6e7cc8f0a1d4eee4b8974cfa606",
+    "src/project2_synthesis/preparation/scale_selection.py": "7caf715b0b3e8e58062fc8cee1f48e47f6a91c2d0af19d21bb9e7b4876e7b74f",
+    "src/project2_synthesis/preparation/splitting.py": "d0831af3eb3af74cf7eefe26fd105c261a80706c9304d7a9b7b1151788a6c906",
+    "tests/test_archive_sensitivity.py": "f3ad4673c2e5f9dd382e6d1985835b84c26d1cacb331646a11f6f4a788f90f54",
+    "tests/test_design_contracts.py": "0a4caafeb4c292b6e16af7e8f356fa91a72ad20e99bf742477e69c106c1d3c6d",
+    "tests/test_intake_preparation.py": "54a9f628191643446c729e45552a1fd5fa3a76a6a45267cb12d1d10dd3a16bf9"
+  },
+  "scientific_admission": "PENDING",
+  "checkpoint_source": {
+    "run_id": "20261020T143451_066150Z_archive",
+    "manifest_sha256": "c4cc13472c567a96c2e38dc804774530016d4568e1fec763a63542344107c16f",
+    "scope": "reuse exact hashed support/components/margins/copulas; no refit or parameter selection",
+    "original_fitting_code_sha256": {
+      "configs/archive_sensitivity.json": "c6bc1217ce71cea3f507bdfd7ba10b21bf5736dd733707d57bee9a5ac23960d7",
+      "configs/experiment_protocol.json": "652dcb19b22667d0e6412809c9c9cc68ac36053a3ac80ad8db809ba3cc6d7dc0",
+      "configs/model_candidates.json": "1dd3a22f6f57b0565ac16e3cd70a213f1fad4452f373a805b3825329ecca5bc6",
+      "configs/module_contracts.json": "82a19df3220deca912f15c7a1598f99062d90bacb16d61f045d06582427eb681",
+      "configs/study_design.json": "8ac702f9ba5307604242eb221dbb06cd50d77e2bdbfc1aedf37be61be626dd7a",
+      "src/project2_synthesis/cli.py": "a768d540cbc87450f963d99749dc19babfd368618488c0dd316c89cefcb18efb",
+      "src/project2_synthesis/contracts.py": "9ea1256ec8f3ac4498994ededcbed377e93f4d03a388c9894d794f6f46a4f75c",
+      "src/project2_synthesis/runtime.py": "8d9375db3ecdfea9f2ebf67d487a22cba67bfa4ccf278a9377c844cf94b8c342",
+      "src/project2_synthesis/__init__.py": "372ab0bed771c5a02f3592e99d0f4134ff341b2f11fd49d3d65ca0ab287feeaa",
+      "src/project2_synthesis/archive_sensitivity/figures.py": "b0e428883bf757b5d474ec63c3734f61b94fce06f539a384fba34cf53c6cf06f",
+      "src/project2_synthesis/archive_sensitivity/numerics.py": "30a018bf0d3e45163f4566adb9e8d9fa702d98d985ad6a328b206e61ea5f6b8c",
+      "src/project2_synthesis/archive_sensitivity/reporting.py": "12b800ddf7e65c3b97e33666caaa884f3653843afc3ab02dadd822d586034f41",
+      "src/project2_synthesis/archive_sensitivity/runner.py": "f27834ffb5ef3397ece890f13bc60e3e4723b46ef7cdfa0471d6c579ce7c548f",
+      "src/project2_synthesis/archive_sensitivity/__init__.py": "e87ebcf5b47d0b9f56432f13ae510dc3adb614c5e8e3a27c6f053ed889df87cf",
+      "src/project2_synthesis/figures/audit_figures.py": "a081b53d9b85caa9c034ef66c6c4dcb112074663a76a244c48f739040108bf09",
+      "src/project2_synthesis/intake/label_admission.py": "5bd8d78a7663fc09025853be09efc8d29450fa9fa5fe60197003bfede9774875",
+      "src/project2_synthesis/intake/native_frequency.py": "f3bbcaed7cc1884b680f6aeff0c77fa35468f6dc62c134687bd08caee0ea74e6",
+      "src/project2_synthesis/intake/source_audit.py": "718506ac1ca47d233181a0ae648ba41df3311766d667246c7237442f41e95abd",
+      "src/project2_synthesis/preparation/aggregation.py": "70ed19041c61c1cf5e0f0f9b4cd3c2c4de50f6e7cc8f0a1d4eee4b8974cfa606",
+      "src/project2_synthesis/preparation/scale_selection.py": "7caf715b0b3e8e58062fc8cee1f48e47f6a91c2d0af19d21bb9e7b4876e7b74f",
+      "src/project2_synthesis/preparation/splitting.py": "d0831af3eb3af74cf7eefe26fd105c261a80706c9304d7a9b7b1151788a6c906",
+      "tests/test_archive_sensitivity.py": "cd9477a9d63d8515648fd919cd5d1d255a876a92f529ecaf1345c0bc97f28544",
+      "tests/test_design_contracts.py": "0a4caafeb4c292b6e16af7e8f356fa91a72ad20e99bf742477e69c106c1d3c6d",
+      "tests/test_intake_preparation.py": "54a9f628191643446c729e45552a1fd5fa3a76a6a45267cb12d1d10dd3a16bf9"
+    }
+  }
+}

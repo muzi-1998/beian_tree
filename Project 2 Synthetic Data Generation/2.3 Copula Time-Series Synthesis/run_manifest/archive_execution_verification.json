@@ -1,0 +1,28 @@
+{
+  "run_id": "20261020T144227_611692Z_archive",
+  "technical_output_verification": "PASS",
+  "scientific_acceptance": "PARTIAL",
+  "unique_outputs_hash_verified": 165,
+  "configured_and_verified_trajectories": 108,
+  "trajectory_archive_rows_across_all_cases": 406980,
+  "pre_execution_tests_passed": 49,
+  "negative_rows_across_cases": {
+    "Q": 8,
+    "COD": 3190
+  },
+  "native_support": "UNKNOWN",
+  "formal_main_step_minutes": null,
+  "cross_scale_integral_error_scaled": 1.8157812168589468e-16,
+  "common_development_hours": 6373,
+  "technical_valid_development_minutes_before_common_hour_rule": 388596,
+  "retained_common_minutes": 382380,
+  "valid_minutes_excluded_by_complete_hour_rule": 6216,
+  "near_numeric_df_upper_bound": [
+    "s05_log1p_ar0",
+    "s15_log1p_ar0",
+    "s60_log1p_ar0"
+  ],
+  "heldout_rows_used": 0,
+  "first_run_failure_preserved": "20261020T143451_066150Z_archive/error.log",
+  "copulas_refitted_on_resume": false
+}

@@ -171,3 +171,6 @@ def update_reports(root: Path, contracts: dict[str, Any], states: dict[str, Any]
                 "M03–M12 正式主链依赖相应用途门；可先进行代码和契约准备，但不能生成正式模型效果结论。\n\n"
                 "GitHub：尚未 commit、push 或创建 PR。每阶段检查敏感/大文件并提交审阅清单，获得明确确认后才执行相应 Git 操作。\n")
     (reports / "PROJECT_PROGRESS.md").write_text(progress, encoding="utf-8")
+    if (root / "run_manifest/archive_sensitivity_states.json").exists():
+        from .archive_sensitivity.reporting import append_archive_reports
+        append_archive_reports(root)

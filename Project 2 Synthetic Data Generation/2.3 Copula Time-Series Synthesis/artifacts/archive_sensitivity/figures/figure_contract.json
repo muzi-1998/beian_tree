@@ -1,0 +1,17 @@
+{
+  "purpose": "archive_sensitivity",
+  "native_support": "UNKNOWN",
+  "archetype": "quantitative_grid",
+  "size_mm": [
+    183,
+    133
+  ],
+  "backend": "python",
+  "seed_statistic": "median_of_three_exploratory_draws; no CI",
+  "source_rows": 108,
+  "before_exclusion": "all configured trajectories in trajectory_manifest.csv",
+  "exclusion": "only failed trajectories lack numerical curves; all failures retained in ledger",
+  "caption_zh": "仅相同开发期30日日历条件下的档案描述。a，同期Kendall tau差异；b、c，Q与COD一小时自相关差异。展示三尺度、两变换、两AR阶及三Copula；不选赢家，不代表独立测试、真实事件保真或过程响应。",
+  "visual_QA": "PENDING",
+  "scientific_admission": "PENDING"
+}

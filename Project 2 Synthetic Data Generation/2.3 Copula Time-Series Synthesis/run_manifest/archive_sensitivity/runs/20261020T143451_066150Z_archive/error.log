@@ -1,0 +1,18 @@
+Traceback (most recent call last):
+  File "D:\004_git\beian_tree-main\Project 2 Synthetic Data Generation\2.3 Copula Time-Series Synthesis\src\project2_synthesis\archive_sensitivity\runner.py", line 368, in main
+    diagnostics = generate_and_diagnose(run, cases)
+  File "D:\004_git\beian_tree-main\Project 2 Synthetic Data Generation\2.3 Copula Time-Series Synthesis\src\project2_synthesis\archive_sensitivity\runner.py", line 311, in generate_and_diagnose
+    run.annotate(out).to_parquet(run.path(name), index=False, compression="zstd")
+  File "D:\000_APP\020_APP_code\05_python3.10\lib\site-packages\pandas\util\_decorators.py", line 333, in wrapper
+    return func(*args, **kwargs)
+  File "D:\000_APP\020_APP_code\05_python3.10\lib\site-packages\pandas\core\frame.py", line 3124, in to_parquet
+    return to_parquet(
+  File "D:\000_APP\020_APP_code\05_python3.10\lib\site-packages\pandas\io\parquet.py", line 482, in to_parquet
+    impl.write(
+  File "D:\000_APP\020_APP_code\05_python3.10\lib\site-packages\pandas\io\parquet.py", line 199, in write
+    path_or_handle, handles, filesystem = _get_path_or_handle(
+  File "D:\000_APP\020_APP_code\05_python3.10\lib\site-packages\pandas\io\parquet.py", line 141, in _get_path_or_handle
+    handles = get_handle(
+  File "D:\000_APP\020_APP_code\05_python3.10\lib\site-packages\pandas\io\common.py", line 882, in get_handle
+    handle = open(handle, ioargs.mode)
+FileNotFoundError: [Errno 2] No such file or directory: 'D:\\004_git\\beian_tree-main\\Project 2 Synthetic Data Generation\\2.3 Copula Time-Series Synthesis\\run_manifest\\archive_sensitivity\\runs\\20261020T143451_066150Z_archive\\artifacts\\archive_sensitivity\\data\\trajectories\\s05_identity_ar0_independence_20261020.parquet'

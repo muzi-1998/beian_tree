@@ -10,7 +10,8 @@ requires-python = ">=3.10"
 dependencies = []
 
 [project.optional-dependencies]
-execution = ["numpy==1.26.4", "pandas==2.3.3", "pyarrow==24.0.0", "matplotlib==3.10.7"]
+execution = ["numpy==1.26.4", "pandas==2.3.3", "pyarrow==24.0.0", "matplotlib==3.10.7", "scipy==1.15.3"]
+test = ["statsmodels==0.14.6"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

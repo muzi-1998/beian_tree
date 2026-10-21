@@ -11,3 +11,7 @@ artifacts/export/
 artifacts/release/
 run_manifest/runs/**/artifacts/
 *.tmp
+artifacts/archive_sensitivity/data/
+artifacts/archive_sensitivity/models/
+run_manifest/archive_sensitivity/runs/**/artifacts/archive_sensitivity/data/
+run_manifest/archive_sensitivity/runs/**/artifacts/archive_sensitivity/models/

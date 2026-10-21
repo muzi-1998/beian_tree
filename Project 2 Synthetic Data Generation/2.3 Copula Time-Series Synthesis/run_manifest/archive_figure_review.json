@@ -1,0 +1,23 @@
+{
+  "run_id": "20261020T144227_611692Z_archive",
+  "visual_review": "PASS",
+  "scientific_admission": "PENDING",
+  "backend": "python",
+  "source_preflight": {
+    "PASS": 13,
+    "WARN": 1,
+    "FAIL": 0
+  },
+  "warning_disposition": "Technical diagnostic SVG/PDF and 600dpi PNG supplied; TIFF submission export not needed for this pilot.",
+  "figures": {
+    "identity": {
+      "png_sha256": "4f9925126808016ba451e8b5ff65f4860869f34d475735d6c7409450562c39ad",
+      "visual_review": "PASS"
+    },
+    "log1p": {
+      "png_sha256": "6ba7d09933df5355d4a58b4f63ac898fcecd31e5f58a17120a0b4398bdfcefb7",
+      "visual_review": "PASS"
+    }
+  },
+  "notes": "Actual PNGs inspected: readable labels/legend, panels contained, all cases represented. Curves are descriptive seed medians, not confidence intervals; one-hour lag has different order across scales. Tau line axes use local ranges and are not an equivalence or significance claim."
+}

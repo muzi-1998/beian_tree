@@ -97,3 +97,28 @@ SUMO安装、版本、模型文件、变量名和Python/CLI接口尚未核定，
 ```
 
 --check-design 不读取完整观测；M01 只读来源及机械质量，M02 只聚合 development，不拟合生成器或运行 SUMO。main_step/final_tolerance 待证据冻结，设计检查和数值恒等式通过不批准科学门。M03–M12 尚无执行入口，不能传入 --stage。每阶段输出清单保存实际 SHA，Git 同步独立等待用户明确确认。
+
+## 5. 已授权 archive_sensitivity 支线（独立于正式主链）
+
+```text
+configs/archive_sensitivity.json             # 研究用途、原型子集、数值搜索/种子、禁止事项
+run_archive_sensitivity.py                    # 新运行或 --resume-from 本地检查点
+src/project2_synthesis/archive_sensitivity/
+  numerics.py                                # 条件基线、可逆AR、经验原子、二元Copula
+  runner.py                                  # 同支持→拟合→合成→诊断，逐步记录失败/报告
+  reporting.py                               # 在原模块报告追加支线段落及历史
+  figures.py                                 # 读取冻结原型结果画全部配置，不选优
+tests/test_archive_sensitivity.py              # 重构/缺口/原子/负相关/检查点完整性/范围门
+artifacts/archive_sensitivity/
+  data/                                      # 支持、分量、未修正轨迹；仅本地
+  models/                                    # 经验边际和原型参数；仅本地
+  validation/                                # 实际支持卡、拟合/轨迹/失败/相关诊断
+  figures/                                   # 源CSV、SVG/PDF/PNG及图注
+run_manifest/archive_sensitivity/runs/<id>/   # 当次源码配置、日志、阶段记录、快照
+run_manifest/archive_sensitivity_states.json  # 支线逐模块运行历史
+reports/ARCHIVE_SENSITIVITY_阶段复核.md         # 实测结果、缺陷、修复与科学边界
+```
+
+该支线于2026-10-20获用户明确授权。正式M03–M12的算法链与科学门仍未完成；支线技术PASS不改写正式准入。M02/03/04/05/06/07/08/09/11已有有限用途步骤，M10/SUMO导出及正式M12发布未执行。统一一模块一报告，不另起第二套M编号报告。
+
+三尺度在同一完整日历小时集合上比较。当前仅K=1，两个变换、两个AR候选、三创新Copula和三个探索种子；不选主步长、不打开留出、不强制GPD/Vine。检查点恢复逐文件核对SHA与全部JSON配置，保留原始拟合代码哈希；不以恢复运行伪装重新拟合。Windows轨迹文件名缩短，完整轨迹ID保存在清单。

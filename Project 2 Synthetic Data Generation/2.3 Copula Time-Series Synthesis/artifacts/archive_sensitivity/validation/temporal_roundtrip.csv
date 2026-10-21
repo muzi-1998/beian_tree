@@ -1,0 +1,13 @@
+﻿case_id,step_minutes,transform,p,q,status,roundtrip_error_scaled,phi_Q,phi_COD,archive_bins,innovation_pairs,run_id,purpose,measurement_support,model_admitted,split
+s05_identity_ar0,5,identity,0,0,PASS,8.686896231110046e-16,0.0,0.0,76476,76476,20261020T143451_066150Z_archive,archive_sensitivity,UNKNOWN,False,development
+s05_identity_ar1,5,identity,1,0,PASS,8.686896231110046e-16,0.9217601210101226,0.9908104107474461,76476,76390,20261020T143451_066150Z_archive,archive_sensitivity,UNKNOWN,False,development
+s05_log1p_ar0,5,log1p,0,0,PASS,9.449665875457676e-16,0.0,0.0,76476,76476,20261020T143451_066150Z_archive,archive_sensitivity,UNKNOWN,False,development
+s05_log1p_ar1,5,log1p,1,0,PASS,9.449665875457676e-16,0.9345431967275222,0.9917928660790504,76476,76390,20261020T143451_066150Z_archive,archive_sensitivity,UNKNOWN,False,development
+s15_identity_ar0,15,identity,0,0,PASS,7.135388423190619e-16,0.0,0.0,25492,25492,20261020T143451_066150Z_archive,archive_sensitivity,UNKNOWN,False,development
+s15_identity_ar1,15,identity,1,0,PASS,7.135388423190619e-16,0.9548531948968035,0.9722563588977988,25492,25406,20261020T143451_066150Z_archive,archive_sensitivity,UNKNOWN,False,development
+s15_log1p_ar0,15,log1p,0,0,PASS,9.239671959490188e-16,0.0,0.0,25492,25492,20261020T143451_066150Z_archive,archive_sensitivity,UNKNOWN,False,development
+s15_log1p_ar1,15,log1p,1,0,PASS,9.239671959490188e-16,0.9622653956451747,0.9746275421483013,25492,25406,20261020T143451_066150Z_archive,archive_sensitivity,UNKNOWN,False,development
+s60_identity_ar0,60,identity,0,0,PASS,8.681240881413486e-16,0.0,0.0,6373,6373,20261020T143451_066150Z_archive,archive_sensitivity,UNKNOWN,False,development
+s60_identity_ar1,60,identity,1,0,PASS,8.681240881413486e-16,0.9078335221148724,0.8648482594083099,6373,6287,20261020T143451_066150Z_archive,archive_sensitivity,UNKNOWN,False,development
+s60_log1p_ar0,60,log1p,0,0,PASS,9.12468283831889e-16,0.0,0.0,6373,6373,20261020T143451_066150Z_archive,archive_sensitivity,UNKNOWN,False,development
+s60_log1p_ar1,60,log1p,1,0,PASS,9.12468283831889e-16,0.9147107728488062,0.882440702283273,6373,6287,20261020T143451_066150Z_archive,archive_sensitivity,UNKNOWN,False,development

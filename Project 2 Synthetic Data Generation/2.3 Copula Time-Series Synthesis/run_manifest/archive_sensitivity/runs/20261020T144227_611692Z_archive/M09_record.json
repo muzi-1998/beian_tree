@@ -1,0 +1,111 @@
+{
+  "stage": "M09",
+  "run_id": "20261020T144227_611692Z_archive",
+  "status": "PASS",
+  "objective": "报告回顾条件下同期与动态档案差异及失败，不作正式贡献实验。",
+  "method": "仅相同30日、相同日历支持比较；相关按真实物理滞后和同连续块配对。展示全部尺度/变换/AR/家族与种子，不选赢家，不作p值/独立事件区间。",
+  "input": "已验证 SHA 的 M02 开发档案；Q/COD/T 同一完整日历小时支持。原生信息 UNKNOWN。",
+  "metrics": {
+    "diagnostic_trajectories": 108,
+    "development_lag_diagnostics": 576,
+    "total_recorded_failures": 0,
+    "heldout_rows_used": 0,
+    "E1_E2_E3_executed": false
+  },
+  "outputs": [
+    "artifacts/archive_sensitivity/validation/synthesis_diagnostics.csv",
+    "artifacts/archive_sensitivity/validation/temporal_correlations.csv",
+    "artifacts/archive_sensitivity/validation/failure_ledger.csv"
+  ],
+  "output_hashes": {
+    "validation/synthesis_diagnostics.csv": {
+      "sha256": "683ec7a583e681b77b38bf4e8179f19c71a9b9f6e7fedc220ace6801d3bfb725",
+      "bytes": 90950
+    },
+    "validation/temporal_correlations.csv": {
+      "sha256": "42cdbb90452c70b2f697b72280d052c4b21f7299f2c4f79d3c50381f34cf4f3c",
+      "bytes": 82646
+    },
+    "validation/failure_ledger.csv": {
+      "sha256": "09c608fac40166383b52c95ff3bc6bf92a745e6fc8168534c51fbf40f9dc7906",
+      "bytes": 95
+    }
+  },
+  "limitations": "仅既有对齐档案的开发期描述；拟合/比较不是留出效果或真实事件证据。档案行数不是独立新测量数；T/日历是回顾性条件。",
+  "next": "展示全部已配置原型及失败；正式步长/阈值/模型选择仍待证据和确认，不启用氮、SUMO 或 E1–E3。",
+  "record": "run_manifest/archive_sensitivity/runs/20261020T144227_611692Z_archive/M09_record.json",
+  "tests": {
+    "status": "PASS",
+    "returncode": 0,
+    "command": [
+      "D:\\000_APP\\020_APP_code\\05_python3.10\\python.exe",
+      "-X",
+      "utf8",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tests",
+      "-v"
+    ],
+    "log": "run_manifest/archive_sensitivity/runs/20261020T144227_611692Z_archive/tests.log"
+  },
+  "source_and_config_sha256": {
+    "configs/archive_sensitivity.json": "c6bc1217ce71cea3f507bdfd7ba10b21bf5736dd733707d57bee9a5ac23960d7",
+    "configs/experiment_protocol.json": "652dcb19b22667d0e6412809c9c9cc68ac36053a3ac80ad8db809ba3cc6d7dc0",
+    "configs/model_candidates.json": "1dd3a22f6f57b0565ac16e3cd70a213f1fad4452f373a805b3825329ecca5bc6",
+    "configs/module_contracts.json": "82a19df3220deca912f15c7a1598f99062d90bacb16d61f045d06582427eb681",
+    "configs/study_design.json": "8ac702f9ba5307604242eb221dbb06cd50d77e2bdbfc1aedf37be61be626dd7a",
+    "src/project2_synthesis/cli.py": "a768d540cbc87450f963d99749dc19babfd368618488c0dd316c89cefcb18efb",
+    "src/project2_synthesis/contracts.py": "9ea1256ec8f3ac4498994ededcbed377e93f4d03a388c9894d794f6f46a4f75c",
+    "src/project2_synthesis/runtime.py": "8d9375db3ecdfea9f2ebf67d487a22cba67bfa4ccf278a9377c844cf94b8c342",
+    "src/project2_synthesis/__init__.py": "372ab0bed771c5a02f3592e99d0f4134ff341b2f11fd49d3d65ca0ab287feeaa",
+    "src/project2_synthesis/archive_sensitivity/figures.py": "b0e428883bf757b5d474ec63c3734f61b94fce06f539a384fba34cf53c6cf06f",
+    "src/project2_synthesis/archive_sensitivity/numerics.py": "30a018bf0d3e45163f4566adb9e8d9fa702d98d985ad6a328b206e61ea5f6b8c",
+    "src/project2_synthesis/archive_sensitivity/reporting.py": "2694531e092e433f77aaf2fdf96c846bf61424e2acd79471a678bfc1d973b0fc",
+    "src/project2_synthesis/archive_sensitivity/runner.py": "0978c435e60112de68f4c7259b457b3d818642c19553f34be4feb1cb6e7bb8fa",
+    "src/project2_synthesis/archive_sensitivity/__init__.py": "e87ebcf5b47d0b9f56432f13ae510dc3adb614c5e8e3a27c6f053ed889df87cf",
+    "src/project2_synthesis/figures/audit_figures.py": "a081b53d9b85caa9c034ef66c6c4dcb112074663a76a244c48f739040108bf09",
+    "src/project2_synthesis/intake/label_admission.py": "5bd8d78a7663fc09025853be09efc8d29450fa9fa5fe60197003bfede9774875",
+    "src/project2_synthesis/intake/native_frequency.py": "f3bbcaed7cc1884b680f6aeff0c77fa35468f6dc62c134687bd08caee0ea74e6",
+    "src/project2_synthesis/intake/source_audit.py": "718506ac1ca47d233181a0ae648ba41df3311766d667246c7237442f41e95abd",
+    "src/project2_synthesis/preparation/aggregation.py": "70ed19041c61c1cf5e0f0f9b4cd3c2c4de50f6e7cc8f0a1d4eee4b8974cfa606",
+    "src/project2_synthesis/preparation/scale_selection.py": "7caf715b0b3e8e58062fc8cee1f48e47f6a91c2d0af19d21bb9e7b4876e7b74f",
+    "src/project2_synthesis/preparation/splitting.py": "d0831af3eb3af74cf7eefe26fd105c261a80706c9304d7a9b7b1151788a6c906",
+    "tests/test_archive_sensitivity.py": "f3ad4673c2e5f9dd382e6d1985835b84c26d1cacb331646a11f6f4a788f90f54",
+    "tests/test_design_contracts.py": "0a4caafeb4c292b6e16af7e8f356fa91a72ad20e99bf742477e69c106c1d3c6d",
+    "tests/test_intake_preparation.py": "54a9f628191643446c729e45552a1fd5fa3a76a6a45267cb12d1d10dd3a16bf9"
+  },
+  "scientific_admission": "PENDING",
+  "checkpoint_source": {
+    "run_id": "20261020T143451_066150Z_archive",
+    "manifest_sha256": "c4cc13472c567a96c2e38dc804774530016d4568e1fec763a63542344107c16f",
+    "scope": "reuse exact hashed support/components/margins/copulas; no refit or parameter selection",
+    "original_fitting_code_sha256": {
+      "configs/archive_sensitivity.json": "c6bc1217ce71cea3f507bdfd7ba10b21bf5736dd733707d57bee9a5ac23960d7",
+      "configs/experiment_protocol.json": "652dcb19b22667d0e6412809c9c9cc68ac36053a3ac80ad8db809ba3cc6d7dc0",
+      "configs/model_candidates.json": "1dd3a22f6f57b0565ac16e3cd70a213f1fad4452f373a805b3825329ecca5bc6",
+      "configs/module_contracts.json": "82a19df3220deca912f15c7a1598f99062d90bacb16d61f045d06582427eb681",
+      "configs/study_design.json": "8ac702f9ba5307604242eb221dbb06cd50d77e2bdbfc1aedf37be61be626dd7a",
+      "src/project2_synthesis/cli.py": "a768d540cbc87450f963d99749dc19babfd368618488c0dd316c89cefcb18efb",
+      "src/project2_synthesis/contracts.py": "9ea1256ec8f3ac4498994ededcbed377e93f4d03a388c9894d794f6f46a4f75c",
+      "src/project2_synthesis/runtime.py": "8d9375db3ecdfea9f2ebf67d487a22cba67bfa4ccf278a9377c844cf94b8c342",
+      "src/project2_synthesis/__init__.py": "372ab0bed771c5a02f3592e99d0f4134ff341b2f11fd49d3d65ca0ab287feeaa",
+      "src/project2_synthesis/archive_sensitivity/figures.py": "b0e428883bf757b5d474ec63c3734f61b94fce06f539a384fba34cf53c6cf06f",
+      "src/project2_synthesis/archive_sensitivity/numerics.py": "30a018bf0d3e45163f4566adb9e8d9fa702d98d985ad6a328b206e61ea5f6b8c",
+      "src/project2_synthesis/archive_sensitivity/reporting.py": "12b800ddf7e65c3b97e33666caaa884f3653843afc3ab02dadd822d586034f41",
+      "src/project2_synthesis/archive_sensitivity/runner.py": "f27834ffb5ef3397ece890f13bc60e3e4723b46ef7cdfa0471d6c579ce7c548f",
+      "src/project2_synthesis/archive_sensitivity/__init__.py": "e87ebcf5b47d0b9f56432f13ae510dc3adb614c5e8e3a27c6f053ed889df87cf",
+      "src/project2_synthesis/figures/audit_figures.py": "a081b53d9b85caa9c034ef66c6c4dcb112074663a76a244c48f739040108bf09",
+      "src/project2_synthesis/intake/label_admission.py": "5bd8d78a7663fc09025853be09efc8d29450fa9fa5fe60197003bfede9774875",
+      "src/project2_synthesis/intake/native_frequency.py": "f3bbcaed7cc1884b680f6aeff0c77fa35468f6dc62c134687bd08caee0ea74e6",
+      "src/project2_synthesis/intake/source_audit.py": "718506ac1ca47d233181a0ae648ba41df3311766d667246c7237442f41e95abd",
+      "src/project2_synthesis/preparation/aggregation.py": "70ed19041c61c1cf5e0f0f9b4cd3c2c4de50f6e7cc8f0a1d4eee4b8974cfa606",
+      "src/project2_synthesis/preparation/scale_selection.py": "7caf715b0b3e8e58062fc8cee1f48e47f6a91c2d0af19d21bb9e7b4876e7b74f",
+      "src/project2_synthesis/preparation/splitting.py": "d0831af3eb3af74cf7eefe26fd105c261a80706c9304d7a9b7b1151788a6c906",
+      "tests/test_archive_sensitivity.py": "cd9477a9d63d8515648fd919cd5d1d255a876a92f529ecaf1345c0bc97f28544",
+      "tests/test_design_contracts.py": "0a4caafeb4c292b6e16af7e8f356fa91a72ad20e99bf742477e69c106c1d3c6d",
+      "tests/test_intake_preparation.py": "54a9f628191643446c729e45552a1fd5fa3a76a6a45267cb12d1d10dd3a16bf9"
+    }
+  }
+}

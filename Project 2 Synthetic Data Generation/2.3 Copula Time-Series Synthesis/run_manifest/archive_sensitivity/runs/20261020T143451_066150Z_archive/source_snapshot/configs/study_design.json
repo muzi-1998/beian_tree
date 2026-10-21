@@ -1,0 +1,131 @@
+{
+  "version": "2.0_final_design",
+  "date": "2026-10-20",
+  "status": "intake_and_archive_diagnostics_only",
+  "ready_for_model_execution": false,
+  "timezone": "Asia/Shanghai",
+  "flow_semantics": "instantaneous_flow",
+  "flow_unit": "m3/h",
+  "target_period": {
+    "start": "2025-08-01",
+    "end": "2026-07-31"
+  },
+  "observed_high_frequency_period": {
+    "start": "2025-08-01",
+    "end": "2026-07-30"
+  },
+  "missing_target_dates": [
+    "2026-07-31"
+  ],
+  "splits": [
+    {
+      "id": "development",
+      "start": "2025-08-01",
+      "end": "2026-04-30"
+    },
+    {
+      "id": "validation",
+      "start": "2026-05-01",
+      "end": "2026-05-31"
+    },
+    {
+      "id": "terminal_test",
+      "start": "2026-06-01",
+      "end": "2026-07-31"
+    }
+  ],
+  "fit_split_ids": [
+    "development"
+  ],
+  "model_selection_split_ids": [
+    "validation"
+  ],
+  "freeze_before_terminal_test": true,
+  "gap_policy": "At least max(actual lookback, horizon, filter boundary, estimated event dependence); freeze before terminal test",
+  "main_step_minutes": null,
+  "priority_candidate_step_minutes": null,
+  "candidate_steps_minutes": [
+    5,
+    15,
+    60
+  ],
+  "secondary_validation_minutes": [
+    1440
+  ],
+  "variable_mapping": {
+    "Q": {
+      "file": "整年对齐_分钟数据_2025-08-01_2026-07-30_06_liuliangjiance.csv",
+      "column": "进水瞬时流量（m³/h）",
+      "unit": "m3/h"
+    },
+    "COD": {
+      "file": "整年对齐_分钟数据_2025-08-01_2026-07-30_01_influent+effluent.csv",
+      "column": "进水COD（mg/L）",
+      "unit": "mg/L"
+    },
+    "NH4_N": {
+      "file": "整年对齐_分钟数据_2025-08-01_2026-07-30_01_influent+effluent.csv",
+      "column": "进水氨氮（mg/L）",
+      "unit": "mg N/L pending source confirmation"
+    },
+    "TN": {
+      "file": "整年对齐_分钟数据_2025-08-01_2026-07-30_01_influent+effluent.csv",
+      "column": "进水总氮（mg/L）",
+      "unit": "mg N/L pending source confirmation"
+    },
+    "T": {
+      "file": "整年对齐_分钟数据_2025-08-01_2026-07-30_01_influent+effluent.csv",
+      "column": "进水温度（℃）",
+      "unit": "degC"
+    }
+  },
+  "temperature_role": "conditional_trajectory_by_default_not_automatic_fifth_innovation",
+  "quality_inputs_status": "technical_audit_available_full_DQR_and_confirmed_events_pending",
+  "rainfall_status": "ERA5_regional_proxy_available_not_site_observation_or_admitted_regime",
+  "acceptance_thresholds_status": "pending_development_freeze",
+  "numerical_invariants": {
+    "relative_roundtrip_error_max": 1e-08,
+    "cdf_ppf_absolute_error_target": 1e-06
+  },
+  "acceptance_thresholds": {
+    "scale_peak_loss": null,
+    "minimum_tail_clusters": null,
+    "maximum_physical_correction_rate": null,
+    "marginal_tolerance": null,
+    "lag_dependence_tolerance": null,
+    "downstream_noninferiority_margin": null
+  },
+  "statistical_resampling_unit": "independent_event_or_time_block_not_minute_row",
+  "terminal_scope": "warm_season_single_plant_not_four_season_prospective_or_interannual",
+  "synthetic_use": "training_only_natural_and_stress_scenarios_separate",
+  "protocol_config": "configs/experiment_protocol.json",
+  "archive_step_minutes": 1,
+  "scale_selection_rule": "native_measurement_audit_then_event_load_response_cost_admission; no automatic finer fallback",
+  "one_minute_model_admission": {
+    "native_information_status": "pending",
+    "coarser_loss_status": "pending",
+    "requires_both_passed": true
+  },
+  "concentration_views": {
+    "saved": [
+      "time_weighted",
+      "flow_weighted"
+    ],
+    "primary_model": "flow_weighted",
+    "sumo_boundary": "flow_weighted",
+    "time_weighted_role": "concentration_time_distribution; not interchangeable with flow_weighted bins",
+    "load_identity_requires_common_support": true,
+    "within_bin_covariance_mapping": "not_identifiable_from_time_weighted_concentration_alone"
+  },
+  "aggregation_support_policy": {
+    "duration_coverage_threshold": null,
+    "new_measurement_count_not_row_count": true,
+    "hold_validity_requires_metadata_and_max_age": true,
+    "unknown_refresh_is_not_confirmed_hold": true
+  },
+  "supervised_target": {
+    "current_skeleton": "NH4_N",
+    "intended_TN": "conditional_on_label_and_model_admission",
+    "silent_target_replacement": false
+  }
+}

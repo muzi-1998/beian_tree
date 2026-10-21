@@ -1,0 +1,55 @@
+test_checkpoint_hash_verification_and_config_guard (test_archive_sensitivity.ArchiveScopeSupportTests) ... ok
+test_cross_scale_same_minutes_integrals_and_gap_blocks (test_archive_sensitivity.ArchiveScopeSupportTests) ... ok
+test_report_update_is_idempotent_and_keeps_formal_gate_pending (test_archive_sensitivity.ArchiveScopeSupportTests) ... ok
+test_validation_opening_rejected_before_run_creation (test_archive_sensitivity.ArchiveScopeSupportTests) ... ok
+test_atoms_randomized_PIT_and_generalized_inverse (test_archive_sensitivity.MarginCopulaTests) ... ok
+test_failed_copula_not_sampled (test_archive_sensitivity.MarginCopulaTests) ... ok
+test_gaussian_zero_correlation_is_independent_density (test_archive_sensitivity.MarginCopulaTests) ... ok
+test_quantile_outside_unit_interval_rejected (test_archive_sensitivity.MarginCopulaTests) ... ok
+test_sampling_negative_dependence_reproducible_and_open_unit (test_archive_sensitivity.MarginCopulaTests) ... ok
+test_student_density_agrees_with_installed_reference (test_archive_sensitivity.MarginCopulaTests) ... ok
+test_AR_fit_excludes_gap_transition (test_archive_sensitivity.ReversibleTemporalTests) ... ok
+test_both_transforms_roundtrip (test_archive_sensitivity.ReversibleTemporalTests) ... ok
+test_harmonic_units_and_duplicate_rejection (test_archive_sensitivity.ReversibleTemporalTests) ... ok
+test_inverse_recursion_and_block_initials (test_archive_sensitivity.ReversibleTemporalTests) ... ok
+test_lag_correlation_does_not_bridge_gap (test_archive_sensitivity.ReversibleTemporalTests) ... ok
+test_rank_deficiency_and_unsupported_order_rejected (test_archive_sensitivity.ReversibleTemporalTests) ... ok
+test_reject_cumulative_flow (test_design_contracts.DesignContractTests) ... ok
+test_reject_different_initial_states_after_separate_warmup (test_design_contracts.DesignContractTests) ... ok
+test_reject_duplicate_output_provenance (test_design_contracts.DesignContractTests) ... ok
+test_reject_extended_EVT_in_mainline (test_design_contracts.DesignContractTests) ... ok
+test_reject_forward_dependency_and_unproduced_input (test_design_contracts.DesignContractTests) ... ok
+test_reject_input_pair_selection_using_response (test_design_contracts.DesignContractTests) ... ok
+test_reject_load_identity_on_unmatched_support (test_design_contracts.DesignContractTests) ... ok
+test_reject_mandatory_threshold_research (test_design_contracts.DesignContractTests) ... ok
+test_reject_one_minute_without_native_information (test_design_contracts.DesignContractTests) ... ok
+test_reject_output_path_escape (test_design_contracts.DesignContractTests) ... ok
+test_reject_overlapping_holdout (test_design_contracts.DesignContractTests) ... ok
+test_reject_passed_gate_with_null_unfrozen_tolerance (test_design_contracts.DesignContractTests) ... ok
+test_reject_preset_five_minute_priority (test_design_contracts.DesignContractTests) ... ok
+test_reject_same_metric_matched_and_manipulated (test_design_contracts.DesignContractTests) ... ok
+test_reject_synthetic_response_as_field_prediction_truth (test_design_contracts.DesignContractTests) ... ok
+test_reject_terminal_data_in_fit (test_design_contracts.DesignContractTests) ... ok
+test_reject_terminal_ratio_selection (test_design_contracts.DesignContractTests) ... ok
+test_reject_time_weighted_as_equivalent_load_boundary (test_design_contracts.DesignContractTests) ... ok
+test_valid_design_retains_missing_day_and_pending_status (test_design_contracts.DesignContractTests) ... ok
+test_constant_flow_means_equal (test_intake_preparation.ArithmeticTests) ... ok
+test_daily_integral_not_extrapolated_across_gap (test_intake_preparation.ArithmeticTests) ... ok
+test_missing_concentration_restricts_Q_to_same_support (test_intake_preparation.ArithmeticTests) ... ok
+test_no_support_is_nan_not_zero_volume_or_load (test_intake_preparation.ArithmeticTests) ... ok
+test_reject_duplicated_or_wrong_common_support (test_intake_preparation.ArithmeticTests) ... ok
+test_unknown_flags_and_no_model_admission_after_aggregation (test_intake_preparation.ArithmeticTests) ... ok
+test_variable_flow_means_differ_and_load_is_preserved (test_intake_preparation.ArithmeticTests) ... ok
+test_end_to_end_raw_preservation_reports_and_no_step_admission (test_intake_preparation.PipelineFixtureTests) ... ok
+test_initialize_captures_exact_configuration_and_source_bytes (test_intake_preparation.PipelineFixtureTests) ... ok
+test_calendar_split_boundaries (test_intake_preparation.ProvenanceTests) ... ok
+test_clock_gap_breaks_constant_run_and_blocks (test_intake_preparation.ProvenanceTests) ... ok
+test_constant_values_do_not_identify_fresh_or_held (test_intake_preparation.ProvenanceTests) ... ok
+test_invalid_minute_breaks_block (test_intake_preparation.ProvenanceTests) ... ok
+test_only_minimal_technical_rules_no_temperature_clipping (test_intake_preparation.ProvenanceTests) ... ok
+test_parse_mixed_clock_but_reject_duplicates_and_disorder (test_intake_preparation.ProvenanceTests) ... ok
+
+----------------------------------------------------------------------
+Ran 50 tests in 2.389s
+
+OK

@@ -1,0 +1,593 @@
+{
+  "run_id": "20261020T143451_066150Z_archive",
+  "status": "FAIL",
+  "error": "[Errno 2] No such file or directory: 'D:\\\\004_git\\\\beian_tree-main\\\\Project 2 Synthetic Data Generation\\\\2.3 Copula Time-Series Synthesis\\\\run_manifest\\\\archive_sensitivity\\\\runs\\\\20261020T143451_066150Z_archive\\\\artifacts\\\\archive_sensitivity\\\\data\\\\trajectories\\\\s05_identity_ar0_independence_20261020.parquet'",
+  "completed_stages": [
+    {
+      "stage": "M02",
+      "run_id": "20261020T143451_066150Z_archive",
+      "status": "PASS",
+      "objective": "建立三尺度相同日历暴露的档案支线输入。",
+      "method": "仅保留 Q/COD/T 全部技术有效的完整小时；三尺度重聚合相同分钟集合，缺口不填补。完整小时是支线比较支持定义，不是原生覆盖合格门。",
+      "input": "已验证 SHA 的 M02 开发档案；Q/COD/T 同一完整日历小时支持。原生信息 UNKNOWN。",
+      "metrics": {
+        "common_hours": 6373,
+        "archive_minutes": 382380,
+        "support_by_scale": [
+          {
+            "step_minutes": 5,
+            "archive_bins": 76476,
+            "archive_minutes": 382380,
+            "common_hours": 6373,
+            "technical_blocks": 86,
+            "development_calendar_minutes": 393120,
+            "retained_calendar_fraction": 0.9726800976800977,
+            "discarded_archive_minutes": 10740,
+            "V_m3": 12660946.933333332,
+            "COD_load_kg": 5129046.197683106,
+            "fresh_count": null
+          },
+          {
+            "step_minutes": 15,
+            "archive_bins": 25492,
+            "archive_minutes": 382380,
+            "common_hours": 6373,
+            "technical_blocks": 86,
+            "development_calendar_minutes": 393120,
+            "retained_calendar_fraction": 0.9726800976800977,
+            "discarded_archive_minutes": 10740,
+            "V_m3": 12660946.933333332,
+            "COD_load_kg": 5129046.197683106,
+            "fresh_count": null
+          },
+          {
+            "step_minutes": 60,
+            "archive_bins": 6373,
+            "archive_minutes": 382380,
+            "common_hours": 6373,
+            "technical_blocks": 86,
+            "development_calendar_minutes": 393120,
+            "retained_calendar_fraction": 0.9726800976800977,
+            "discarded_archive_minutes": 10740,
+            "V_m3": 12660946.933333334,
+            "COD_load_kg": 5129046.197683107,
+            "fresh_count": null
+          }
+        ],
+        "formal_main_step_minutes": null,
+        "M02_source_sha256": "4e0b5aa6ab7be7bc3336130142f39f756fdee0f3e01781f09fe9827042600815"
+      },
+      "outputs": [
+        "artifacts/archive_sensitivity/data/support_05m.parquet",
+        "artifacts/archive_sensitivity/data/support_15m.parquet",
+        "artifacts/archive_sensitivity/data/support_60m.parquet",
+        "artifacts/archive_sensitivity/validation/support_card.csv"
+      ],
+      "output_hashes": {
+        "data/support_05m.parquet": {
+          "sha256": "a8dbcb779ff24d630a2edc82e5e1abe8e2e4fd754f0a25fcd9ff9ba288346f2e",
+          "bytes": 3672982
+        },
+        "data/support_15m.parquet": {
+          "sha256": "bb114960f6b811b77804710d344be9b8a32364c214926b50aa11397764bfb4ce",
+          "bytes": 1302522
+        },
+        "data/support_60m.parquet": {
+          "sha256": "e2093d9527762a53d6aa1d66784ab44c580841a0312c6da91324c7b424444d10",
+          "bytes": 366438
+        },
+        "validation/support_card.csv": {
+          "sha256": "cc11a1762ea3b3c6054242c233f2ebab13bf341dc5f95be53a407743158d8afa",
+          "bytes": 760
+        }
+      },
+      "limitations": "仅既有对齐档案的开发期描述；拟合/比较不是留出效果或真实事件证据。档案行数不是独立新测量数；T/日历是回顾性条件。",
+      "next": "展示全部已配置原型及失败；正式步长/阈值/模型选择仍待证据和确认，不启用氮、SUMO 或 E1–E3。",
+      "record": "run_manifest/archive_sensitivity/runs/20261020T143451_066150Z_archive/M02_record.json",
+      "tests": {
+        "status": "PASS",
+        "returncode": 0,
+        "command": [
+          "D:\\000_APP\\020_APP_code\\05_python3.10\\python.exe",
+          "-X",
+          "utf8",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "tests",
+          "-v"
+        ],
+        "log": "run_manifest/archive_sensitivity/runs/20261020T143451_066150Z_archive/tests.log"
+      },
+      "source_and_config_sha256": {
+        "configs/archive_sensitivity.json": "c6bc1217ce71cea3f507bdfd7ba10b21bf5736dd733707d57bee9a5ac23960d7",
+        "configs/experiment_protocol.json": "652dcb19b22667d0e6412809c9c9cc68ac36053a3ac80ad8db809ba3cc6d7dc0",
+        "configs/model_candidates.json": "1dd3a22f6f57b0565ac16e3cd70a213f1fad4452f373a805b3825329ecca5bc6",
+        "configs/module_contracts.json": "82a19df3220deca912f15c7a1598f99062d90bacb16d61f045d06582427eb681",
+        "configs/study_design.json": "8ac702f9ba5307604242eb221dbb06cd50d77e2bdbfc1aedf37be61be626dd7a",
+        "src/project2_synthesis/cli.py": "a768d540cbc87450f963d99749dc19babfd368618488c0dd316c89cefcb18efb",
+        "src/project2_synthesis/contracts.py": "9ea1256ec8f3ac4498994ededcbed377e93f4d03a388c9894d794f6f46a4f75c",
+        "src/project2_synthesis/runtime.py": "8d9375db3ecdfea9f2ebf67d487a22cba67bfa4ccf278a9377c844cf94b8c342",
+        "src/project2_synthesis/__init__.py": "372ab0bed771c5a02f3592e99d0f4134ff341b2f11fd49d3d65ca0ab287feeaa",
+        "src/project2_synthesis/archive_sensitivity/figures.py": "b0e428883bf757b5d474ec63c3734f61b94fce06f539a384fba34cf53c6cf06f",
+        "src/project2_synthesis/archive_sensitivity/numerics.py": "30a018bf0d3e45163f4566adb9e8d9fa702d98d985ad6a328b206e61ea5f6b8c",
+        "src/project2_synthesis/archive_sensitivity/reporting.py": "12b800ddf7e65c3b97e33666caaa884f3653843afc3ab02dadd822d586034f41",
+        "src/project2_synthesis/archive_sensitivity/runner.py": "f27834ffb5ef3397ece890f13bc60e3e4723b46ef7cdfa0471d6c579ce7c548f",
+        "src/project2_synthesis/archive_sensitivity/__init__.py": "e87ebcf5b47d0b9f56432f13ae510dc3adb614c5e8e3a27c6f053ed889df87cf",
+        "src/project2_synthesis/figures/audit_figures.py": "a081b53d9b85caa9c034ef66c6c4dcb112074663a76a244c48f739040108bf09",
+        "src/project2_synthesis/intake/label_admission.py": "5bd8d78a7663fc09025853be09efc8d29450fa9fa5fe60197003bfede9774875",
+        "src/project2_synthesis/intake/native_frequency.py": "f3bbcaed7cc1884b680f6aeff0c77fa35468f6dc62c134687bd08caee0ea74e6",
+        "src/project2_synthesis/intake/source_audit.py": "718506ac1ca47d233181a0ae648ba41df3311766d667246c7237442f41e95abd",
+        "src/project2_synthesis/preparation/aggregation.py": "70ed19041c61c1cf5e0f0f9b4cd3c2c4de50f6e7cc8f0a1d4eee4b8974cfa606",
+        "src/project2_synthesis/preparation/scale_selection.py": "7caf715b0b3e8e58062fc8cee1f48e47f6a91c2d0af19d21bb9e7b4876e7b74f",
+        "src/project2_synthesis/preparation/splitting.py": "d0831af3eb3af74cf7eefe26fd105c261a80706c9304d7a9b7b1151788a6c906",
+        "tests/test_archive_sensitivity.py": "cd9477a9d63d8515648fd919cd5d1d255a876a92f529ecaf1345c0bc97f28544",
+        "tests/test_design_contracts.py": "0a4caafeb4c292b6e16af7e8f356fa91a72ad20e99bf742477e69c106c1d3c6d",
+        "tests/test_intake_preparation.py": "54a9f628191643446c729e45552a1fd5fa3a76a6a45267cb12d1d10dd3a16bf9"
+      },
+      "scientific_admission": "PENDING"
+    },
+    {
+      "stage": "M03",
+      "run_id": "20261020T143451_066150Z_archive",
+      "status": "PASS",
+      "objective": "先运行 K=1 基线，不制造事件分层。",
+      "method": "所有技术档案支持标为状态 0；不运行 K-means、不设高Q/降雨/毒性阈值。",
+      "input": "已验证 SHA 的 M02 开发档案；Q/COD/T 同一完整日历小时支持。原生信息 UNKNOWN。",
+      "metrics": {
+        "K": 1,
+        "state": 0,
+        "event_rules": "not_defined",
+        "fresh_count": null,
+        "independent_events": null,
+        "natural_state_process": "not_claimed",
+        "regime_is_confirmed_event": false
+      },
+      "outputs": [
+        "artifacts/archive_sensitivity/models/K1_state.json"
+      ],
+      "output_hashes": {
+        "models/K1_state.json": {
+          "sha256": "4c596782fb214d92960974ae33f69d224fcee085cfab00e71d016ed26c63df59",
+          "bytes": 201
+        }
+      },
+      "limitations": "仅既有对齐档案的开发期描述；拟合/比较不是留出效果或真实事件证据。档案行数不是独立新测量数；T/日历是回顾性条件。",
+      "next": "展示全部已配置原型及失败；正式步长/阈值/模型选择仍待证据和确认，不启用氮、SUMO 或 E1–E3。",
+      "record": "run_manifest/archive_sensitivity/runs/20261020T143451_066150Z_archive/M03_record.json",
+      "tests": {
+        "status": "PASS",
+        "returncode": 0,
+        "command": [
+          "D:\\000_APP\\020_APP_code\\05_python3.10\\python.exe",
+          "-X",
+          "utf8",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "tests",
+          "-v"
+        ],
+        "log": "run_manifest/archive_sensitivity/runs/20261020T143451_066150Z_archive/tests.log"
+      },
+      "source_and_config_sha256": {
+        "configs/archive_sensitivity.json": "c6bc1217ce71cea3f507bdfd7ba10b21bf5736dd733707d57bee9a5ac23960d7",
+        "configs/experiment_protocol.json": "652dcb19b22667d0e6412809c9c9cc68ac36053a3ac80ad8db809ba3cc6d7dc0",
+        "configs/model_candidates.json": "1dd3a22f6f57b0565ac16e3cd70a213f1fad4452f373a805b3825329ecca5bc6",
+        "configs/module_contracts.json": "82a19df3220deca912f15c7a1598f99062d90bacb16d61f045d06582427eb681",
+        "configs/study_design.json": "8ac702f9ba5307604242eb221dbb06cd50d77e2bdbfc1aedf37be61be626dd7a",
+        "src/project2_synthesis/cli.py": "a768d540cbc87450f963d99749dc19babfd368618488c0dd316c89cefcb18efb",
+        "src/project2_synthesis/contracts.py": "9ea1256ec8f3ac4498994ededcbed377e93f4d03a388c9894d794f6f46a4f75c",
+        "src/project2_synthesis/runtime.py": "8d9375db3ecdfea9f2ebf67d487a22cba67bfa4ccf278a9377c844cf94b8c342",
+        "src/project2_synthesis/__init__.py": "372ab0bed771c5a02f3592e99d0f4134ff341b2f11fd49d3d65ca0ab287feeaa",
+        "src/project2_synthesis/archive_sensitivity/figures.py": "b0e428883bf757b5d474ec63c3734f61b94fce06f539a384fba34cf53c6cf06f",
+        "src/project2_synthesis/archive_sensitivity/numerics.py": "30a018bf0d3e45163f4566adb9e8d9fa702d98d985ad6a328b206e61ea5f6b8c",
+        "src/project2_synthesis/archive_sensitivity/reporting.py": "12b800ddf7e65c3b97e33666caaa884f3653843afc3ab02dadd822d586034f41",
+        "src/project2_synthesis/archive_sensitivity/runner.py": "f27834ffb5ef3397ece890f13bc60e3e4723b46ef7cdfa0471d6c579ce7c548f",
+        "src/project2_synthesis/archive_sensitivity/__init__.py": "e87ebcf5b47d0b9f56432f13ae510dc3adb614c5e8e3a27c6f053ed889df87cf",
+        "src/project2_synthesis/figures/audit_figures.py": "a081b53d9b85caa9c034ef66c6c4dcb112074663a76a244c48f739040108bf09",
+        "src/project2_synthesis/intake/label_admission.py": "5bd8d78a7663fc09025853be09efc8d29450fa9fa5fe60197003bfede9774875",
+        "src/project2_synthesis/intake/native_frequency.py": "f3bbcaed7cc1884b680f6aeff0c77fa35468f6dc62c134687bd08caee0ea74e6",
+        "src/project2_synthesis/intake/source_audit.py": "718506ac1ca47d233181a0ae648ba41df3311766d667246c7237442f41e95abd",
+        "src/project2_synthesis/preparation/aggregation.py": "70ed19041c61c1cf5e0f0f9b4cd3c2c4de50f6e7cc8f0a1d4eee4b8974cfa606",
+        "src/project2_synthesis/preparation/scale_selection.py": "7caf715b0b3e8e58062fc8cee1f48e47f6a91c2d0af19d21bb9e7b4876e7b74f",
+        "src/project2_synthesis/preparation/splitting.py": "d0831af3eb3af74cf7eefe26fd105c261a80706c9304d7a9b7b1151788a6c906",
+        "tests/test_archive_sensitivity.py": "cd9477a9d63d8515648fd919cd5d1d255a876a92f529ecaf1345c0bc97f28544",
+        "tests/test_design_contracts.py": "0a4caafeb4c292b6e16af7e8f356fa91a72ad20e99bf742477e69c106c1d3c6d",
+        "tests/test_intake_preparation.py": "54a9f628191643446c729e45552a1fd5fa3a76a6a45267cb12d1d10dd3a16bf9"
+      },
+      "scientific_admission": "PENDING"
+    },
+    {
+      "stage": "M04",
+      "run_id": "20261020T143451_066150Z_archive",
+      "status": "PASS",
+      "objective": "实现和核验条件慢项/唯一谐波与 AR(0/1) 的完整可逆原型。",
+      "method": "identity/log1p 两候选；截距、标准化日历时间/T、各一个日/周正弦余弦；全开发期条件 OLS。AR仅用同连续块内相邻记录，块首状态保存；不跨缺口、不选最优。",
+      "input": "已验证 SHA 的 M02 开发档案；Q/COD/T 同一完整日历小时支持。原生信息 UNKNOWN。",
+      "metrics": {
+        "configured_cases": 12,
+        "successful_cases": 12,
+        "failed_cases": 0,
+        "max_roundtrip_error_scaled": 9.449665875457676e-16
+      },
+      "outputs": [
+        "artifacts/archive_sensitivity/data/s05_identity_ar0_components.parquet",
+        "artifacts/archive_sensitivity/models/s05_identity_ar0_temporal.json",
+        "artifacts/archive_sensitivity/data/s05_identity_ar1_components.parquet",
+        "artifacts/archive_sensitivity/models/s05_identity_ar1_temporal.json",
+        "artifacts/archive_sensitivity/data/s05_log1p_ar0_components.parquet",
+        "artifacts/archive_sensitivity/models/s05_log1p_ar0_temporal.json",
+        "artifacts/archive_sensitivity/data/s05_log1p_ar1_components.parquet",
+        "artifacts/archive_sensitivity/models/s05_log1p_ar1_temporal.json",
+        "artifacts/archive_sensitivity/data/s15_identity_ar0_components.parquet",
+        "artifacts/archive_sensitivity/models/s15_identity_ar0_temporal.json",
+        "artifacts/archive_sensitivity/data/s15_identity_ar1_components.parquet",
+        "artifacts/archive_sensitivity/models/s15_identity_ar1_temporal.json",
+        "artifacts/archive_sensitivity/data/s15_log1p_ar0_components.parquet",
+        "artifacts/archive_sensitivity/models/s15_log1p_ar0_temporal.json",
+        "artifacts/archive_sensitivity/data/s15_log1p_ar1_components.parquet",
+        "artifacts/archive_sensitivity/models/s15_log1p_ar1_temporal.json",
+        "artifacts/archive_sensitivity/data/s60_identity_ar0_components.parquet",
+        "artifacts/archive_sensitivity/models/s60_identity_ar0_temporal.json",
+        "artifacts/archive_sensitivity/data/s60_identity_ar1_components.parquet",
+        "artifacts/archive_sensitivity/models/s60_identity_ar1_temporal.json",
+        "artifacts/archive_sensitivity/data/s60_log1p_ar0_components.parquet",
+        "artifacts/archive_sensitivity/models/s60_log1p_ar0_temporal.json",
+        "artifacts/archive_sensitivity/data/s60_log1p_ar1_components.parquet",
+        "artifacts/archive_sensitivity/models/s60_log1p_ar1_temporal.json",
+        "artifacts/archive_sensitivity/validation/temporal_roundtrip.csv"
+      ],
+      "output_hashes": {
+        "data/s05_identity_ar0_components.parquet": {
+          "sha256": "952f334f8d860caf87edc4af7474c9fe11610a0c301500c89bdc3acd6f47f56d",
+          "bytes": 7332683
+        },
+        "models/s05_identity_ar0_temporal.json": {
+          "sha256": "fef0df9c56ae5b30045d2e97ccb7114b43d78e2c273cf098f8ca2d6183f24c91",
+          "bytes": 7858
+        },
+        "data/s05_identity_ar1_components.parquet": {
+          "sha256": "3532c114c12392ce4b324be3d998cd51cb8d3ca3cda9cf5e109d225b60f1f86d",
+          "bytes": 7327895
+        },
+        "models/s05_identity_ar1_temporal.json": {
+          "sha256": "43f96d02f2a1b838e22379a37e25f2a07eea1410fe3e2d0852a10dcb479fe074",
+          "bytes": 7888
+        },
+        "data/s05_log1p_ar0_components.parquet": {
+          "sha256": "fc5151baf40d4c9483881866cecf90e1f71b69f42d6a123ce399850c8981970d",
+          "bytes": 7401668
+        },
+        "models/s05_log1p_ar0_temporal.json": {
+          "sha256": "91df2d7c3df5b49c35b2b7ed921f6c6329fd910625f3378f529bea9927600f72",
+          "bytes": 8090
+        },
+        "data/s05_log1p_ar1_components.parquet": {
+          "sha256": "0da54450721a2561d1786c36625acaf43e4739275b5dbe171465e4c58cf7ccde",
+          "bytes": 7412940
+        },
+        "models/s05_log1p_ar1_temporal.json": {
+          "sha256": "b102982ef8058d20978a261b4390e5c263851eacecdff30253eb698812cc1258",
+          "bytes": 8120
+        },
+        "data/s15_identity_ar0_components.parquet": {
+          "sha256": "23e17a1dd372a4039c25cf487a0df7d8307d3bd50554a3fd318ed8c961db7d1d",
+          "bytes": 2474880
+        },
+        "models/s15_identity_ar0_temporal.json": {
+          "sha256": "5acb188c85aca0ec695f20dfa992d2918e63a77d3d10bf085fc901f029111bf1",
+          "bytes": 7774
+        },
+        "data/s15_identity_ar1_components.parquet": {
+          "sha256": "d5d45158b4b3de1137e5201c7867d5bba9cfa42a723427c0b84c0c5017e17d6d",
+          "bytes": 2474375
+        },
+        "models/s15_identity_ar1_temporal.json": {
+          "sha256": "ef86b1de4f47adee6b667681c7c7c007f20b71f2f19a2bee78ae1fc363647973",
+          "bytes": 7804
+        },
+        "data/s15_log1p_ar0_components.parquet": {
+          "sha256": "9256bbdd2b7513edc14748791c3def896bd67ff0fbe40ce3bf72de9349506cd0",
+          "bytes": 2511478
+        },
+        "models/s15_log1p_ar0_temporal.json": {
+          "sha256": "004af754862f8902206172873f9eea46c07558f95b1b8ca446a7a430a9549310",
+          "bytes": 8009
+        },
+        "data/s15_log1p_ar1_components.parquet": {
+          "sha256": "37c736846741739a20c91c8313dc1a3f72efa181f3d4f7dbd945843f2c91ce52",
+          "bytes": 2516996
+        },
+        "models/s15_log1p_ar1_temporal.json": {
+          "sha256": "ca3a5342ef429b56da5d490429b7c4e34bb9233a3488d7bc4061ee4667f273dd",
+          "bytes": 8039
+        },
+        "data/s60_identity_ar0_components.parquet": {
+          "sha256": "8ced0b11c006a6e108f3193ca8698ba34bf7065e0512f6117855542c6d1593fe",
+          "bytes": 631568
+        },
+        "models/s60_identity_ar0_temporal.json": {
+          "sha256": "0f4a988f39f5fc7e68d21a5787105f77948d17262302b23fac2670047521eb96",
+          "bytes": 7774
+        },
+        "data/s60_identity_ar1_components.parquet": {
+          "sha256": "302cbb24148241c5cb199db9534c6c9a1664371000f9d8a6f443dd101d805034",
+          "bytes": 630826
+        },
+        "models/s60_identity_ar1_temporal.json": {
+          "sha256": "d45e40badd502634bbfc31e762c0cf42d13a3b364c0818b19edfa687c7085dfe",
+          "bytes": 7804
+        },
+        "data/s60_log1p_ar0_components.parquet": {
+          "sha256": "fa999bf9030ac889987f62e182833975da5c79c255fcc26d01041e5d1184a8dc",
+          "bytes": 630910
+        },
+        "models/s60_log1p_ar0_temporal.json": {
+          "sha256": "3fad091633fa142b1802a63ecc95628dd31b661c76ae1fe5e255646b21a2b48d",
+          "bytes": 7998
+        },
+        "data/s60_log1p_ar1_components.parquet": {
+          "sha256": "dfabaf17427158ba42a6d1abdd5ffc019cf626ae701b9b814c40835e2403ec06",
+          "bytes": 631790
+        },
+        "models/s60_log1p_ar1_temporal.json": {
+          "sha256": "9a23ad58880eac66d86fcde6aeac0786a9b1d9679aa9dce979f95bb037458790",
+          "bytes": 8027
+        },
+        "validation/temporal_roundtrip.csv": {
+          "sha256": "17dcbb58aa765f9bd6f2744cee240cc87f7866038e7b8df5404af10da05a2e62",
+          "bytes": 2206
+        }
+      },
+      "limitations": "仅既有对齐档案的开发期描述；拟合/比较不是留出效果或真实事件证据。档案行数不是独立新测量数；T/日历是回顾性条件。",
+      "next": "展示全部已配置原型及失败；正式步长/阈值/模型选择仍待证据和确认，不启用氮、SUMO 或 E1–E3。",
+      "record": "run_manifest/archive_sensitivity/runs/20261020T143451_066150Z_archive/M04_record.json",
+      "tests": {
+        "status": "PASS",
+        "returncode": 0,
+        "command": [
+          "D:\\000_APP\\020_APP_code\\05_python3.10\\python.exe",
+          "-X",
+          "utf8",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "tests",
+          "-v"
+        ],
+        "log": "run_manifest/archive_sensitivity/runs/20261020T143451_066150Z_archive/tests.log"
+      },
+      "source_and_config_sha256": {
+        "configs/archive_sensitivity.json": "c6bc1217ce71cea3f507bdfd7ba10b21bf5736dd733707d57bee9a5ac23960d7",
+        "configs/experiment_protocol.json": "652dcb19b22667d0e6412809c9c9cc68ac36053a3ac80ad8db809ba3cc6d7dc0",
+        "configs/model_candidates.json": "1dd3a22f6f57b0565ac16e3cd70a213f1fad4452f373a805b3825329ecca5bc6",
+        "configs/module_contracts.json": "82a19df3220deca912f15c7a1598f99062d90bacb16d61f045d06582427eb681",
+        "configs/study_design.json": "8ac702f9ba5307604242eb221dbb06cd50d77e2bdbfc1aedf37be61be626dd7a",
+        "src/project2_synthesis/cli.py": "a768d540cbc87450f963d99749dc19babfd368618488c0dd316c89cefcb18efb",
+        "src/project2_synthesis/contracts.py": "9ea1256ec8f3ac4498994ededcbed377e93f4d03a388c9894d794f6f46a4f75c",
+        "src/project2_synthesis/runtime.py": "8d9375db3ecdfea9f2ebf67d487a22cba67bfa4ccf278a9377c844cf94b8c342",
+        "src/project2_synthesis/__init__.py": "372ab0bed771c5a02f3592e99d0f4134ff341b2f11fd49d3d65ca0ab287feeaa",
+        "src/project2_synthesis/archive_sensitivity/figures.py": "b0e428883bf757b5d474ec63c3734f61b94fce06f539a384fba34cf53c6cf06f",
+        "src/project2_synthesis/archive_sensitivity/numerics.py": "30a018bf0d3e45163f4566adb9e8d9fa702d98d985ad6a328b206e61ea5f6b8c",
+        "src/project2_synthesis/archive_sensitivity/reporting.py": "12b800ddf7e65c3b97e33666caaa884f3653843afc3ab02dadd822d586034f41",
+        "src/project2_synthesis/archive_sensitivity/runner.py": "f27834ffb5ef3397ece890f13bc60e3e4723b46ef7cdfa0471d6c579ce7c548f",
+        "src/project2_synthesis/archive_sensitivity/__init__.py": "e87ebcf5b47d0b9f56432f13ae510dc3adb614c5e8e3a27c6f053ed889df87cf",
+        "src/project2_synthesis/figures/audit_figures.py": "a081b53d9b85caa9c034ef66c6c4dcb112074663a76a244c48f739040108bf09",
+        "src/project2_synthesis/intake/label_admission.py": "5bd8d78a7663fc09025853be09efc8d29450fa9fa5fe60197003bfede9774875",
+        "src/project2_synthesis/intake/native_frequency.py": "f3bbcaed7cc1884b680f6aeff0c77fa35468f6dc62c134687bd08caee0ea74e6",
+        "src/project2_synthesis/intake/source_audit.py": "718506ac1ca47d233181a0ae648ba41df3311766d667246c7237442f41e95abd",
+        "src/project2_synthesis/preparation/aggregation.py": "70ed19041c61c1cf5e0f0f9b4cd3c2c4de50f6e7cc8f0a1d4eee4b8974cfa606",
+        "src/project2_synthesis/preparation/scale_selection.py": "7caf715b0b3e8e58062fc8cee1f48e47f6a91c2d0af19d21bb9e7b4876e7b74f",
+        "src/project2_synthesis/preparation/splitting.py": "d0831af3eb3af74cf7eefe26fd105c261a80706c9304d7a9b7b1151788a6c906",
+        "tests/test_archive_sensitivity.py": "cd9477a9d63d8515648fd919cd5d1d255a876a92f529ecaf1345c0bc97f28544",
+        "tests/test_design_contracts.py": "0a4caafeb4c292b6e16af7e8f356fa91a72ad20e99bf742477e69c106c1d3c6d",
+        "tests/test_intake_preparation.py": "54a9f628191643446c729e45552a1fd5fa3a76a6a45267cb12d1d10dd3a16bf9"
+      },
+      "scientific_admission": "PENDING"
+    },
+    {
+      "stage": "M05",
+      "run_id": "20261020T143451_066150Z_archive",
+      "status": "PASS",
+      "objective": "经验创新边际与原子质量的数值核验；不启用GPD。",
+      "method": "全时点创新总体的经验CDF/广义逆；固定种子随机PIT，保留并披露并列值。97.5%仅为点尾支持参照，不推定独立事件簇。",
+      "input": "已验证 SHA 的 M02 开发档案；Q/COD/T 同一完整日历小时支持。原生信息 UNKNOWN。",
+      "metrics": {
+        "case_margins": 24,
+        "max_training_support_recovery_error": 0.0,
+        "GPD_enabled": false
+      },
+      "outputs": [
+        "artifacts/archive_sensitivity/models/s05_identity_ar0_empirical_margins.json",
+        "artifacts/archive_sensitivity/models/s05_identity_ar1_empirical_margins.json",
+        "artifacts/archive_sensitivity/models/s05_log1p_ar0_empirical_margins.json",
+        "artifacts/archive_sensitivity/models/s05_log1p_ar1_empirical_margins.json",
+        "artifacts/archive_sensitivity/models/s15_identity_ar0_empirical_margins.json",
+        "artifacts/archive_sensitivity/models/s15_identity_ar1_empirical_margins.json",
+        "artifacts/archive_sensitivity/models/s15_log1p_ar0_empirical_margins.json",
+        "artifacts/archive_sensitivity/models/s15_log1p_ar1_empirical_margins.json",
+        "artifacts/archive_sensitivity/models/s60_identity_ar0_empirical_margins.json",
+        "artifacts/archive_sensitivity/models/s60_identity_ar1_empirical_margins.json",
+        "artifacts/archive_sensitivity/models/s60_log1p_ar0_empirical_margins.json",
+        "artifacts/archive_sensitivity/models/s60_log1p_ar1_empirical_margins.json",
+        "artifacts/archive_sensitivity/validation/empirical_margin_checks.csv"
+      ],
+      "output_hashes": {
+        "models/s05_identity_ar0_empirical_margins.json": {
+          "sha256": "98ef2b737b133f2d7dca292435e35370d055d421975fb6139a8de10965644cef",
+          "bytes": 4124228
+        },
+        "models/s05_identity_ar1_empirical_margins.json": {
+          "sha256": "80052d0f47aef779a328e391ed84f7e092d2a16ec8cf4ebc9677ec0ce04480a4",
+          "bytes": 4154823
+        },
+        "models/s05_log1p_ar0_empirical_margins.json": {
+          "sha256": "3838c87ac5b1457eca5727d24d51808d207c504862e750fabf896dde28fe863b",
+          "bytes": 4330628
+        },
+        "models/s05_log1p_ar1_empirical_margins.json": {
+          "sha256": "a923427c023ad09b163365254f4b5a32b96bbd9aa09618031dcff8d7d9ae1891",
+          "bytes": 4512917
+        },
+        "models/s15_identity_ar0_empirical_margins.json": {
+          "sha256": "95ea7e6d5369c6a369783f8f6fdc6930fa85300a761de0774e5ccf1510deb87f",
+          "bytes": 1374739
+        },
+        "models/s15_identity_ar1_empirical_margins.json": {
+          "sha256": "f81d63a9fc1987f879561863a7db8618af9d1e52ef5b48e0bf1eb00ddf3a048a",
+          "bytes": 1371021
+        },
+        "models/s15_log1p_ar0_empirical_margins.json": {
+          "sha256": "f18ab858f01799ec03f3c2f7e78e03df621bc715afbe4a4770dedd4848b0afd6",
+          "bytes": 1444090
+        },
+        "models/s15_log1p_ar1_empirical_margins.json": {
+          "sha256": "44437c33199e2993ac7250357842e6d3a296960eff780a08e9d8196eb4ac4f14",
+          "bytes": 1488270
+        },
+        "models/s60_identity_ar0_empirical_margins.json": {
+          "sha256": "f49ec39e71966c7dfce8b3fbe1d4152ca566fa6d4889cc2e5382c928ec7d7b96",
+          "bytes": 343939
+        },
+        "models/s60_identity_ar1_empirical_margins.json": {
+          "sha256": "8192a88e27d9266986302f60af189602a82e77aeb3b52c13e9e91930d434a3de",
+          "bytes": 339015
+        },
+        "models/s60_log1p_ar0_empirical_margins.json": {
+          "sha256": "18c58ce310d743ef487ce23c7244f0c7d1f4cbe1f2ac75cf47263244741f00df",
+          "bytes": 361168
+        },
+        "models/s60_log1p_ar1_empirical_margins.json": {
+          "sha256": "abd67cc19d858478402f61a040c299f47eeb3c86705ed584e5b08d08cc2176ca",
+          "bytes": 362050
+        },
+        "validation/empirical_margin_checks.csv": {
+          "sha256": "208e337b6b91ceeecc6656a7539ae15a11cb79f71e07dd77184fb27b5eeed5f4",
+          "bytes": 3650
+        }
+      },
+      "limitations": "仅既有对齐档案的开发期描述；拟合/比较不是留出效果或真实事件证据。档案行数不是独立新测量数；T/日历是回顾性条件。",
+      "next": "展示全部已配置原型及失败；正式步长/阈值/模型选择仍待证据和确认，不启用氮、SUMO 或 E1–E3。",
+      "record": "run_manifest/archive_sensitivity/runs/20261020T143451_066150Z_archive/M05_record.json",
+      "tests": {
+        "status": "PASS",
+        "returncode": 0,
+        "command": [
+          "D:\\000_APP\\020_APP_code\\05_python3.10\\python.exe",
+          "-X",
+          "utf8",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "tests",
+          "-v"
+        ],
+        "log": "run_manifest/archive_sensitivity/runs/20261020T143451_066150Z_archive/tests.log"
+      },
+      "source_and_config_sha256": {
+        "configs/archive_sensitivity.json": "c6bc1217ce71cea3f507bdfd7ba10b21bf5736dd733707d57bee9a5ac23960d7",
+        "configs/experiment_protocol.json": "652dcb19b22667d0e6412809c9c9cc68ac36053a3ac80ad8db809ba3cc6d7dc0",
+        "configs/model_candidates.json": "1dd3a22f6f57b0565ac16e3cd70a213f1fad4452f373a805b3825329ecca5bc6",
+        "configs/module_contracts.json": "82a19df3220deca912f15c7a1598f99062d90bacb16d61f045d06582427eb681",
+        "configs/study_design.json": "8ac702f9ba5307604242eb221dbb06cd50d77e2bdbfc1aedf37be61be626dd7a",
+        "src/project2_synthesis/cli.py": "a768d540cbc87450f963d99749dc19babfd368618488c0dd316c89cefcb18efb",
+        "src/project2_synthesis/contracts.py": "9ea1256ec8f3ac4498994ededcbed377e93f4d03a388c9894d794f6f46a4f75c",
+        "src/project2_synthesis/runtime.py": "8d9375db3ecdfea9f2ebf67d487a22cba67bfa4ccf278a9377c844cf94b8c342",
+        "src/project2_synthesis/__init__.py": "372ab0bed771c5a02f3592e99d0f4134ff341b2f11fd49d3d65ca0ab287feeaa",
+        "src/project2_synthesis/archive_sensitivity/figures.py": "b0e428883bf757b5d474ec63c3734f61b94fce06f539a384fba34cf53c6cf06f",
+        "src/project2_synthesis/archive_sensitivity/numerics.py": "30a018bf0d3e45163f4566adb9e8d9fa702d98d985ad6a328b206e61ea5f6b8c",
+        "src/project2_synthesis/archive_sensitivity/reporting.py": "12b800ddf7e65c3b97e33666caaa884f3653843afc3ab02dadd822d586034f41",
+        "src/project2_synthesis/archive_sensitivity/runner.py": "f27834ffb5ef3397ece890f13bc60e3e4723b46ef7cdfa0471d6c579ce7c548f",
+        "src/project2_synthesis/archive_sensitivity/__init__.py": "e87ebcf5b47d0b9f56432f13ae510dc3adb614c5e8e3a27c6f053ed889df87cf",
+        "src/project2_synthesis/figures/audit_figures.py": "a081b53d9b85caa9c034ef66c6c4dcb112074663a76a244c48f739040108bf09",
+        "src/project2_synthesis/intake/label_admission.py": "5bd8d78a7663fc09025853be09efc8d29450fa9fa5fe60197003bfede9774875",
+        "src/project2_synthesis/intake/native_frequency.py": "f3bbcaed7cc1884b680f6aeff0c77fa35468f6dc62c134687bd08caee0ea74e6",
+        "src/project2_synthesis/intake/source_audit.py": "718506ac1ca47d233181a0ae648ba41df3311766d667246c7237442f41e95abd",
+        "src/project2_synthesis/preparation/aggregation.py": "70ed19041c61c1cf5e0f0f9b4cd3c2c4de50f6e7cc8f0a1d4eee4b8974cfa606",
+        "src/project2_synthesis/preparation/scale_selection.py": "7caf715b0b3e8e58062fc8cee1f48e47f6a91c2d0af19d21bb9e7b4876e7b74f",
+        "src/project2_synthesis/preparation/splitting.py": "d0831af3eb3af74cf7eefe26fd105c261a80706c9304d7a9b7b1151788a6c906",
+        "tests/test_archive_sensitivity.py": "cd9477a9d63d8515648fd919cd5d1d255a876a92f529ecaf1345c0bc97f28544",
+        "tests/test_design_contracts.py": "0a4caafeb4c292b6e16af7e8f356fa91a72ad20e99bf742477e69c106c1d3c6d",
+        "tests/test_intake_preparation.py": "54a9f628191643446c729e45552a1fd5fa3a76a6a45267cb12d1d10dd3a16bf9"
+      },
+      "scientific_admission": "PENDING"
+    },
+    {
+      "stage": "M06",
+      "run_id": "20261020T143451_066150Z_archive",
+      "status": "PASS",
+      "objective": "同一经验边际和时间模型下拟合三个同期创新基线。",
+      "method": "独立/Gaussian/Student-t；椭圆相关由tau映射，允许负相关。t自由度用开发期条件伪似然数值搜索，报告搜索范围和边界距离；不做IID似然推断或模型优选。二维原型不冒称高维Vine。",
+      "input": "已验证 SHA 的 M02 开发档案；Q/COD/T 同一完整日历小时支持。原生信息 UNKNOWN。",
+      "metrics": {
+        "copula_fits": 36,
+        "failed_fits": 0
+      },
+      "outputs": [
+        "artifacts/archive_sensitivity/models/copula_bundle.json",
+        "artifacts/archive_sensitivity/validation/copula_fits.csv"
+      ],
+      "output_hashes": {
+        "models/copula_bundle.json": {
+          "sha256": "31895422ca8c0b12e23be9be715f55e6efcda85ae51500e2af027df820e44986",
+          "bytes": 14726
+        },
+        "validation/copula_fits.csv": {
+          "sha256": "2f1b1a821334914f4cc6894b38c9a9d63e1b397cb8763e459d6bf8a2153792d7",
+          "bytes": 9375
+        }
+      },
+      "limitations": "仅既有对齐档案的开发期描述；拟合/比较不是留出效果或真实事件证据。档案行数不是独立新测量数；T/日历是回顾性条件。",
+      "next": "展示全部已配置原型及失败；正式步长/阈值/模型选择仍待证据和确认，不启用氮、SUMO 或 E1–E3。",
+      "record": "run_manifest/archive_sensitivity/runs/20261020T143451_066150Z_archive/M06_record.json",
+      "tests": {
+        "status": "PASS",
+        "returncode": 0,
+        "command": [
+          "D:\\000_APP\\020_APP_code\\05_python3.10\\python.exe",
+          "-X",
+          "utf8",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "tests",
+          "-v"
+        ],
+        "log": "run_manifest/archive_sensitivity/runs/20261020T143451_066150Z_archive/tests.log"
+      },
+      "source_and_config_sha256": {
+        "configs/archive_sensitivity.json": "c6bc1217ce71cea3f507bdfd7ba10b21bf5736dd733707d57bee9a5ac23960d7",
+        "configs/experiment_protocol.json": "652dcb19b22667d0e6412809c9c9cc68ac36053a3ac80ad8db809ba3cc6d7dc0",
+        "configs/model_candidates.json": "1dd3a22f6f57b0565ac16e3cd70a213f1fad4452f373a805b3825329ecca5bc6",
+        "configs/module_contracts.json": "82a19df3220deca912f15c7a1598f99062d90bacb16d61f045d06582427eb681",
+        "configs/study_design.json": "8ac702f9ba5307604242eb221dbb06cd50d77e2bdbfc1aedf37be61be626dd7a",
+        "src/project2_synthesis/cli.py": "a768d540cbc87450f963d99749dc19babfd368618488c0dd316c89cefcb18efb",
+        "src/project2_synthesis/contracts.py": "9ea1256ec8f3ac4498994ededcbed377e93f4d03a388c9894d794f6f46a4f75c",
+        "src/project2_synthesis/runtime.py": "8d9375db3ecdfea9f2ebf67d487a22cba67bfa4ccf278a9377c844cf94b8c342",
+        "src/project2_synthesis/__init__.py": "372ab0bed771c5a02f3592e99d0f4134ff341b2f11fd49d3d65ca0ab287feeaa",
+        "src/project2_synthesis/archive_sensitivity/figures.py": "b0e428883bf757b5d474ec63c3734f61b94fce06f539a384fba34cf53c6cf06f",
+        "src/project2_synthesis/archive_sensitivity/numerics.py": "30a018bf0d3e45163f4566adb9e8d9fa702d98d985ad6a328b206e61ea5f6b8c",
+        "src/project2_synthesis/archive_sensitivity/reporting.py": "12b800ddf7e65c3b97e33666caaa884f3653843afc3ab02dadd822d586034f41",
+        "src/project2_synthesis/archive_sensitivity/runner.py": "f27834ffb5ef3397ece890f13bc60e3e4723b46ef7cdfa0471d6c579ce7c548f",
+        "src/project2_synthesis/archive_sensitivity/__init__.py": "e87ebcf5b47d0b9f56432f13ae510dc3adb614c5e8e3a27c6f053ed889df87cf",
+        "src/project2_synthesis/figures/audit_figures.py": "a081b53d9b85caa9c034ef66c6c4dcb112074663a76a244c48f739040108bf09",
+        "src/project2_synthesis/intake/label_admission.py": "5bd8d78a7663fc09025853be09efc8d29450fa9fa5fe60197003bfede9774875",
+        "src/project2_synthesis/intake/native_frequency.py": "f3bbcaed7cc1884b680f6aeff0c77fa35468f6dc62c134687bd08caee0ea74e6",
+        "src/project2_synthesis/intake/source_audit.py": "718506ac1ca47d233181a0ae648ba41df3311766d667246c7237442f41e95abd",
+        "src/project2_synthesis/preparation/aggregation.py": "70ed19041c61c1cf5e0f0f9b4cd3c2c4de50f6e7cc8f0a1d4eee4b8974cfa606",
+        "src/project2_synthesis/preparation/scale_selection.py": "7caf715b0b3e8e58062fc8cee1f48e47f6a91c2d0af19d21bb9e7b4876e7b74f",
+        "src/project2_synthesis/preparation/splitting.py": "d0831af3eb3af74cf7eefe26fd105c261a80706c9304d7a9b7b1151788a6c906",
+        "tests/test_archive_sensitivity.py": "cd9477a9d63d8515648fd919cd5d1d255a876a92f529ecaf1345c0bc97f28544",
+        "tests/test_design_contracts.py": "0a4caafeb4c292b6e16af7e8f356fa91a72ad20e99bf742477e69c106c1d3c6d",
+        "tests/test_intake_preparation.py": "54a9f628191643446c729e45552a1fd5fa3a76a6a45267cb12d1d10dd3a16bf9"
+      },
+      "scientific_admission": "PENDING"
+    }
+  ]
+}

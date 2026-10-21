@@ -24,3 +24,19 @@ M09内部进行匹配、准备临时SUMO输入及实验，M10负责最终导出�
 reports 下保留一模块一报告及总进度；未执行模块标 PENDING。run_manifest/module_states.json 是实际运行状态来源；module_contracts 的 planned_not_produced 字段保留设计时声明，不用作当前执行判断。任何正式拟合必须读取准入状态，不能仅检查文件是否存在。
 
 GitHub 同步必须先展示拟提交文件清单并获得用户明确确认。原始数据、逐时点 Parquet、临时文件及运行快照中的观测级结果不在默认上传范围；小型日志、配置与源码快照可列入审阅白名单。不执行自动 commit、push、PR 或合并。
+
+## 已授权档案敏感性支线
+
+用户于 2026-10-20 明确批准 M01/M02 白名单的 commit/push，并授权 [有限用途建议](reports/M02_后续科学准入建议.md)。首阶段已推送至 codex/project2-m01-m02-audit，commit 为 4dd7ae38；后续档案支线新增变更尚未上传。
+
+支线以 configs/archive_sensitivity.json 为独立原型配置，入口为 run_archive_sensitivity.py。三尺度使用同一完整小时内的技术档案支持；K=1，identity/log1p、ARMA(0,0)/(1,0)、经验边际与独立/Gaussian/t 基线全部展示，不选优。仅拟合开发集，按其前30日的已记录T/日历做回顾性条件合成，不是前瞻预测或自然发生率模拟。
+
+```powershell
+& 'D:\000_APP\020_APP_code\05_python3.10\python.exe' -X utf8 run_archive_sensitivity.py
+# 若仅修复下游工程问题，可复用哈希一致、同配置的本地拟合检查点：
+& 'D:\000_APP\020_APP_code\05_python3.10\python.exe' -X utf8 run_archive_sensitivity.py --resume-from 20261020T143451_066150Z_archive
+```
+
+结果在 artifacts/archive_sensitivity，运行记录在 run_manifest/archive_sensitivity/runs。每步更新原有模块报告的支线段落，正式主链状态保持独立。首轮M07遭遇260字符路径限制；失败和修复记录保留，恢复运行未重新拟合。最新阶段结论见 reports/ARCHIVE_SENSITIVITY_阶段复核.md。
+
+运行依赖登记于 execution；测试参考实现依赖登记于 test。当前沿用已安装包，没有安装新软件。未修正负值、未准入氮/SUMO/真实标签，不能把原型输出当作可靠物理边界。

@@ -1,0 +1,614 @@
+{
+  "version": "2.0_final_design",
+  "status": "M01_implemented_M02_diagnostics_only_other_algorithms_pending",
+  "external_inputs": {
+    "raw_data": {
+      "path": "../raw data/09_25.08.01-26.07.30_all data",
+      "required_now": true,
+      "read_only": true
+    },
+    "study_design": {
+      "path": "configs/study_design.json",
+      "required_now": true
+    },
+    "candidates": {
+      "path": "configs/model_candidates.json",
+      "required_now": true
+    },
+    "previous_input_audit": {
+      "path": "../knowledge/audit/section231_readiness.json",
+      "required_now": true
+    },
+    "outline": {
+      "path": "../knowledge/sources/Project2_大纲原文提取.txt",
+      "required_now": true
+    },
+    "dqr_windows": {
+      "path": null,
+      "required_now": false,
+      "status": "pending_actual_source"
+    },
+    "weather_events": {
+      "path": "../raw data/external_weather/ERA5_Qingdao_reference_20250801_20260730/manifest.json",
+      "required_now": false,
+      "status": "regional_proxy_available_native_site_truth_pending"
+    },
+    "sumo_model_and_fractionation": {
+      "path": null,
+      "required_now": false,
+      "status": "pending_2.2"
+    },
+    "experiment_protocol": {
+      "path": "configs/experiment_protocol.json",
+      "required_now": true
+    },
+    "independent_effluent_labels": {
+      "path": null,
+      "required_now": false,
+      "status": "label_admission_pending"
+    }
+  },
+  "modules": [
+    {
+      "id": "M01",
+      "name": "intake",
+      "implementation_status": "implemented",
+      "implementation_entry": "src/project2_synthesis/intake/source_audit.py",
+      "depends_on": [],
+      "inputs": [
+        "external:raw_data",
+        "external:previous_input_audit",
+        "external:study_design",
+        "external:dqr_windows",
+        "external:experiment_protocol"
+      ],
+      "outputs": [
+        {
+          "id": "01_input_audit",
+          "path": "data/01_input_audit.json",
+          "status": "planned_not_produced"
+        },
+        {
+          "id": "01_observation_flags",
+          "path": "data/01_observation_flags.parquet",
+          "status": "planned_not_produced"
+        },
+        {
+          "id": "01_native_frequency",
+          "path": "validation/01_native_frequency.csv",
+          "status": "planned_not_produced",
+          "required_if": "base_chain; optional_tail_diagnostics_may_record_not_applicable_with_reason"
+        },
+        {
+          "id": "01_label_admission",
+          "path": "validation/01_label_admission.json",
+          "status": "planned_not_produced",
+          "required_if": "base_chain; optional_tail_diagnostics_may_record_not_applicable_with_reason"
+        }
+      ],
+      "gates": [
+        "source_hash_units_time_flags",
+        "reject_cumulative_Q",
+        "fresh_vs_held_is_not_value_change_heuristic"
+      ]
+    },
+    {
+      "id": "M02",
+      "name": "preparation",
+      "implementation_status": "diagnostics_only",
+      "implementation_entry": "src/project2_synthesis/preparation/scale_selection.py",
+      "depends_on": [
+        "M01"
+      ],
+      "inputs": [
+        "01_input_audit",
+        "01_observation_flags",
+        "external:study_design",
+        "01_native_frequency",
+        "external:experiment_protocol"
+      ],
+      "outputs": [
+        {
+          "id": "02_model_frame",
+          "path": "data/02_model_frame.parquet",
+          "status": "planned_not_produced"
+        },
+        {
+          "id": "02_time_blocks",
+          "path": "data/02_time_blocks.parquet",
+          "status": "planned_not_produced"
+        },
+        {
+          "id": "02_scale_comparison",
+          "path": "validation/02_scale_comparison.csv",
+          "status": "planned_not_produced"
+        },
+        {
+          "id": "02_concentration_views",
+          "path": "data/02_concentration_views.parquet",
+          "status": "planned_not_produced",
+          "required_if": "base_chain; optional_tail_diagnostics_may_record_not_applicable_with_reason"
+        },
+        {
+          "id": "02_load_ledger",
+          "path": "data/02_load_ledger.parquet",
+          "status": "planned_not_produced",
+          "required_if": "base_chain; optional_tail_diagnostics_may_record_not_applicable_with_reason"
+        },
+        {
+          "id": "02_scale_decision",
+          "path": "validation/02_scale_decision.json",
+          "status": "planned_not_produced",
+          "required_if": "base_chain; optional_tail_diagnostics_may_record_not_applicable_with_reason"
+        }
+      ],
+      "gates": [
+        "split_before_fit",
+        "native_update_and_aggregation_support",
+        "no_gap_concatenation",
+        "native_first_scale_selection_no_automatic_1min",
+        "dual_concentration_views_common_support_load_identity"
+      ]
+    },
+    {
+      "id": "M03",
+      "name": "regimes",
+      "implementation_status": "not_implemented",
+      "depends_on": [
+        "M02"
+      ],
+      "inputs": [
+        "02_model_frame",
+        "02_time_blocks",
+        "external:weather_events"
+      ],
+      "outputs": [
+        {
+          "id": "03_regime_events",
+          "path": "data/03_regime_events.parquet",
+          "status": "planned_not_produced"
+        },
+        {
+          "id": "03_regime_model",
+          "path": "models/03_regime_model.json",
+          "status": "planned_not_produced"
+        },
+        {
+          "id": "03_regime_support",
+          "path": "validation/03_regime_support.csv",
+          "status": "planned_not_produced"
+        },
+        {
+          "id": "03_event_rules",
+          "path": "models/03_event_rules.json",
+          "status": "planned_not_produced",
+          "required_if": "base_chain; optional_tail_diagnostics_may_record_not_applicable_with_reason"
+        }
+      ],
+      "gates": [
+        "confirmed_vs_suspected_events",
+        "independent_blocks_and_tail_clusters"
+      ]
+    },
+    {
+      "id": "M04",
+      "name": "temporal",
+      "implementation_status": "not_implemented",
+      "depends_on": [
+        "M02",
+        "M03"
+      ],
+      "inputs": [
+        "02_model_frame",
+        "02_time_blocks",
+        "03_regime_events",
+        "external:candidates"
+      ],
+      "outputs": [
+        {
+          "id": "04_components",
+          "path": "data/04_components.parquet",
+          "status": "planned_not_produced"
+        },
+        {
+          "id": "04_innovations",
+          "path": "data/04_innovations.parquet",
+          "status": "planned_not_produced"
+        },
+        {
+          "id": "04_temporal_bundle",
+          "path": "models/04_temporal_bundle.json",
+          "status": "planned_not_produced"
+        },
+        {
+          "id": "04_temporal_diagnostics",
+          "path": "validation/04_temporal_diagnostics.csv",
+          "status": "planned_not_produced"
+        }
+      ],
+      "gates": [
+        "all_components_roundtrip",
+        "fit_support_and_block_states",
+        "innovation_ACF_CCF_ARCH"
+      ]
+    },
+    {
+      "id": "M05",
+      "name": "margins",
+      "implementation_status": "not_implemented",
+      "depends_on": [
+        "M04"
+      ],
+      "inputs": [
+        "04_innovations",
+        "03_regime_events",
+        "external:candidates",
+        "external:experiment_protocol"
+      ],
+      "outputs": [
+        {
+          "id": "05_margin_bundle",
+          "path": "models/05_margin_bundle.json",
+          "status": "planned_not_produced"
+        },
+        {
+          "id": "05_margin_tail_diagnostics",
+          "path": "validation/05_margin_tail_diagnostics.csv",
+          "status": "planned_not_produced"
+        },
+        {
+          "id": "05_tail_admission",
+          "path": "validation/05_tail_admission.json",
+          "status": "planned_not_produced",
+          "required_if": "base_chain; optional_tail_diagnostics_may_record_not_applicable_with_reason"
+        }
+      ],
+      "gates": [
+        "CDF_monotone_continuity_PPF",
+        "tail_support_and_fallback",
+        "four_tier_EVT_scope_and_optional_SKIP_is_valid",
+        "all_time_tail_mass_not_cluster_peak_mass"
+      ]
+    },
+    {
+      "id": "M06",
+      "name": "dependence",
+      "implementation_status": "not_implemented",
+      "depends_on": [
+        "M04",
+        "M05"
+      ],
+      "inputs": [
+        "04_innovations",
+        "05_margin_bundle",
+        "external:candidates"
+      ],
+      "outputs": [
+        {
+          "id": "06_dependence_bundle",
+          "path": "models/06_dependence_bundle.json",
+          "status": "planned_not_produced"
+        },
+        {
+          "id": "06_dependence_diagnostics",
+          "path": "validation/06_dependence_diagnostics.csv",
+          "status": "planned_not_produced"
+        },
+        {
+          "id": "06_joint_tail_scores",
+          "path": "validation/06_joint_tail_scores.csv",
+          "status": "planned_not_produced",
+          "required_if": "base_chain; optional_tail_diagnostics_may_record_not_applicable_with_reason"
+        }
+      ],
+      "gates": [
+        "aligned_vectors_rotations",
+        "valid_vine_structure",
+        "cross_lag_diagnostics"
+      ]
+    },
+    {
+      "id": "M07",
+      "name": "synthesis",
+      "implementation_status": "not_implemented",
+      "depends_on": [
+        "M03",
+        "M04",
+        "M05",
+        "M06"
+      ],
+      "inputs": [
+        "03_regime_model",
+        "04_temporal_bundle",
+        "05_margin_bundle",
+        "06_dependence_bundle",
+        "external:candidates"
+      ],
+      "outputs": [
+        {
+          "id": "07_latent_samples",
+          "path": "data/07_latent_samples.parquet",
+          "status": "planned_not_produced"
+        },
+        {
+          "id": "07_synthetic_unconstrained",
+          "path": "data/07_synthetic_unconstrained.parquet",
+          "status": "planned_not_produced"
+        },
+        {
+          "id": "07_trajectory_manifest",
+          "path": "data/07_trajectory_manifest.json",
+          "status": "planned_not_produced"
+        }
+      ],
+      "gates": [
+        "inverse_states_burnin_transitions",
+        "natural_vs_stress_separation"
+      ]
+    },
+    {
+      "id": "M08",
+      "name": "physics",
+      "implementation_status": "not_implemented",
+      "depends_on": [
+        "M07"
+      ],
+      "inputs": [
+        "07_synthetic_unconstrained",
+        "07_trajectory_manifest",
+        "external:candidates",
+        "external:sumo_model_and_fractionation",
+        "external:experiment_protocol"
+      ],
+      "outputs": [
+        {
+          "id": "08_synthetic_physical",
+          "path": "data/08_synthetic_physical.parquet",
+          "status": "planned_not_produced"
+        },
+        {
+          "id": "08_correction_ledger",
+          "path": "validation/08_correction_ledger.parquet",
+          "status": "planned_not_produced"
+        },
+        {
+          "id": "08_boundary_contract",
+          "path": "models/08_boundary_contract.json",
+          "status": "planned_not_produced",
+          "required_if": "SUMO_response_or_SUMO_export_requested"
+        },
+        {
+          "id": "08_operation_policy",
+          "path": "models/08_operation_policy.json",
+          "status": "planned_not_produced",
+          "required_if": "SUMO_response_or_SUMO_export_requested"
+        }
+      ],
+      "gates": [
+        "constraint_provenance",
+        "pre_post_correction_drift",
+        "operations_units_policy_and_self_simulated_feedback_state"
+      ]
+    },
+    {
+      "id": "M09",
+      "name": "validation",
+      "implementation_status": "not_implemented",
+      "depends_on": [
+        "M02",
+        "M07",
+        "M08"
+      ],
+      "inputs": [
+        "02_model_frame",
+        "02_time_blocks",
+        "03_regime_events",
+        "07_synthetic_unconstrained",
+        "08_synthetic_physical",
+        "08_correction_ledger",
+        "02_concentration_views",
+        "02_load_ledger",
+        "02_scale_decision",
+        "08_boundary_contract",
+        "08_operation_policy",
+        "external:experiment_protocol",
+        "external:sumo_model_and_fractionation",
+        "external:independent_effluent_labels"
+      ],
+      "outputs": [
+        {
+          "id": "09_metrics_long",
+          "path": "validation/09_metrics_long.parquet",
+          "status": "planned_not_produced"
+        },
+        {
+          "id": "09_event_scores",
+          "path": "validation/09_event_scores.csv",
+          "status": "planned_not_produced"
+        },
+        {
+          "id": "09_challenge_results",
+          "path": "validation/09_challenge_results.csv",
+          "status": "planned_not_produced"
+        },
+        {
+          "id": "09_protocol_freeze",
+          "path": "validation/09_protocol_freeze.json",
+          "status": "planned_not_produced",
+          "required_if": "relevant_experiment_enabled_and_its_inputs_admitted"
+        },
+        {
+          "id": "09_E1_quality_coverage",
+          "path": "validation/09_E1_quality_coverage.csv",
+          "status": "planned_not_produced",
+          "required_if": "relevant_experiment_enabled_and_its_inputs_admitted"
+        },
+        {
+          "id": "09_input_matching",
+          "path": "validation/09_input_matching.parquet",
+          "status": "planned_not_produced",
+          "required_if": "relevant_experiment_enabled_and_its_inputs_admitted"
+        },
+        {
+          "id": "09_pair_manifest",
+          "path": "validation/09_pair_manifest.json",
+          "status": "planned_not_produced",
+          "required_if": "relevant_experiment_enabled_and_its_inputs_admitted"
+        },
+        {
+          "id": "09_simulated_responses",
+          "path": "validation/09_simulated_responses.parquet",
+          "status": "planned_not_produced",
+          "required_if": "E2_SUMO_enabled_and_model_boundary_policy_inputs_admitted"
+        },
+        {
+          "id": "09_E2_response_contrasts",
+          "path": "validation/09_E2_response_contrasts.csv",
+          "status": "planned_not_produced",
+          "required_if": "E2_SUMO_enabled_and_model_boundary_policy_inputs_admitted"
+        },
+        {
+          "id": "09_field_validation",
+          "path": "validation/09_field_validation.csv",
+          "status": "planned_not_produced",
+          "required_if": "E2_SUMO_enabled_and_model_boundary_policy_inputs_admitted"
+        },
+        {
+          "id": "09_E3_ratio_curve",
+          "path": "validation/09_E3_ratio_curve.csv",
+          "status": "planned_not_produced",
+          "required_if": "E3_enabled_and_independent_real_labels_admitted"
+        }
+      ],
+      "gates": [
+        "blocked_or_event_uncertainty",
+        "frozen_real_holdout",
+        "no_pass_on_pending_thresholds",
+        "matching_before_response_and_explicit_estimand",
+        "same_policy_vs_fixed_action_replay",
+        "field_validation_not_synthetic_counterfactual_truth",
+        "E1_E2_E3_factors_and_frozen_ratio_selection"
+      ],
+      "input_requirements": {
+        "08_boundary_contract": "only_for_SUMO_response",
+        "08_operation_policy": "only_for_SUMO_response",
+        "external:sumo_model_and_fractionation": "only_for_SUMO_response",
+        "external:independent_effluent_labels": "only_for_field_validation_or_E3"
+      }
+    },
+    {
+      "id": "M10",
+      "name": "export",
+      "implementation_status": "not_implemented",
+      "depends_on": [
+        "M08",
+        "M09"
+      ],
+      "inputs": [
+        "08_synthetic_physical",
+        "09_metrics_long",
+        "external:sumo_model_and_fractionation",
+        "08_boundary_contract"
+      ],
+      "outputs": [
+        {
+          "id": "10_sumo_influent",
+          "path": "export/10_sumo_influent.csv",
+          "status": "planned_not_produced"
+        },
+        {
+          "id": "10_sumo_mapping",
+          "path": "export/10_sumo_mapping.json",
+          "status": "planned_not_produced"
+        },
+        {
+          "id": "10_dataset_card",
+          "path": "export/10_dataset_card.md",
+          "status": "planned_not_produced"
+        },
+        {
+          "id": "10_training_interface",
+          "path": "export/10_training_interface.json",
+          "status": "planned_not_produced",
+          "required_if": "relevant_experiment_enabled_and_its_inputs_admitted"
+        }
+      ],
+      "gates": [
+        "actual_SUMO_schema_units_and_fractionation",
+        "acceptance_before_export"
+      ],
+      "input_requirements": {
+        "08_boundary_contract": "only_for_SUMO_export",
+        "external:sumo_model_and_fractionation": "only_for_SUMO_export"
+      }
+    },
+    {
+      "id": "M11",
+      "name": "figures",
+      "implementation_status": "not_implemented",
+      "depends_on": [
+        "M09"
+      ],
+      "inputs": [
+        "09_metrics_long",
+        "09_event_scores",
+        "09_challenge_results",
+        "09_E1_quality_coverage",
+        "09_input_matching",
+        "09_E2_response_contrasts",
+        "09_field_validation",
+        "09_E3_ratio_curve"
+      ],
+      "outputs": [
+        {
+          "id": "11_source_data",
+          "path": "figures/11_source_data.xlsx",
+          "status": "planned_not_produced"
+        },
+        {
+          "id": "11_figure_manifest",
+          "path": "figures/11_figure_manifest.json",
+          "status": "planned_not_produced"
+        }
+      ],
+      "gates": [
+        "source_data_run_split_seed_provenance"
+      ]
+    },
+    {
+      "id": "M12",
+      "name": "release",
+      "implementation_status": "not_implemented",
+      "depends_on": [
+        "M10",
+        "M11"
+      ],
+      "inputs": [
+        "10_dataset_card",
+        "10_sumo_mapping",
+        "11_figure_manifest",
+        "external:study_design"
+      ],
+      "outputs": [
+        {
+          "id": "12_release_manifest",
+          "path": "release/12_release_manifest.json",
+          "status": "planned_not_produced"
+        },
+        {
+          "id": "12_scientific_report",
+          "path": "release/12_scientific_report.md",
+          "status": "planned_not_produced"
+        }
+      ],
+      "gates": [
+        "existing_files_hashes_only",
+        "failed_and_pending_items_visible"
+      ],
+      "input_requirements": {
+        "10_sumo_mapping": "only_for_SUMO_release"
+      }
+    }
+  ],
+  "execution_order_note": "M09 privately prepares admitted simulation boundaries and runs/evaluates paired scenarios; M10 is final export, never a prerequisite for M09. No M09-M10 cycle."
+}
